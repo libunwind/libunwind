@@ -125,8 +125,8 @@ sighandler (int signal, void *siginfo, void *context)
       printf ("sighandler: signal %d sp=%p nat=%08lx pr=%lx\n",
 	      signal, &sp, uc->uc_mcontext.sc_nat, uc->uc_mcontext.sc_pr);
     sof = uc->uc_mcontext.sc_cfm & 0x7f;
-    bsp = ia64_rse_skip_regs ((unsigned long *) uc->uc_mcontext.sc_ar_bsp,
-			      -sof);
+    bsp = (unsigned long *) ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
+						-sof);
   }
 #elif defined(__hpux)
   if (__uc_get_ar (uc, UNW_IA64_AR_BSP - UNW_IA64_AR, &bsp) != 0)
