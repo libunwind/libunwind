@@ -202,7 +202,7 @@ intern_dyn_info (unw_addr_space_t as, unw_accessors_t *a,
 
 HIDDEN int
 unwi_dyn_remote_find_proc_info (unw_addr_space_t as, unw_word_t ip,
-				unw_proc_info_t *pi, unw_word_t *genp,
+				unw_proc_info_t *pi,
 				int need_unwind_info, void *arg)
 {
   unw_accessors_t *a = unw_get_accessors (as);
@@ -278,7 +278,6 @@ unwi_dyn_remote_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 	return ret;
     }
   while (gen1 != gen2);
-  *genp = gen1;
 
   if (ret < 0 && di)
     free (di);
@@ -296,4 +295,32 @@ unwi_dyn_remote_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi,
   free_dyn_info (pi->unwind_info);
   free (pi->unwind_info);
   pi->unwind_info = NULL;
+}
+
+/* Returns 1 if the cache is up-to-date or -1 if the cache contained
+   stale data and had to be flushed.  */
+
+HIDDEN int
+unwi_dyn_validate_cache (unw_addr_space_t as, void *arg)
+{
+  unw_word_t addr, gen;
+  unw_accessors_t *a;
+
+  if (!as->dyn_info_list_addr)
+    /* If we don't have the dyn_info_list_addr, we don't have anything
+       in the cache.  */
+    return 0;
+
+  a = unw_get_accessors (as);
+  addr = as->dyn_info_list_addr;
+
+  if (fetchw (as, a, &addr, &gen, arg) < 0)
+    return 1;
+
+  if (gen == as->dyn_generation)
+    return 1;
+
+  unw_flush_cache (as, 0, 0);
+  as->dyn_generation = gen;
+  return -1;
 }
