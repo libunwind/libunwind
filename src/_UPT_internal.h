@@ -26,6 +26,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef _UPT_internal_h
 #define _UPT_internal_h
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <errno.h>
 #include <libunwind.h>
 #include <limits.h>
