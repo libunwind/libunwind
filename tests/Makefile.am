@@ -8,7 +8,8 @@ if REMOTE_ONLY
 else
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig
- TESTS_arch =	Gia64-test-stack Lia64-test-stack \
+ TESTS_arch =	ia64-test-dyn1				\
+		Gia64-test-stack Lia64-test-stack	\
 		Gia64-test-rbs Lia64-test-rbs
 endif
  TESTS_cdep =	Gtest-exc Ltest-exc Gtest-resume-sig Ltest-resume-sig \
@@ -27,6 +28,7 @@ Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S
 Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S
+ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S
 
 LDADD = ../src/libunwind-$(arch).la
 
