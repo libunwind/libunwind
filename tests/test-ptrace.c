@@ -34,12 +34,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
-#ifdef __ia64__
-# include <asm/ptrace_offsets.h>
-#endif
-
 int nerrors;
-int verbose = 1;
+int verbose;
 
 enum
   {
@@ -58,7 +54,7 @@ static struct UPT_info *ui;
 void
 do_backtrace (pid_t target_pid)
 {
-  int ret;
+  int n = 0, ret;
   unw_proc_info_t pi;
   unw_word_t ip, sp;
   unw_cursor_t c;
@@ -70,33 +66,48 @@ do_backtrace (pid_t target_pid)
 
   do
     {
-      unw_get_reg (&c, UNW_REG_IP, &ip);
-      unw_get_reg (&c, UNW_REG_SP, &sp);
+      if ((ret = unw_get_reg (&c, UNW_REG_IP, &ip)) < 0
+	  || (ret = unw_get_reg (&c, UNW_REG_SP, &sp)) < 0)
+	panic ("unw_get_reg/unw_get_proc_name() failed: ret=%d\n", ret);
+
       unw_get_proc_name (&c, buf, sizeof (buf), NULL);
 
-      printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
+      if (verbose)
+	printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
-      unw_get_proc_info (&c, &pi);
-      printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
-	      (long) pi.start_ip, (long) pi.end_ip,
-	      (long) pi.handler, (long) pi.lsda);
+      if ((ret = unw_get_proc_info (&c, &pi)) < 0)
+	panic ("unw_get_proc_info() failed: ret=%d\n", ret);
+      else if (verbose)
+	printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
+		(long) pi.start_ip, (long) pi.end_ip,
+		(long) pi.handler, (long) pi.lsda);
 
 #if UNW_TARGET_IA64
       {
 	unw_word_t bsp;
 
-	unw_get_reg (&c, UNW_IA64_BSP, &bsp);
-	printf (" bsp=%lx", bsp);
+	if ((ret = unw_get_reg (&c, UNW_IA64_BSP, &bsp)) < 0)
+	  panic ("unw_get_reg() failed: ret=%d\n", ret);
+	else if (verbose)
+	  printf (" bsp=%lx", bsp);
       }
 #endif
-      printf ("\n");
+      if (verbose)
+	printf ("\n");
 
       ret = unw_step (&c);
       if (ret < 0)
 	{
 	  unw_get_reg (&c, UNW_REG_IP, &ip);
-	  printf ("FAILURE: unw_step() returned %d for ip=%lx\n",
-		  ret, (long) ip);
+	  panic ("FAILURE: unw_step() returned %d for ip=%lx\n",
+		 ret, (long) ip);
+	}
+
+      if (++n > 32)
+	{
+	  /* guard against bad unwind info in old libraries... */
+	  panic ("too deeply nested---assuming bogus unwind\n");
+	  break;
 	}
     }
   while (ret > 0);
@@ -104,13 +115,14 @@ do_backtrace (pid_t target_pid)
   if (ret < 0)
     panic ("unwind failed with ret=%d\n", ret);
 
-  printf ("================\n\n");
+  if (verbose)
+    printf ("================\n\n");
 }
 
 int
 main (int argc, char **argv)
 {
-  int syscall_number, status, pid, optind = 1, state = 1;
+  int status, pid, pending_sig, optind = 1, state = 1;
   pid_t target_pid;
 
   as = unw_create_addr_space (&_UPT_accessors, 0);
@@ -122,7 +134,6 @@ main (int argc, char **argv)
       char *args[] = { "self", "/bin/ls", "/usr", NULL };
 
       /* automated test case */
-      verbose = 0;
       argv = args;
     }
   else if (argc > 1)
@@ -163,6 +174,7 @@ main (int argc, char **argv)
 
 	  panic ("wait4() failed (errno=%d)\n", errno);
 	}
+      pending_sig = 0;
       if (WIFSIGNALED (status) || WIFEXITED (status)
 	  || (WIFSTOPPED (status) && WSTOPSIG (status) != SIGTRAP))
 	{
@@ -175,40 +187,41 @@ main (int argc, char **argv)
 	  else if (WIFSIGNALED (status))
 	    panic ("child terminated by signal %d\n", WTERMSIG (status));
 	  else
-	    panic ("child got signal %d\n", WSTOPSIG (status));
-	}
-
-      if (trace_mode == SYSCALL || trace_mode == TRIGGER)
-	{
-	  if (!state)
 	    {
-	      if (trace_mode == SYSCALL)
-		do_backtrace (target_pid);
-	    }
-	  else
-	    {
-	      errno = 0;
-	      syscall_number = ptrace (PTRACE_PEEKUSER, target_pid, PT_R15, 0);
-	      if (errno != 0)
-		syscall_number = 0;
-
-	      printf ("syscall = %d\n", syscall_number);
-
-	      if (trace_mode == TRIGGER && syscall_number == -1)
+	      pending_sig = WSTOPSIG (status);
+	      if (trace_mode == TRIGGER)
 		{
-		  trace_mode = INSTRUCTION;
-		  goto do_insn;
+		  if (WSTOPSIG (status) == SIGUSR1)
+		    state = 0;
+		  else if  (WSTOPSIG (status) == SIGUSR2)
+		    state = 1;
 		}
 	    }
-
-	  state ^= 1;
-	  ptrace (PTRACE_SYSCALL, target_pid, 0, 0);		/* continue */
 	}
-      else
+
+      switch (trace_mode)
 	{
+	case TRIGGER:
+	  if (state)
+	    ptrace (PTRACE_CONT, target_pid, 0, 0);
+	  else
+	    {
+	      do_backtrace (target_pid);
+	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+	    }
+	  break;
+
+	case SYSCALL:
+	  if (!state)
+	    do_backtrace (target_pid);
+	  state ^= 1;
+	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
+	  break;
+
+	case INSTRUCTION:
 	  do_backtrace (target_pid);
-	do_insn:
-	  ptrace (PTRACE_SINGLESTEP, target_pid, 0, 0);		/* continue */
+	  ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+	  break;
 	}
     }
 
