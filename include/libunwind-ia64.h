@@ -99,4 +99,12 @@ typedef ucontext_t unw_tdep_context_t;
 
 #include "libunwind-common.h"
 
+/* This is a helper routine which the get_dyn_info_list_addr()
+   callback can use to locate the special dynamic-info list entry in
+   an IA-64 unwind table.  If the entry exists in the table, the
+   list-address is returned.  In all other cases, 0 is returned.  */
+unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
+				 void *table, size_t table_size,
+				 unw_word_t segbase, void *arg);
+
 #endif /* LIBUNWIND_H */
