@@ -13,7 +13,7 @@
 
 AC_DEFUN([LIBUNWIND___THREAD],
 [dnl Check whether the compiler supports the __thread keyword.
-if test "x$use__thread" != xno; then
+if test "x$enable___thread" != xno; then
   AC_CACHE_CHECK([for __thread], libc_cv_gcc___thread,
 		 [cat > conftest.c <<\EOF
     __thread int a = 42;
@@ -2387,7 +2387,7 @@ else
 	allow_undefined_flag='${wl}-berok'
 	# This is a bit strange, but is similar to how AIX traditionally builds
 	# it's shared libraries.
-	archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}$exp_sym_flag:\$export_symbols"' ~$AR -crlo $objdir/$libname$release.a $objdir/$soname'
+	archive_expsym_cmds="\$CC $shared_flag"' -o $output_objdir/$soname $libobjs $deplibs $compiler_flags ${allow_undefined_flag} '"\${wl}$no_entry_flag \${wl}$exp_sym_flag:\$export_symbols"' ~$AR -crlo $output_objdir/$libname$release.a $output_objdir/$soname'
       fi
     fi
     ;;
