@@ -106,7 +106,7 @@ install_sh = @install_sh@
 @ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
 
 include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
-	include/libunwind-dynamic.h
+	include/libunwind-dynamic.h include/libunwind-ptrace.h
 
 
 @REMOTE_ONLY_TRUE@include_HEADERS = $(include_HEADERS_common)
