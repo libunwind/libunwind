@@ -305,7 +305,7 @@ ia64_install_cursor:
 	;;
 
 #if NEW_SYSCALL
-	add r2 = -8, tp;;
+	add r2 = 8, tp;;
 	ld8 r2 = [r2]
 	mov r15 = SYS_sigreturn
 	mov b7 = r2
