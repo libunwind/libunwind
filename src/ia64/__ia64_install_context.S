@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -25,6 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "ucontext_i.h"
 
+#define SYS_sigreturn	1181
+
 #ifndef UNW_REMOTE_ONLY
 
 /*  __ia64_install_context (const ucontext_t *ucp,
@@ -37,10 +39,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
   switches only.  Therefore, it does not have to restore anything
   other than the PRESERVED state.  */
 
+	.hidden __ia64_install_context
+
 	.global __ia64_install_context
 	.proc __ia64_install_context
 __ia64_install_context:
-	alloc r16 = ar.pfs, 5, 0, 0, 0
+	alloc r16 = ar.pfs, 6, 0, 0, 0
 	invala
 	add r2 = SC_NAT, r32
 	;;
@@ -135,6 +139,7 @@ __ia64_install_context:
 	mov pr = rPR, -1
 	;;
 	mov.m ar.rsc = rTMP		// put RSE into enforced lazy mode
+	cmp.eq p6,p0 = r0, in5
 	;;
 	loadrs				// drop dirty partition
 	mov r18 = in4
@@ -145,7 +150,10 @@ __ia64_install_context:
 	;;
 	mov.m ar.rnat = rRNAT
 	mov.m ar.rsc = rRSC
-	br.ret.sptk rp
+(p6)	br.ret.sptk rp
+
+	mov r15 = SYS_sigreturn
+	break 0x100000
 
 	.endp __ia64_install_context
 
