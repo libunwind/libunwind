@@ -377,6 +377,7 @@ struct ia64_labeled_state
 #define ia64_strloc			UNW_OBJ(strloc)
 #define ia64_install_cursor		UNW_OBJ(install_cursor)
 #define rbs_switch			UNW_OBJ(rbs_switch)
+#define rbs_find			UNW_OBJ(rbs_find)
 #define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
 #define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
 
@@ -402,6 +403,7 @@ extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 extern int rbs_switch (struct cursor *c,
 		       unw_word_t saved_bsp, unw_word_t saved_bspstore,
 		       ia64_loc_t saved_rnat_loc);
+extern struct rbs_area *rbs_find (struct cursor *c, unw_word_t addr);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 			     ia64_loc_t *locp, ia64_loc_t *rnat_locp);
 extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs);
