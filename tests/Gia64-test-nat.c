@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define NUM_RUNS		1024
 //#define NUM_RUNS		1
 #define MAX_CHECKS		1024
-//#define MAX_CHECKS		6
+//#define MAX_CHECKS		2
 #define MAX_VALUES_PER_FUNC	4
 
 #define panic(args...)							  \
@@ -62,6 +62,18 @@ static check_func_t check_static_to_br;
 extern save_func_t save_static_to_mem;
 static check_func_t check_static_to_mem;
 
+extern save_func_t save_static_to_mem2;
+static check_func_t check_static_to_mem2;
+
+extern save_func_t save_static_to_mem3;
+static check_func_t check_static_to_mem3;
+
+extern save_func_t save_static_to_mem4;
+static check_func_t check_static_to_mem4;
+
+extern save_func_t save_static_to_mem5;
+static check_func_t check_static_to_mem5;
+
 extern save_func_t save_static_to_scratch;
 static check_func_t check_static_to_scratch;
 
@@ -83,16 +95,20 @@ static struct
   }
 all_funcs[] =
   {
-#if 1
     { save_static_to_stacked,	check_static_to_stacked },
-    { save_static_to_fr,	check_static_to_fr },
-#endif
-    { save_static_to_br,	check_static_to_br },
 #if 1
+    { save_static_to_fr,	check_static_to_fr },
+    { save_static_to_br,	check_static_to_br },
     { save_static_to_mem,	check_static_to_mem },
-    { save_static_to_scratch,	check_static_to_scratch },
+    { save_static_to_mem2,	check_static_to_mem2 },
 #endif
+    { save_static_to_mem3,	check_static_to_mem3 },
+    { save_static_to_mem4,	check_static_to_mem4 },
+    { save_static_to_mem5,	check_static_to_mem5 },
+#if 1
+    { save_static_to_scratch,	check_static_to_scratch },
     { rotate_regs,		check_rotate_regs },
+#endif
   };
 
 void
@@ -303,9 +319,70 @@ check_static_to_mem (unw_cursor_t *c, unw_word_t *vals)
 }
 
 static unw_word_t *
+check_static_to_memN (unw_cursor_t *c, unw_word_t *vals, const char *func)
+{
+  unw_word_t r6, nat6;
+  int ret;
+
+  if (verbose)
+    printf ("  %s()\n", func);
+
+  vals -= 1;
+
+  if ((ret = unw_get_reg (c, UNW_IA64_GR + 6, &r6)) < 0)
+    panic ("%s: failed to read register r6, error=%d\n", __FUNCTION__, ret);
+
+  if ((ret = unw_get_reg (c, UNW_IA64_NAT + 6, &nat6)) < 0)
+    panic ("%s: failed to read register nat6, error=%d\n", __FUNCTION__, ret);
+
+  if (verbose)
+    printf ("    r6 = %c%016lx (expected %c%016lx)\n",
+	    nat6 ? '*' : ' ', r6, (vals[0] & 1) ? '*' : ' ', vals[0]);
+
+  if (vals[0] & 1)
+    {
+      if (!nat6)
+	panic ("%s: r6 not a NaT!\n", __FUNCTION__);
+    }
+  else
+    {
+      if (nat6)
+	panic ("%s: r6 a NaT!\n", __FUNCTION__);
+      if (r6 != vals[0])
+	panic ("%s: r6=%lx instead of %lx!\n", __FUNCTION__, r6, vals[0]);
+    }
+  return vals;
+}
+
+static unw_word_t *
+check_static_to_mem2 (unw_cursor_t *c, unw_word_t *vals)
+{
+  return check_static_to_memN (c, vals, __FUNCTION__);
+}
+
+static unw_word_t *
+check_static_to_mem3 (unw_cursor_t *c, unw_word_t *vals)
+{
+  return check_static_to_memN (c, vals, __FUNCTION__);
+}
+
+static unw_word_t *
+check_static_to_mem4 (unw_cursor_t *c, unw_word_t *vals)
+{
+  return check_static_to_memN (c, vals, __FUNCTION__);
+}
+
+static unw_word_t *
+check_static_to_mem5 (unw_cursor_t *c, unw_word_t *vals)
+{
+  return check_static_to_memN (c, vals, __FUNCTION__);
+}
+
+static unw_word_t *
 check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
 {
   unw_word_t r[4], nat[4];
+  unw_fpreg_t f4;
   int i, ret;
 
   if (verbose)
@@ -351,6 +428,22 @@ check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
 	    panic ("%s: r%d=%lx instead of %lx!\n",
 		   __FUNCTION__, 4 + i, r[i], vals[i]);
 	}
+    }
+  if ((ret = unw_get_fpreg (c, UNW_IA64_FR + 4, &f4)) < 0)
+    panic ("%s: failed to read f4, error=%d\n", __FUNCTION__, ret);
+
+  /* These tests are little-endian specific: */
+  if (nat[0])
+    {
+      if (f4.raw.bits[0] != 0 || f4.raw.bits[1] != 0x1fffe)
+	panic ("%s: f4=%016lx.%016lx instead of NaTVal!\n",
+	       __FUNCTION__, f4.raw.bits[1], f4.raw.bits[0], r[0]);
+    }
+  else
+    {
+      if (f4.raw.bits[0] != r[0] || f4.raw.bits[1] != 0x1003e)
+	panic ("%s: f4=%016lx.%016lx instead of %lx!\n",
+	       __FUNCTION__, f4.raw.bits[1], f4.raw.bits[0], r[0]);
     }
   return vals;
 }
