@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 
 #include "internal.h"
+#include "tdep.h"
 
 static void
 free_regions (unw_dyn_region_info_t *region)
@@ -200,8 +201,15 @@ unwi_dyn_remote_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   unw_dyn_info_t *di = NULL;
   int ret;
 
-  if ((*a->get_dyn_info_list_addr) (as, &dyn_list_addr, arg) < 0)
-    return -UNW_ENOINFO;
+  if (as->dyn_info_list_addr)
+    dyn_list_addr = as->dyn_info_list_addr;
+  else
+    {
+      if ((*a->get_dyn_info_list_addr) (as, &dyn_list_addr, arg) < 0)
+	return -UNW_ENOINFO;
+      if (as->caching_policy != UNW_CACHE_NONE)
+	as->dyn_info_list_addr = dyn_list_addr;
+    }
 
   do
     {
