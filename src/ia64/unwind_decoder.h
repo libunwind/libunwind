@@ -179,7 +179,7 @@ unw_decode_x4 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_r1 (unsigned char *dp, unsigned char code, void *arg)
 {
   int body = (code & 0x20) != 0;
@@ -190,7 +190,7 @@ unw_decode_r1 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_r2 (unsigned char *dp, unsigned char code, void *arg)
 {
   unsigned char byte1, mask, grsave;
@@ -205,7 +205,7 @@ unw_decode_r2 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_r3 (unsigned char *dp, unsigned char code, void *arg)
 {
   unw_word rlen;
@@ -215,7 +215,7 @@ unw_decode_r3 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_p1 (unsigned char *dp, unsigned char code, void *arg)
 {
   unsigned char brmask = (code & 0x1f);
@@ -224,7 +224,7 @@ unw_decode_p1 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_p2_p5 (unsigned char *dp, unsigned char code, void *arg)
 {
   if ((code & 0x10) == 0)
@@ -273,7 +273,7 @@ unw_decode_p2_p5 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_p6 (unsigned char *dp, unsigned char code, void *arg)
 {
   int gregs = (code & 0x10) != 0;
@@ -286,7 +286,7 @@ unw_decode_p6 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_p7_p10 (unsigned char *dp, unsigned char code, void *arg)
 {
   unsigned char r, byte1, byte2;
@@ -385,7 +385,7 @@ unw_decode_p7_p10 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_b1 (unsigned char *dp, unsigned char code, void *arg)
 {
   unw_word label = (code & 0x1f);
@@ -397,7 +397,7 @@ unw_decode_b1 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_b2 (unsigned char *dp, unsigned char code, void *arg)
 {
   unw_word t;
@@ -407,7 +407,7 @@ unw_decode_b2 (unsigned char *dp, unsigned char code, void *arg)
   return dp;
 }
 
-static unsigned char *
+static inline unsigned char *
 unw_decode_b3_x4 (unsigned char *dp, unsigned char code, void *arg)
 {
   unw_word t, ecount, label;
@@ -440,42 +440,38 @@ unw_decode_b3_x4 (unsigned char *dp, unsigned char code, void *arg)
 
 typedef unsigned char *(*unw_decoder) (unsigned char *, unsigned char, void *);
 
-static unw_decoder unw_decode_table[2][8] =
-{
-  /* prologue table: */
-  {
-    unw_decode_r1,	/* 0 */
-    unw_decode_r1,
-    unw_decode_r2,
-    unw_decode_r3,
-    unw_decode_p1,	/* 4 */
-    unw_decode_p2_p5,
-    unw_decode_p6,
-    unw_decode_p7_p10
-  },
-  {
-    unw_decode_r1,	/* 0 */
-    unw_decode_r1,
-    unw_decode_r2,
-    unw_decode_r3,
-    unw_decode_b1,	/* 4 */
-    unw_decode_b1,
-    unw_decode_b2,
-    unw_decode_b3_x4
-  }
-};
-
 /*
  * Decode one descriptor and return address of next descriptor.
  */
 static inline unsigned char *
 unw_decode (unsigned char *dp, int inside_body, void *arg)
 {
-  unw_decoder decoder;
-  unsigned char code;
+  unsigned char code, primary;
 
   code = *dp++;
-  decoder = unw_decode_table[inside_body][code >> 5];
-  dp = (*decoder) (dp, code, arg);
+  primary = code >> 5;
+
+  if (primary < 2)
+    dp = unw_decode_r1 (dp, code, arg);
+  else if (primary == 2)
+    dp = unw_decode_r2 (dp, code, arg);
+  else if (primary == 3)
+    dp = unw_decode_r3 (dp, code, arg);
+  else if (inside_body)
+    switch (primary)
+      {
+      case 4:
+      case 5: dp = unw_decode_b1 (dp, code, arg); break;
+      case 6: dp = unw_decode_b2 (dp, code, arg); break;
+      case 7: dp = unw_decode_b3_x4 (dp, code, arg); break;
+      }
+  else
+    switch (primary)
+      {
+      case 4: dp = unw_decode_p1 (dp, code, arg); break;
+      case 5: dp = unw_decode_p2_p5 (dp, code, arg); break;
+      case 6: dp = unw_decode_p6 (dp, code, arg); break;
+      case 7: dp = unw_decode_p7_p10 (dp, code, arg); break;
+      }
   return dp;
 }
