@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -45,7 +45,6 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 {
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t sol;
-  int ret;
 
   if (unw.needs_initialization)
     {
@@ -56,7 +55,11 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   /* The bsp value stored by getcontext() points to the *end* of the
      register frame of the initial function.  We correct for this by
      storing the adjusted value in sc_rbs_base, which isn't used by
-     getcontext()/setcontext().  */
+     getcontext()/setcontext().  We can be certain that the entire
+     frame is stored in a contiguous rbs-area because the frame didn't
+     become part of the dirty partition until getcontext() was called
+     and we know that getcontext() doesn't switch the register-backing
+     store.  */
   sol = (uc->uc_mcontext.sc_ar_pfs >> 7) & 0x7f;
   uc->uc_mcontext.sc_rbs_base = ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
 						    -sol);
