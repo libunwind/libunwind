@@ -101,6 +101,6 @@ unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
 {
   struct cursor *c = (struct cursor *) cursor;
 
-  return get_proc_name (tdep_get_as(c), tdep_get_ip(c), buf, buf_len, offp,
-			tdep_get_as_arg(c));
+  return get_proc_name (tdep_get_as (c), tdep_get_ip (c), buf, buf_len, offp,
+			tdep_get_as_arg (c));
 }
