@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "internal.h"
 
-pthread_mutex_t _U_dyn_info_list_lock = PTHREAD_MUTEX_INITIALIZER;
+HIDDEN pthread_mutex_t _U_dyn_info_list_lock = PTHREAD_MUTEX_INITIALIZER;
 
 void
 _U_dyn_register (unw_dyn_info_t *di)
