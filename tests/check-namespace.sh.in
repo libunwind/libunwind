@@ -144,12 +144,14 @@ function check_generic_unw_abi {
 	ia64)
 	    match _U${plat}_search_unwind_table
 	    match _U${plat}_find_dyn_list
-	    match _U${plat}_get_elf_image
-	    case $os in
-		linux*)
-		    match _U${plat}_get_kernel_table
-		    ;;
-	    esac
+	    if [ $plat = $build_plat ]; then
+		match _U${plat}_get_elf_image
+		case $os in
+		    linux*)
+			match _U${plat}_get_kernel_table
+			;;
+		esac
+	    fi
 	    ;;
 	x86)
 	    match _U${plat}_get_elf_image
