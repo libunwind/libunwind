@@ -52,7 +52,7 @@ push (struct ia64_state_record *sr)
   rs = alloc_reg_state ();
   if (!rs)
     {
-      fprintf (stderr, "libunwind: cannot stack reg state!\n");
+      print_error ("libunwind: cannot stack reg state!\n");
       return;
     }
   memcpy (rs, &sr->curr, sizeof (*rs));
@@ -66,7 +66,7 @@ pop (struct ia64_state_record *sr)
 
   if (!rs)
     {
-      fprintf (stderr, "libunwind: stack underflow!\n");
+      print_error ("libunwind: stack underflow!\n");
       return;
     }
   memcpy (&sr->curr, rs, sizeof (*rs));
@@ -84,7 +84,7 @@ dup_state_stack (struct ia64_reg_state *rs)
       copy = alloc_reg_state ();
       if (!copy)
 	{
-	  fprintf (stderr, "unwind.dup_state_stack: out of memory\n");
+	  print_error ("unwind.dup_state_stack: out of memory\n");
 	  return NULL;
 	}
       memcpy (copy, rs, sizeof (*copy));
@@ -522,7 +522,7 @@ desc_copy_state (unw_word label, struct ia64_state_record *sr)
 	  return;
 	}
     }
-  fprintf (stderr, "libunwind: failed to find state labeled 0x%lx\n", label);
+  print_error ("libunwind: failed to find labeled state\n");
 }
 
 static inline void
@@ -533,7 +533,7 @@ desc_label_state (unw_word label, struct ia64_state_record *sr)
   ls = alloc_labeled_state ();
   if (!ls)
     {
-      fprintf (stderr, "unwind.desc_label_state(): out of memory\n");
+      print_error ("unwind.desc_label_state(): out of memory\n");
       return;
     }
   ls->label = label;
@@ -629,7 +629,7 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
 }
 
 #define UNW_DEC_BAD_CODE(code)						\
-	fprintf (stderr, "libunwind: unknown code 0x%02x\n", code)
+	print_error ("libunwind: unknown code encountered\n")
 
 /* Register names.  */
 #define UNW_REG_BSP		IA64_REG_BSP
