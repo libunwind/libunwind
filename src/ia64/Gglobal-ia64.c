@@ -23,6 +23,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <assert.h>
+
 #include "unwind_i.h"
 
 HIDDEN struct ia64_global_unwind_state unw =
@@ -51,7 +53,6 @@ HIDDEN struct ia64_global_unwind_state unw =
 HIDDEN void
 tdep_init (void)
 {
-  extern void unw_hash_index_t_is_too_narrow (void);
   uint8_t f1_bytes[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff,
     0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -111,8 +112,7 @@ tdep_init (void)
 	*bep++ = int_val_bytes[i];
       }
 
-    if (8*sizeof(unw_hash_index_t) < IA64_LOG_UNW_HASH_SIZE)
-      unw_hash_index_t_is_too_narrow ();
+    assert (8*sizeof(unw_hash_index_t) >= IA64_LOG_UNW_HASH_SIZE);
 
 #ifndef UNW_REMOTE_ONLY
     ia64_local_addr_space_init ();
