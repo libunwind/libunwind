@@ -34,12 +34,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "internal.h"
 #include "rse.h"
 
-#define IA64_UNW_VER(x)			((x) >> 48)
-#define IA64_UNW_FLAG_MASK		0x0000ffff00000000
-#define IA64_UNW_FLAG_OSMASK		0x0000f00000000000
-#define IA64_UNW_FLAG_EHANDLER(x)	((x) & 0x0000000100000000L)
-#define IA64_UNW_FLAG_UHANDLER(x)	((x) & 0x0000000200000000L)
-#define IA64_UNW_LENGTH(x)		((x) & 0x00000000ffffffffL)
+#define IA64_UNW_VER(x)		    ((x) >> 48)
+#define IA64_UNW_FLAG_MASK	    ((unw_word_t) 0x0000ffff00000000ULL)
+#define IA64_UNW_FLAG_OSMASK	    ((unw_word_t) 0x0000f00000000000ULL)
+#define IA64_UNW_FLAG_EHANDLER(x)   ((x) & (unw_word_t) 0x0000000100000000ULL)
+#define IA64_UNW_FLAG_UHANDLER(x)   ((x) & (unw_word_t) 0x0000000200000000ULL)
+#define IA64_UNW_LENGTH(x)	    ((x) & (unw_word_t) 0x00000000ffffffffULL)
 
 #ifdef MIN
 # undef MIN
