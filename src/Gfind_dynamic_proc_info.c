@@ -82,7 +82,8 @@ unwi_find_dynamic_proc_info (unw_addr_space_t as, unw_word_t ip,
 			     void *arg)
 {
   if (as == unw_local_addr_space)
-    return local_find_proc_info ((unw_dyn_info_t *) _U_dyn_info_list_addr (),
+    return local_find_proc_info ((unw_dyn_info_list_t *)
+				 _U_dyn_info_list_addr (),
 				 as, ip, pi, need_unwind_info, arg);
   else
     return remote_find_proc_info (as, ip, pi, need_unwind_info, arg);
