@@ -1,5 +1,95 @@
 -*-Mode: outline-*-
 
+* News for v0.97:
+
+** unw_get_proc_name() may now be called from signal-handler.
+
+** The ptrace-helper routines are now declared in libunwind-ptrace.h.
+   Applications which use ptrace-based unwinding should include
+   <libunwind-ptrace.h> to get the _UPT_*() routines declared.
+
+** libunwind has been split into a "local-only" and a "generic" versions.
+   The former is optimized for local unwinding (within a process) and
+   is called libunwind.so (shared version) or libunwind.a (archive
+   version).  The generic version is not limited to unwinding within a
+   process and is called libunwind-generic.so (shared version)
+   libunwind-generic.a (archive version).  Similarly, the ptrace()
+   support has been separated out into a convenience library called
+   libunwind-ptrace.a.  For the most part, backwards-compatibility
+   is retained.  However, when building an application which uses
+   libunwind, it may be necessary to change the linker command-line
+   as shown in the table below:
+
+    Application which does: Before v0.97:  With v0.97:
+    ----------------------- -------------  -----------
+    local unwinding only:   -lunwind       -lunwind
+    remote unwinding:       -lunwind       -lunwind-generic
+    cross unwinding:        -lunwind-PLAT  -lunwind-PLAT
+    ptrace-based unwinding: -lunwind       -lunwind-ptrace -lunwind-generic
+
+   The motivation for this splitting is to keep libunwind.so as minimal
+   as possible.  This library will eventually be loaded by most (if not
+   all) executables and hence it is important to ensure that it can
+   be loaded as quickly as possible.
+
+** unw_getcontext() tuned on IA-64.
+
+   The unw_getcontext() routine used to be provided by (GNU) libc
+   (getcontext()).  This caused unnecessary overhead (e.g., an
+   unnecessary system-call to sigprocmask()).  The new
+   unw_getcontext() only does the work really needed for libunwind and
+   hence performs much better.  However, this change implies that
+   programs linked against libunwind v0.97 won't be
+   backwards-compatible with earlier versions (there would be an
+   unresolved symbol for _Uia64_getcontext()).
+
+** Fix NaT-bit handling on IA-64.
+
+   New test-cases have been added to test the handling of the NaT bit
+   (and floating-point NaT values) and all discovered/known bugs have
+   been fixed.
+
+** Initial DWARF-based unwinder for x86.
+
+   There is a beginning for a DWARF-based unwinder for x86.  Work for
+   x86-64-support based on this DWARF unwinder is currently underway
+   at IBM and it is expected that this support will be merged into the
+   official tree soon.
+
+
+* News for v0.96:
+
+** _Unwind_*() routines defined by the C++ ABI are now included in
+   libunwind.
+
+
+* News for v0.95:
+
+** Bigger, better, faster, or so the theory goes.
+
+
+* News for v0.93:
+
+** More bug-fixes & improved HP-UX support.
+
+
+* News for v0.92:
+
+** Bug-fix release.  IA-64 unwinder can now be built with Intel compiler (ECC).
+
+
+* News for v0.91:
+
+** Lots of documentation updates
+** Some portability fixes.
+
+
+* News for v0.9:
+
+** The libunwind API is mostly feature-complete at this point (hence the
+   version jump from v0.2 to v0.9).
+
+
 * News for v0.2:
 
 ** Automated configuration/build with autoconf and automake.
