@@ -70,9 +70,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define IA64_IS_REG_LOC(l)	0
 #define IA64_IS_UC_LOC(l)	0
 
-#define IA64_REG_LOC(c,r)	((unw_word_t) tdep_uc_addr((c)->as_arg, (r)))
+#define IA64_REG_LOC(c,r)	((unw_word_t) tdep_uc_addr((c)->as_arg, r, \
+							   NULL))
+#define IA64_REG_NAT_LOC(c,r,n)	((unw_word_t) tdep_uc_addr((c)->as_arg, r, n))
 #define IA64_FPREG_LOC(c,r)						 \
-	((unw_word_t) tdep_uc_addr((c)->as_arg, (r)) | IA64_LOC_TYPE_FP)
+	((unw_word_t) tdep_uc_addr((c)->as_arg, (r), NULL) | IA64_LOC_TYPE_FP)
 
 # define ia64_find_proc_info(c,ip,n)					\
 	tdep_find_proc_info(unw_local_addr_space, (ip), &(c)->pi, (n),	\
@@ -161,6 +163,7 @@ ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 #define IA64_IS_UC_LOC(l)	(((l).w1 & IA64_LOC_TYPE_UC) != 0)
 
 #define IA64_REG_LOC(c,r)	IA64_LOC_REG ((r), 0)
+#define IA64_REG_NAT_LOC(c,r,n)	IA64_LOC_REG ((r), 0)
 #define IA64_FPREG_LOC(c,r)	IA64_LOC_REG ((r), IA64_LOC_TYPE_FP)
 
 # define ia64_find_proc_info(c,ip,n)					\
@@ -376,7 +379,6 @@ struct ia64_labeled_state
 #define ia64_strloc			UNW_OBJ(strloc)
 #define ia64_install_cursor		UNW_OBJ(install_cursor)
 #define rbs_switch			UNW_OBJ(rbs_switch)
-#define rbs_find			UNW_OBJ(rbs_find)
 #define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
 #define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
 
@@ -392,7 +394,8 @@ extern int ia64_find_save_locs (struct cursor *c);
 extern void ia64_validate_cache (unw_addr_space_t as, void *arg);
 extern int ia64_local_validate_cache (unw_addr_space_t as, void *arg);
 extern void ia64_local_addr_space_init (void);
-extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
+extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg,
+				    uint8_t *nat_bitnr);
 
 extern NORETURN void ia64_install_cursor (struct cursor *c,
 					  unw_word_t pri_unat,
@@ -402,7 +405,6 @@ extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 extern int rbs_switch (struct cursor *c,
 		       unw_word_t saved_bsp, unw_word_t saved_bspstore,
 		       ia64_loc_t saved_rnat_loc);
-extern struct rbs_area *rbs_find (struct cursor *c, unw_word_t addr);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 			     ia64_loc_t *locp, ia64_loc_t *rnat_locp);
 extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs);
@@ -482,6 +484,11 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
     ret = rbs_find_stacked (c, regs_to_skip, locp, rnat_locp);
   return ret;
 }
+
+/* The UNaT slot # calculation is identical to the one for RNaT slots,
+   but for readability/clarity, we don't want to use
+   ia64_rnat_slot_num() directly.  */
+#define ia64_unat_slot_num(addr)	ia64_rse_slot_num(addr)
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
