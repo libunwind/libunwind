@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
+   Copyright (C) 2002-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -33,7 +33,7 @@ common_init (struct cursor *c)
 
   if (c->as->caching_policy != UNW_CACHE_NONE)
     /* ensure cache doesn't have any stale contents: */
-    ia64_validate_cache(c->as);
+    ia64_validate_cache(c->as, c->as_arg);
 
   c->cfm_loc =			IA64_REG_LOC (c, UNW_IA64_CFM);
   c->loc[IA64_REG_BSP] =	IA64_REG_LOC (c, UNW_IA64_AR_BSP);
