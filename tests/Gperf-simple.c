@@ -50,6 +50,7 @@ measure_unwind (int maxlevel)
 
   printf ("initialization time = %gnsec, time per unwind-step = %gnsec\n",
 	  1e9*(mid - start), 1e9*(stop - mid)/level);
+  return 0;
 }
 
 static int
