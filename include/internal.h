@@ -140,9 +140,19 @@ do {									\
 
 #ifdef HAVE_ATOMIC_OPS_H
 # include <atomic_ops.h>
-# define cmpxchg_ptr(_ptr,_o,_n)	AO_compare_and_swap((AO_T *)_ptr, \
-							    (AO_T) (_o),  \
-							    (AO_T) (_n))
+static inline int
+cmpxchg_ptr (void *addr, void *old, void *new)
+{
+  union
+    {
+      void *vp;
+      AO_t *aop;
+    }
+  u;
+
+  u.vp = addr;
+  return AO_compare_and_swap(u.aop, (AO_t) old, (AO_t) new);
+}
 # define fetch_and_add1(_ptr)		AO_fetch_and_add1(_ptr)
    /* GCC 3.2.0 on HP-UX crashes on cmpxchg_ptr() */
 #  if !(defined(__hpux) && __GNUC__ == 3 && __GNUC_MINOR__ == 2)
@@ -152,9 +162,19 @@ do {									\
 #else
 # ifdef HAVE_IA64INTRIN_H
 #  include <ia64intrin.h>
-#  define cmpxchg_ptr(_ptr,_o,_n)					\
-	(__sync_bool_compare_and_swap((volatile long *) (_ptr),		\
-				      (long) (_o), (long) (_n)))
+static inline int
+cmpxchg_ptr (void *addr, void *old, void *new)
+{
+  union
+    {
+      void *vp;
+      long *vlp;
+    }
+  u;
+
+  u.vp = addr;
+  return __sync_bool_compare_and_swap(u.vlp, (long) old, (long) new);
+}
 #  define fetch_and_add1(_ptr)		__sync_fetch_and_add(_ptr, 1)
 #  define HAVE_CMPXCHG
 #  define HAVE_FETCH_AND_ADD1
