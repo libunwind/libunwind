@@ -35,3 +35,4 @@ src/ia64/Lunw_set_reg.c~
 src/ia64/Lunw_step.c~
 src/ia64/init.h~
 src/ia64/shared.c~
+src/ia64/regs.h~
