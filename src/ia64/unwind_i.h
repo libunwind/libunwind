@@ -315,8 +315,8 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
       return ia64_putfp (c, loc, tmp);
     }
 
-  if (loc & 1)
-    return (*c->acc.access_reg)(loc >> 1, &val, 1, c->acc.arg);
+  if (IA64_IS_REG_LOC (loc))
+    return (*c->acc.access_reg)(IA64_GET_LOC (loc), &val, 1, c->acc.arg);
   else
     return (*c->acc.access_mem)(loc, &val, 1, c->acc.arg);
 }
