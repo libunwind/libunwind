@@ -1,6 +1,6 @@
 AC_DEFUN([LIBUNWIND___THREAD],
 [dnl Check whether the compiler supports the __thread keyword.
-if test "x$use__thread" != xno; then
+if test "x$enable___thread" != xno; then
   AC_CACHE_CHECK([for __thread], libc_cv_gcc___thread,
 		 [cat > conftest.c <<\EOF
     __thread int a = 42;
