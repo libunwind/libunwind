@@ -108,6 +108,10 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       sof = (c->cfm & 0x7f);
       rbs_cover_and_flush (c, sof);
 
+      /* Clear the "in-syscall" flag, because in general we won't be
+	 returning to the interruption-point and we need all registers
+	 restored.  */
+      sc->sc_flags &= ~IA64_SC_FLAG_IN_SYSCALL;
       sc->sc_ip = c->ip;
       sc->sc_cfm = c->cfm & (((unw_word_t) 1 << 38) - 1);
       sc->sc_pr = (c->pr & ~PR_SCRATCH) | (sc->sc_pr & ~PR_PRESERVED);
@@ -121,6 +125,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       if (c->eh_valid_mask & 0x2) sc->sc_gr[16] = c->eh_args[1];
       if (c->eh_valid_mask & 0x4) sc->sc_gr[17] = c->eh_args[2];
       if (c->eh_valid_mask & 0x8) sc->sc_gr[18] = c->eh_args[3];
+      debug (10, "%s: sc: r15=%lx,r16=%lx,r17=%lx,r18=%lx\n",
+	     __FUNCTION__, (long) sc->sc_gr[15], (long) sc->sc_gr[16],
+	     (long) sc->sc_gr[17], (long) sc->sc_gr[18]);
     }
   else
     {
@@ -136,7 +143,11 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r16 = c->eh_args[1];
       extra.r17 = c->eh_args[2];
       extra.r18 = c->eh_args[3];
+      debug (10, "%s: extra: r15=%lx,r16=%lx,r17=%lx,r18=%lx\n",
+	     __FUNCTION__, (long) extra.r15, (long) extra.r16,
+	     (long) extra.r17, (long) extra.r18);
     }
+  debug (10, "%s: resuming at ip=%lx\n", __FUNCTION__, (long) c->ip);
   ia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
 #elif defined(__hpux)
   struct cursor *c = (struct cursor *) cursor;
