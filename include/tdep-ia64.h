@@ -141,6 +141,7 @@ struct cursor
     short hint;
     short prev_script;
 
+    uint8_t nat_bitnr[4];	/* NaT bit numbers for r4-r7 */
     uint16_t abi_marker;	/* abi_marker for current frame (if any) */
     uint16_t last_abi_marker;	/* last abi_marker encountered so far */
     uint8_t eh_valid_mask;
@@ -221,7 +222,8 @@ extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				void *arg);
 extern void tdep_put_unwind_info (unw_addr_space_t as,
 				  unw_proc_info_t *pi, void *arg);
-extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
+extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum,
+			   uint8_t *nat_bitnr);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
