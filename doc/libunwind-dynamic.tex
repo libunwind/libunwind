@@ -1,0 +1,9 @@
+unw\_dyn\_region\_info\_t:
+
+        - insn_count can be negative to indicate that the region is
+          at the end of the procedure; in such a case, the negated
+          insn_count value specifies the length of the final region
+          in number of instructions.  There must be at most one region
+          with a negative insn_count and only the last region in a
+          procedure's region list may be negative.  Furthermore, both
+          di->start\_ip and di->end\_ip must be valid.
