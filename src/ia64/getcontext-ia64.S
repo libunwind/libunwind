@@ -41,33 +41,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 _Uia64_getcontext:
 	.prologue
 	alloc rPFS = ar.pfs, 1, 0, 0, 0
-	flushrs				// save dirty partition on rbs
+	mov.m rFPSR = ar.fpsr
 	add r2 = SC_MASK, r32
 	;;
 	st8 [r2] = r0			// clear sc->sc_mask
-	mov.m rFPSR = ar.fpsr
+	mov.m rRSC = ar.rsc
 	add r2 = GR(1), r32
 	;;
-	mov.m rRSC = ar.rsc
 	mov.m rBSP = ar.bsp
-	mov rPR = pr
-
 	.save ar.unat, rUNAT
 	mov.m rUNAT = ar.unat
 	.body
-	st8.spill [r2] = r1, (GR(12) - GR(1))
-	add r3 = SC_NAT, r32
+	add r3 = GR(12), r32
 	;;
-	st8.spill [r2] = sp, (SC_PR - GR(12))
-	lfetch.fault.nt1 [r3]		// prefetch nat...ar.lc
-	adds r3 = FR(2), r32
+.mem.offset 0,0; st8.spill [r2] = r1, (SC_NAT - GR(1))
+.mem.offset 8,0; st8.spill [r3] = sp, (SC_PR - GR(12))
+	mov rPR = pr
 	;;
-	st8 [r2] = rPR
-	stf.spill [r3] = f2, (FR(16) - FR(2))
-	add r2 = FR(24), r32
+	lfetch.fault.nt1 [r2]		// prefetch nat...ar.lc
+	st8 [r3] = rPR
+	adds r2 = FR(2), r32
 	;;
-	stf.spill [r2] = f24, (FR(31) - FR(24))
-	stf.spill [r3] = f16
+	stf.spill [r2] = f2, (FR(16) - FR(2))
+	;;
+	stf.spill [r2] = f16, (FR(31) - FR(16))
+	add r3 = FR(24), r32
+	;;
+	flushrs				// save dirty partition on rbs
+	stf.spill [r3] = f24
 	add r3 = GR(4), r32
 	;;
 	stf.spill [r2] = f31
