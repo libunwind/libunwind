@@ -53,5 +53,9 @@ common_init (struct cursor *c)
 		   &c->dwarf.cfa);
   if (ret < 0)
     return ret;
+
+  c->sigcontext_format = X86_SCF_NONE;
+  c->sigcontext_addr = 0;
+
   return 0;
 }
