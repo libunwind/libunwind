@@ -117,6 +117,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_GR + 2 ... UNW_IA64_GR + 3:
     case UNW_IA64_GR + 8 ... UNW_IA64_GR + 31:
     case UNW_IA64_BR + 0:
+    case UNW_IA64_BR + 6:
     case UNW_IA64_BR + 7:
     case UNW_IA64_AR_RSC:
     case UNW_IA64_AR_25:
@@ -128,7 +129,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 
   memset (sloc, 0, sizeof (sloc));
 
-  if (!sloc)
+  if (!loc)
     {
       sloc->type = UNW_SLT_NONE;
       return 0;
