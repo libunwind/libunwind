@@ -211,6 +211,6 @@ extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff);
 
-extern HIDDEN struct ia64_global_unwind_state unw;
+extern struct ia64_global_unwind_state unw;
 
 #endif /* TDEP_IA64_H */

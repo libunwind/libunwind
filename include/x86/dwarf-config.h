@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    unw_cursor_t.  */
 #define dwarf_to_cursor(c)	((unw_cursor_t *) (c))
 
-HIDDEN extern uint8_t dwarf_to_unw_regnum_map[19];
+extern uint8_t dwarf_to_unw_regnum_map[19];
 
 static inline unw_regnum_t
 dwarf_to_unw_regnum (unw_word_t regnum)

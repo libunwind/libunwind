@@ -198,7 +198,7 @@ dwarf_cfa_t;
 #define DW_EH_PE_funcrel	0x40	/* start-of-procedure-relative */
 #define DW_EH_PE_aligned	0x50	/* aligned pointer */
 
-extern HIDDEN struct mempool dwarf_reg_state_pool;
+extern struct mempool dwarf_reg_state_pool;
 
 #ifdef UNW_LOCAL_ONLY
 
@@ -598,33 +598,33 @@ dwarf_cursor_t;
 #define dwarf_read_encoded_pointer	UNW_OBJ (dwarf_read_encoded_pointer)
 #define dwarf_step			UNW_OBJ (dwarf_step)
 
-extern HIDDEN int dwarf_init (void);
-extern HIDDEN int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
-					unw_proc_info_t *pi,
-					int need_unwind_info, void *arg);
-extern HIDDEN int dwarf_search_unwind_table (unw_addr_space_t as,
-					     unw_word_t ip,
-					     unw_dyn_info_t *di,
-					     unw_proc_info_t *pi,
-					     int need_unwind_info, void *arg);
-extern HIDDEN void dwarf_put_unwind_info (unw_addr_space_t as,
-					  unw_proc_info_t *pi, void *arg);
-extern HIDDEN int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr,
-				   unw_word_t len, unw_word_t *valp,
-				   int *is_register);
-extern HIDDEN int dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a,
-				   unw_word_t *addr, unw_proc_info_t *pi,
-				   unw_dyn_dwarf_fde_info_t *dfi, void *arg);
-extern HIDDEN int dwarf_find_save_locs (struct dwarf_cursor *c);
-extern HIDDEN int dwarf_create_state_record (struct dwarf_cursor *c,
-					     dwarf_state_record_t *sr);
-extern HIDDEN int dwarf_make_proc_info (struct dwarf_cursor *c);
-extern HIDDEN int dwarf_read_encoded_pointer (unw_addr_space_t as,
-					      unw_accessors_t *a,
-					      unw_word_t *addr,
-					      unsigned char encoding,
-					      unw_proc_info_t *pi,
-					      unw_word_t *valp, void *arg);
-extern HIDDEN int dwarf_step (struct dwarf_cursor *c);
+extern int dwarf_init (void);
+extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+				 unw_proc_info_t *pi,
+				 int need_unwind_info, void *arg);
+extern int dwarf_search_unwind_table (unw_addr_space_t as,
+				      unw_word_t ip,
+				      unw_dyn_info_t *di,
+				      unw_proc_info_t *pi,
+				      int need_unwind_info, void *arg);
+extern void dwarf_put_unwind_info (unw_addr_space_t as,
+				   unw_proc_info_t *pi, void *arg);
+extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr,
+			    unw_word_t len, unw_word_t *valp,
+			    int *is_register);
+extern int dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a,
+			    unw_word_t *addr, unw_proc_info_t *pi,
+			    unw_dyn_dwarf_fde_info_t *dfi, void *arg);
+extern int dwarf_find_save_locs (struct dwarf_cursor *c);
+extern int dwarf_create_state_record (struct dwarf_cursor *c,
+				      dwarf_state_record_t *sr);
+extern int dwarf_make_proc_info (struct dwarf_cursor *c);
+extern int dwarf_read_encoded_pointer (unw_addr_space_t as,
+				       unw_accessors_t *a,
+				       unw_word_t *addr,
+				       unsigned char encoding,
+				       unw_proc_info_t *pi,
+				       unw_word_t *valp, void *arg);
+extern int dwarf_step (struct dwarf_cursor *c);
 
 #endif /* dwarf_h */
