@@ -41,16 +41,24 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (write)
     for (i = 0; i < (int) (sizeof (*val) / sizeof (wp[i])); ++i)
       {
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	ptrace (PTRACE_POKEUSER, pid, _UPT_reg_offset[reg] + i * sizeof(wp[i]),
 		wp[i]);
+#endif
 	if (errno)
 	  return -UNW_EBADREG;
       }
   else
     for (i = 0; i < (int) (sizeof (*val) / sizeof (wp[i])); ++i)
       {
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	wp[i] = ptrace (PTRACE_PEEKUSER, pid,
 			_UPT_reg_offset[reg] + i * sizeof(wp[i]), 0);
+#endif
 	if (errno)
 	  return -UNW_EBADREG;
       }
