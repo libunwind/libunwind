@@ -101,11 +101,12 @@ struct unw_addr_space
    };
 
 /* Note: The ABI numbers in the ABI-markers (.unwabi directive) are
-   not the same as the above ABI numbers (which are more
-   fine-grained).  */
-#define ABI_MARKER_LINUX_SIGTRAMP	((0 << 8) | 's')
-#define ABI_MARKER_LINUX_INTERRUPT	((0 << 8) | 'i')
+   not the same as the above ABI numbers.  */
+#define ABI_MARKER_OLD_LINUX_SIGTRAMP	((0 << 8) | 's')
+#define ABI_MARKER_OLD_LINUX_INTERRUPT	((0 << 8) | 'i')
 #define ABI_MARKER_HP_UX_SIGTRAMP	((1 << 8) | 1)
+#define ABI_MARKER_LINUX_SIGTRAMP	((3 << 8) | 's')
+#define ABI_MARKER_LINUX_INTERRUPT	((3 << 8) | 'i')
 
 struct cursor
   {
