@@ -288,7 +288,7 @@ emit_nat_info (struct ia64_state_record *sr, int i, struct ia64_script *script)
       return;
     }
   insn.opc = opc;
-  insn.dst = i;
+  insn.dst = i + (UNW_IA64_NAT - UNW_IA64_GR);
   insn.val = val;
   script_emit (script, insn);
 }
