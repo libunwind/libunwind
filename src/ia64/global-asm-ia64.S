@@ -15,7 +15,7 @@
 	data8 0		/* personality routine (ignored) */
 	string "dyn-list"	/* lsda */
 	data8 @gprel(_U_dyn_info_list)
-	.previous
+
 	.section .IA_64.unwind, "a", "progbits"
 	data8 0, 0, @segrel(.info)
 
