@@ -88,8 +88,6 @@ ia64_init (void)
       /* another thread else beat us to it... */
       goto out;
 
-    unw.needs_initialization = 0;
-
     mi_init ();
 
     mempool_init (&unw.reg_state_pool, sizeof (struct ia64_reg_state), 0);
@@ -136,6 +134,7 @@ ia64_init (void)
     }
 # endif
 #endif
+    unw.needs_initialization = 0;	/* signal that we're initialized... */
   }
  out:
   mutex_unlock (&unw.lock);
