@@ -327,7 +327,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_reg_info *r,
 	     (indepent of is_preserved_gr), because for floating-point
 	     NaTs are represented as NaTVal, so the NaT-info never
 	     needs to be consulated.  */
-	  if (rval <= 5)
+	  if (rval >= 2 && rval <= 5)
 	    val = IA64_REG_F2 + (rval - 2);
 	  else if (rval >= 16 && rval <= 31)
 	    val = IA64_REG_F16 + (rval - 16);
