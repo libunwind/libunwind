@@ -37,6 +37,9 @@ unw_step (unw_cursor_t *cursor)
   /* Try DWARF-based unwinding... */
   ret = dwarf_step (&c->dwarf);
 
+  if (unlikely (ret == -UNW_ESTOPUNWIND))
+    return ret;
+
   if (unlikely (ret < 0))
     {
       /* DWARF failed, let's see if we can follow the frame-chain
