@@ -60,7 +60,7 @@ linux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
 }
 
 static inline int
-linux_interrupt (struct cursor *c, unw_word_t *num_regsp)
+linux_interrupt (struct cursor *c, unw_word_t *num_regsp, int marker)
 {
 #if defined(UNW_LOCAL_ONLY)
   /* Perhaps libunwind will some day become the Linux kernel unwinder.
@@ -69,6 +69,7 @@ linux_interrupt (struct cursor *c, unw_word_t *num_regsp)
   return -UNW_EINVAL;
 #else
   unw_word_t sc_addr, num_regs;
+  ia64_loc_t pfs_loc;
 
   sc_addr = c->sigcontext_addr = c->sp + 0x10;
 
@@ -78,7 +79,11 @@ linux_interrupt (struct cursor *c, unw_word_t *num_regsp)
     num_regs = 0;
 
   /* do what can't be described by unwind directives: */
-  c->loc[IA64_REG_PFS] = IA64_LOC_ADDR (sc_addr + LINUX_PT_PFS_OFF, 0);
+  if (marker == ABI_MARKER_OLD_LINUX_INTERRUPT)
+	  pfs_loc = IA64_LOC_ADDR (sc_addr + LINUX_OLD_PT_PFS_OFF, 0);
+  else
+	  pfs_loc = IA64_LOC_ADDR (sc_addr + LINUX_PT_PFS_OFF, 0);
+  c->loc[IA64_REG_PFS] = pfs_loc;
   *num_regsp = num_regs;		/* size of frame */
   return 0;
 #endif
@@ -174,7 +179,8 @@ check_rbs_switch (struct cursor *c)
 	  || (ret = ia64_get (c, c->loc[IA64_REG_BSPSTORE], &saved_bspstore)))
 	return ret;
     }
-  else if (c->abi_marker == ABI_MARKER_LINUX_SIGTRAMP
+  else if ((c->abi_marker == ABI_MARKER_LINUX_SIGTRAMP
+	    || c->abi_marker == ABI_MARKER_OLD_LINUX_SIGTRAMP)
 	   && !IA64_IS_REG_LOC (c->loc[IA64_REG_BSP])
 	   && (IA64_GET_ADDR (c->loc[IA64_REG_BSP])
 	       == c->sigcontext_addr + LINUX_SC_AR_BSP_OFF))
@@ -250,14 +256,16 @@ update_frame_state (struct cursor *c)
       switch (c->abi_marker)
 	{
 	case ABI_MARKER_LINUX_SIGTRAMP:
+	case ABI_MARKER_OLD_LINUX_SIGTRAMP:
 	  c->as->abi = ABI_LINUX;
 	  if ((ret = linux_sigtramp (c, &num_regs)) < 0)
 	    return ret;
 	  break;
 
+	case ABI_MARKER_OLD_LINUX_INTERRUPT:
 	case ABI_MARKER_LINUX_INTERRUPT:
 	  c->as->abi = ABI_LINUX;
-	  if ((ret = linux_interrupt (c, &num_regs)) < 0)
+	  if ((ret = linux_interrupt (c, &num_regs, c->abi_marker)) < 0)
 	    return ret;
 	  break;
 
@@ -273,7 +281,7 @@ update_frame_state (struct cursor *c)
 	  return -UNW_EINVAL;
 	}
       debug (100, "%s: sigcontext_addr=%lx (ret=%d)\n",
-	     __FUNCTION__, c->sigcontext_addr, ret);
+	     __FUNCTION__, (unsigned long) c->sigcontext_addr, ret);
 
       c->sigcontext_off = c->sigcontext_addr - c->sp;
 
