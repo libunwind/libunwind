@@ -86,7 +86,8 @@ handler (int sig)
       unw_step(&c);		/* step to signaller frame (main ()) */
       unw_get_reg(&c, UNW_REG_IP, &ip);
       if (verbose)
-	printf ("resuming at 0x%lx, with SIGUSR2 pending\n", ip);
+	printf ("resuming at 0x%lx, with SIGUSR2 pending\n",
+		(unsigned long) ip);
       unw_resume(&c);
     }
   else if (sig == SIGUSR2)
