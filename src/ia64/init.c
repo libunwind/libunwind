@@ -126,6 +126,11 @@ ia64_init (void)
   }
 #endif
 
+  mempool_init (&unw.unwind_table_pool, sizeof (struct ia64_unwind_table), 0);
+  mempool_init (&unw.state_record_pool, sizeof (struct ia64_state_record), 0);
+  mempool_init (&unw.labeled_state_pool,
+		sizeof (struct ia64_labeled_state), 0);
+
   unw.f0.raw.bits[0] = 0;
   unw.f0.raw.bits[1] = 0;
 
