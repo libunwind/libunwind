@@ -30,6 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <ucontext.h>
 
 #define UNW_TARGET	ia64
+#define UNW_TARGET_IA64	1
 
 typedef uint64_t unw_tdep_word_t;
 
