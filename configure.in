@@ -49,9 +49,9 @@ AM_CONDITIONAL(ARCH_IA32, test x$target_arch == x86)
 
 if test x$target_arch != x$build_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
-else
-  AC_CONFIG_LINKS(include/libunwind.h:include/libunwind-$target_arch.h)
 fi
+AC_CONFIG_LINKS(include/libunwind.h:include/libunwind-$target_arch.h
+		include/tdep.h:include/tdep-$target_arch.h)
 
 AC_ARG_ENABLE(debug,
 [  --enable-debug          turn on debug support (slows down execution)],
