@@ -557,6 +557,7 @@ tdep_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
     case UNW_IA64_FR + 3: loc = c->loc[IA64_REG_F3]; break;
     case UNW_IA64_FR + 4: loc = c->loc[IA64_REG_F4]; break;
     case UNW_IA64_FR + 5: loc = c->loc[IA64_REG_F5]; break;
+
     case UNW_IA64_FR + 16 ... UNW_IA64_FR + 31:
       loc = c->loc[IA64_REG_F16 + (reg - (UNW_IA64_FR + 16))];
       break;
