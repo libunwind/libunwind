@@ -25,13 +25,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 
+#include "rse.h"
 #include "unwind_i.h"
 
 struct ia64_global_unwind_state unw =
   {
     first_time: 1,
-//    tables: &unw.kernel_table,
-//    lock: SPIN_LOCK_UNLOCKED,
     save_order: {
       IA64_REG_RP, IA64_REG_PFS, IA64_REG_PSP, IA64_REG_PR,
       IA64_REG_UNAT, IA64_REG_LC, IA64_REG_FPSR, IA64_REG_PRI_UNAT_GR
@@ -97,6 +96,161 @@ struct ia64_global_unwind_state unw =
     }
 #endif
 };
+
+unw_addr_space_t unw_local_addr_space;
+
+#ifndef UNW_REMOTE_ONLY
+
+static struct unw_addr_space local_addr_space;
+
+static inline void *
+uc_addr (ucontext_t *uc, int reg)
+{
+  void *addr;
+
+  switch (reg)
+    {
+    case UNW_IA64_IP:		addr = &uc->uc_mcontext.sc_br[0]; break;
+    case UNW_IA64_CFM:		addr = &uc->uc_mcontext.sc_ar_pfs; break;
+    case UNW_IA64_AR_RNAT:	addr = &uc->uc_mcontext.sc_ar_rnat; break;
+    case UNW_IA64_AR_UNAT:	addr = &uc->uc_mcontext.sc_ar_unat; break;
+    case UNW_IA64_AR_LC:	addr = &uc->uc_mcontext.sc_ar_lc; break;
+    case UNW_IA64_AR_FPSR:	addr = &uc->uc_mcontext.sc_ar_fpsr; break;
+    case UNW_IA64_PR:		addr = &uc->uc_mcontext.sc_pr; break;
+    case UNW_IA64_AR_BSP:	addr = &uc->uc_mcontext.sc_rbs_base; break;
+    case UNW_IA64_AR_BSPSTORE:	addr = &uc->uc_mcontext.sc_rbs_base; break;
+
+    case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
+    case UNW_IA64_GR + 12:
+      addr = &uc->uc_mcontext.sc_gr[reg - UNW_IA64_GR];
+      break;
+
+    case UNW_IA64_BR + 1 ... UNW_IA64_BR + 5:
+      addr = &uc->uc_mcontext.sc_br[reg - UNW_IA64_BR];
+      break;
+
+    case UNW_IA64_FR+ 2 ... UNW_IA64_FR+ 5:
+    case UNW_IA64_FR+16 ... UNW_IA64_FR+31:
+      addr = &uc->uc_mcontext.sc_fr[reg - UNW_IA64_FR];
+      break;
+
+    default:
+      addr = NULL;
+    }
+  return addr;
+}
+
+# ifdef UNW_LOCAL_ONLY
+
+void *
+_Uia64_uc_addr (ucontext_t *uc, int reg)
+{
+  return uc_addr (uc, reg);
+}
+
+# else /* !UNW_LOCAL_ONLY */
+
+static int
+access_mem (unw_word_t addr, unw_word_t *val, int write, void *arg)
+{
+  if (write)
+    {
+      debug (100, "%s: mem[%lx] <- %lx\n", __FUNCTION__, addr, *val);
+      *(unw_word_t *) addr = *val;
+    }
+  else
+    {
+      *val = *(unw_word_t *) addr;
+      debug (100, "%s: mem[%lx] -> %lx\n", __FUNCTION__, addr, *val);
+    }
+  return 0;
+}
+
+static int
+access_reg (unw_regnum_t reg, unw_word_t *val, int write, void *arg)
+{
+  unw_word_t *addr, mask;
+  ucontext_t *uc = arg;
+
+  if (reg >= UNW_IA64_FR && reg < UNW_IA64_FR + 128)
+    goto badreg;
+
+  if (reg >= UNW_IA64_NAT + 4 && reg <= UNW_IA64_NAT + 7)
+    {
+      mask = ((unw_word_t) 1) << (reg - UNW_IA64_NAT);
+      if (write)
+	{
+	  if (*val)
+	    uc->uc_mcontext.sc_nat |= mask;
+	  else
+	    uc->uc_mcontext.sc_nat &= ~mask;
+	}
+      else
+	*val = (uc->uc_mcontext.sc_nat & mask) != 0;
+
+      if (write)
+	debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
+      else
+	debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
+      return 0;
+    }
+
+  addr = uc_addr (uc, reg);
+  if (!addr)
+    goto badreg;
+
+  if (write)
+    {
+      *(unw_word_t *) addr = *val;
+      debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
+    }
+  else
+    {
+      *val = *(unw_word_t *) addr;
+      debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
+    }
+  return 0;
+
+ badreg:
+  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  return -UNW_EBADREG;
+}
+
+static int
+access_fpreg (unw_regnum_t reg, unw_fpreg_t *val, int write, void *arg)
+{
+  ucontext_t *uc = arg;
+  unw_fpreg_t *addr;
+
+  if (reg < UNW_IA64_FR || reg >= UNW_IA64_FR + 128)
+    goto badreg;
+
+  addr = uc_addr (uc, reg);
+  if (!addr)
+    goto badreg;
+
+  if (write)
+    {
+      debug (100, "%s: %s <- %016lx.%016lx\n", __FUNCTION__,
+	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
+      *(unw_fpreg_t *) addr = *val;
+    }
+  else
+    {
+      *val = *(unw_fpreg_t *) addr;
+      debug (100, "%s: %s -> %016lx.%016lx\n", __FUNCTION__,
+	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
+    }
+  return 0;
+
+ badreg:
+  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  /* attempt to access a non-preserved register */
+  return -UNW_EBADREG;
+}
+
+# endif /* !UNW_LOCAL_ONLY */
+#endif /* !UNW_REMOTE_ONLY */
 
 void
 ia64_init (void)
@@ -165,5 +319,18 @@ ia64_init (void)
   if (8*sizeof(unw_hash_index_t) < IA64_LOG_UNW_HASH_SIZE)
     unw_hash_index_t_is_too_narrow();
 
-  ia64_script_cache_init (&unw.global_cache);
+
+#ifndef UNW_REMOTE_ONLY
+  memset (&local_addr_space, 0, sizeof (local_addr_space));
+  ia64_script_cache_init (&local_addr_space.global_cache);
+# ifndef UNW_LOCAL_ONLY
+  local_addr_space.acc.acquire_unwind_info = _Uia64_glibc_acquire_unwind_info;
+  local_addr_space.acc.release_unwind_info = _Uia64_glibc_release_unwind_info;
+  local_addr_space.acc.access_mem = access_mem;
+  local_addr_space.acc.access_reg = access_reg;
+  local_addr_space.acc.access_fpreg = access_fpreg;
+  local_addr_space.acc.resume = ia64_local_resume;
+# endif
+  unw_local_addr_space = &local_addr_space;
+#endif
 }
