@@ -149,7 +149,16 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   return &ui->di_cache;
 }
 
-#endif /* UNW_TARGET_IA64 */
+#elif UNW_TARGET_X86
+
+HIDDEN unw_dyn_info_t *
+_UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
+			 char *path, unw_word_t segbase, unw_word_t mapoff)
+{
+  return NULL;
+}
+
+#endif /* UNW_TARGET_X86 */
 
 static unw_dyn_info_t *
 get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
@@ -205,5 +214,29 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   if (!di)
     return -UNW_ENOINFO;
 
-  return _Uia64_search_unwind_table (as, ip, di, pi, need_unwind_info, arg);
+#if UNW_TARGET_IA64
+  if (di == &ui->ktab)
+    {
+      /* The kernel unwind table resides in local memory, so we have
+	 to use the local address space to search it.  Since
+	 _UPT_put_unwind_info() has no easy way of detecting this
+	 case, we simply make a copy of the unwind-info, so
+	 _UPT_put_unwind_info() can always free() the unwind-info
+	 without ill effects.  */
+      int ret = tdep_search_unwind_table (unw_local_addr_space, ip, di, pi,
+					  need_unwind_info, arg);
+      if (ret >= 0 && need_unwind_info)
+	{
+	  void *mem = malloc (pi->unwind_info_size);
+
+	  if (!mem)
+	    return -UNW_ENOMEM;
+	  memcpy (mem, pi->unwind_info, pi->unwind_info_size);
+	  pi->unwind_info = mem;
+	}
+      return ret;
+    }
+  else
+#endif
+  return tdep_search_unwind_table (as, ip, di, pi, need_unwind_info, arg);
 }
