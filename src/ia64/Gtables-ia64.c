@@ -565,10 +565,10 @@ check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
        instead and hope nobody runs into stale cache info...  */
     return 1;
 
-  if (info->dlpi_subs == as->shared_object_subs)
+  if (info->dlpi_subs == as->shared_object_removals)
     return 1;
 
-  as->shared_object_subs = info->dlpi_subs;
+  as->shared_object_removals = info->dlpi_subs;
   unw_flush_cache (as, 0, 0);
   return -1;		/* indicate that there were no new removals */
 #else
