@@ -167,7 +167,7 @@ remote_install_cursor (struct cursor *c)
   unw_word_t val;
   int reg;
 
-#ifdef __linux
+#if defined(__linux) && !defined(UNW_REMOTE_ONLY)
   if (c->as == unw_local_addr_space)
     {
       /* Take a short-cut: we directly resume out of the cursor and
