@@ -1,6 +1,6 @@
 define(pkg_major, 0)
 define(pkg_minor, 98)
-define(pkg_extra, )
+define(pkg_extra, .1)
 define(pkg_maintainer, libunwind@linux.hpl.hp.com)
 define(mkvers, $1.$2$3)
 dnl Process this file with autoconf to produce a configure script.
