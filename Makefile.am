@@ -16,7 +16,8 @@ include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
 if REMOTE_ONLY
   include_HEADERS = $(include_HEADERS_common)
 else
-  include_HEADERS = $(include_HEADERS_common) include/libunwind.h
+  include_HEADERS = $(include_HEADERS_common) include/libunwind.h \
+		    include/unwind.h
 endif
 
 SUBDIRS = src tests doc
