@@ -37,35 +37,76 @@ ia64_scratch_loc (struct cursor *c, unw_regnum_t reg)
 
   if (sc_addr)
     {
-      switch (reg)
+      switch (c->as->abi)
 	{
-	case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
-	case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
-	  sc_addr += LINUX_SC_NAT_OFF;
-	  break;
+#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
+	case ABI_LINUX:
+	  {
+	    unw_word_t flags, tmp_addr;
+	    int i, ret;
 
-	case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
-	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 31:
-	  sc_addr += LINUX_SC_GR_OFF + 8*reg;
-	  break;
+	    switch (reg)
+	      {
+	      case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
+	      case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
+		sc_addr += LINUX_SC_NAT_OFF;
+		break;
 
-	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
-	  sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
-	  return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
+	      case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
+	      case UNW_IA64_GR +  8 ... UNW_IA64_GR + 31:
+		sc_addr += LINUX_SC_GR_OFF + 8*reg;
+		break;
 
-	case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-	  sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
-	  return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
+	      case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
+		sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
+		return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
 
-	case UNW_IA64_BR + 0: sc_addr += LINUX_SC_BR_OFF + 0; break;
-	case UNW_IA64_BR + 6: sc_addr += LINUX_SC_BR_OFF + 6*8; break;
-	case UNW_IA64_BR + 7: sc_addr += LINUX_SC_BR_OFF + 7*8; break;
-	case UNW_IA64_AR_RSC: sc_addr += LINUX_SC_AR_RSC_OFF; break;
-	case UNW_IA64_AR_CSD: sc_addr += LINUX_SC_AR_CSD_OFF; break;
-	case UNW_IA64_AR_26:  sc_addr += LINUX_SC_AR_26_OFF; break;
-	case UNW_IA64_AR_CCV: sc_addr += LINUX_SC_AR_CCV; break;
+	      case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
+		if ((ret = ia64_get (c, IA64_LOC_ADDR (sc_addr
+						       + LINUX_SC_FLAGS_OFF,
+						       0), &flags)) < 0)
+		  return IA64_NULL_LOC;
+
+		if (!(flags & IA64_SC_FLAG_FPH_VALID))
+		  {
+		    /* initialize fph partition: */
+		    tmp_addr = sc_addr + LINUX_SC_FR_OFF + 32*16;
+		    for (i = 32; i < 128; ++i, tmp_addr += 16)
+		      if ((ret = ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0),
+					     unw.f0)) < 0)
+			return IA64_NULL_LOC;
+		    /* mark fph partition as valid: */
+		    if ((ret = ia64_put (c,
+					 IA64_LOC_ADDR (sc_addr
+							+ LINUX_SC_FLAGS_OFF,
+							0),
+					 flags | IA64_SC_FLAG_FPH_VALID)) < 0)
+		      return IA64_NULL_LOC;
+		  }
+
+		sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
+		return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
+
+	      case UNW_IA64_BR + 0: sc_addr += LINUX_SC_BR_OFF + 0; break;
+	      case UNW_IA64_BR + 6: sc_addr += LINUX_SC_BR_OFF + 6*8; break;
+	      case UNW_IA64_BR + 7: sc_addr += LINUX_SC_BR_OFF + 7*8; break;
+	      case UNW_IA64_AR_RSC: sc_addr += LINUX_SC_AR_RSC_OFF; break;
+	      case UNW_IA64_AR_CSD: sc_addr += LINUX_SC_AR_CSD_OFF; break;
+	      case UNW_IA64_AR_26:  sc_addr += LINUX_SC_AR_26_OFF; break;
+	      case UNW_IA64_AR_CCV: sc_addr += LINUX_SC_AR_CCV; break;
+	      }
+	    return IA64_LOC_ADDR (sc_addr, 0);
+	  }
+#endif
+
+#if !defined(UNW_LOCAL_ONLY) || defined(__hpux)
+	case ABI_HPUX:
+	  return IA64_LOC_UC_REG (reg, sc_addr);
+#endif
+
+	default:
+	  return IA64_NULL_LOC;
 	}
-      return IA64_LOC_ADDR (sc_addr, 0);
     }
   else
     return IA64_REG_LOC (c, reg);
@@ -103,6 +144,14 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
   ia64_loc_t nat_loc;
   unw_fpreg_t tmp;
   int ret, reg;
+
+  if (IA64_IS_UC_LOC (reg_loc))
+    {
+      if (write)
+	return ia64_put (c, loc, *valp);
+      else
+	return ia64_get (c, loc, valp);
+    }
 
   if (IA64_IS_FP_LOC (reg_loc))
     {
@@ -206,13 +255,15 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
       else
 	{
 	  /* NaT bit is saved in a scratch register.  */
+#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
 	  sc_addr = c->sigcontext_addr;
-	  if (sc_addr)
+	  if (sc_addr && c->as->abi == ABI_LINUX)
 	    {
 	      nat_loc = IA64_LOC_ADDR (sc_addr + LINUX_SC_NAT_OFF, 0);
 	      mask = (unw_word_t) 1 << reg;
 	    }
 	  else
+#endif
 	    {
 	      if (write)
 		return ia64_put (c, loc, *valp);
@@ -418,7 +469,7 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     default:
-      dprintf ("%s: bad register number %d\n", __FUNCTION__, reg);
+      debug (1, "%s: bad register number %d\n", __FUNCTION__, reg);
       return -UNW_EBADREG;
     }
 
@@ -436,9 +487,7 @@ HIDDEN int
 ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
 		   int write)
 {
-  unw_word_t flags, tmp_addr, sc_addr;
   ia64_loc_t loc;
-  int ret, i;
 
   switch (reg)
     {
@@ -471,47 +520,12 @@ ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
       break;
 
     case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-      sc_addr = c->sigcontext_addr;
-      if (sc_addr)
-	{
-	  ret = ia64_get (c, IA64_LOC_ADDR (sc_addr + LINUX_SC_FLAGS_OFF, 0),
-			  &flags);
-	  if (ret < 0)
-	    return ret;
-
-	  if (!(flags & IA64_SC_FLAG_FPH_VALID))
-	    {
-	      if (write)
-		{
-		  /* initialize fph partition: */
-		  tmp_addr = sc_addr + LINUX_SC_FR_OFF + 32*16;
-		  for (i = 32; i < 128; ++i, tmp_addr += 16)
-		    {
-		      ret = ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0),
-					unw.f0);
-		      if (ret < 0)
-			return ret;
-		    }
-		  /* mark fph partition as valid: */
-		  ret = ia64_put (c, IA64_LOC_ADDR (sc_addr
-						    + LINUX_SC_FLAGS_OFF, 0),
-				  flags | IA64_SC_FLAG_FPH_VALID);
-		  if (ret < 0)
-		    return ret;
-		}
-	      else
-		{
-		  *valp = unw.f0;
-		  return 0;
-		}
-	    }
-	}
       reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
       loc = ia64_scratch_loc (c, reg);
       break;
 
     default:
-      dprintf ("%s: bad register number %d\n", __FUNCTION__, reg);
+      debug (1, "%s: bad register number %d\n", __FUNCTION__, reg);
       return -UNW_EBADREG;
     }
 
