@@ -1,4 +1,4 @@
-SOVERSION=1:1:0		# See comments at end of file.
+SOVERSION=2:0:1		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 
 libunwind_setjmp_la_SOURCES_local = longjmp.c siglongjmp.c
@@ -16,14 +16,26 @@ libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	mi-init.c							      \
 	mempool.c							      \
 	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
-	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c
-libunwind_la_SOURCES_local = 						     \
+	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c \
+	Gget_proc_info_by_ip.c						      \
+	Lget_proc_info_by_ip.c
+
+libunwind_la_SOURCES_local =						     \
 	_UPT_internal.h							     \
 	dyn-cancel.c dyn-register.c					     \
 	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
 	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
+	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c		     \
+									     \
+	_Unwind_Backtrace.c _Unwind_DeleteException.c			     \
+	_Unwind_FindEnclosingFunction.c _Unwind_ForcedUnwind.c		     \
+	_Unwind_GetBSP.c _Unwind_GetCFA.c _Unwind_GetDataRelBase.c	     \
+	_Unwind_GetGR.c _Unwind_GetIP.c _Unwind_GetLanguageSpecificData.c    \
+	_Unwind_GetRegionStart.c _Unwind_GetTextRelBase.c		     \
+	_Unwind_RaiseException.c _Unwind_Resume.c			     \
+	_Unwind_Resume_or_Rethrow.c _Unwind_SetGR.c _Unwind_SetIP.c
+
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
@@ -170,7 +182,7 @@ lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 AM_CPPFLAGS = -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 
-EXTRA_DIST =	elfxx.h elfxx.c					\
+EXTRA_DIST =	elfxx.h elfxx.c unwind-internal.h		\
 		$(libunwind_la_SOURCES_hppa)			\
 		$(libunwind_la_SOURCES_ia64)			\
 		$(libunwind_la_SOURCES_x86)			\
