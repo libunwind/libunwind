@@ -1,6 +1,8 @@
 SOVERSION=1:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 
+EXTRA_DIST = elfxx.h elfxx.c
+
 if REMOTE_ONLY
 install-exec-hook:
 #	Nothing to do here....
