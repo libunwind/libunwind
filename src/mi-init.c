@@ -30,6 +30,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 sigset_t unwi_full_sigmask;
 
+static const char rcsid[] UNUSED =
+  "$Id: " PACKAGE_STRING " --- report bugs to " PACKAGE_BUGREPORT " $";
+
 HIDDEN void
 mi_init (void)
 {
