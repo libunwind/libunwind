@@ -28,9 +28,9 @@ unw_resume (unw_cursor_t *cursor)
 {
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
 
-#ifdef IA64_UNW_ACCESSORS
-  return (*c->acc.resume) (cursor, c->acc.arg);
-#else
+#ifdef UNW_LOCAL_ONLY
 # error fix me.
+#else
+  return (*c->acc.resume) (cursor, c->acc.arg);
 #endif
 }
