@@ -1752,7 +1752,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libunwind
- VERSION=0.91
+ VERSION=0.92
 
 
 cat >>confdefs.h <<_ACEOF
@@ -8591,6 +8591,14 @@ rm -f conftest.$ac_objext conftest.$ac_ext
 fi
 echo "$as_me:$LINENO: result: $ac_cv_type_sighandler_t" >&5
 echo "${ECHO_T}$ac_cv_type_sighandler_t" >&6
+if test $ac_cv_type_sighandler_t = yes; then
+
+cat >>confdefs.h <<_ACEOF
+#define HAVE_SIGHANDLER_T 1
+_ACEOF
+
+
+fi
 
 
 echo "$as_me:$LINENO: checking for working memcmp" >&5

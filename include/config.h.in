@@ -30,6 +30,9 @@
 /* Define to 1 if you have the <memory.h> header file. */
 #undef HAVE_MEMORY_H
 
+/* Define to 1 if the system has the type `sighandler_t'. */
+#undef HAVE_SIGHANDLER_T
+
 /* Define to 1 if you have the <stdint.h> header file. */
 #undef HAVE_STDINT_H
 
