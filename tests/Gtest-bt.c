@@ -240,9 +240,3 @@ main (int argc, char **argv)
     printf ("SUCCESS.\n");
   return 0;
 }
-
-long
-f (long val)
-{
-  return val;
-}
