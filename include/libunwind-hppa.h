@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef LIBUNWIND_H
 #define LIBUNWIND_H
 
-#include <stdint.h>
+#include <inttypes.h>
 #include <ucontext.h>
 
 #define UNW_TARGET	hppa

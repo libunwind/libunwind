@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define unwind_i_h
 
 #include <memory.h>
-#include <stdint.h>
+#include <inttypes.h>
 
 #include <libunwind-ia64.h>
 
