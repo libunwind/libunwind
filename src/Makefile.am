@@ -1,4 +1,4 @@
-SOVERSION=1:0:0		# See comments at end of file.
+SOVERSION=1:1:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 
 libunwind_setjmp_la_SOURCES_local = longjmp.c siglongjmp.c
@@ -132,14 +132,14 @@ if OS_HPUX
 endif
 
 if ARCH_IA64
- Gmk_cursor_i_ia64_SOURCES = ia64/Gmk_cursor_i-ia64.c
- Lmk_cursor_i_ia64_SOURCES = ia64/Lmk_cursor_i-ia64.c
- noinst_PROGRAMS = Gmk_cursor_i-ia64 Lmk_cursor_i-ia64
+ mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i-ia64.c
+ mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i-ia64.c
+ noinst_PROGRAMS = mk_Gcursor_i-ia64 mk_Lcursor_i-ia64
  BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
-Gcursor_i.h: Gmk_cursor_i-ia64
-	./Gmk_cursor_i-ia64 > $@
-Lcursor_i.h: Lmk_cursor_i-ia64
-	./Lmk_cursor_i-ia64 > $@
+Gcursor_i.h: mk_Gcursor_i-ia64
+	./mk_Gcursor_i-ia64 > $@
+Lcursor_i.h: mk_Lcursor_i-ia64
+	./mk_Lcursor_i-ia64 > $@
  lib_LTLIBRARIES_arch = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
@@ -173,6 +173,7 @@ EXTRA_DIST =	elfxx.h elfxx.c					\
 		$(libunwind_la_SOURCES_ia64)			\
 		$(libunwind_la_SOURCES_x86)			\
 		$(libunwind_la_SOURCES_os_linux)		\
+		$(libunwind_la_SOURCES_os_hpux)			\
 		$(libunwind_la_SOURCES_local)			\
 		$(libunwind_la_SOURCES_remote)			\
 		$(libunwind_setjmp_la_SOURCES_local)		\
