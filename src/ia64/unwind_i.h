@@ -29,7 +29,7 @@ License.  */
 #include <memory.h>
 #include <stdint.h>
 
-#include <libunwind.h>
+#include <libunwind-ia64.h>
 
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
 
