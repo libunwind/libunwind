@@ -127,7 +127,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #  define cmpxchg_ptr(_ptr,_o,_n)					\
 	((void *) __sync_val_compare_and_swap((volatile long *) (_ptr),	\
 					      (long) (_o), (long) (_n))	\
-	 != (_o))
+	 == (_o))
 #  define fetch_and_add1(_ptr)		__sync_fetch_and_add(_ptr, 1)
 #  define HAVE_CMPXCHG
 #  define HAVE_FETCH_AND_ADD1
