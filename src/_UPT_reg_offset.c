@@ -214,6 +214,24 @@ int _UPT_reg_offset[UNW_REG_LAST] =
     [UNW_IA64_IP]	= PT_CR_IIP
 #elif defined(HAVE_TTRACE)
 # warning No support for ttrace() yet.
+#elif defined(UNW_TARGET_X86)
+    [UNW_X86_EAX]	= 0x18,
+    [UNW_X86_EBX]	= 0x00,
+    [UNW_X86_ECX]	= 0x04,
+    [UNW_X86_EDX]	= 0x08,
+    [UNW_X86_ESI]	= 0x0c,
+    [UNW_X86_EDI]	= 0x10,
+    [UNW_X86_EBP]	= 0x14,
+    [UNW_X86_EIP]	= 0x30,
+    [UNW_X86_ESP]	= 0x3c
+/*  CS			= 0x34, */
+/*  DS			= 0x1c, */
+/*  ES			= 0x20, */
+/*  FS			= 0x24, */
+/*  GS			= 0x28, */
+/*  ORIG_EAX		= 0x2c, */
+/*  EFLAGS		= 0x38, */
+/*  SS			= 0x40 */
 #else
 # error Fix me.
 #endif
