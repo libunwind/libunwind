@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -447,6 +447,8 @@ ia64_local_addr_space_init (void)
 
 #endif /* !UNW_REMOTE_ONLY */
 
+#ifndef UNW_LOCAL_ONLY
+
 HIDDEN int
 ia64_uc_access_reg (struct cursor *c, ia64_loc_t loc, unw_word_t *valp,
 		    int write)
@@ -571,3 +573,5 @@ ia64_uc_access_fpreg (struct cursor *c, ia64_loc_t loc, unw_fpreg_t *valp,
   return -UNW_EINVAL;
 #endif /* !HAVE_SYS_UC_ACCESS_H */
 }
+
+#endif /* UNW_LOCAL_ONLY */
