@@ -94,6 +94,8 @@ arch = @arch@
 install_sh = @install_sh@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
+EXTRA_DIST = run-ia64-test-dyn1
+
 noinst_PROGRAMS_common = 
 check_PROGRAMS_common = 
 check_SCRIPTS_common = 
@@ -125,10 +127,14 @@ noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 
 
-Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S
-Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S
-Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S
-Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S
+Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S \
+				ia64-test-stack.h
+
+Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
+				ia64-test-stack.h
+
+Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
+Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S
 
 LDADD = ../src/libunwind-$(arch).la

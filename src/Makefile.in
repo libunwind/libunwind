@@ -95,6 +95,8 @@ install_sh = @install_sh@
 SOVERSION = 1:0:0		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
 
+EXTRA_DIST = elfxx.h elfxx.c
+
 #	Nothing to do here....
 @REMOTE_ONLY_FALSE@libunwind_la_SOURCES_cdep = \
 @REMOTE_ONLY_FALSE@	_UPT_internal.h							     \
@@ -104,7 +106,7 @@ SETJMP_SO_VERSION = 0:0:0
 @REMOTE_ONLY_FALSE@	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 @REMOTE_ONLY_FALSE@	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
 @REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.c _UPT_reg_offset.c
+@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
 
 
 @REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind-setjmp.la
@@ -218,9 +220,6 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 
-
-# XXX Need to create symlinks from libunwind-ia64.so to libunwind.so
-# XXX end libunwind-ia64.a to libunwind.a
 AM_CPPFLAGS = -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 subdir = src
@@ -237,7 +236,8 @@ libunwind_hppa_la_LIBADD =
 @REMOTE_ONLY_FALSE@	_UPT_find_proc_info.lo \
 @REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.lo \
 @REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo \
-@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.lo _UPT_reg_offset.lo
+@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.lo _UPT_reg_offset.lo \
+@REMOTE_ONLY_FALSE@	_UPT_resume.lo
 @OS_LINUX_TRUE@am__objects_2 = os-linux.lo
 am__objects_3 = $(am__objects_1) $(am__objects_2) backtrace.lo \
 	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
@@ -401,6 +401,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_get_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_put_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_reg_offset.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_resume.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/backtrace.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-extract.Plo \
@@ -672,6 +673,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_get_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_put_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_reg_offset.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_resume.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-extract.Plo@am__quote@

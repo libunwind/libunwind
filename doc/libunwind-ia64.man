@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Fri Jan 17 15:46:04 PST 2003
+.\" Manual page created with latex2man on Wed Mar  5 10:22:28 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-IA64" "3" "17 January 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-IA64" "3" "05 March 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 libunwind\-ia64 \-\- IA\-64\-specific support in libunwind 
@@ -137,12 +137,26 @@ UNW_IA64_GR:
 registers. Add an index in the range from 0..127 to get a 
 particular general register. For example, to access r4,
 the index UNW_IA64_GR+4
-should be used. Register 
-r0
-is read\-only, and any attempt to write to index 
-UNW_IA64_GR+0
-will result in an error 
+should be used. 
+Registers r0
+and r1
+(gp)
+are read\-only, 
+and any attempt to write them will result in an error 
 (\-UNW_EREADONLYREG).
+Even though r1
+is 
+read\-only, libunwind
+will automatically adjust its value if 
+the instruction\-pointer (UNW_IA64_IP)
+is modified. For 
+example, if UNW_IA64_IP
+is set to a value inside a 
+function func(),
+then reading 
+UNW_IA64_GR+1
+will return the global\-pointer 
+value for this function. 
 .TP
 UNW_IA64_NAT:
  The base\-index for the NaT bits of the 
@@ -207,18 +221,16 @@ Convenience macros are simply aliases for certain frequently used
 registers: 
 .TP
 UNW_IA64_GP:
- Alias for UNW_IA64_GR+1\&.
-The global\-pointer register. For unwinding\-purposes, this register 
-is treated as read\-only. 
+ Alias for UNW_IA64_GR+1,
+the global\-pointer register. 
 .TP
 UNW_IA64_TP:
- Alias for UNW_IA64_GR+13\&.
-The thread\-pointer register. For unwinding\-purposes, this register is 
-treated as read\-only. 
+ Alias for UNW_IA64_GR+13,
+the thread\-pointer register. 
 .TP
 UNW_IA64_AR_RSC:
- Alias for UNW_IA64_GR+16\&.
-The register\-stack configuration register. 
+ Alias for UNW_IA64_GR+16,
+the register\-stack configuration register. 
 .TP
 UNW_IA64_AR_BSP:
  Alias for 
@@ -231,36 +243,40 @@ use UNW_IA64_BSP
 instead. 
 .TP
 UNW_IA64_AR_BSPSTORE:
- Alias for UNW_IA64_GR+18\&.
-The register\-backing store write pointer. 
+ Alias for UNW_IA64_GR+18,
+the register\-backing store write pointer. 
 .TP
 UNW_IA64_AR_RNAT:
- Alias for UNW_IA64_GR+19\&.
-The register\-backing store NaT\-collection register. 
+ Alias for UNW_IA64_GR+19,
+the register\-backing store NaT\-collection register. 
 .TP
 UNW_IA64_AR_CCV:
- Alias for UNW_IA64_GR+32\&.
-The compare\-and\-swap value register. 
+ Alias for UNW_IA64_GR+32,
+the compare\-and\-swap value register. 
+.TP
+UNW_IA64_AR_CSD:
+ Alias for UNW_IA64_GR+25,
+the compare\-and\-swap\-data register (used by 16\-byte atomic operations). 
 .TP
 UNW_IA64_AR_UNAT:
- Alias for UNW_IA64_GR+36\&.
-The user NaT\-collection register. 
+ Alias for UNW_IA64_GR+36,
+the user NaT\-collection register. 
 .TP
 UNW_IA64_AR_FPSR:
- Alias for UNW_IA64_GR+40\&.
-The floating\-point status (and control) register. 
+ Alias for UNW_IA64_GR+40,
+the floating\-point status (and control) register. 
 .TP
 UNW_IA64_AR_PFS:
- Alias for UNW_IA64_GR+64\&.
-The previous frame\-state register. 
+ Alias for UNW_IA64_GR+64,
+the previous frame\-state register. 
 .TP
 UNW_IA64_AR_LC:
- Alias for UNW_IA64_GR+65\&.
-The loop\-count register. 
+ Alias for UNW_IA64_GR+65
+the loop\-count register. 
 .TP
 UNW_IA64_AR_EC:
- Alias for UNW_IA64_GR+66\&.
-The epilogue\-count register. 
+ Alias for UNW_IA64_GR+66,
+the epilogue\-count register. 
 .PP
 .SH THE UNWIND\-CONTEXT TYPE
 

@@ -1742,7 +1742,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libunwind
- VERSION=0.3
+ VERSION=0.9
 
 
 cat >>confdefs.h <<_ACEOF
