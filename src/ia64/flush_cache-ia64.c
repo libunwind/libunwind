@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -23,7 +23,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include <ia64intrin.h>
+#ifdef HAVE_IA64INTRIN_H
+# include <ia64intrin.h>
+#endif
 
 #include "unwind_i.h"
 
@@ -35,5 +37,10 @@ unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
      unw_flush_cache() is allowed to flush more than the requested
      range. */
 
+#ifdef HAVE_IA64INTRIN_H
   __sync_fetch_and_add(&as->cache_generation, 1);
+#else
+# warning unw_flush_cache(): need a way to atomically increment an integer.
+  ++as->cache_generation;
+#endif
 }
