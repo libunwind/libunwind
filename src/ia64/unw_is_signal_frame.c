@@ -27,6 +27,15 @@ int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
+  struct ia64_state_record sr;
+  int ret;
 
-  return (c->flags & IA64_FLAG_SIGTRAMP) != 0;
+  /* Crude and slow, but we need to peek ahead into the unwind
+     descriptors to find out if the current IP is inside the signal
+     trampoline.  */
+  ret = ia64_create_state_record (c, &sr);
+  if (ret < 0)
+    return ret;
+
+  return (c->pi.flags & IA64_FLAG_SIGTRAMP) != 0;
 }
