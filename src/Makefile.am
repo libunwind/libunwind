@@ -36,6 +36,8 @@ libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S ia64/sigsetjmp.S \
 libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c	\
 					  hppa/siglongjmp.S
 libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c x86/siglongjmp.S
+libunwind_setjmp_la_SOURCES_x86_64	= setjmp.c sigsetjmp.c \
+					  x86_64/siglongjmp.S
 
 ### libunwind:
 
@@ -157,6 +159,33 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 	x86/Gis_signal_frame.c x86/Gget_proc_info.c x86/Gregs.c		\
 	x86/Gresume.c x86/Gstep.c
 
+# The list of files that go both into libunwind and libunwind-x86_64:
+libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
+	$(dwarf_SOURCES_common)						\
+	x86_64/init.h x86_64/unwind_i.h					\
+	x86_64/is_fpreg.c x86_64/regname.c
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
+	$(libunwind_la_SOURCES_local)					    \
+	elf64.c elf64.h							    \
+	$(dwarf_SOURCES_local)						    \
+	dwarf/Lfind_proc_info-lsb.c					    \
+	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
+	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
+	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c x86_64/Lregs.c    \
+	x86_64/Lresume.c x86_64/Lstep.c
+
+# The list of files that go into libunwind:
+libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
+	$(libunwind_la_SOURCES_generic)					    \
+	$(dwarf_SOURCES_generic)					    \
+	dwarf/Gfind_proc_info-lsb.c					    \
+	x86_64/Gcreate_addr_space.c x86_64/Gget_save_loc.c x86_64/Gglobal.c \
+	x86_64/Ginit.c x86_64/Ginit_local.c x86_64/Ginit_remote.c	    \
+	x86_64/Gis_signal_frame.c x86_64/Gget_proc_info.c x86_64/Gregs.c    \
+	x86_64/Gresume.c x86_64/Gstep.c
+
 if REMOTE_ONLY
 install-exec-hook:
 #	Nothing to do here....
@@ -221,6 +250,18 @@ if !REMOTE_ONLY
 endif
  libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
 				  $(libunwind_setjmp_la_SOURCES_x86)
+else
+if ARCH_X86_64
+ lib_LTLIBRARIES_arch = libunwind-x86_64.la
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86_64)
+ libunwind_x86_64_la_SOURCES = $(libunwind_x86_64_la_SOURCES_x86_64)
+ libunwind_x86_64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+if !REMOTE_ONLY
+ libunwind_x86_64_la_LIBADD = libunwind.la -lc
+endif
+ libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
+				  $(libunwind_setjmp_la_SOURCES_x86_64)
+endif # ARCH_X86_64
 endif # ARCH_X86
 endif # ARCH_HPPA
 endif # ARCH_IA64
@@ -246,11 +287,13 @@ EXTRA_DIST =	elfxx.h elfxx.c unwind-internal.h	\
 		$(libunwind_hppa_la_SOURCES_hppa)	\
 		$(libunwind_ia64_la_SOURCES_ia64)	\
 		$(libunwind_x86_la_SOURCES_x86)		\
+		$(libunwind_x86_64_la_SOURCES_x86_64)	\
 		$(libunwind_ptrace_a_SOURCES)		\
 		$(libunwind_setjmp_la_SOURCES_common)	\
 		$(libunwind_setjmp_la_SOURCES_hppa)	\
 		$(libunwind_setjmp_la_SOURCES_ia64)	\
-		$(libunwind_setjmp_la_SOURCES_x86)
+		$(libunwind_setjmp_la_SOURCES_x86)	\
+		$(libunwind_setjmp_la_SOURCES_x86_64)
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets

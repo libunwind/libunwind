@@ -6,6 +6,10 @@ include_HEADERS_tdep = include/libunwind-hppa.h
 else
 if ARCH_X86
 include_HEADERS_tdep = include/libunwind-x86.h
+else
+if ARCH_X86_64
+include_HEADERS_tdep = include/libunwind-x86_64.h
+endif # ARCH_X86_64
 endif # ARCH_X86
 endif # ARCH_HPPA
 endif # ARCH_IA64
@@ -29,6 +33,9 @@ EXTRA_DIST = include/dwarf.h include/dwarf_i.h				\
 	include/ia64/script.h						\
 	include/libunwind-hppa.h include/tdep-hppa.h			\
 	include/libunwind-x86.h include/tdep-x86.h			\
-	include/x86/dwarf-config.h
+	include/x86/dwarf-config.h					\
+	include/libunwind-x86_64.h include/tdep-x86_64.h		\
+	include/x86/dwarf-config.h					\
+	include/x86_64/dwarf-config.h
 
 DISTCLEANFILES = include/libunwind.h include/tdep.h
