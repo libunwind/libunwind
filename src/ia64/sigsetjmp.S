@@ -38,29 +38,27 @@ __sigsetjmp:
 	.prologue
 	.save ar.pfs, r35
 	alloc loc1 = ar.pfs, 2, 3, 3, 0
-	add r16 = JB_MASK_SAVED*8, in0
 	add out2 = JB_MASK*8, in0
-
-	st8 [in0] = sp, (JB_RP-JB_SP)*8	// sigjmp_buf[JB_SP] = sp
-	mov out0 = SIG_BLOCK
 	.save rp, loc0
 	mov loc0 = rp
+	mov out0 = SIG_BLOCK
 	.body
 	;;
-	st8 [in0] = loc0, (JB_BSP-JB_RP)*8	// sigjmp_buf[JB_RP] = rp
-	st8 [r16] = in1			// sigjmp_buf[JB_MASK_SAVED] = savemask
 	cmp.ne p6, p0 = in1, r0
-
 	mov out1 = r0
 	mov loc2 = ar.bsp
 (p6)	br.call.sptk.many rp = sigprocmask // sigjmp_buf[JB_MASK] = sigmask
 	;;
 
-	st8 [in0] = loc2		// sigjmp_buf[JB_BSP] = bsp
-	mov rp = loc0
-	nop 0
-
+	add r16 = JB_MASK_SAVED*8, in0
+	st8 [in0] = sp, (JB_RP-JB_SP)*8	// sigjmp_buf[JB_SP] = sp
 	mov r8 = 0
+	;;
+	st8 [in0] = loc0, (JB_BSP-JB_RP)*8	// sigjmp_buf[JB_RP] = rp
+	st8 [r16] = in1			// sigjmp_buf[JB_MASK_SAVED] = savemask
+	mov rp = loc0
+	;;
+	st8 [in0] = loc2		// sigjmp_buf[JB_BSP] = bsp
 	mov.i ar.pfs = loc1
 	br.ret.sptk.many rp
 
