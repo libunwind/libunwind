@@ -14,12 +14,12 @@
 
 \File{\#include $<$libunwind.h$>$}\\
 
-\Type{int} \Func{unw\_resume}(\Type{unw\_cursor\_t~*}\Var{cursor});\\
+\Type{int} \Func{unw\_resume}(\Type{unw\_cursor\_t~*}\Var{cp});\\
 
 \section{Description}
 
 The \Func{unw\_resume}() routine resumes execution at the stack frame
-identified by \Var{cursor}.  The behavior of this routine differs
+identified by \Var{cp}.  The behavior of this routine differs
 slightly for local and remote unwinding.
 
 For local unwinding, \Func{unw\_resume}() restores the machine state
@@ -28,10 +28,10 @@ and then directly resumes execution in the target stack frame.  Thus
 machine state normally involves restoring the ``preserved''
 (callee-saved) registers.  However, if execution in any of the stack
 frames younger (more deeply nested) than the one identified by
-\Var{cursor} was interrupted by a signal, then \Func{unw\_resume}()
-will restore all registers as well as the signal mask.  Attempting to
-call \Func{unw\_resume}() on a cursor which identifies the stack frame
-of another thread results in undefined behavior (e.g., the program may
+\Var{cp} was interrupted by a signal, then \Func{unw\_resume}() will
+restore all registers as well as the signal mask.  Attempting to call
+\Func{unw\_resume}() on a cursor which identifies the stack frame of
+another thread results in undefined behavior (e.g., the program may
 crash).
 
 For remote unwinding, \Func{unw\_resume}() installs the machine state
@@ -78,9 +78,9 @@ signal handler.
 \item[\Const{UNW\_EBADREG}] A register needed by \Func{unw\_resume}() wasn't
   accessible.
 \item[\Const{UNW\_EINVALIDIP}] The instruction pointer identified by
-  \Var{cursor} is not valid.
+  \Var{cp} is not valid.
 \item[\Const{UNW\_BADFRAME}] The stack frame identified by
-  \Var{cursor} is not valid.
+  \Var{cp} is not valid.
 \end{Description}
 
 \section{See Also}
