@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -145,9 +145,9 @@ unw_dyn_info_list_t;
 
 /* Return the size (in bytes) of an unw_dyn_region_info_t structure that can
    hold OP_COUNT ops.  */
-#define _U_dyn_region_info_size(op_count)				   \
-	(sizeof (unw_dyn_region_info_t)					   \
-	 + (op_count > 0) ? ((op_count) - 1) * sizeof (unw_dyn_op_t) : 0)
+#define _U_dyn_region_info_size(op_count)				\
+	((char *) (((unw_dyn_region_info_t *) NULL)->op + (op_count))	\
+	 - (char *) NULL)
 
 /* Register the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
@@ -186,14 +186,19 @@ extern void _U_dyn_cancel (unw_dyn_info_t *di);
 #define _U_dyn_op_pop_frames(op, qp, when, num_frames)			\
 	(*(op) = _U_dyn_op (UNW_DYN_POP_FRAMES, (qp), (when), 0, (num_frames)))
 
-#define _U_dyn_op_label_state(op, qp, when, label)			\
-	(*(op) = _U_dyn_op (UNW_DYN_LABEL_STATE, (qp), (when), 0, (label)))
+#define _U_dyn_op_label_state(op, label)				\
+	(*(op) = _U_dyn_op (UNW_DYN_LABEL_STATE, _U_QP_TRUE, -1, 0, (label)))
 
-#define _U_dyn_op_copy_state(op, qp, when, label)			\
-	(*(op) = _U_dyn_op (UNW_DYN_COPY_STATE, (qp), (when), 0, (label)))
+#define _U_dyn_op_copy_state(op, label)					\
+	(*(op) = _U_dyn_op (UNW_DYN_COPY_STATE, _U_QP_TRUE, -1, 0, (label)))
 
 #define _U_dyn_op_alias(op, qp, when, addr)				\
 	(*(op) = _U_dyn_op (UNW_DYN_ALIAS, (qp), (when), 0, (addr)))
 
 #define _U_dyn_op_stop(op)						\
-	((op)->tag = UNW_DYN_STOP)
+	(*(op) = _U_dyn_op (UNW_DYN_STOP, _U_QP_TRUE, -1, 0, 0))
+
+/* The target-dependent qualifying predicate which is always TRUE.  On
+   IA-64, that's p0 (0), on non-predicated architectures, the value is
+   ignored.  */
+#define _U_QP_TRUE	_U_TDEP_QP_TRUE
