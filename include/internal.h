@@ -106,10 +106,9 @@ extern int UNWI_ARCH_OBJ(dyn_remote_find_proc_info) (unw_addr_space_t as,
 extern void UNWI_ARCH_OBJ(dyn_remote_put_unwind_info) (unw_addr_space_t as,
 						       unw_proc_info_t *pi,
 						       void *arg);
-extern int UNWI_ARCH_OBJ(get_proc_name) (unw_addr_space_t as,
-					 unw_word_t ip, int is_local,
-					 char *buf, size_t buf_len,
-					 unw_word_t *offp, void *arg);
+extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
+				    char *buf, size_t buf_len,
+				    unw_word_t *offp, void *arg);
 
 #define unwi_find_dynamic_proc_info(as,ip,pi,n,arg)			\
 	UNWI_OBJ(find_dynamic_proc_info)(as, ip, pi, n, arg)
@@ -129,8 +128,8 @@ extern int UNWI_ARCH_OBJ(get_proc_name) (unw_addr_space_t as,
 #define unwi_dyn_remote_put_unwind_info(as,p,arg)			\
 	UNWI_ARCH_OBJ(dyn_remote_put_unwind_info)(as, p, arg)
 
-#define unwi_get_proc_name(as,ip,l,b,s,o,arg)				\
-	UNWI_ARCH_OBJ(get_proc_name)(as, ip, l, b, s, o, arg)
+#define unwi_get_proc_name(as,ip,b,s,o,arg)				\
+	UNWI_OBJ(get_proc_name)(as, ip, b, s, o, arg)
 
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
