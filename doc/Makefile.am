@@ -34,7 +34,7 @@ EXTRA_DIST = NOTES libunwind.trans					\
 	unw_regname.tex unw_resume.tex unw_set_caching_policy.tex	\
 	unw_set_fpreg.tex						\
 	unw_set_reg.tex							\
-	unw_step.text							\
+	unw_step.tex							\
 	$(man3_MANS)
 
 L2M	= latex2man
