@@ -153,7 +153,7 @@ tdep_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
 
 unw_word_t
 _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
-		      unw_word_t segbase, void *arg)
+		      unw_word_t segbase, unw_word_t gp, void *arg)
 {
   unw_word_t hdr_addr, info_addr, hdr, directives, pers, cookie, off;
   unw_accessors_t *a = unw_get_accessors (as);
@@ -193,7 +193,7 @@ _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
   if (((ret = (*a->access_mem) (as, info_addr, &directives, 0, arg)) < 0)
       || ((ret = (*a->access_mem) (as, info_addr + 0x08, &pers, 0, arg)) < 0)
       || ((ret = (*a->access_mem) (as, info_addr + 0x10, &cookie, 0, arg)) < 0)
-      || ((ret = (*a->access_mem) (as, info_addr + 0x10, &off, 0, arg)) < 0))
+      || ((ret = (*a->access_mem) (as, info_addr + 0x18, &off, 0, arg)) < 0))
     return 0;
 
   if (directives != 0 || pers != 0
@@ -202,7 +202,7 @@ _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
     return 0;
 
   /* OK, we ran the gauntlet and found it: */
-  return off + segbase;
+  return off + gp;
 }
 
 #ifndef UNW_REMOTE_ONLY
