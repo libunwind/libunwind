@@ -28,6 +28,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <string.h>
 
+#define UNW_LOCAL_ONLY
+
 #include "internal.h"
 #include "tdep.h"
 
@@ -44,26 +46,26 @@ struct
   }
 tab[] =
   {
-    { "IP_OFF",			offsetof (struct cursor, ip) },
-    { "PR_OFF",			offsetof (struct cursor, pr) },
-    { "BSP_OFF",		offsetof (struct cursor, bsp) },
-    { "PSP_OFF",		offsetof (struct cursor, psp) },
-    { "PFS_LOC_OFF",		offsetof (struct cursor, pfs_loc) },
-    { "RNAT_LOC_OFF",		offsetof (struct cursor, rnat_loc) },
-    { "UNAT_LOC_OFF",		offsetof (struct cursor, unat_loc) },
-    { "LC_LOC_OFF",		offsetof (struct cursor, lc_loc) },
-    { "FPSR_LOC_OFF",		offsetof (struct cursor, fpsr_loc) },
-    { "B1_LOC_OFF",		offsetof (struct cursor, b1_loc) },
-    { "B2_LOC_OFF",		offsetof (struct cursor, b2_loc) },
-    { "B3_LOC_OFF",		offsetof (struct cursor, b3_loc) },
-    { "B4_LOC_OFF",		offsetof (struct cursor, b4_loc) },
-    { "B5_LOC_OFF",		offsetof (struct cursor, b5_loc) },
-    { "F2_LOC_OFF",		offsetof (struct cursor, f2_loc) },
-    { "F3_LOC_OFF",		offsetof (struct cursor, f3_loc) },
-    { "F4_LOC_OFF",		offsetof (struct cursor, f4_loc) },
-    { "F5_LOC_OFF",		offsetof (struct cursor, f5_loc) },
-    { "FR_LOC_OFF",		offsetof (struct cursor, fr_loc) },
-    { "SIGCONTEXT_LOC_OFF",	offsetof (struct cursor, sigcontext_loc) },
+    { "IP_OFF",		offsetof (struct cursor, ip) },
+    { "PR_OFF",		offsetof (struct cursor, pr) },
+    { "BSP_OFF",	offsetof (struct cursor, bsp) },
+    { "PSP_OFF",	offsetof (struct cursor, psp) },
+    { "PFS_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_PFS]) },
+    { "RNAT_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_RNAT]) },
+    { "UNAT_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_UNAT]) },
+    { "LC_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_LC]) },
+    { "FPSR_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_FPSR]) },
+    { "B1_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_B1]) },
+    { "B2_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_B2]) },
+    { "B3_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_B3]) },
+    { "B4_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_B4]) },
+    { "B5_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_B5]) },
+    { "F2_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_F2]) },
+    { "F3_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_F3]) },
+    { "F4_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_F4]) },
+    { "F5_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_F5]) },
+    { "FR_LOC_OFF",	offsetof (struct cursor, loc[IA64_REG_F16]) },
+    { "SIGCONTEXT_ADDR_OFF",	offsetof (struct cursor, sigcontext_addr) },
 };
 
 static const char *tabs = "\t\t\t\t\t\t\t\t\t\t";
