@@ -66,6 +66,7 @@ Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
 test_static_link_LDFLAGS = -all-static
+forker_LDFLAGS = -all-static
 
 LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
