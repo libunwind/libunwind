@@ -96,12 +96,17 @@ install_sh = @install_sh@
 # man pages that go into section 3:
 man3_MANS = $(srcdir)/libunwind.man $(srcdir)/libunwind-ia64.man	\
 	$(srcdir)/libunwind-ptrace.man $(srcdir)/libunwind-setjmp.man	\
+	$(srcdir)/unw_init_local.man $(srcdir)/unw_init_remote.man	\
+	$(srcdir)/unw_create_addr_space.man				\
+	$(srcdir)/unw_destroy_addr_space.man				\
 	$(srcdir)/unw_resume.man
 
 
 EXTRA_DIST = NOTES libunwind.trans				\
 	libunwind.tex libunwind-ia64.tex libunwind-ptrace.tex	\
-	libunwind-setjmp.tex unw_resume.tex			\
+	libunwind-setjmp.tex					\
+	unw_init_local.tex unw_init_remote.tex unw_resume.tex	\
+	unw_create_addr_space.tex unw_destroy_addr_space.tex	\
 	$(man3_MANS)
 
 

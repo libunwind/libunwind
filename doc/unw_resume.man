@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Wed Mar  5 10:18:45 PST 2003
+.\" Manual page created with latex2man on Fri Mar  7 14:31:39 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_RESUME" "3" "05 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_RESUME" "3" "07 March 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -96,6 +96,13 @@ For local unwinding, unw_resume()
 does not return on success. 
 For remote unwinding, it returns 0 on success. On failure, the 
 negative value of one of the errors below is returned. 
+.PP
+.SH THREAD AND SIGNAL SAFETY
+
+.PP
+unw_resume()
+is thread\-safe as well as safe to use from a 
+signal handler. 
 .PP
 .SH ERRORS
 
