@@ -142,6 +142,26 @@ typedef struct unw_accessors
   }
 unw_accessors_t;
 
+typedef enum unw_save_loc_type
+  {
+    UNW_SLT_NONE,	/* register is not saved ("not an l-value") */
+    UNW_SLT_MEMORY,	/* register has been saved in memory */
+    UNW_SLT_REG,	/* register has been saved in (another) register */
+  }
+unw_save_loc_type_t;
+
+typedef struct unw_save_loc
+  {
+    unw_save_loc_type_t type;
+    union
+      {
+	unw_word_t addr;	/* valid if type==UNW_SLT_MEMORY */
+	unw_regnum_t regnum;	/* valid if type==UNW_SLT_REG */
+      }
+    u;
+  }
+unw_save_loc_t;
+
 /* These routines work both for local and remote unwinding.  */
 
 extern int UNW_OBJ(init_local) (unw_cursor_t *c, ucontext_t *u);
@@ -152,6 +172,8 @@ extern int UNW_OBJ(get_reg) (unw_cursor_t *c, int regnum, unw_word_t *valp);
 extern int UNW_OBJ(set_reg) (unw_cursor_t *c, int regnum, unw_word_t val);
 extern int UNW_OBJ(get_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t *val);
 extern int UNW_OBJ(set_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t val);
+extern int UNW_OBJ(get_save_loc) (unw_cursor_t *c, int regnum,
+				  unw_save_loc_t *loc);
 extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
 
 /* Initialize cursor C such that unwinding starts at the point
