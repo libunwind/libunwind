@@ -10,7 +10,7 @@
 
 \section{Synopsis}
 
-\File{\#include $<$libunwind.h$>$}\\
+\File{\#include $<$libunwind-ptrace.h$>$}\\
 
 \noindent
 \Type{unw\_accessors\_t} \Var{_UPT\_accessors};\\
@@ -106,6 +106,16 @@ is thread-safe.
 to create the \Prog{\_UPT}-info-structure for any reason.  For the
 current implementation, the only reason this call may fail is when the
 system is out of memory.
+
+\section{Files}
+
+\begin{Description}
+\item[\File{libunwind-ptrace.h}] Headerfile to include when using the
+  interface defined by this library.
+\item[\Opt{-l}\File{unwind-ptrace} \Opt{-l}\File{unwind-generic}]
+    Linker-switches to add when building a program that uses the
+    functions defined by this library.
+\end{Description}
 
 \section{See Also}
 
