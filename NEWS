@@ -1,5 +1,30 @@
 -*-Mode: outline-*-
 
+* News for v0.98.3:
+
+** Make it possible to link against libunwind-ia64.a only (i.e., without
+   requiring libunwind.a as well).  This keeps apps which need only
+   remote unwinding cleaner, since they logically have no dependency
+   on libunwind.a.
+** Dont link against libatomic_ops for now.  Due to a packaging bug on
+   Debian, linking against this library causes libunwind.so to get
+   a dependency on libatomic_ops.so, which is not at all what we want.
+   Fortunately, we don't have to link against that library on x86 or
+   ia64 since the library is strictly needed only for platforms with
+   poor atomic operation support.  Once the libatomic_ops package is fixed,
+   we can re-enable linking against libatomic_ops.
+
+* News for v0.98.2:
+
+** Fixed bug which caused _UPT_get_dyn_info_list_addr() to sometimes fail
+   needlessly.  Found by Todd L. Miller.
+
+** When using GCC to build libunwind on ia64, libunwind.so had an
+   unresolved reference to __divdi3.  This is undesirable since it
+   creates an implicit dependency on libgcc.  This problem has been
+   fixed in the 0.98.2 release by explicitly linking against libgcc.a
+   when building libunwind.
+
 * News for v0.98.1:
 
 ** Fixed a bug which caused "make install" to install libunwind-common.h.in
