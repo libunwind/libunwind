@@ -24,24 +24,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <stdlib.h>
 
-#include <sys/time.h>
+#include <time.h>
 
 #include <libunwind.h>
-
-#define ITERATIONS	10000
 
 #define panic(args...)							  \
 	do { fprintf (stderr, args); exit (-1); } while (0)
 
+static long iterations = 10000;
 static int maxlevel = 100;
 
 static inline double
 gettime (void)
 {
-  struct timeval tv;
+  struct timespec ts;
 
-  gettimeofday(&tv, NULL);
-  return tv.tv_sec + 1e-6*tv.tv_usec;
+  clock_gettime(CLOCK_REALTIME, &ts);
+  return ts.tv_sec + 1e-9*ts.tv_nsec;
 }
 
 static int
@@ -93,12 +92,13 @@ f1 (int level, int maxlevel, double *init, double *step)
 static void
 doit (const char *label)
 {
-  double init, step, min_init, first_init, min_step, first_step, sum_init, sum_step;
+  double init, step, min_init, first_init, min_step, first_step;
+  double sum_init, sum_step;
   int i;
 
   sum_init = sum_step = first_init = first_step = 0.0;
   min_init = min_step = 1e99;
-  for (i = 0; i < ITERATIONS; ++i)
+  for (i = 0; i < iterations; ++i)
     {
       f1 (0, maxlevel, &init, &step);
 
@@ -117,18 +117,22 @@ doit (const char *label)
 	}
     }
   printf ("%s:\n"
-	  "  unw_{getcontext+init_local}: first=%9.3f min=%9.3f avg=%9.3f nsec\n"
-	  "  unw_step                   : first=%9.3f min=%9.3f avg=%9.3f nsec\n",
+	  " unw_{getcontext+init_local}: 1st=%9.3f min=%9.3f avg=%9.3f nsec\n"
+	  " unw_step                   : 1st=%9.3f min=%9.3f avg=%9.3f nsec\n",
 	  label,
-	  1e9*first_init, 1e9*min_init, 1e9*sum_init/ITERATIONS,
-	  1e9*first_step, 1e9*min_step, 1e9*sum_step/ITERATIONS);
+	  1e9*first_init, 1e9*min_init, 1e9*sum_init/iterations,
+	  1e9*first_step, 1e9*min_step, 1e9*sum_step/iterations);
 }
 
 int
 main (int argc, char **argv)
 {
   if (argc > 1)
-    maxlevel = atol (argv[1]);
+    {
+      maxlevel = atol (argv[1]);
+      if (argc > 2)
+	iterations = atol (argv[2]);
+    }
 
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_NONE);
   doit ("Caching: none");
