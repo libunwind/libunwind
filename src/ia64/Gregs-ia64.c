@@ -195,7 +195,7 @@ access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
       else if (reg >= 32)
 	{
 	  /* NaT bit is saved in a stacked register.  */
-	  reg = rotate_gr (c, reg - 32);
+	  reg = rotate_gr (c, reg);
 	  ret = ia64_get_stacked (c, reg, &reg_loc, &nat_loc);
 	  if (ret < 0)
 	    return ret;
