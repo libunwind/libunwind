@@ -28,7 +28,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 unsigned long
 _Unwind_GetDataRelBase (struct _Unwind_Context *context)
 {
-  /* Not yet implemented.  DWARF2-based exception-handling would need
-     this, apparently.  */
-  return 0;
+  unw_proc_info_t pi;
+
+  pi.gp = 0;
+  unw_get_proc_info (&context->cursor, &pi);
+  return pi.gp;
 }
