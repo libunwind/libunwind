@@ -23,13 +23,13 @@
 \noindent
 \Type{int} \Func{unw\_step}(\Type{unw\_cursor\_t~*});\\
 \noindent
-\Type{int} \Func{unw\_get\_reg}(\Type{unw\_cursor\_t~*}, \Type{int}, \Type{unw\_word\_t~*});\\
+\Type{int} \Func{unw\_get\_reg}(\Type{unw\_cursor\_t~*}, \Type{unw\_regnum\_t}, \Type{unw\_word\_t~*});\\
 \noindent
-\Type{int} \Func{unw\_get\_fpreg}(\Type{unw\_cursor\_t~*}, \Type{int}, \Type{unw\_fpreg\_t~*});\\
+\Type{int} \Func{unw\_get\_fpreg}(\Type{unw\_cursor\_t~*}, \Type{unw\_regnum\_t}, \Type{unw\_fpreg\_t~*});\\
 \noindent
-\Type{int} \Func{unw\_set\_reg}(\Type{unw\_cursor\_t~*}, \Type{int}, \Type{unw\_word\_t});\\
+\Type{int} \Func{unw\_set\_reg}(\Type{unw\_cursor\_t~*}, \Type{unw\_regnum\_t}, \Type{unw\_word\_t});\\
 \noindent
-\Type{int} \Func{unw\_set\_fpreg}(\Type{unw\_cursor\_t~*}, \Type{int}, \Type{unw\_fpreg\_t});\\
+\Type{int} \Func{unw\_set\_fpreg}(\Type{unw\_cursor\_t~*}, \Type{unw\_regnum\_t}, \Type{unw\_fpreg\_t});\\
 \noindent
 \Type{int} \Func{unw\_resume}(\Type{unw\_cursor\_t~*});\\
 
@@ -53,6 +53,7 @@
 \noindent
 \Type{int} \Func{unw\_get\_save\_loc}(\Type{unw\_cursor\_t~*}, \Type{int}, \Type{unw\_save\_loc\_t~*});\\
 \noindent
+\Type{int} \Func{unw\_is\_fpreg}(\Type{unw\_regnum\_t});\\
 \Type{int} \Func{unw\_is\_signal\_frame}(\Type{unw\_cursor\_t~*});\\
 \noindent
 \Type{int} \Func{unw\_get\_proc\_name}(\Type{unw\_cursor\_t~*}, \Type{char~*}, \Type{size\_t}, \Type{unw\_word\_t~*});\\
@@ -312,14 +313,28 @@ local unwinding only.
 
 \section{See Also}
 
-%\SeeAlso{libunwind-hppa(3)},
 \SeeAlso{libunwind-ia64(3)},
 \SeeAlso{libunwind-ptrace(3)},
 \SeeAlso{libunwind-setjmp(3)},
-%\SeeAlso{libunwind-x86(3)},
-%\SeeAlso{unw\_init\_local(3)},
-%\SeeAlso{unw\_init\_remote(3)}
-\SeeAlso{unw\_resume(3)}
+\SeeAlso{unw\_create\_addr\_space(3)},
+\SeeAlso{unw\_destroy\_addr\_space(3)},
+\SeeAlso{unw\_flush\_cache(3)},
+\SeeAlso{unw\_get\_accessors(3)},
+\SeeAlso{unw\_get\_fpreg(3)},
+\SeeAlso{unw\_get\_proc\_info(3)},
+\SeeAlso{unw\_get\_proc\_name(3)},
+\SeeAlso{unw\_get\_reg(3)},
+\SeeAlso{unw\_getcontext(3)},
+\SeeAlso{unw\_init\_local(3)},
+\SeeAlso{unw\_init\_remote(3)},
+\SeeAlso{unw\_is\_fpreg(3)},
+\SeeAlso{unw\_is\_signal\_frame(3)},
+\SeeAlso{unw\_regname(3)},
+\SeeAlso{unw\_resume(3)},
+\SeeAlso{unw\_set\_caching\_policy(3)},
+\SeeAlso{unw\_set\_fpreg(3)},
+\SeeAlso{unw\_set\_reg(3)},
+\SeeAlso{unw\_step(3)}
 
 \section{Author}
 
