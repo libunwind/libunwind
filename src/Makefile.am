@@ -12,7 +12,7 @@ libunwind_setjmp_la_SOURCES_local_x86 = setjmp.c sigsetjmp.c	\
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	$(libunwind_la_SOURCES_os)					      \
 	backtrace.c							      \
-	dyn-extract.c dyn-remote.c					      \
+	Gdyn-extract.c Gdyn-remote.c Ldyn-extract.c Ldyn-remote.c	      \
 	mi-init.c							      \
 	mempool.c							      \
 	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
@@ -38,6 +38,14 @@ libunwind_la_SOURCES_local =						     \
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
+
+dwarf_sources =								\
+	dwarf/dwarf-eh.h						\
+	dwarf/global-dwarf.c						\
+	dwarf/Gexpr-dwarf.c dwarf/Gfde-dwarf.c dwarf/Gparser-dwarf.c	\
+	dwarf/Gpe-dwarf.c dwarf/Gstep-dwarf.c				\
+	dwarf/Lexpr-dwarf.c dwarf/Lfde-dwarf.c dwarf/Lparser-dwarf.c	\
+	dwarf/Lpe-dwarf.c dwarf/Lstep-dwarf.c
 
 #
 # Note: As of automake-1.6, there is a stupid limitation which requires
@@ -94,8 +102,11 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 									\
 	elf32.c elf32.h							\
 									\
+	$(dwarf_sources)						\
+	dwarf/Gfind_proc_info-lsb.c dwarf/Lfind_proc_info-lsb.c		\
+									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
-	x86/tables-x86.c x86/set_caching_policy-x86.c			\
+	x86/set_caching_policy-x86.c					\
 	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
 									\
 	x86/Gcreate_addr_space-x86.c					\
@@ -179,7 +190,7 @@ endif # ARCH_IA64
 
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I.
+AM_CPPFLAGS = -I$(top_srcdir)/include/$(arch) -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 
 EXTRA_DIST =	elfxx.h elfxx.c unwind-internal.h		\
