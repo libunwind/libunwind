@@ -236,8 +236,8 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
   if (ret != 0)
     {
-      Debug (1, "failed to %s %s\n",
-	     write ? "write" : "read", unw_regname (reg));
+      Debug (1, "failed to %s %s (ret = %d)\n",
+	     write ? "write" : "read", unw_regname (reg), ret);
       return -UNW_EBADREG;
     }
 
