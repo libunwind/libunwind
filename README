@@ -8,13 +8,12 @@ information yet, so its utility is limited.  Similarly, the HP-UX/IPF
 support is incomplete, though it is sufficient to do a basic
 backtrace.  unw_resume() is not supported, however.
 
-* Important GCC v3.4.0 Caveat
+* Important GCC v3.4.[012] Caveat
 
-GCC v3.4.0 breaks C++ ABI compatibility and because of that, libunwind
-cannot easily be used as the unwinder for GCC v3.4.0.  The GCC
-developers are aware of the problem [1] and the expectation is that
-the problem will be fixed with GCC v3.4.1.  In the meantime, it may be
-best to avoid using GCC v3.4.0.
+GCC v3.4.[012] break C++ ABI compatibility and because of that,
+libunwind cannot easily be used as the unwinder.  The GCC developers
+are aware of the problem [1] and the the problem has been fixed for
+GCC v3.4.3.
 
 [1] http://gcc.gnu.org/ml/gcc/2004-04/msg00989.html
 
@@ -35,7 +34,16 @@ testing, you may want to use a prefix of /usr/local instead.
 
 * Building with Intel compiler
 
-** Up to version 7
+** Version 8 and later
+
+Starting with version 8, the preferred name for the IA-64 Intel
+compiler is "icc" (same name as on x86).  Thus, the configure-line
+should look like this:
+
+    $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
+		LDFLAGS="-L$PWD/src/.libs"
+
+** Version 7
 
 To build libunwind with the Intel Electron compiler (ECC), it is
 recommended to run configure like this:
@@ -51,15 +59,6 @@ to ensure that /usr/include/asm/fpu.h contains a "long double" member
 called "__dummy" in the declaration of "struct ia64_fpreg".  Without
 that member, variables of type unw_context_t won't be aligned
 properly.
-
-** Version 8 and later
-
-Starting with version 8, the preferred name for the IA-64 Intel
-compiler is "icc" (same name as on x86).  Thus, the configure-line
-should look like this:
-
-    $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
-		LDFLAGS="-L$PWD/src/.libs"
 
 * Building on HP-UX
 
@@ -104,6 +103,12 @@ This does not mean that libunwind cannot be used with older compilers
 or C libraries, it just means that for certain corner cases, unwinding
 will fail.  Since they're corner cases, it is not likely for
 applications to trigger them.
+
+Note: If you get lots of errors in Gia64-test-nat and Lia64-test-nat, it's
+      almost certainly a sign of an old assembler.  The GNU assembler used
+      to encode previous-stack-pointer-relative offsets incorrectly.
+      This bug was fixed on 21-Sep-2004 so any later assembler will be
+      fine.
 
 ** Expected results on x86 Linux
 
