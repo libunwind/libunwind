@@ -23,6 +23,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <config.h>
+
+#ifdef HAVE_TTRACE
+
+int
+main (int argc, char **argv)
+{
+  printf ("FAILURE: ttrace() not supported yet\n");
+  return -1;
+}
+
+#else /* !HAVE_TTRACE */
+
 #include <errno.h>
 #include <fcntl.h>
 #include <libunwind-ptrace.h>
@@ -250,3 +263,5 @@ main (int argc, char **argv)
 
   return 0;
 }
+
+#endif /* !HAVE_TTRACE */
