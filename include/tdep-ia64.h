@@ -98,7 +98,7 @@ struct unw_addr_space
 #else
     uint32_t cache_generation;
 #endif
-    unw_word_t dyn_generation;		/* see dyn-common.h */
+    unw_word_t dyn_generation;
     unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
 
     struct ia64_script_cache global_cache;
