@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.align 32
 
 	.global __sigsetjmp
+	.global sigprocmask
 
 	.proc __sigsetjmp
 
