@@ -20,7 +20,7 @@ endif
  check_SCRIPTS_cdep =
  check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-resume-sig Ltest-resume-sig \
 			Gtest-dyn1 Ltest-dyn1 test-setjmp test-ptrace
- noinst_PROGRAMS_cdep = bt test-varargs
+ noinst_PROGRAMS_cdep = bt test-varargs Gperf-simple Lperf-simple
 endif
 
 check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
