@@ -52,6 +52,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
       ia64_init ();
     }
 
+#ifndef HAVE_SYS_UC_ACCESS_H
   /* The bsp value stored by getcontext() points to the *end* of the
      register frame of the initial function.  We correct for this by
      storing the adjusted value in sc_rbs_base, which isn't used by
@@ -63,6 +64,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   sol = (uc->uc_mcontext.sc_ar_pfs >> 7) & 0x7f;
   uc->uc_mcontext.sc_rbs_base = ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
 						    -sol);
+#endif
 
   c->as = unw_local_addr_space;
   c->as_arg = uc;
