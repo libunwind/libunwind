@@ -118,12 +118,14 @@ include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
 
 SUBDIRS = src tests doc
 
-EXTRA_DIST = include/dwarf.h include/internal.h include/mempool.h	\
+EXTRA_DIST = include/dwarf.h include/dwarf_i.h				\
+	include/internal.h include/mempool.h				\
 	include/remote.h						\
 	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/rse.h	\
 	include/ia64/script.h						\
 	include/libunwind-hppa.h include/tdep-hppa.h			\
-	include/libunwind-x86.h include/tdep-x86.h
+	include/libunwind-x86.h include/tdep-x86.h			\
+	include/x86/dwarf-config.h
 
 
 DISTCLEANFILES = include/libunwind.h include/tdep.h
@@ -322,7 +324,7 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/./include $(distdir)/aux $(distdir)/doc $(distdir)/include $(distdir)/include/ia64 $(distdir)/tests
+	$(mkinstalldirs) $(distdir)/./include $(distdir)/aux $(distdir)/doc $(distdir)/include $(distdir)/include/ia64 $(distdir)/include/x86 $(distdir)/tests
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \

@@ -169,6 +169,7 @@ libunwind_la_SOURCES_generic = \
 
 # List of arch-independent files needed by local-only library (libunwind):
 libunwind_la_SOURCES_local = \
+	$(libunwind_la_SOURCES_os_local)				\
 	mi/backtrace.c							\
 	mi/dyn-cancel.c mi/dyn-info-list.c mi/dyn-register.c		\
 	mi/Ldyn-extract.c mi/Lfind_dynamic_proc_info.c			\
@@ -188,6 +189,9 @@ libunwind_la_SOURCES_local = \
 
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
+
+#  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
+libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 dwarf_SOURCES_common = \
@@ -218,11 +222,10 @@ libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
 	ia64/regname-ia64.c
 
-@OS_LINUX_TRUE@libunwind_la_SOURCES_ia64_os = mi/_ReadULEB.c mi/_ReadSLEB.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
-	$(libunwind_la_SOURCES_local) $(libunwind_la_SOURCES_ia64_os)	   \
+	$(libunwind_la_SOURCES_local)					   \
 									   \
 	elf64.c elf64.h							   \
 									   \
@@ -302,6 +305,8 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 
 @OS_HPUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
+@OS_HPUX_TRUE@libunwind_la_SOURCES_os_local = $(libunwind_la_SOURCES_os_hpux_local)
+@OS_LINUX_TRUE@libunwind_la_SOURCES_os_local = $(libunwind_la_SOURCES_os_linux_local)
 
 @ARCH_IA64_TRUE@mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i-ia64.c
 @ARCH_IA64_TRUE@mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i-ia64.c
@@ -350,6 +355,9 @@ EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h	\
 		$(libunwind_la_SOURCES_common)		\
 		$(libunwind_la_SOURCES_local)		\
 		$(libunwind_la_SOURCES_generic)		\
+		$(libunwind_hppa_la_SOURCES_hppa)	\
+		$(libunwind_ia64_la_SOURCES_ia64)	\
+		$(libunwind_x86_la_SOURCES_x86)		\
 		$(libunwind_ptrace_a_SOURCES)		\
 		$(libunwind_setjmp_la_SOURCES_common)	\
 		$(libunwind_setjmp_la_SOURCES_hppa)	\
@@ -456,9 +464,13 @@ am__objects_16 = $(am__objects_14) $(am__objects_7) $(am__objects_15) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 libunwind_la_DEPENDENCIES =
-am__objects_17 = backtrace.lo dyn-cancel.lo dyn-info-list.lo \
-	dyn-register.lo Ldyn-extract.lo Lfind_dynamic_proc_info.lo \
-	Lget_accessors.lo Lget_proc_info_by_ip.lo Lget_proc_name.lo \
+am__objects_17 = _ReadULEB.lo _ReadSLEB.lo
+@OS_HPUX_TRUE@am__objects_18 = $(am__objects_1)
+@OS_LINUX_TRUE@am__objects_18 = $(am__objects_17)
+am__objects_19 = $(am__objects_18) backtrace.lo dyn-cancel.lo \
+	dyn-info-list.lo dyn-register.lo Ldyn-extract.lo \
+	Lfind_dynamic_proc_info.lo Lget_accessors.lo \
+	Lget_proc_info_by_ip.lo Lget_proc_name.lo \
 	Lput_dynamic_unwind_info.lo Ldestroy_addr_space.lo Lget_reg.lo \
 	Lset_reg.lo Lget_fpreg.lo Lset_fpreg.lo Lset_caching_policy.lo \
 	Backtrace.lo DeleteException.lo FindEnclosingFunction.lo \
@@ -466,23 +478,22 @@ am__objects_17 = backtrace.lo dyn-cancel.lo dyn-info-list.lo \
 	GetIP.lo GetLanguageSpecificData.lo GetRegionStart.lo \
 	GetTextRelBase.lo RaiseException.lo Resume.lo \
 	Resume_or_Rethrow.lo SetGR.lo SetIP.lo
-am__objects_18 = Lexpr-dwarf.lo Lfde-dwarf.lo Lparser-dwarf.lo \
+am__objects_20 = Lexpr-dwarf.lo Lfde-dwarf.lo Lparser-dwarf.lo \
 	Lpe-dwarf.lo Lstep-dwarf.lo
-am__objects_19 = $(am__objects_14) $(am__objects_17) elf32.lo \
-	$(am__objects_18) Lfind_proc_info-lsb.lo \
+am__objects_21 = $(am__objects_14) $(am__objects_19) elf32.lo \
+	$(am__objects_20) Lfind_proc_info-lsb.lo \
 	Lcreate_addr_space-x86.lo Lget_save_loc-x86.lo Lglobal-x86.lo \
 	Linit-x86.lo Linit_local-x86.lo Linit_remote-x86.lo \
 	Lis_signal_frame-x86.lo Lget_proc_info-x86.lo Lregs-x86.lo \
 	Lresume-x86.lo Lstep-x86.lo
-am__objects_20 = $(am__objects_5) global-hppa.lo tables-hppa.lo \
+am__objects_22 = $(am__objects_5) global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Ginit-hppa.lo Ginit_local-hppa.lo \
 	Gget_proc_info-hppa.lo Gregs-hppa.lo Gstep-hppa.lo \
 	Lget_reg-hppa.lo Lget_proc_name-hppa.lo Linit-hppa.lo \
 	Linit_local-hppa.lo Lget_proc_info-hppa.lo Lregs-hppa.lo \
 	Lstep-hppa.lo
-@OS_LINUX_TRUE@am__objects_21 = _ReadULEB.lo _ReadSLEB.lo
-am__objects_22 = $(am__objects_6) $(am__objects_17) $(am__objects_21) \
-	elf64.lo dyn_info_list-ia64.lo getcontext-ia64.lo \
+am__objects_23 = $(am__objects_6) $(am__objects_19) elf64.lo \
+	dyn_info_list-ia64.lo getcontext-ia64.lo \
 	Lcreate_addr_space-ia64.lo Lget_proc_info-ia64.lo \
 	Lget_save_loc-ia64.lo Lglobal-ia64.lo Linit-ia64.lo \
 	Linit_local-ia64.lo Linit_remote-ia64.lo \
@@ -490,10 +501,10 @@ am__objects_22 = $(am__objects_6) $(am__objects_17) $(am__objects_21) \
 	Lparser-ia64.lo Lrbs-ia64.lo Lregs-ia64.lo Lresume-ia64.lo \
 	Lscript-ia64.lo Lstep-ia64.lo Ltables-ia64.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_19)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_21)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_20)
-@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_22)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_22)
+@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_23)
 libunwind_la_OBJECTS = $(am_libunwind_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64$(EXEEXT) \
 @ARCH_IA64_TRUE@	mk_Lcursor_i-ia64$(EXEEXT)
@@ -834,6 +845,8 @@ Gresume-x86.lo: x86/Gresume-x86.c
 Gstep-x86.lo: x86/Gstep-x86.c
 libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
+_ReadULEB.lo: mi/_ReadULEB.c
+_ReadSLEB.lo: mi/_ReadSLEB.c
 backtrace.lo: mi/backtrace.c
 dyn-cancel.lo: mi/dyn-cancel.c
 dyn-info-list.lo: mi/dyn-info-list.c
@@ -899,8 +912,6 @@ Linit_local-hppa.lo: hppa/Linit_local-hppa.c
 Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
 Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
-_ReadULEB.lo: mi/_ReadULEB.c
-_ReadSLEB.lo: mi/_ReadSLEB.c
 dyn_info_list-ia64.lo: ia64/dyn_info_list-ia64.S
 getcontext-ia64.lo: ia64/getcontext-ia64.S
 Lcreate_addr_space-ia64.lo: ia64/Lcreate_addr_space-ia64.c
@@ -2363,6 +2374,42 @@ Gstep-x86.lo: x86/Gstep-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-x86.lo `test -f 'x86/Gstep-x86.c' || echo '$(srcdir)/'`x86/Gstep-x86.c
 
+_ReadULEB.o: mi/_ReadULEB.c
+@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Po' tmpdepfile='$(DEPDIR)/_ReadULEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.o `test -f 'mi/_ReadULEB.c' || echo '$(srcdir)/'`mi/_ReadULEB.c
+
+_ReadULEB.obj: mi/_ReadULEB.c
+@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Po' tmpdepfile='$(DEPDIR)/_ReadULEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.obj `cygpath -w mi/_ReadULEB.c`
+
+_ReadULEB.lo: mi/_ReadULEB.c
+@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Plo' tmpdepfile='$(DEPDIR)/_ReadULEB.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.lo `test -f 'mi/_ReadULEB.c' || echo '$(srcdir)/'`mi/_ReadULEB.c
+
+_ReadSLEB.o: mi/_ReadSLEB.c
+@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Po' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.o `test -f 'mi/_ReadSLEB.c' || echo '$(srcdir)/'`mi/_ReadSLEB.c
+
+_ReadSLEB.obj: mi/_ReadSLEB.c
+@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Po' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.obj `cygpath -w mi/_ReadSLEB.c`
+
+_ReadSLEB.lo: mi/_ReadSLEB.c
+@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Plo' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.lo `test -f 'mi/_ReadSLEB.c' || echo '$(srcdir)/'`mi/_ReadSLEB.c
+
 backtrace.o: mi/backtrace.c
 @AMDEP_TRUE@	source='mi/backtrace.c' object='backtrace.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/backtrace.Po' tmpdepfile='$(DEPDIR)/backtrace.TPo' @AMDEPBACKSLASH@
@@ -3533,42 +3580,6 @@ Lstep-hppa.lo: hppa/Lstep-hppa.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.lo `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
 
-_ReadULEB.o: mi/_ReadULEB.c
-@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Po' tmpdepfile='$(DEPDIR)/_ReadULEB.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.o `test -f 'mi/_ReadULEB.c' || echo '$(srcdir)/'`mi/_ReadULEB.c
-
-_ReadULEB.obj: mi/_ReadULEB.c
-@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Po' tmpdepfile='$(DEPDIR)/_ReadULEB.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.obj `cygpath -w mi/_ReadULEB.c`
-
-_ReadULEB.lo: mi/_ReadULEB.c
-@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Plo' tmpdepfile='$(DEPDIR)/_ReadULEB.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.lo `test -f 'mi/_ReadULEB.c' || echo '$(srcdir)/'`mi/_ReadULEB.c
-
-_ReadSLEB.o: mi/_ReadSLEB.c
-@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Po' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.o `test -f 'mi/_ReadSLEB.c' || echo '$(srcdir)/'`mi/_ReadSLEB.c
-
-_ReadSLEB.obj: mi/_ReadSLEB.c
-@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Po' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.obj `cygpath -w mi/_ReadSLEB.c`
-
-_ReadSLEB.lo: mi/_ReadSLEB.c
-@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Plo' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.lo `test -f 'mi/_ReadSLEB.c' || echo '$(srcdir)/'`mi/_ReadSLEB.c
-
 Lcreate_addr_space-ia64.o: ia64/Lcreate_addr_space-ia64.c
 @AMDEP_TRUE@	source='ia64/Lcreate_addr_space-ia64.c' object='Lcreate_addr_space-ia64.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space-ia64.Po' tmpdepfile='$(DEPDIR)/Lcreate_addr_space-ia64.TPo' @AMDEPBACKSLASH@
@@ -4036,8 +4047,6 @@ uninstall-am: uninstall-info-am uninstall-libLIBRARIES \
 	tags uninstall uninstall-am uninstall-info-am \
 	uninstall-libLIBRARIES uninstall-libLTLIBRARIES
 
-
-@OS_LINUX_TRUE@  #  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 
 @REMOTE_ONLY_TRUE@install-exec-hook:
 #	Nothing to do here....
