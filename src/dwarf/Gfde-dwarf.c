@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <string.h>
 
-#include "dwarf.h"
+#include "dwarf_i.h"
 #include "tdep.h"
 
 /* Note: we don't need to keep track of more than the first four

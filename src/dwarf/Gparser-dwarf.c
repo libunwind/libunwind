@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <string.h>
 
-#include "dwarf.h"
+#include "dwarf_i.h"
 #include "tdep.h"
 
 #define alloc_reg_state()	(mempool_alloc (&dwarf_reg_state_pool))
