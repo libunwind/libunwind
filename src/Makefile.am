@@ -1,6 +1,17 @@
+SOVERSION=0:0:0		# See comments at end of file.
+
 if REMOTE_ONLY
 else
 libunwind_la_SOURCES_common = backtrace.c
+
+#
+# This is not ideal, but I know of no other way to install an
+# alias for a library.
+#
+install-exec-hook:
+	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind.a
+	$(LN_S) -f libunwind-$(arch).so $(DESTDIR)$(libdir)/libunwind.so
+
 endif
 
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
@@ -12,29 +23,25 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 									   \
 	ia64/init.c ia64/parser.c ia64/regs.c ia64/script.c		   \
 	ia64/unw_get_reg.c ia64/unw_get_fpreg.c ia64/unw_get_save_loc.c	   \
+	ia64/unw_is_signal_frame.c					   \
 	ia64/unw_resume.c ia64/unw_set_reg.c ia64/unw_set_fpreg.c	   \
 	ia64/unw_init_local.c ia64/unw_init_remote.c ia64/unw_step.c	   \
 									   \
 	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		   \
 	ia64/Lunw_get_reg.c ia64/Lunw_get_fpreg.c ia64/Lunw_get_save_loc.c \
+	ia64/Lunw_is_signal_frame.c					   \
 	ia64/Lunw_resume.c ia64/Lunw_set_reg.c ia64/Lunw_set_fpreg.c	   \
 	ia64/Lunw_init_local.c ia64/Lunw_init_remote.c ia64/Lunw_step.c
 
 if ARCH_IA64
-libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
-else
-if ARCH_IA32
-libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia32)
-endif
-endif
-
-if ARCH_IA64
  lib_LTLIBRARIES = libunwind-ia64.la
- libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES)
+ libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
+ libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
 else
 if ARCH_IA32
  lib_LTLIBRARIES = libunwind-ia32.la
- libunwind_ia32_la_SOURCES = $(libunwind_la_SOURCES)
+ libunwind_ia32_la_SOURCES = $(libunwind_la_SOURCES_ia32)
+ libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
 endif
 endif
 
@@ -42,8 +49,6 @@ endif
 # XXX end libunwind-ia64.a to libunwind.a
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
-
-libunwind_la_LDFLAGS = -version-info 0:0:0
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
