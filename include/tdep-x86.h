@@ -125,21 +125,45 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 {
+  unw_word_t addr;
+  int ret;
+
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-# warning fix me
-  abort ();
+  if (DWARF_IS_REG_LOC (loc))
+    return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_LOC (loc),
+				       val, 0, c->as_arg);
+
+  addr = DWARF_GET_LOC (loc);
+  if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, (unw_word_t *) &val,
+				       0, c->as_arg)) < 0)
+    return ret;
+
+  return (*c->as->acc.access_mem) (c->as, addr + 4, (unw_word_t *) &val + 1, 0,
+				   c->as_arg);
 }
 
 static inline int
 dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 {
+  unw_word_t addr;
+  int ret;
+
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-# warning fix me
-  abort ();
+  if (DWARF_IS_REG_LOC (loc))
+    return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_LOC (loc),
+				       &val, 1, c->as_arg);
+
+  addr = DWARF_GET_LOC (loc);
+  if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, (unw_word_t *) &val,
+				       1, c->as_arg)) < 0)
+    return ret;
+
+  return (*c->as->acc.access_mem) (c->as, addr + 4, (unw_word_t *) &val + 1,
+				   1, c->as_arg);
 }
 
 static inline int
@@ -148,9 +172,11 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  if (DWARF_IS_FP_LOC (loc))
-#   warning fix me
-    abort ();
+  /* If a code-generator were to save a value of type unw_word_t in a
+     floating-point register, we would have to support this case.  I
+     suppose it could happen with MMX registers, but does it really
+     happen?  */
+  assert (!DWARF_IS_FP_LOC (loc));
 
   if (DWARF_IS_REG_LOC (loc))
     return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
@@ -166,9 +192,11 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  if (DWARF_IS_FP_LOC (loc))
-#   warning fix me
-    abort ();
+  /* If a code-generator were to save a value of type unw_word_t in a
+     floating-point register, we would have to support this case.  I
+     suppose it could happen with MMX registers, but does it really
+     happen?  */
+  assert (!DWARF_IS_FP_LOC (loc));
 
   if (DWARF_IS_REG_LOC (loc))
     return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), &val,
