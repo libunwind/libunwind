@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/backtrace.c)
 AC_CONFIG_AUX_DIR(aux)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(libunwind, 0.2-pre2)
+AM_INIT_AUTOMAKE(libunwind, 0.2-pre3)
 AM_MAINTAINER_MODE
 AM_CONFIG_HEADER(include/config.h)
 
@@ -42,9 +42,9 @@ build_arch=`get_arch $build_cpu`
 target_arch=`get_arch $target_cpu`
 
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$build_arch)
-AM_CONDITIONAL(ARCH_IA64, test x$target_arch == xia64)
-AM_CONDITIONAL(ARCH_HPPA, test x$target_arch == xhppa)
-AM_CONDITIONAL(ARCH_X86, test x$target_arch == xx86)
+AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
+AM_CONDITIONAL(ARCH_HPPA, test x$target_arch = xhppa)
+AM_CONDITIONAL(ARCH_X86, test x$target_arch = xx86)
 
 if test x$target_arch != x$build_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
@@ -59,7 +59,7 @@ AC_ARG_ENABLE(debug,
 LIBUNWIND___THREAD
 
 CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
-if test x$enable_debug == xyes; then
+if test x$enable_debug = xyes; then
   CPPFLAGS="${CPPFLAGS} -DDEBUG"
 else
   CPPFLAGS="${CPPFLAGS} -DNDEBUG"
