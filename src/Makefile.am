@@ -269,7 +269,7 @@ endif # ARCH_HPPA
 endif # ARCH_IA64
 
 libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
-libunwind_la_LIBADD  = -lc
+libunwind_la_LIBADD  = -lc $(LIBCRTS)
 
 lib_LIBRARIES = $(LIBRARIES_cdep)
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
