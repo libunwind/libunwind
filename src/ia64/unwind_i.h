@@ -55,7 +55,6 @@ License.  */
 # define dprintf(format...) \
 	printf (format)
 # define inline	__attribute__ ((unused))
-  extern const char *_U_ia64_regname (unw_regnum_t reg);
 #else
 # define debug(level,format...)
 # define dprintf(format...)
@@ -178,16 +177,16 @@ struct ia64_cursor
 
 #ifdef UNW_LOCAL_ONLY
 
-extern void *_U_ia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
+extern void *_Uia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
 
-#define IA64_REG_LOC(c,r)	((unw_word_t) _U_ia64_uc_addr((c)->uc, (r)))
+#define IA64_REG_LOC(c,r)	((unw_word_t) _Uia64_uc_addr((c)->uc, (r)))
 #define IA64_FPREG_LOC(c,r)						\
-	((unw_word_t) _U_ia64_uc_addr((c)->uc, (r)) | IA64_LOC_TYPE_FP)
+	((unw_word_t) _Uia64_uc_addr((c)->uc, (r)) | IA64_LOC_TYPE_FP)
 
 # define ia64_acquire_unwind_info(c,ip,i)			\
-	_U_ia64_glibc_acquire_unwind_info((ip), (i), (c)->uc)
+	_Uia64_glibc_acquire_unwind_info((ip), (i), (c)->uc)
 # define ia64_release_unwind_info(c,ip,i)			\
-	_U_ia64_glibc_release_unwind_info((i), (c)->uc)
+	_Uia64_glibc_release_unwind_info((i), (c)->uc)
 # define ia64_get(c,l,v)					\
 	(*(v) = *(unw_word_t *) IA64_MASK_LOC_TYPE(l), 0)
 # define ia64_put(c,l,v)					\
@@ -446,16 +445,16 @@ struct ia64_global_unwind_state
   };
 
 /* Convenience macros: */
-#define unw				UNW_OBJ(ia64_data)
-#define ia64_get_proc_info		UNW_OBJ(ia64_get_proc_info)
-#define ia64_create_state_record	UNW_OBJ(ia64_create_state_record)
-#define ia64_free_state_record		UNW_OBJ(ia64_free_state_record)
-#define ia64_find_save_locs		UNW_OBJ(ia64_find_save_locs)
-#define ia64_init			UNW_OBJ(ia64_init)
-#define ia64_access_reg			UNW_OBJ(ia64_access_reg)
-#define ia64_access_fpreg		UNW_OBJ(ia64_access_fpreg)
-#define ia64_scratch_loc		UNW_OBJ(ia64_scratch_loc)
-#define ia64_local_resume		UNW_OBJ(ia64_local_resume)
+#define unw				UNW_OBJ(data)
+#define ia64_get_proc_info		UNW_OBJ(get_proc_info)
+#define ia64_create_state_record	UNW_OBJ(create_state_record)
+#define ia64_free_state_record		UNW_OBJ(free_state_record)
+#define ia64_find_save_locs		UNW_OBJ(find_save_locs)
+#define ia64_init			UNW_OBJ(init)
+#define ia64_access_reg			UNW_OBJ(access_reg)
+#define ia64_access_fpreg		UNW_OBJ(access_fpreg)
+#define ia64_scratch_loc		UNW_OBJ(scratch_loc)
+#define ia64_local_resume		UNW_OBJ(local_resume)
 
 extern struct ia64_global_unwind_state unw;
 
@@ -476,9 +475,9 @@ extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_cursor_t *cursor, void *arg);
 
-extern int _U_ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info,
-					      void *arg);
-extern int _U_ia64_glibc_release_unwind_info (void *info, void *arg);
+extern int _Uia64_glibc_acquire_unwind_info (unw_word_t ip, void *info,
+					     void *arg);
+extern int _Uia64_glibc_release_unwind_info (void *info, void *arg);
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
