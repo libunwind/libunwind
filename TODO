@@ -1,10 +1,3 @@
-- According to Nicholas S. Wourms <nwourms@netscape.net>, adding this to the
-  Makefile.am:
-	AUTOMAKE_OPTIONS = 1.6 subdir-objects
-  ensures that object-files are build in separate subdirectories and that
-  in turn makes it possible for source files in different directories to
-  have the same filename, thus avoiding the need for those ugly -x86, -ia64, etc.,
-  postfixes.
 - Update the libunwind man page for the new/fixed cache-flushing behavior.
   Effectively, that unw_flush_cache() doesn't have to be called by
   applications except for extraordinary circumstances (e.g., if application
@@ -24,6 +17,13 @@ Testing:
 	  register rotation
 	+ on Linux, test access to f32-f127 in a signal handler (e.g., verify
 	  that fph partition gets initialized properly)
++ According to Nicholas S. Wourms <nwourms@netscape.net>, adding this to the
+  Makefile.am:
+	AUTOMAKE_OPTIONS = 1.6 subdir-objects
+  ensures that object-files are build in separate subdirectories and that
+  in turn makes it possible for source files in different directories to
+  have the same filename, thus avoiding the need for those ugly -x86, -ia64,
+  etc., postfixes.
 + Switch ia64 (and rest over) to using Debug() instead of debug()
 + implement non-local versions of dwarf_readXX()
 + consolidate mostly architecture-independent code such as
