@@ -61,23 +61,28 @@ should look like this:
     $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
 		LDFLAGS="-L$PWD/src/.libs"
 
-
 * Building on HP-UX
 
 For the time being, libunwind must be built with GCC on HP-UX.
-Unfortunately, gcc-3.0 and gcc-3.2 ship with a bad version of
-sys/types.h.  The workaround for this is:
+
+libunwind should be configured and installed on HP-UX like this:
+
+    $ ./configure CFLAGS="-g -O2 -mlp64" CXXFLAGS="-g -O2 -mlp64"
+
+Caveat: Unwinding of 32-bit (ILP32) binaries is not supported
+	at the moment.
+
+** Workaround for older versions of GCC
+
+GCC v3.0 and GCC v3.2 ship with a bad version of sys/types.h.  The
+workaround is to issue the following commands before running
+"configure":
 
     $ mkdir $top_dir/include/sys
     $ cp /usr/include/sys/types.h $top_dir/include/sys
 
-Apart from this glitch, libunwind should configure and install on
-HP-UX like this:
-
-    $ ./configure CFLAGS="-g -O2 -mlp64"
-
-Caveat: Unwinding of 32-bit (ILP32) binaries is not supported
-	at the moment.
+GCC v3.3.2 or later have been fixed and do not require this
+workaround.
 
 * Regression Testing
 
@@ -111,10 +116,18 @@ The following tests are expected to fail on x86 Linux:
 
 ** Expected results on HP-UX
 
-"make check" is currently unsupported for HP-UX.  The only test
-programs that are known to work at this time are tests/bt (which
-produces various backtraces) and tests/Gperf-simple, which does some
-simple performance measurements.
+"make check" is currently unsupported for HP-UX.  You can try to run
+it, but most tests will fail (and some may fail to terminate).  The
+only test programs that are known to work at this time are:
+
+     tests/bt
+     tests/Gperf-simple
+     tests/test-proc-info
+     tests/test-static-link
+     tests/Gtest-init
+     tests/Ltest-init
+     tests/Gtest-resume-sig
+     tests/Ltest-resume-sig
 
 * Performance Testing
 
