@@ -4,7 +4,7 @@ EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper		\
 		run-check-namespace check-namespace.sh.in
 
 noinst_PROGRAMS_common =
-check_PROGRAMS_common = test-init-remote test-proc-info test-static-link \
+check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
 check_SCRIPTS_common =	run-check-namespace
 
@@ -25,12 +25,12 @@ if ARCH_IA64
 			Gia64-test-readonly Lia64-test-readonly
 endif
  check_SCRIPTS_cdep =	run-ptrace-mapper
- check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	\
-			Gtest-concurrent Ltest-concurrent		\
-			Gtest-resume-sig Ltest-resume-sig		\
-			Gtest-dyn1 Ltest-dyn1				\
-			test-async-sig test-flush-cache test-mem	\
-			test-setjmp test-ptrace
+ check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	  \
+			Gtest-concurrent Ltest-concurrent		  \
+			Gtest-resume-sig Ltest-resume-sig		  \
+			Gtest-dyn1 Ltest-dyn1				  \
+			test-async-sig test-flush-cache test-init-remote  \
+			test-mem test-setjmp test-ptrace
  noinst_PROGRAMS_cdep = bt forker mapper test-varargs Gperf-simple Lperf-simple
 
 perf: perf-startup Gperf-simple Lperf-simple
