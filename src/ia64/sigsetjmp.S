@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -23,6 +23,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "jmpbuf.h"
+
 #define SIG_BLOCK 0
 
 	.align 32
@@ -36,25 +38,25 @@ __sigsetjmp:
 	.prologue
 	.save ar.pfs, r35
 	alloc loc1 = ar.pfs, 2, 3, 3, 0
-	add r16 = 16, in0
-	add out2 = 24, in0
+	add r16 = JB_MASK_SAVED*8, in0
+	add out2 = JB_MASK*8, in0
 
-	st8 [in0] = sp, 8		// sigjmp_buf[0] = sp
+	st8 [in0] = sp, (JB_RP-JB_SP)*8	// sigjmp_buf[JB_SP] = sp
 	mov out0 = SIG_BLOCK
 	.save rp, loc0
 	mov loc0 = rp
 	.body
 	;;
-	st8 [in0] = loc0, 24		// sigjmp_buf[1] = rp
-	st8 [r16] = in1			// sigjmp_buf[2] = savemask
+	st8 [in0] = loc0, (JB_BSP-JB_RP)*8	// sigjmp_buf[JB_RP] = rp
+	st8 [r16] = in1			// sigjmp_buf[JB_MASK_SAVED] = savemask
 	cmp.ne p6, p0 = in1, r0
 
 	mov out1 = r0
 	mov loc2 = ar.bsp
-(p6)	br.call.sptk.many rp = sigprocmask	// sigjmp_buf[3] = sigmask
+(p6)	br.call.sptk.many rp = sigprocmask // sigjmp_buf[JB_MASK] = sigmask
 	;;
 
-	st8 [in0] = loc2		// sigjmp_buf[4] = bsp
+	st8 [in0] = loc2		// sigjmp_buf[JB_BSP] = bsp
 	mov rp = loc0
 	nop 0
 
