@@ -35,10 +35,12 @@ unw_set_caching_policy (unw_addr_space_t as, unw_caching_policy_t policy)
   if (policy == UNW_CACHE_PER_THREAD)
     policy = UNW_CACHE_GLOBAL;
 #endif
+
+  if (policy == as->caching_policy)
+    return 0;	/* no change */
+
   as->caching_policy = policy;
-
-  if (policy == UNW_CACHE_NONE)
-    unw_flush_cache (as, 0, 0);
-
+  /* Ensure caches are empty (and initialized).  */
+  unw_flush_cache (as, 0, 0);
   return 0;
 }
