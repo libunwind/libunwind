@@ -38,6 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define UNW_TARGET	ia64
 #define UNW_TARGET_IA64	1
 
+#define _U_TDEP_QP_TRUE	0	/* see libunwind-dynamic.h  */
+
 /* This needs to be big enough to accommodate "struct cursor", while
    leaving some slack for future expansion.  Changing this value will
    require recompiling all users of this library.  Stack allocation is
@@ -94,6 +96,7 @@ typedef enum
      UNW_IA64_AR_EC = UNW_IA64_AR + 66,
 
     UNW_IA64_BR = UNW_IA64_AR + 128,	/* branch registers (b0..p7) */
+      UNW_IA64_RP = UNW_IA64_BR + 0,	/* return pointer (rp) */
     UNW_IA64_PR = UNW_IA64_BR + 8,	/* predicate registers (p0..p63) */
     UNW_IA64_CFM,
 
