@@ -27,6 +27,7 @@ struct fdesc
   };
 # define get_fdesc(fdesc,func)	(fdesc = *(struct fdesc *) &(func))
 # define get_funcp(fdesc)	((template_t) &(fdesc))
+# define get_gp(fdesc)		((fdesc).gp)
 #else
 struct fdesc
   {
@@ -34,14 +35,15 @@ struct fdesc
   };
 # define get_fdesc(fdesc,func)	(fdesc.code = (long) &(func))
 # define get_funcp(fdesc)	((template_t) (fdesc).code)
+# define get_gp(fdesc)		(0)
 #endif
 
 static void
 flush_cache (void *addr, unsigned long len)
 {
+#ifdef __ia64__
   void *end = (char *) addr + len;
 
-#ifdef __ia64__
   while (addr < end)
     {
       asm volatile ("fc %0" :: "r"(addr));
@@ -126,7 +128,7 @@ main (int argc, char *argv[])
   memset (&di, 0, sizeof (di));
   di.start_ip = (long) mem;
   di.end_ip = (long) mem + 256;
-  di.gp = fdesc.gp;
+  di.gp = get_gp (fdesc);
   di.format = UNW_INFO_FORMAT_DYNAMIC;
   di.u.pi.name_ptr = (unw_word_t) "copy_of_template";
   di.u.pi.regions = region;

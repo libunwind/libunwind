@@ -55,7 +55,7 @@ raise_exception (void *addr)
     panic ("unw_step() failed!\n");
 
   unw_get_reg (&cursor, UNW_REG_IP, &ip);
-  printf ("ip = %lx\n", ip);
+  printf ("ip = %lx\n", (long) ip);
 
   if (unw_set_reg (&cursor, UNW_REG_IP, (unw_word_t) addr) < 0)
     panic ("unw_set_reg() failed!\n");
@@ -71,11 +71,22 @@ b (void *addr)
   printf ("b(): back from raise_exception!!\n");
 }
 
+#ifndef __ia64__
+
+void *
+__builtin_ia64_bsp (void)
+{
+  return NULL;
+}
+
+#endif
+
 static int
 a (void)
 {
-  register long sp asm ("r12");
-  printf("a: sp=%lx bsp=%p\n", sp, __builtin_ia64_bsp ());
+  long stack;
+
+  printf ("a: sp=%p bsp=%p\n", &stack, __builtin_ia64_bsp ());
   b (&&handler);
   printf ("unexpected return from func()!\n");
 
@@ -83,8 +94,8 @@ a (void)
     return -1;
 
  handler:
-  printf ("exception handler: here we go (sp=%lx, bsp=%p)...\n",
-	  sp, __builtin_ia64_bsp ());
+  printf ("exception handler: here we go (sp=%p, bsp=%p)...\n",
+	  &stack, __builtin_ia64_bsp ());
   return 0;
 }
 

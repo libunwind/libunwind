@@ -39,6 +39,7 @@ static void
 do_backtrace (void)
 {
   unw_cursor_t cursor;
+  unw_proc_info_t pi;
   unw_word_t ip, sp;
   unw_context_t uc;
   char buf[512];
@@ -53,22 +54,29 @@ do_backtrace (void)
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
       unw_get_reg (&cursor, UNW_REG_SP, &sp);
       unw_get_proc_name (&cursor, buf, sizeof (buf));
-      printf ("%016lx %-32s (sp=%016lx)\n", ip, buf, sp);
+      printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
+      unw_get_proc_info (&cursor, &pi);
+      printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
+	      (long) pi.start_ip, (long) pi.end_ip,
+	      (long) pi.handler, (long) pi.lsda);
+
+#if UNW_TARGET_IA64
       {
-	unw_proc_info_t pi;
 	unw_word_t bsp;
 
-	unw_get_proc_info (&cursor, &pi);
 	unw_get_reg (&cursor, UNW_IA64_BSP, &bsp);
-	printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx bsp=%lx\n",
-		pi.start_ip, pi.end_ip, pi.handler, pi.lsda, bsp);
+	printf (" bsp=%lx", bsp);
       }
+#endif
+      printf ("\n");
+
       ret = unw_step (&cursor);
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
-	  printf ("FAILURE: unw_step() returned %d for ip=%lx\n", ret, ip);
+	  printf ("FAILURE: unw_step() returned %d for ip=%lx\n",
+		  ret, (long) ip);
 	}
     }
   while (ret > 0);
@@ -88,9 +96,19 @@ foo (void)
 }
 
 void
+#ifdef UNW_TARGET_X86
+sighandler (int signal, struct sigcontext sc)
+#else
 sighandler (int signal, void *siginfo, struct sigcontext *sc)
+#endif
 {
-  printf ("sighandler: got signal %d @ %lx\n", signal, sc->sc_ip);
+  printf ("sighandler: got signal %d", signal);
+#if UNW_TARGET_IA64
+  printf (" @ %lx", sc->sc_ip);
+#elif UNW_TARGET_X86
+  printf (" @ %lx", sc.eip);
+#endif
+  printf ("\n");
 
   do_backtrace();
 }
