@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
-EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper		\
+EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 		run-check-namespace check-namespace.sh.in
 
 noinst_PROGRAMS_common =
@@ -25,7 +25,7 @@ if ARCH_IA64
 			Gia64-test-readonly Lia64-test-readonly		\
 			ia64-test-setjmp ia64-test-sig
 endif
- check_SCRIPTS_cdep =	run-ptrace-mapper
+ check_SCRIPTS_cdep =	run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
@@ -33,7 +33,8 @@ endif
 			Gtest-dyn1 Ltest-dyn1				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace
- noinst_PROGRAMS_cdep = forker mapper test-varargs Gperf-simple Lperf-simple
+ noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
+			Gperf-simple Lperf-simple
 
 perf: perf-startup Gperf-simple Lperf-simple
 	@echo "########## Basic performance of generic libunwind:"
@@ -74,6 +75,9 @@ Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
 test_static_link_LDFLAGS = -static
 forker_LDFLAGS = -static
+Gtest_bt_SOURCES = Gtest-bt.c ident.c
+Ltest_bt_SOURCES = Ltest-bt.c ident.c
+test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 
 LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
