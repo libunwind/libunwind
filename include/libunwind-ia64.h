@@ -28,6 +28,8 @@ License.  */
 
 #include <ucontext.h>
 
+typedef uint64_t unw_tdep_word_t;
+
 typedef enum
   {
     /* Note: general registers are excepted to start with index 0.
@@ -36,7 +38,6 @@ typedef enum
        _Unwind_SetGR() and _Unwind_GetGR() for details.  */
     UNW_IA64_GR = 0,			/* general registers (r0..r127) */
      UNW_IA64_GP = UNW_IA64_GR + 1,
-     UNW_IA64_SP = UNW_IA64_GR + 12,
      UNW_IA64_TP = UNW_IA64_GR + 13,
 
     UNW_IA64_NAT = UNW_IA64_GR + 128,	/* NaT registers (nat0..nat127) */
@@ -62,9 +63,20 @@ typedef enum
     UNW_IA64_CFM,
 
     /* frame info (read-only): */
-    UNW_IA64_CURRENT_BSP,	/* read-only */
+    UNW_IA64_CURRENT_BSP,
+    UNW_IA64_IP,
+    UNW_IA64_SP,
+    UNW_IA64_PROC_START,
+    UNW_IA64_HANDLER,
+    UNW_IA64_LSDA,
 
-    UNW_TDEP_LAST_REG = UNW_IA64_CURRENT_BSP
+    UNW_TDEP_LAST_REG = UNW_IA64_LSDA,
+
+    UNW_TDEP_IP = UNW_IA64_IP,
+    UNW_TDEP_SP = UNW_IA64_SP,
+    UNW_TDEP_PROC_START = UNW_IA64_PROC_START,
+    UNW_TDEP_HANDLER = UNW_IA64_HANDLER,
+    UNW_TDEP_LSDA = UNW_IA64_LSDA,
   }
 ia64_regnum_t;
 
@@ -74,12 +86,14 @@ ia64_regnum_t;
 typedef struct unw_ia64_table
   {
     const char *name;		/* table name (or NULL if none) */
-    unw_word_t gp;		/* global pointer for this load-module */
-    unw_word_t segbase;		/* base for offsets in the unwind table */
-    unw_word_t length;		/* number of entries in unwind table array */
+    unw_tdep_word_t segbase;	/* base for offsets in the unwind table */
+    unw_tdep_word_t start;	/* starting IP covered by table */
+    unw_tdep_word_t end;	/* first IP _not_ covered table */
+    unw_tdep_word_t gp;		/* global pointer for this load-module */
+    unw_tdep_word_t length;	/* number of entries in unwind table array */
 
-    /* Local copy of the unwind descriptor table: */
-    const struct ia64_unwind_table_entry *array;
+    /* Pointer to local copy of the unwind descriptor table: */
+    void *array;
 
     /* Local copy of the unwind descriptor information.  This is
        initialized such that adding the unwind entry's info_offset
