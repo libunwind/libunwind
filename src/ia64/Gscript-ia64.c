@@ -184,6 +184,7 @@ script_new (struct ia64_script_cache *cache, unw_word_t ip)
   script->ip = ip;
   script->hint = 0;
   script->count = 0;
+  script->abi_marker = 0;
   return script;
 }
 
@@ -219,15 +220,15 @@ emit_nat_info (struct ia64_state_record *sr, int i, struct ia64_script *script)
   switch (r->where)
     {
     case IA64_WHERE_GR:
-      val = IA64_LOC (r->val, 0);
+      opc = IA64_INSN_SET_REG;
+      val = r->val;
       break;
 
     case IA64_WHERE_FR:
-      val = 0;			/* value doesn't matter... */
-      break;
+      break;				/* value doesn't matter... */
 
     case IA64_WHERE_BR:
-      val = IA64_LOC (0, 0);	/* no NaT bit */
+      /* val==0 results in IA64_LOC_NULL, i.e., no NaT bit */
       break;
 
     case IA64_WHERE_PSPREL:
@@ -241,7 +242,7 @@ emit_nat_info (struct ia64_state_record *sr, int i, struct ia64_script *script)
       return;
     }
   insn.opc = opc;
-  insn.dst = unw.preg_index[i];
+  insn.dst = i;
   insn.val = val;
   script_emit (script, insn);
 }
@@ -273,7 +274,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 	}
       else if (rval >= 4 && rval <= 7)
 	/* register got spilled to a preserved register */
-	val = unw.preg_index[IA64_REG_R4 + (rval - 4)];
+	val = IA64_REG_R4 + (rval - 4);
       else
 	{
 	  /* register got spilled to a scratch register */
@@ -284,9 +285,9 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 
     case IA64_WHERE_FR:
       if (rval <= 5)
-	val = unw.preg_index[IA64_REG_F2 + (rval - 1)];
+	val = IA64_REG_F2 + (rval - 1);
       else if (rval >= 16 && rval <= 31)
-	val = unw.preg_index[IA64_REG_F16 + (rval - 16)];
+	val = IA64_REG_F16 + (rval - 16);
       else
 	{
 	  opc = IA64_INSN_MOVE_SCRATCH;
@@ -296,7 +297,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 
     case IA64_WHERE_BR:
       if (rval >= 1 && rval <= 5)
-	val = unw.preg_index[IA64_REG_B1 + (rval - 1)];
+	val = IA64_REG_B1 + (rval - 1);
       else
 	{
 	  opc = IA64_INSN_MOVE_SCRATCH;
@@ -322,7 +323,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
       break;
     }
   insn.opc = opc;
-  insn.dst = unw.preg_index[i];
+  insn.dst = i;
   insn.val = val;
   script_emit (script, insn);
   if (is_preserved_gr)
@@ -330,11 +331,10 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 
   if (i == IA64_REG_PSP)
     {
-      /* info->psp must contain the _value_ of the previous sp, not
-	 it's save location.  We get this by dereferencing the value
-	 we just stored in info->psp: */
-      insn.opc = IA64_INSN_LOAD;
-      insn.dst = insn.val = unw.preg_index[IA64_REG_PSP];
+      /* c->psp must contain the _value_ of the previous sp, not it's
+	 save-location.  We get this by dereferencing the value we
+	 just stored in loc[IA64_REG_PSP]: */
+      insn.opc = IA64_INSN_LOAD_PSP;
       script_emit (script, insn);
     }
 }
@@ -360,8 +360,7 @@ build_script (struct cursor *c, struct ia64_script *script)
       && sr.curr.reg[IA64_REG_PSP].val != 0)
     {
       /* new psp is psp plus frame size */
-      insn.opc = IA64_INSN_ADD;
-      insn.dst = struct_offset (struct cursor, psp) / 8;
+      insn.opc = IA64_INSN_INC_PSP;
       insn.val = sr.curr.reg[IA64_REG_PSP].val;	/* frame size */
       script_emit (script, insn);
     }
@@ -387,14 +386,7 @@ build_script (struct cursor *c, struct ia64_script *script)
   for (i = IA64_REG_PSP; i < IA64_NUM_PREGS; ++i)
     compile_reg (&sr, i, script);
 
-  if (sr.is_signal_frame)
-    {
-      insn.opc = IA64_INSN_SET;
-      insn.dst = struct_offset (struct cursor, is_signal_frame) / 8;
-      insn.val = 1;
-      script_emit (script, insn);
-    }
-
+  script->abi_marker = sr.abi_marker;
   script_finalize (script, c, &sr);
 
   ia64_free_state_record (&sr);
@@ -409,14 +401,16 @@ static inline int
 run_script (struct ia64_script *script, struct cursor *c)
 {
   struct ia64_script_insn *ip, *limit, next_insn;
-  unw_word_t val, unat_addr, *s = (unw_word_t *) c;
+  unw_word_t val, unat_addr;
   unsigned long opc, dst;
+  ia64_loc_t loc;
   int ret;
 
   c->pi = script->pi;
   ip = script->insn;
   limit = script->insn + script->count;
   next_insn = *ip;
+  c->abi_marker = script->abi_marker;
 
   while (ip++ < limit)
     {
@@ -428,49 +422,52 @@ run_script (struct ia64_script *script, struct cursor *c)
       switch (opc)
 	{
 	case IA64_INSN_SET:
-	  s[dst] = val;
+	  loc = IA64_LOC_ADDR (val, 0);
 	  break;
 
-	case IA64_INSN_ADD:
-	  s[dst] += val;
+	case IA64_INSN_SET_REG:
+	  loc = IA64_LOC_REG (val, 0);
 	  break;
 
 	case IA64_INSN_ADD_PSP:
-	  s[dst] = c->psp + val;
+	  loc = IA64_LOC_ADDR (c->psp + val, 0);
 	  break;
 
 	case IA64_INSN_ADD_SP:
-	  s[dst] = c->sp + val;
+	  loc = IA64_LOC_ADDR (c->sp + val, 0);
 	  break;
 
 	case IA64_INSN_MOVE:
-	  s[dst] = s[val];
+	  loc = c->loc[val];
 	  break;
 
 	case IA64_INSN_MOVE_SCRATCH:
-	  s[dst] = ia64_scratch_loc (c, val);
+	  loc = ia64_scratch_loc (c, val);
 	  break;
 
 	case IA64_INSN_MOVE_STACKED:
 	  val = rotate_gr (c, val);
-	  ret = ia64_get_stacked (c, val, &s[dst], NULL);
-	  if (ret < 0)
-		  return ret;
+	  if ((ret = ia64_get_stacked (c, val, &loc, NULL)) < 0)
+	    return ret;
 	  break;
 
 	case IA64_INSN_SETNAT_MEMSTK:
-	  ret = ia64_get (c, c->pri_unat_loc, &unat_addr);
-	  if (ret < 0)
+	  if ((ret = ia64_get (c, c->loc[IA64_REG_PRI_UNAT_MEM],
+			       &unat_addr)) < 0)
 	    return ret;
-	  s[dst] = IA64_LOC (unat_addr >> 3, IA64_LOC_TYPE_MEMSTK_NAT);
+	  loc = IA64_LOC_ADDR (unat_addr, IA64_LOC_TYPE_MEMSTK_NAT);
 	  break;
 
-	case IA64_INSN_LOAD:
-	  ret = ia64_get (c, s[val], &s[dst]);
-	  if (ret < 0)
+	case IA64_INSN_INC_PSP:
+	  c->psp += val;
+	  continue;
+
+	case IA64_INSN_LOAD_PSP:
+	  if ((ret = ia64_get (c, c->loc[IA64_REG_PSP], &c->psp)) < 0)
 	    return ret;
-	  break;
+	  continue;
 	}
+      c->loc[dst] = loc;
     }
   return 0;
 }
