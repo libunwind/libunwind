@@ -68,7 +68,7 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
       di = _UPTi_find_unwind_table (ui, as, path, lo, off);
       if (di)
 	{
-	  res = _Uia64_find_dyn_list (as, &di, arg);
+	  res = _Uia64_find_dyn_list (as, di, arg);
 	  if (res && count++ == 0)
 	    {
 	      debug (100, "%s: dyn_info_list_addr = 0x%lx\n",
