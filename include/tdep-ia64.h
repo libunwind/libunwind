@@ -79,10 +79,19 @@ ia64_loc_t;
 
 #include "ia64/script.h"
 
+#define ABI_UNKNOWN			0
+#define ABI_LINUX			1
+#define ABI_HPUX			2
+#define ABI_FREEBSD			3
+#define ABI_OPENVMS			4
+#define ABI_NSK				5	/* Tandem/HP Non-Stop Kernel */
+#define ABI_WINDOWS			6
+
 struct unw_addr_space
   {
     struct unw_accessors acc;
     int big_endian;
+    int abi;	/* abi < 0 => unknown, 0 => SysV, 1 => HP-UX, 2 => Windows */
     unw_caching_policy_t caching_policy;
     uint32_t cache_generation;
     unw_word_t dyn_generation;		/* see dyn-common.h */
@@ -91,6 +100,9 @@ struct unw_addr_space
     struct ia64_script_cache global_cache;
    };
 
+/* Note: The ABI numbers in the ABI-markers (.unwabi directive) are
+   not the same as the above ABI numbers (which are more
+   fine-grained).  */
 #define ABI_MARKER_LINUX_SIGTRAMP	((0 << 8) | 's')
 #define ABI_MARKER_HP_UX_SIGTRAMP	((1 << 8) | 1)
 
