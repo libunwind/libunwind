@@ -80,6 +80,14 @@ typedef enum
   }
 unw_frame_regnum_t;
 
+typedef enum
+  {
+    UNW_CACHE_NONE,			/* no caching */
+    UNW_CACHE_GLOBAL,			/* shared global cache */
+    UNW_CACHE_PER_THREAD		/* per-thread caching */
+  }
+unw_caching_policy_t;
+
 typedef int unw_regnum_t;
 
 /* The unwind cursor starts at the youngest (most deeply nested) frame
@@ -218,3 +226,17 @@ extern const char *UNW_OBJ(regname) (int regnum);
    this one is re-entrant (i.e., the returned string must be a string
    constant.  */
 #define unw_regname(r)		UNW_OBJ(regname)(r)
+
+/* Sets the caching policy.  Caching can be disabled completely by
+   setting the policy to UNW_CACHE_NONE.  With UNW_CACHE_GLOBAL, there
+   is a single cache that is shared across all threads.  With
+   UNW_CACHE_PER_THREAD, each thread gets its own cache, which can
+   improve performance thanks to less locking and better locality.  By
+   default, UNW_CACHE_GLOBAL is in effect.  */
+#define unw_set_caching_policy(p)	UNW_OBJ(set_caching_policy)(p)
+
+/* Flush all caches (global, per-thread, or any other caches that
+   might exist).  This function must be called if any of unwind
+   information might have changed (e.g., because a library might have
+   been removed via a call to dlclose()).  */
+#define unw_flush_cache()	UNW_OBJ(flush_cache)()
