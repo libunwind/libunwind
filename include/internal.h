@@ -39,6 +39,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <pthread.h>
 #include <signal.h>
 
+#ifdef HAVE_ENDIAN_H
+# include <endian.h>
+#else
+# define __LITTLE_ENDIAN	1234
+# define __BIG_ENDIAN		4321
+# if defined(__hpux)
+#   define __BYTE_ORDER __LITTLE_ENDIAN
+# else
+#   error Host has unknown byte-order.
+# endif
+#endif
+
 #ifdef __GNUC__
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
 #  define HIDDEN	__attribute__((visibility ("hidden")))
