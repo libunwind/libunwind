@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -33,9 +33,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #ifdef __GNUC__
-# define HIDDEN	__attribute__((visibility ("hidden")))
+# define HIDDEN		__attribute__((visibility ("hidden")))
+# define likely(x)	__builtin_expect ((x), 1)
+# define unlikely(x)	__builtin_expect ((x), 0)
 #else
 # define HIDDEN
+# define likely(x)
+# define unlikely(x)
 #endif
 
 #ifdef DEBUG
@@ -54,11 +58,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #else
 # define debug(level,format...)
 # define dprintf(format...)
-# ifdef __GNUC__
-# else
-#  define inline	/* nothing */
-# endif
 #endif
+
+#define NELEMS(a)	(sizeof (a) / sizeof ((a)[0]))
 
 /* Make it easy to write thread-safe code which may or may not be
    linked against libpthread.  The macros below can be used
