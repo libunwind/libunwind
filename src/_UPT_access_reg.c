@@ -40,7 +40,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 
 #if DEBUG
   if (write)
-    debug (100, "%s: %s <- %lx\n", __FUNCTION__ unw_regname (reg), *val);
+    debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
 #endif
 
 #if UNW_TARGET_IA64
@@ -183,7 +183,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
  out:
 #if DEBUG
   if (!write)
-    debug (100, "%s: %s -> %lx\n", __FUNCTION__ unw_regname (reg), *val);
+    debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
 #endif
   return 0;
 }
