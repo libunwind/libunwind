@@ -104,6 +104,7 @@ struct unw_addr_space
    not the same as the above ABI numbers (which are more
    fine-grained).  */
 #define ABI_MARKER_LINUX_SIGTRAMP	((0 << 8) | 's')
+#define ABI_MARKER_LINUX_INTERRUPT	((0 << 8) | 'i')
 #define ABI_MARKER_HP_UX_SIGTRAMP	((1 << 8) | 1)
 
 struct cursor
@@ -132,7 +133,8 @@ struct cursor
     short hint;
     short prev_script;
 
-    uint16_t abi_marker;;
+    uint16_t abi_marker;	/* abi_marker for current frame (if any) */
+    uint16_t last_abi_marker;	/* last abi_marker encountered so far */
     uint8_t eh_valid_mask;
 
     int pi_valid : 1;		/* is proc_info valid? */
