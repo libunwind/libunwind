@@ -124,7 +124,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	install-exec-recursive installdirs-recursive install-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = README $(include_HEADERS) ./include/config.h.in AUTHORS \
-	COPYING ChangeLog INSTALL Makefile.am Makefile.in NEWS \
+	COPYING ChangeLog INSTALL Makefile.am Makefile.in NEWS TODO \
 	acinclude.m4 aclocal.m4 aux/config.guess aux/config.sub \
 	aux/depcomp aux/install-sh aux/ltmain.sh aux/missing \
 	aux/mkinstalldirs configure configure.in

@@ -93,6 +93,7 @@ am__quote = @am__quote@
 arch = @arch@
 install_sh = @install_sh@
 SOVERSION = 1:0:0		# See comments at end of file.
+SETJMP_SO_VERSION = 0:0:0
 
 
 # Nothing special.
@@ -105,7 +106,21 @@ SOVERSION = 1:0:0		# See comments at end of file.
 @REMOTE_ONLY_FALSE@	_UPT_reg_offset.c
 
 
+@REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind-setjmp.la
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_LDFLAGS = -version-info $(SETJMP_SO_VERSION)
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_LIBADD = libunwind-$(arch).la
+
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp-ia64.S ia64/sigsetjmp-ia64.S \
+@REMOTE_ONLY_FALSE@				   ia64/siglongjmp-ia64.S
+
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_hppa = setjmp.c sigsetjmp.c hppa/siglongjmp-hppa.S
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_x86 = setjmp.c sigsetjmp.c x86/siglongjmp-x86.S
+
+@OS_LINUX_TRUE@libunwind_la_SOURCES_os = os-linux.h os-linux.c
+
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
+	$(libunwind_la_SOURCES_os)				\
 	backtrace.c get_proc_name.c				\
 	dyn-cancel.c dyn-extract.c dyn-register.c		\
 	dyn-remote.c						\
@@ -126,7 +141,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
-	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
+	elf64.c								      \
+	ia64/_Uia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
@@ -178,20 +194,35 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 	x86/Lstep-x86.c
 
 
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@lib_LTLIBRARIES = libunwind-x86.la
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@lib_LTLIBRARIES = libunwind-hppa.la
-@ARCH_IA64_TRUE@lib_LTLIBRARIES = libunwind-ia64.la
+@ARCH_IA64_TRUE@mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
+@ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64
+@ARCH_IA64_TRUE@BUILT_SOURCES = cursor_i.h
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@lib_LTLIBRARIES_arch = libunwind-x86.la
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@lib_LTLIBRARIES_arch = libunwind-hppa.la
+@ARCH_IA64_TRUE@lib_LTLIBRARIES_arch = libunwind-ia64.la
 @ARCH_IA64_TRUE@libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
 @ARCH_IA64_TRUE@libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@				  $(libunwind_setjmp_la_SOURCES_x86)
+
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@				  $(libunwind_setjmp_la_SOURCES_hppa)
+
+@ARCH_IA64_TRUE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
+@ARCH_IA64_TRUE@				  $(libunwind_setjmp_la_SOURCES_ia64)
+
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_SOURCES = $(libunwind_la_SOURCES_hppa)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_LDFLAGS = -version-info $(SOVERSION)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_SOURCES = $(libunwind_la_SOURCES_x86)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
 
+lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
+
 
 # XXX Need to create symlinks from libunwind-ia64.so to libunwind.so
 # XXX end libunwind-ia64.a to libunwind.a
-AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -I.
+AM_CCASFLAGS = $(AM_CPPFLAGS)
 subdir = src
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
@@ -205,12 +236,13 @@ libunwind_hppa_la_LIBADD =
 @REMOTE_ONLY_FALSE@	_UPT_destroy.lo _UPT_find_proc_info.lo \
 @REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.lo \
 @REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo _UPT_reg_offset.lo
-am__objects_2 = $(am__objects_1) backtrace.lo get_proc_name.lo \
-	dyn-cancel.lo dyn-extract.lo dyn-register.lo dyn-remote.lo \
-	mi-init.lo mempool.lo Gfind_dynamic_proc_info.lo \
+@OS_LINUX_TRUE@am__objects_2 = os-linux.lo
+am__objects_3 = $(am__objects_1) $(am__objects_2) backtrace.lo \
+	get_proc_name.lo dyn-cancel.lo dyn-extract.lo dyn-register.lo \
+	dyn-remote.lo mi-init.lo mempool.lo Gfind_dynamic_proc_info.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
 	Lput_dynamic_unwind_info.lo
-am__objects_3 = $(am__objects_2) flush_cache-hppa.lo \
+am__objects_4 = $(am__objects_3) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
 	Ginit_local-hppa.lo Gget_proc_info-hppa.lo Gregs-hppa.lo \
@@ -218,10 +250,10 @@ am__objects_3 = $(am__objects_2) flush_cache-hppa.lo \
 	Linit-hppa.lo Linit_local-hppa.lo Lget_proc_info-hppa.lo \
 	Lregs-hppa.lo Lstep-hppa.lo
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_hppa_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_3)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_4)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-am__objects_4 = $(am__objects_2) __ia64_install_context.lo \
+am__objects_5 = $(am__objects_3) elf64.lo _Uia64_install_context.lo \
 	global-ia64.lo rbs-ia64.lo tables-ia64.lo get_accessors-ia64.lo \
 	flush_cache-ia64.lo set_caching_policy-ia64.lo regname-ia64.lo \
 	Ginit-ia64.lo Gparser-ia64.lo Gregs-ia64.lo Gscript-ia64.lo \
@@ -237,18 +269,47 @@ am__objects_4 = $(am__objects_2) __ia64_install_context.lo \
 	Lget_save_loc-ia64.lo Lis_signal_frame-ia64.lo Lresume-ia64.lo \
 	Lset_reg-ia64.lo Lset_fpreg-ia64.lo Linit_local-ia64.lo \
 	Linit_remote-ia64.lo Lstep-ia64.lo
-@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_4)
+@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_5)
 libunwind_ia64_la_OBJECTS = $(am_libunwind_ia64_la_OBJECTS)
+@REMOTE_ONLY_TRUE@libunwind_setjmp_la_DEPENDENCIES =
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_DEPENDENCIES = \
+@REMOTE_ONLY_FALSE@	libunwind-$(arch).la
+@REMOTE_ONLY_FALSE@am__objects_6 = longjmp.lo siglongjmp.lo
+@REMOTE_ONLY_FALSE@am__objects_7 = setjmp.lo sigsetjmp.lo \
+@REMOTE_ONLY_FALSE@	siglongjmp-x86.lo
+@REMOTE_ONLY_FALSE@am__objects_8 = setjmp.lo sigsetjmp.lo \
+@REMOTE_ONLY_FALSE@	siglongjmp-hppa.lo
+@REMOTE_ONLY_FALSE@am__objects_9 = setjmp-ia64.lo sigsetjmp-ia64.lo \
+@REMOTE_ONLY_FALSE@	siglongjmp-ia64.lo
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_setjmp_la_OBJECTS = \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_6) \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_7)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_setjmp_la_OBJECTS = \
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_6) \
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_8)
+@ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_6) \
+@ARCH_IA64_TRUE@	$(am__objects_9)
+libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 libunwind_x86_la_LIBADD =
-am__objects_5 = $(am__objects_2) flush_cache-x86.lo get_accessors-x86.lo \
-	global-x86.lo tables-x86.lo Gget_reg-x86.lo \
-	Gget_proc_name-x86.lo Ginit-x86.lo Ginit_local-x86.lo \
-	Gget_proc_info-x86.lo Gregs-x86.lo Gstep-x86.lo Lget_reg-x86.lo \
-	Lget_proc_name-x86.lo Linit-x86.lo Linit_local-x86.lo \
-	Lget_proc_info-x86.lo Lregs-x86.lo Lstep-x86.lo
+am__objects_10 = $(am__objects_3) flush_cache-x86.lo \
+	get_accessors-x86.lo global-x86.lo tables-x86.lo \
+	Gget_reg-x86.lo Gget_proc_name-x86.lo Ginit-x86.lo \
+	Ginit_local-x86.lo Gget_proc_info-x86.lo Gregs-x86.lo \
+	Gstep-x86.lo Lget_reg-x86.lo Lget_proc_name-x86.lo Linit-x86.lo \
+	Linit_local-x86.lo Lget_proc_info-x86.lo Lregs-x86.lo \
+	Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_5)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_10)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
+@ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64$(EXEEXT)
+@ARCH_IA64_FALSE@noinst_PROGRAMS =
+PROGRAMS = $(noinst_PROGRAMS)
+
+@ARCH_IA64_TRUE@am_mk_cursor_i_ia64_OBJECTS = mk_cursor_i-ia64.$(OBJEXT)
+mk_cursor_i_ia64_OBJECTS = $(am_mk_cursor_i_ia64_OBJECTS)
+mk_cursor_i_ia64_LDADD = $(LDADD)
+mk_cursor_i_ia64_DEPENDENCIES =
+mk_cursor_i_ia64_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -339,7 +400,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-extract.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/dyn-remote.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/dyn-remote.Plo ./$(DEPDIR)/elf64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-x86.Plo \
@@ -349,10 +410,14 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/get_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-ia64.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/mempool.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mi-init.Plo ./$(DEPDIR)/rbs-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/longjmp.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/mempool.Plo ./$(DEPDIR)/mi-init.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/mk_cursor_i-ia64.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/os-linux.Plo ./$(DEPDIR)/rbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/setjmp.Plo ./$(DEPDIR)/siglongjmp.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/sigsetjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-x86.Plo
@@ -368,11 +433,13 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) \
-	$(libunwind_x86_la_SOURCES)
+	$(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) \
+	$(mk_cursor_i_ia64_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_x86_la_SOURCES)
+SOURCES = $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(mk_cursor_i_ia64_SOURCES)
 
-all: all-am
+all: $(BUILT_SOURCES)
+	$(MAKE) $(AM_MAKEFLAGS) all-am
 
 .SUFFIXES:
 .SUFFIXES: .S .c .lo .o .obj
@@ -429,7 +496,7 @@ Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
 libunwind-hppa.la: $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_hppa_la_LDFLAGS) $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_LIBADD) $(LIBS)
-__ia64_install_context.lo: ia64/__ia64_install_context.S
+_Uia64_install_context.lo: ia64/_Uia64_install_context.S
 global-ia64.lo: ia64/global-ia64.c
 rbs-ia64.lo: ia64/rbs-ia64.c
 tables-ia64.lo: ia64/tables-ia64.c
@@ -475,6 +542,13 @@ Linit_remote-ia64.lo: ia64/Linit_remote-ia64.c
 Lstep-ia64.lo: ia64/Lstep-ia64.c
 libunwind-ia64.la: $(libunwind_ia64_la_OBJECTS) $(libunwind_ia64_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_ia64_la_LDFLAGS) $(libunwind_ia64_la_OBJECTS) $(libunwind_ia64_la_LIBADD) $(LIBS)
+siglongjmp-x86.lo: x86/siglongjmp-x86.S
+siglongjmp-hppa.lo: hppa/siglongjmp-hppa.S
+setjmp-ia64.lo: ia64/setjmp-ia64.S
+sigsetjmp-ia64.lo: ia64/sigsetjmp-ia64.S
+siglongjmp-ia64.lo: ia64/siglongjmp-ia64.S
+libunwind-setjmp.la: $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_DEPENDENCIES) 
+	$(LINK) -rpath $(libdir) $(libunwind_setjmp_la_LDFLAGS) $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_LIBADD) $(LIBS)
 flush_cache-x86.lo: x86/flush_cache-x86.c
 get_accessors-x86.lo: x86/get_accessors-x86.c
 global-x86.lo: x86/global-x86.c
@@ -495,6 +569,17 @@ Lregs-x86.lo: x86/Lregs-x86.c
 Lstep-x86.lo: x86/Lstep-x86.c
 libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
+
+clean-noinstPROGRAMS:
+	@list='$(noinst_PROGRAMS)'; for p in $$list; do \
+	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  echo " rm -f $$p $$f"; \
+	  rm -f $$p $$f ; \
+	done
+mk_cursor_i-ia64.$(OBJEXT): ia64/mk_cursor_i-ia64.c
+mk_cursor_i-ia64$(EXEEXT): $(mk_cursor_i_ia64_OBJECTS) $(mk_cursor_i_ia64_DEPENDENCIES) 
+	@rm -f mk_cursor_i-ia64$(EXEEXT)
+	$(LINK) $(mk_cursor_i_ia64_LDFLAGS) $(mk_cursor_i_ia64_OBJECTS) $(mk_cursor_i_ia64_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -585,6 +670,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-extract.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-register.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flush_cache-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flush_cache-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flush_cache-x86.Plo@am__quote@
@@ -595,11 +681,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/longjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mi-init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_cursor_i-ia64.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/setjmp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siglongjmp.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigsetjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-x86.Plo@am__quote@
@@ -616,14 +708,59 @@ distclean-depend:
 .S.lo:
 	$(LTCCASCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
-__ia64_install_context.o: ia64/__ia64_install_context.S
-	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o __ia64_install_context.o `test -f 'ia64/__ia64_install_context.S' || echo '$(srcdir)/'`ia64/__ia64_install_context.S
+_Uia64_install_context.o: ia64/_Uia64_install_context.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_context.o `test -f 'ia64/_Uia64_install_context.S' || echo '$(srcdir)/'`ia64/_Uia64_install_context.S
 
-__ia64_install_context.obj: ia64/__ia64_install_context.S
-	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o __ia64_install_context.obj `cygpath -w ia64/__ia64_install_context.S`
+_Uia64_install_context.obj: ia64/_Uia64_install_context.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_context.obj `cygpath -w ia64/_Uia64_install_context.S`
 
-__ia64_install_context.lo: ia64/__ia64_install_context.S
-	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o __ia64_install_context.lo `test -f 'ia64/__ia64_install_context.S' || echo '$(srcdir)/'`ia64/__ia64_install_context.S
+_Uia64_install_context.lo: ia64/_Uia64_install_context.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_context.lo `test -f 'ia64/_Uia64_install_context.S' || echo '$(srcdir)/'`ia64/_Uia64_install_context.S
+
+siglongjmp-x86.o: x86/siglongjmp-x86.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-x86.o `test -f 'x86/siglongjmp-x86.S' || echo '$(srcdir)/'`x86/siglongjmp-x86.S
+
+siglongjmp-x86.obj: x86/siglongjmp-x86.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-x86.obj `cygpath -w x86/siglongjmp-x86.S`
+
+siglongjmp-x86.lo: x86/siglongjmp-x86.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-x86.lo `test -f 'x86/siglongjmp-x86.S' || echo '$(srcdir)/'`x86/siglongjmp-x86.S
+
+siglongjmp-hppa.o: hppa/siglongjmp-hppa.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-hppa.o `test -f 'hppa/siglongjmp-hppa.S' || echo '$(srcdir)/'`hppa/siglongjmp-hppa.S
+
+siglongjmp-hppa.obj: hppa/siglongjmp-hppa.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-hppa.obj `cygpath -w hppa/siglongjmp-hppa.S`
+
+siglongjmp-hppa.lo: hppa/siglongjmp-hppa.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-hppa.lo `test -f 'hppa/siglongjmp-hppa.S' || echo '$(srcdir)/'`hppa/siglongjmp-hppa.S
+
+setjmp-ia64.o: ia64/setjmp-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o setjmp-ia64.o `test -f 'ia64/setjmp-ia64.S' || echo '$(srcdir)/'`ia64/setjmp-ia64.S
+
+setjmp-ia64.obj: ia64/setjmp-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o setjmp-ia64.obj `cygpath -w ia64/setjmp-ia64.S`
+
+setjmp-ia64.lo: ia64/setjmp-ia64.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o setjmp-ia64.lo `test -f 'ia64/setjmp-ia64.S' || echo '$(srcdir)/'`ia64/setjmp-ia64.S
+
+sigsetjmp-ia64.o: ia64/sigsetjmp-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o sigsetjmp-ia64.o `test -f 'ia64/sigsetjmp-ia64.S' || echo '$(srcdir)/'`ia64/sigsetjmp-ia64.S
+
+sigsetjmp-ia64.obj: ia64/sigsetjmp-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o sigsetjmp-ia64.obj `cygpath -w ia64/sigsetjmp-ia64.S`
+
+sigsetjmp-ia64.lo: ia64/sigsetjmp-ia64.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o sigsetjmp-ia64.lo `test -f 'ia64/sigsetjmp-ia64.S' || echo '$(srcdir)/'`ia64/sigsetjmp-ia64.S
+
+siglongjmp-ia64.o: ia64/siglongjmp-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-ia64.o `test -f 'ia64/siglongjmp-ia64.S' || echo '$(srcdir)/'`ia64/siglongjmp-ia64.S
+
+siglongjmp-ia64.obj: ia64/siglongjmp-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-ia64.obj `cygpath -w ia64/siglongjmp-ia64.S`
+
+siglongjmp-ia64.lo: ia64/siglongjmp-ia64.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-ia64.lo `test -f 'ia64/siglongjmp-ia64.S' || echo '$(srcdir)/'`ia64/siglongjmp-ia64.S
 
 .c.o:
 @AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -2064,6 +2201,24 @@ Lstep-x86.lo: x86/Lstep-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-x86.Plo' tmpdepfile='$(DEPDIR)/Lstep-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-x86.lo `test -f 'x86/Lstep-x86.c' || echo '$(srcdir)/'`x86/Lstep-x86.c
+
+mk_cursor_i-ia64.o: ia64/mk_cursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_cursor_i-ia64.c' object='mk_cursor_i-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_cursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_cursor_i-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_cursor_i-ia64.o `test -f 'ia64/mk_cursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_cursor_i-ia64.c
+
+mk_cursor_i-ia64.obj: ia64/mk_cursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_cursor_i-ia64.c' object='mk_cursor_i-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_cursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_cursor_i-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_cursor_i-ia64.obj `cygpath -w ia64/mk_cursor_i-ia64.c`
+
+mk_cursor_i-ia64.lo: ia64/mk_cursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_cursor_i-ia64.c' object='mk_cursor_i-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_cursor_i-ia64.Plo' tmpdepfile='$(DEPDIR)/mk_cursor_i-ia64.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_cursor_i-ia64.lo `test -f 'ia64/mk_cursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_cursor_i-ia64.c
 CCDEPMODE = @CCDEPMODE@
 
 mostlyclean-libtool:
@@ -2139,7 +2294,7 @@ distdir: $(DISTFILES)
 	done
 check-am: all-am
 check: check-am
-all-am: Makefile $(LTLIBRARIES)
+all-am: Makefile $(LTLIBRARIES) $(PROGRAMS)
 
 installdirs:
 	$(mkinstalldirs) $(DESTDIR)$(libdir)
@@ -2168,10 +2323,11 @@ distclean-generic:
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
 	@echo "it deletes files that may require special tools to rebuild."
+	-test -z "$(BUILT_SOURCES)" || rm -f $(BUILT_SOURCES)
 clean: clean-am
 
 clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
-	mostlyclean-am
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 
@@ -2210,17 +2366,16 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 
 .PHONY: GTAGS all all-am check check-am clean clean-generic \
-	clean-libLTLIBRARIES clean-libtool distclean distclean-compile \
-	distclean-depend distclean-generic distclean-libtool \
-	distclean-tags distdir dvi dvi-am info info-am install \
-	install-am install-data install-data-am install-exec \
-	install-exec-am install-info install-info-am \
+	clean-libLTLIBRARIES clean-libtool clean-noinstPROGRAMS \
+	distclean distclean-compile distclean-depend distclean-generic \
+	distclean-libtool distclean-tags distdir dvi dvi-am info \
+	info-am install install-am install-data install-data-am \
+	install-exec install-exec-am install-info install-info-am \
 	install-libLTLIBRARIES install-man install-strip installcheck \
 	installcheck-am installdirs maintainer-clean \
 	maintainer-clean-generic mostlyclean mostlyclean-compile \
 	mostlyclean-generic mostlyclean-libtool tags uninstall \
 	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES
-
 
 #
 # This is not ideal, but I know of no other way to install an
@@ -2229,6 +2384,8 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 @REMOTE_ONLY_FALSE@install-exec-hook:
 @REMOTE_ONLY_FALSE@	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind.a
 @REMOTE_ONLY_FALSE@	$(LN_S) -f libunwind-$(arch).so $(DESTDIR)$(libdir)/libunwind.so
+@ARCH_IA64_TRUE@cursor_i.h: mk_cursor_i-ia64
+@ARCH_IA64_TRUE@	mk_cursor_i-ia64 > $@
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
