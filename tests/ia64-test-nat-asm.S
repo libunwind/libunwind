@@ -191,5 +191,50 @@ save_static_to_mem:
 	mov rp = loc1
 	mov ar.unat = loc2		// restore ar.unat
 	br.ret.sptk.many rp
-
 	.endp save_static_to_mem
+
+	/* Save r4-r7 to various scratch registers, then trigger
+	   a segfault.  */
+
+	.global save_static_to_scratch
+	.proc save_static_to_scratch
+save_static_to_scratch:
+	.prologue
+
+	.spillreg r4, r16
+	mov r16 = r4			// save r4 in r16
+	tnat.nz p6, p7 = r5;;
+	.spillreg.p p6, r5, f31
+(p6)	setf.sig f31 = r5		// save r5 in f31 if it's a NaT
+	.spillreg.p p7, r5, b6
+(p7)	mov b6 = r5			//         in  b6 if it not
+	.spillreg r6, f32
+	setf.sig f32 = r6		// save r6 in f32 (fph partition)
+	.spillsp r7, 0
+	st8.spill [sp] = r7		// save r7 in the scratch stack space
+	.body
+
+	LOAD_VAL(r4)
+	LOAD_VAL(r5)
+	LOAD_VAL(r6)
+	LOAD_VAL(r7)
+
+	/* Now force a SIGSEGV.  Make sure the ld8 is at the beginning of a
+	   bundle, so the signal-handler can skip over it simply by
+	   incrementing the IP.  */
+	{
+		.mmi
+		ld8 r2 = [r0]
+		nop.m 0
+		nop.i 0 ;;
+	}
+
+	mov r4 = r16
+	.pred.rel.mutex p6, p7
+(p6)	getf.sig r5 = f31
+(p7)	mov r5 = b6
+	getf.sig r6 = f32
+	ld8.fill r7 = [sp]
+
+	br.ret.sptk.many rp
+	.endp save_static_to_scratch
