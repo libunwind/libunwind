@@ -34,6 +34,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 {
   struct cursor *c = (struct cursor *) cursor;
   ia64_loc_t loc, reg_loc;
+  uint8_t nat_bitnr;
   int ret;
 
   loc = IA64_NULL_LOC;		/* default to "not saved" */
@@ -58,40 +59,10 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
       loc = c->loc[IA64_REG_NAT4 + (reg - (UNW_IA64_NAT + 4))];
       reg_loc = c->loc[IA64_REG_R4 + (reg - (UNW_IA64_NAT + 4))];
+      nat_bitnr = c->nat_bitnr[reg - (UNW_IA64_NAT + 4)];
       if (IA64_IS_FP_LOC (reg_loc))
 	/* NaT bit saved as a NaTVal.  */
 	loc = reg_loc;
-      else if (IA64_IS_MEMSTK_NAT (loc))
-	loc = IA64_LOC_ADDR (IA64_GET_ADDR (loc), 0);
-      else
-	{
-	  reg = IA64_GET_REG (loc);
-	  assert (reg >= 0 && reg < 128);
-	  if (!reg)
-	    loc = IA64_NULL_LOC;
-	  else if (reg >= 4 && reg <= 7)
-	    {
-#ifdef UNW_LOCAL_ONLY
-	      ucontext_t *uc = c->as_arg;
-	      loc = uc->uc_mcontext.sc_nat;
-#else
-	      loc = IA64_REG_LOC (c, UNW_IA64_NAT + reg);
-#endif
-	    }
-	  else if (reg >= 32)
-	    {
-	      reg = rotate_gr (c, reg);
-	      ret = ia64_get_stacked (c, reg, NULL, &loc);
-	      if (ret < 0)
-		return ret;
-	    }
-#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
-	  else if (c->last_abi_marker == ABI_MARKER_LINUX_SIGTRAMP
-		   || c->last_abi_marker == ABI_MARKER_OLD_LINUX_SIGTRAMP)
-	    /* NaT bit is saved in a sigcontext.  */
-	    loc = IA64_LOC_ADDR (c->sigcontext_addr + LINUX_SC_NAT_OFF, 0);
-#endif
-	}
       break;
 
     case UNW_IA64_FR + 2: loc = c->loc[IA64_REG_F2]; break;
@@ -145,7 +116,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
     case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, &nat_bitnr);
       break;
 
     case UNW_IA64_GR + 2 ... UNW_IA64_GR + 3:
@@ -157,16 +128,16 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_AR_CSD:
     case UNW_IA64_AR_SSD:
     case UNW_IA64_AR_CCV:
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
     case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
     case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
       reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, NULL);
       break;
     }
 
@@ -183,12 +154,14 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     {
       sloc->type = UNW_SLT_REG;
       sloc->u.regnum = IA64_GET_REG (loc);
+      sloc->extra.nat_bitnr = nat_bitnr;
     }
   else
 #endif
     {
       sloc->type = UNW_SLT_MEMORY;
       sloc->u.addr = IA64_GET_ADDR (loc);
+      sloc->extra.nat_bitnr = nat_bitnr;
     }
   return 0;
 }
