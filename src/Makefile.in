@@ -100,7 +100,9 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
+build_arch = @build_arch@
 install_sh = @install_sh@
+target_os = @target_os@
 SOVERSION = 3:0:2		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
 #

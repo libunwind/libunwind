@@ -100,14 +100,16 @@ VERSION = @VERSION@
 am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
+build_arch = @build_arch@
 install_sh = @install_sh@
+target_os = @target_os@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
-EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper
+EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper check-namespace.sh.in
 
 noinst_PROGRAMS_common = 
 check_PROGRAMS_common = test-proc-info test-static-link
-check_SCRIPTS_common = 
+check_SCRIPTS_common = run-check-namespace
 
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
 @REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = run-ptrace-mapper
@@ -172,7 +174,7 @@ test_async_sig_LDADD = $(LIBUNWIND) -lpthread
 subdir = tests
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES =
+CONFIG_CLEAN_FILES = check-namespace.sh
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@check_PROGRAMS = \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@	test-proc-info$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@	test-static-link$(EXEEXT)
@@ -462,7 +464,7 @@ DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	test-async-sig.c test-flush-cache.c test-mem.c test-proc-info.c \
 	test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) \
 	test-varargs.c
-DIST_COMMON = Makefile.am Makefile.in
+DIST_COMMON = Makefile.am Makefile.in check-namespace.sh.in
 SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) test-varargs.c
 
 all: all-am
@@ -474,6 +476,8 @@ $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configu
 	  $(AUTOMAKE) --gnu  tests/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
+check-namespace.sh: $(top_builddir)/config.status check-namespace.sh.in
+	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@
 
 clean-checkPROGRAMS:
 	@list='$(check_PROGRAMS)'; for p in $$list; do \
