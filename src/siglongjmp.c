@@ -25,6 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 
+#include <assert.h>
 #include <libunwind.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -83,9 +84,11 @@ siglongjmp (sigjmp_buf env, int val)
 	  mp = (unw_word_t *) &current_mask;
 	}
 
-      if (unw_set_reg (&c, UNW_REG_EH_ARG0, wp[1]) < 0
-	  || unw_set_reg (&c, UNW_REG_EH_ARG1, val) < 0
-	  || unw_set_reg (&c, UNW_REG_EH_ARG2, mp[0]) < 0
+      assert (UNW_NUM_EH_REGS >= 4);
+
+      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[1]) < 0
+	  || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
+	  || unw_set_reg (&c, UNW_REG_EH + 2, mp[0]) < 0
 	  || unw_set_reg (&c, UNW_REG_IP,
 			  (unw_word_t) &_UI_siglongjmp_cont))
 	abort ();
@@ -94,7 +97,7 @@ siglongjmp (sigjmp_buf env, int val)
 	{
 	  if (_NSIG > 16 * sizeof (unw_word_t))
 	    abort ();
-	  if (unw_set_reg (&c, UNW_REG_EH_ARG3, mp[1]) < 0)
+	  if (unw_set_reg (&c, UNW_REG_EH + 3, mp[1]) < 0)
 	    abort ();
 	}
 
