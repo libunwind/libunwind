@@ -146,8 +146,81 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 static inline int
 remote_install_cursor (struct cursor *c)
 {
-  printf ("%s: XXX implement me!\n", __FUNCTION__);
-  return -1;
+  int (*access_reg) (unw_addr_space_t, unw_regnum_t, unw_word_t *,
+		     int write, void *);
+  int (*access_fpreg) (unw_addr_space_t, unw_regnum_t, unw_fpreg_t *,
+		       int write, void *);
+  unw_fpreg_t fpval;
+  unw_word_t val;
+  int reg;
+
+  if (c->as == unw_local_addr_space)
+    {
+      /* Take a short-cut: we directly resume out of the cursor and
+	 all we need to do is make sure that all locations point to
+	 memory, not registers.  Furthermore, R4-R7 and NAT4-NAT7 are
+	 taken care of by ia64_local_resume() so they don't need to be
+	 handled here.  */
+      unw_word_t *locp;
+#     define MEMIFY(preg, reg)					\
+      do {							\
+	locp = ((unw_word_t *) c) + unw.preg_index[(preg)];	\
+	if (IA64_IS_REG_LOC (*locp))				\
+	  *locp = (unw_word_t) tdep_uc_addr (c->as_arg, (reg));	\
+      } while (0)
+      MEMIFY (IA64_REG_PR,	UNW_IA64_PR);
+      MEMIFY (IA64_REG_PFS,	UNW_IA64_AR_PFS);
+      MEMIFY (IA64_REG_RNAT,	UNW_IA64_AR_RNAT);
+      MEMIFY (IA64_REG_UNAT,	UNW_IA64_AR_UNAT);
+      MEMIFY (IA64_REG_LC,	UNW_IA64_AR_LC);
+      MEMIFY (IA64_REG_FPSR,	UNW_IA64_AR_FPSR);
+      MEMIFY (IA64_REG_RP,	UNW_IA64_BR + 0);
+      MEMIFY (IA64_REG_B1,	UNW_IA64_BR + 1);
+      MEMIFY (IA64_REG_B2,	UNW_IA64_BR + 2);
+      MEMIFY (IA64_REG_B3,	UNW_IA64_BR + 3);
+      MEMIFY (IA64_REG_B4,	UNW_IA64_BR + 4);
+      MEMIFY (IA64_REG_B5,	UNW_IA64_BR + 5);
+      MEMIFY (IA64_REG_F2,	UNW_IA64_FR + 2);
+      MEMIFY (IA64_REG_F3,	UNW_IA64_FR + 3);
+      MEMIFY (IA64_REG_F4,	UNW_IA64_FR + 4);
+      MEMIFY (IA64_REG_F5,	UNW_IA64_FR + 5);
+      MEMIFY (IA64_REG_F16,	UNW_IA64_FR + 16);
+      MEMIFY (IA64_REG_F17,	UNW_IA64_FR + 17);
+      MEMIFY (IA64_REG_F18,	UNW_IA64_FR + 18);
+      MEMIFY (IA64_REG_F19,	UNW_IA64_FR + 19);
+      MEMIFY (IA64_REG_F20,	UNW_IA64_FR + 20);
+      MEMIFY (IA64_REG_F21,	UNW_IA64_FR + 21);
+      MEMIFY (IA64_REG_F22,	UNW_IA64_FR + 22);
+      MEMIFY (IA64_REG_F23,	UNW_IA64_FR + 23);
+      MEMIFY (IA64_REG_F24,	UNW_IA64_FR + 24);
+      MEMIFY (IA64_REG_F25,	UNW_IA64_FR + 25);
+      MEMIFY (IA64_REG_F26,	UNW_IA64_FR + 26);
+      MEMIFY (IA64_REG_F27,	UNW_IA64_FR + 27);
+      MEMIFY (IA64_REG_F28,	UNW_IA64_FR + 28);
+      MEMIFY (IA64_REG_F29,	UNW_IA64_FR + 29);
+      MEMIFY (IA64_REG_F30,	UNW_IA64_FR + 30);
+      MEMIFY (IA64_REG_F31,	UNW_IA64_FR + 31);
+    }
+  else
+    {
+      access_reg = c->as->acc.access_reg;
+      access_fpreg = c->as->acc.access_fpreg;
+
+      for (reg = 0; reg < UNW_REG_LAST; ++reg)
+	{
+	  if (unw_is_fpreg (reg))
+	    {
+	      if (ia64_access_fpreg (c, reg, &fpval, 0) > 0)
+		(*access_fpreg) (c->as, reg, &fpval, 1, c->as_arg);
+	    }
+	  else
+	    {
+	      if (ia64_access_reg (c, reg, &val, 0) > 0)
+		(*access_reg) (c->as, reg, &val, 1, c->as_arg);
+	    }
+	}
+    }
+  return (*c->as->acc.resume) (c->as, (unw_cursor_t *) c, c->as_arg);
 }
 
 #endif
