@@ -34,8 +34,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define UNW_PREFIX	UNW_PASTE(UNW_PASTE(_U,UNW_TARGET),_)
 #endif /* !UNW_LOCAL_ONLY */
 
-typedef unw_tdep_word_t unw_word_t;
-
 /* Error codes.  The unwind routines return the *negated* values of
    these error codes on error and a non-negative value on success.  */
 typedef enum
@@ -119,8 +117,9 @@ typedef struct unw_proc_info
     unw_word_t flags;		/* misc. flags */
 
     int format;			/* unwind-info format (arch-specific) */
-    int unwind_info_size;	/* size of the informat (if applicable) */
+    int unwind_info_size;	/* size of the information (if applicable) */
     void *unwind_info;		/* unwind-info (arch-specific) */
+    unw_tdep_proc_info_t extra;	/* target-dependent auxiliary proc-info */
   }
 unw_proc_info_t;
 
@@ -195,8 +194,6 @@ typedef struct unw_save_loc
     unw_tdep_save_loc_t extra;	/* target-dependent additional information */
   }
 unw_save_loc_t;
-
-#include <libunwind-dynamic.h>
 
 /* These routines work both for local and remote unwinding.  */
 
