@@ -1,28 +1,30 @@
 # man pages that go into section 3:
-man3_MANS = libunwind.man libunwind-ia64.man		\
-	libunwind-ptrace.man libunwind-setjmp.man	\
-	unw_flush_cache.man				\
-	unw_get_accessors.man				\
-	unw_get_proc_info.man				\
-	unw_get_proc_info_by_ip.man			\
-	unw_get_proc_name.man				\
-	unw_get_fpreg.man				\
-	unw_get_reg.man					\
-	unw_getcontext.man				\
-	unw_init_local.man unw_init_remote.man		\
-	unw_is_fpreg.man				\
-	unw_is_signal_frame.man				\
-	unw_create_addr_space.man			\
-	unw_destroy_addr_space.man			\
-	unw_regname.man unw_resume.man			\
-	unw_set_caching_policy.man			\
-	unw_set_fpreg.man				\
-	unw_set_reg.man					\
-	unw_step.man
+man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
+	libunwind-ptrace.man libunwind-setjmp.man			\
+	unw_flush_cache.man						\
+	unw_get_accessors.man						\
+	unw_get_proc_info.man						\
+	unw_get_proc_info_by_ip.man					\
+	unw_get_proc_name.man						\
+	unw_get_fpreg.man						\
+	unw_get_reg.man							\
+	unw_getcontext.man						\
+	unw_init_local.man unw_init_remote.man				\
+	unw_is_fpreg.man						\
+	unw_is_signal_frame.man						\
+	unw_create_addr_space.man					\
+	unw_destroy_addr_space.man					\
+	unw_regname.man unw_resume.man					\
+	unw_set_caching_policy.man					\
+	unw_set_fpreg.man						\
+	unw_set_reg.man							\
+	unw_step.man							\
+	_U_dyn_register.man						\
+	_U_dyn_cancel.man
 
 EXTRA_DIST = NOTES libunwind.trans					\
-	libunwind.tex libunwind-ia64.tex libunwind-ptrace.tex		\
-	libunwind-setjmp.tex						\
+	libunwind.tex libunwind-dynamic.tex libunwind-ia64.tex		\
+	libunwind-ptrace.tex libunwind-setjmp.tex			\
 	unw_flush_cache.tex						\
 	unw_get_accessors.tex						\
 	unw_get_proc_info.tex						\
@@ -39,6 +41,8 @@ EXTRA_DIST = NOTES libunwind.trans					\
 	unw_set_fpreg.tex						\
 	unw_set_reg.tex							\
 	unw_step.tex							\
+	_U_dyn_register.tex						\
+	_U_dyn_cancel.tex						\
 	$(man3_MANS)
 
 L2M	= latex2man
