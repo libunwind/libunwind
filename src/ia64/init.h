@@ -109,5 +109,5 @@ common_init (struct ia64_cursor *c)
 
   c->hint = 0;
   c->prev_script = 0;
-  return ia64_get_proc_info (c);
+  return ia64_make_proc_info (c);
 }
