@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
-unw_accessors_t _UPT_accessors =
+PROTECTED unw_accessors_t _UPT_accessors =
   {
     .find_proc_info		= _UPT_find_proc_info,
     .put_unwind_info		= _UPT_put_unwind_info,

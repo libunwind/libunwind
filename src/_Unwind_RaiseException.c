@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-_Unwind_Reason_Code
+PROTECTED _Unwind_Reason_Code
 _Unwind_RaiseException (struct _Unwind_Exception *exception_object)
 {
   unsigned long exception_class = exception_object->exception_class;

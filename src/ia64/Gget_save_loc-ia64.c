@@ -29,7 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "regs.h"
 #include "rse.h"
 
-int
+PROTECTED int
 unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 {
   struct cursor *c = (struct cursor *) cursor;

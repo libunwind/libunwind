@@ -26,7 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <alloca.h>
 #include <stdlib.h>
 
-#include "rse.h"
 #include "unwind_i.h"
 
 #ifdef HAVE_SYS_UC_ACCESS_H
@@ -73,13 +72,13 @@ ia64_strloc (ia64_loc_t loc)
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
-unw_addr_space_t unw_local_addr_space;
+PROTECTED unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
-unw_addr_space_t unw_local_addr_space = &local_addr_space;
+PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 #ifdef HAVE_SYS_UC_ACCESS_H
 
@@ -130,15 +129,12 @@ uc_addr (ucontext_t *uc, int reg)
   return addr;
 }
 
-# ifdef UNW_LOCAL_ONLY
-
-void *
+HIDDEN void *
 tdep_uc_addr (ucontext_t *uc, int reg)
 {
   return uc_addr (uc, reg);
 }
 
-# endif /* UNW_LOCAL_ONLY */
 #endif /* !HAVE_SYS_UC_ACCESS_H */
 
 static void
@@ -151,7 +147,7 @@ static int
 get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 			void *arg)
 {
-  *dyn_info_list_addr = (unw_word_t) &_U_dyn_info_list;
+  *dyn_info_list_addr = _U_dyn_info_list_addr ();
   return 0;
 }
 
@@ -438,7 +434,7 @@ ia64_local_addr_space_init (void)
   local_addr_space.abi = ABI_HPUX;
 #endif
   local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
-  local_addr_space.acc.find_proc_info = UNW_ARCH_OBJ (find_proc_info);
+  local_addr_space.acc.find_proc_info = tdep_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
   local_addr_space.acc.access_mem = access_mem;

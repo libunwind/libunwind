@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-int
+PROTECTED int
 unw_set_fpreg (unw_cursor_t *cursor, int regnum, unw_fpreg_t val)
 {
   struct cursor *c = (struct cursor *) cursor;

@@ -31,13 +31,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
-unw_addr_space_t unw_local_addr_space;
+PROTECTED unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
-unw_addr_space_t unw_local_addr_space = &local_addr_space;
+PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 static inline void *
 uc_addr (ucontext_t *uc, int reg)
@@ -72,7 +72,7 @@ _Ux86_uc_addr (ucontext_t *uc, int reg)
 
 # endif /* UNW_LOCAL_ONLY */
 
-unw_dyn_info_list_t _U_dyn_info_list;
+HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
 
 /* XXX fix me: there is currently no way to locate the dyn-info list
        by a remote unwinder.  On ia64, this is done via a special

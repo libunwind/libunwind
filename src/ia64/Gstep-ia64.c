@@ -328,7 +328,7 @@ update_frame_state (struct cursor *c)
 }
 
 
-int
+PROTECTED int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

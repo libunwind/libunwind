@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-unw_accessors_t *
+PROTECTED unw_accessors_t *
 unw_get_accessors (unw_addr_space_t as)
 {
   if (x86_needs_initialization)

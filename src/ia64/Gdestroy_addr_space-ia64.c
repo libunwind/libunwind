@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-void
+PROTECTED void
 unw_destroy_addr_space (unw_addr_space_t as)
 {
 #ifndef UNW_LOCAL_ONLY

@@ -15,7 +15,7 @@ static const char *regname[] =
     "tss", "ldt"
   };
 
-const char *
+PROTECTED const char *
 unw_regname (unw_regnum_t reg)
 {
   if (reg < (unw_regnum_t) NELEMS (regname))

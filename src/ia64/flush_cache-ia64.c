@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-void
+PROTECTED void
 unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
 {
   /* clear dyn_info_list_addr cache: */

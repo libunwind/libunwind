@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-int
+PROTECTED int
 unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
 		   unw_word_t *offp)
 {
