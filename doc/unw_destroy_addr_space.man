@@ -1,0 +1,57 @@
+'\" t
+.\" Manual page created with latex2man on Mon Mar 10 17:01:00 PST 2003
+.\" NOTE: This file is generated, DO NOT EDIT.
+.de Vb
+.ft CW
+.nf
+..
+.de Ve
+.ft R
+
+.fi
+..
+.TH "UNW\\_DESTROY\\_ADDR\\_SPACE" "3" "10 March 2003" "Programming Library " "Programming Library "
+.SH NAME
+
+.PP
+unw_destroy_addr_space \-\- destroy unwind address space 
+.PP
+.SH SYNOPSIS
+
+.PP
+#include <libunwind.h>
+.br
+.PP
+void
+unw_destroy_addr_space(unw_addr_space_t
+as);
+.br
+.PP
+.SH DESCRIPTION
+
+.PP
+The unw_destroy_addr_space()
+routine destroys the 
+address space specified by argument as
+and thereby releases 
+all associated resources (such as memory). 
+.PP
+.SH SEE ALSO
+
+.PP
+libunwind(3),
+unw_create_addr_space(3)
+.PP
+.SH AUTHOR
+
+.PP
+David Mosberger\-Tang
+.br 
+Hewlett\-Packard Labs
+.br 
+Palo\-Alto, CA 94304
+.br 
+Email: \fBdavidm@hpl.hp.com\fP
+.br
+WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+.\" NOTE: This file is generated, DO NOT EDIT.
