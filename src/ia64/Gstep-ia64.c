@@ -83,6 +83,24 @@ update_frame_state (struct cursor *c)
   prev_sp = c->sp;
   prev_bsp = c->bsp;
 
+  /* Update the IP cache (do this first: if we reach the end of the
+     frame-chain, the rest of the info may not be valid/useful
+     anymore. */
+  ret = ia64_get (c, c->ip_loc, &ip);
+  if (ret < 0)
+    return ret;
+  c->ip = ip;
+
+  if ((ip & 0xc) != 0)
+    {
+      /* don't let obviously bad addresses pollute the cache */
+      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
+      return -UNW_EINVALIDIP;
+    }
+  if (ip == 0)
+    /* end of frame-chain reached */
+    return 0;
+
   c->cfm_loc = c->pfs_loc;
   /* update the CFM cache: */
   ret = ia64_get (c, c->cfm_loc, &c->cfm);
@@ -106,6 +124,14 @@ update_frame_state (struct cursor *c)
 	     unwind info for sigtramp.  Fix it up here.  */
 	  c->ip_loc  = (c->sigcontext_loc + SIGCONTEXT_IP_OFF);
 	  c->cfm_loc = (c->sigcontext_loc + SIGCONTEXT_CFM_OFF);
+	  /* update the IP cache: */
+	  ret = ia64_get (c, c->ip_loc, &ip);
+	  if (ret < 0)
+	    return ret;
+	  c->ip = ip;
+	  if (ip == 0)
+	    /* end of frame-chain reached */
+	    return 0;
 	  /* update the CFM cache: */
 	  ret = ia64_get (c, c->cfm_loc, &c->cfm);
 	  if (ret < 0)
@@ -128,22 +154,6 @@ update_frame_state (struct cursor *c)
     }
 
   c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
-
-  /* update the IP cache: */
-  ret = ia64_get (c, c->ip_loc, &ip);
-  if (ret < 0)
-    return ret;
-  c->ip = ip;
-
-  if ((ip & 0xc) != 0)
-    {
-      /* don't let obviously bad addresses pollute the cache */
-      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
-      return -UNW_EINVALIDIP;
-    }
-  if (ip == 0)
-    /* end of frame-chain reached */
-    return 0;
 
   pr = c->pr;
   c->sp = c->psp;
