@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef LIBUNWIND_H
 #define LIBUNWIND_H
 
-#include <stdint.h>
+#include <inttypes.h>
 #include <ucontext.h>
 
 #ifdef ia64
@@ -121,6 +121,7 @@ typedef struct unw_tdep_save_loc
        we could use this to specify the bit number in which a NaT bit
        gets saved.  For now, nobody wants to know this, so it's not
        currently implemented.  */
+    char dummy;		/* ANSI C doesn't allow empty structs... */
   }
 unw_tdep_save_loc_t;
 
