@@ -83,6 +83,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    unconditionally and if -lpthread is around, they'll call the
    corresponding routines otherwise, they do nothing.  */
 
+#pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_unlock
 
