@@ -26,6 +26,7 @@ AC_TYPE_SIZE_T
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
+AC_CHECK_FUNCS(getunwind)
 
 dnl Hopefully there will be an AC_PROG_AS at some point...
 AS="$CC"
