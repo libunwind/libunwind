@@ -47,7 +47,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		      ElfW (Addr) load_offset,
 		      char *buf, size_t buf_len, unw_word_t *offp)
 {
-  size_t syment_size, str_size;
+  size_t syment_size;
   ElfW (Ehdr) *ehdr = ei->image;
   ElfW (Sym) *sym, *symtab, *symtab_end;
   ElfW (Off) soff, str_soff;
@@ -91,7 +91,6 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	      break;
 	    }
 	  str_shdr = (ElfW (Shdr) *) ((char *) ei->image + str_soff);
-	  str_size = str_shdr->sh_size;
 	  strtab = (char *) ei->image + str_shdr->sh_offset;
 
 	  debug (160, "symtab=0x%lx[%d], strtab=0x%lx\n",
