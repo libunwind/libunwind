@@ -186,11 +186,12 @@ remote_install_cursor (struct cursor *c)
 	 memory, not registers.  Furthermore, R4-R7 and NAT4-NAT7 are
 	 taken care of by ia64_local_resume() so they don't need to be
 	 handled here.  */
-#     define MEMIFY(preg, reg)						     \
-      do {								     \
-	if (IA64_IS_REG_LOC (c->loc[(preg)]))				     \
-	  c->loc[(preg)] = IA64_LOC_ADDR((unw_word_t)			     \
-					 tdep_uc_addr(c->as_arg, (reg)), 0); \
+#     define MEMIFY(preg, reg)						 \
+      do {								 \
+	if (IA64_IS_REG_LOC (c->loc[(preg)]))				 \
+	  c->loc[(preg)] = IA64_LOC_ADDR ((unw_word_t)			 \
+					  tdep_uc_addr(c->as_arg, (reg), \
+						       NULL), 0);	 \
       } while (0)
       MEMIFY (IA64_REG_PR,	UNW_IA64_PR);
       MEMIFY (IA64_REG_PFS,	UNW_IA64_AR_PFS);
