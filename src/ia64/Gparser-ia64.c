@@ -755,8 +755,8 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
   enum ia64_where where;
   unw_dyn_op_t *op;
   int32_t when, len;
+  int memory, ret;
   int8_t qp;
-  int memory;
 
   for (r = proc->regions; r; r = r->next)
     {
@@ -866,6 +866,9 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		pop (sr);
 	      new_ip = op->val + ((sr->when_target / 3) * 16
 				  + (sr->when_target % 3));
+	      ret = ia64_fetch_proc_info (c, new_ip, 1);
+	      if (ret < 0)
+		return ret;
 	      return create_state_record_for (c, sr, new_ip);
 
 	    case UNW_DYN_STOP:
@@ -879,8 +882,8 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 }
 
 
-static int
-get_proc_info (struct cursor *c, unw_word_t ip, int need_unwind_info)
+HIDDEN int
+ia64_fetch_proc_info (struct cursor *c, unw_word_t ip, int need_unwind_info)
 {
   int ret, dynamic = 1;
 
@@ -922,6 +925,8 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
   uint8_t *dp, *desc_end;
   int ret;
 
+  assert (c->pi_valid);
+
   /* build state record */
   memset (sr, 0, sizeof (*sr));
   for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
@@ -929,10 +934,6 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
   sr->pr_val = predicates;
   sr->first_region = 1;
   sr->return_link_reg = 0;
-
-  ret = get_proc_info (c, ip, 1);
-  if (ret < 0)
-    return ret;
 
   if (!c->pi.unwind_info)
     {
@@ -1044,6 +1045,8 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
   return 0;
 }
 
+/* The proc-info must be valid for IP before this routine can be
+   called.  */
 HIDDEN int
 ia64_create_state_record (struct cursor *c, struct ia64_state_record *sr)
 {
@@ -1074,6 +1077,6 @@ ia64_make_proc_info (struct cursor *c)
   if (c->as->caching_policy == UNW_CACHE_NONE
       || ia64_get_cached_proc_info (c) < 0)
     /* Lookup it up the slow way... */
-    return get_proc_info (c, c->ip, 0);
+    return ia64_fetch_proc_info (c, c->ip, 0);
   return 0;
 }
