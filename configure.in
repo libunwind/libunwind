@@ -1,0 +1,62 @@
+dnl Process this file with autoconf to produce a configure script.
+AC_INIT(src/backtrace.c)
+AC_CONFIG_AUX_DIR(aux)
+AC_CANONICAL_SYSTEM
+AM_INIT_AUTOMAKE(libunwind, 0.2)
+AM_CONFIG_HEADER(include/config.h)
+
+CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
+
+dnl Checks for programs.
+AC_PROG_CC
+AC_PROG_INSTALL
+AC_PROG_MAKE_SET
+AM_PROG_LIBTOOL
+
+dnl Checks for libraries.
+
+dnl Checks for header files.
+AC_HEADER_STDC
+AC_CHECK_HEADERS(unistd.h)
+
+dnl Checks for typedefs, structures, and compiler characteristics.
+AC_C_CONST
+AC_C_INLINE
+AC_TYPE_SIZE_T
+
+dnl Checks for library functions.
+AC_FUNC_MEMCMP
+AC_TYPE_SIGNAL
+
+dnl Hopefully there will be an AC_PROG_AS at some point...
+AS="$CC"
+AC_SUBST(AS)
+AC_SUBST(ASFLAGS)
+
+get_arch() {
+ case "$1" in
+  i?86) echo x86;;
+  *) echo $target_cpu;;
+ esac
+}
+
+build_arch=`get_arch $build_cpu`
+target_arch=`get_arch $target_cpu`
+
+AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$build_arch)
+AM_CONDITIONAL(ARCH_IA64, test x$target_arch == xia64)
+AM_CONDITIONAL(ARCH_x86, test x$target_arch == x86)
+
+if test x$target_arch != x$build_arch; then
+  CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
+  if test x$prefix = xNONE; then
+    prefix=/usr/local/$target_cpu-$target_os
+  fi
+fi
+
+ARCH=`echo $target_arch | tr [a-z] [A-Z]`
+
+AC_CONFIG_LINKS(include/libunwind-tdep.h:include/libunwind-$target_arch.h)
+
+AC_SUBST(ARCH)
+AC_OUTPUT(Makefile src/Makefile tests/Makefile doc/Makefile)
