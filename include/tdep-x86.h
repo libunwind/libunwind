@@ -75,6 +75,8 @@ struct cursor
 		UNW_ARCH_OBJ(find_proc_info) (as,ip,pi,n,a)
 #define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a,b,c)
 #define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
+#define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
+								     d, e)
 #define tdep_debug_level			UNW_ARCH_OBJ(debug_level)
 
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
@@ -86,6 +88,8 @@ extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 extern void tdep_put_unwind_info (unw_addr_space_t as,
 				  unw_proc_info_t *pi, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
+extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
+			       unsigned long *segbase, unsigned long *mapoff);
 extern int tdep_debug_level;
 
 #endif /* TDEP_X86_H */
