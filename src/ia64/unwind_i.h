@@ -31,7 +31,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind-ia64.h>
 
-#include "config.h"
 #include "internal.h"
 #include "rse.h"
 

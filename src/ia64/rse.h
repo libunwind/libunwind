@@ -10,9 +10,7 @@
 #ifndef RSE_H
 #define RSE_H
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
+#include "internal.h"
 
 #include <inttypes.h>
 
