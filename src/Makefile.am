@@ -101,7 +101,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 									   \
 	elf64.c elf64.h							   \
 									   \
-	ia64/dyn_info_list-ia64.S					   \
+	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
 									   \
 	ia64/Lcreate_addr_space-ia64.c					   \
 	ia64/Lget_proc_info-ia64.c					   \
