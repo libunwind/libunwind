@@ -401,7 +401,7 @@ _Uia64_get_kernel_table (unw_dyn_info_t *di)
 static inline unsigned long
 current_gp (void)
 {
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
       register unsigned long gp __asm__("gp");
       return gp;
 #elif HAVE_IA64INTRIN_H
