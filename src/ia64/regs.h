@@ -1,26 +1,22 @@
 #include "unwind_i.h"
 
-/* Apply rotation to a general register.  The number REG must be in
-   the range of 0-127.  */
+/* Apply rotation to a general register.  REG must be in the range 0-127.  */
 
 static inline int
 rotate_gr (struct cursor *c, int reg)
 {
-  unsigned int rrb_gr, sor, sof;
+  unsigned int rrb_gr, sor;
   int preg;
 
-  sof = (c->cfm & 0x7f);
   sor = 8 * ((c->cfm >> 14) & 0xf);
   rrb_gr = (c->cfm >> 18) & 0x7f;
 
-  if ((unsigned) (reg - 32) > sof)
-    return reg;	/* not a valid stacked register: just return original value */
-  else if ((unsigned) (reg - 32) > sor)
-    preg = reg;	/* register not part of the rotating partition */
+  if ((unsigned) (reg - 32) >= sor)
+    preg = reg;
   else
     {
       preg = reg + rrb_gr;	/* apply rotation */
-      if (preg > 32 + (int) sor)
+      if ((unsigned) (preg - 32) >= sor)
 	preg -= sor;		/* wrap around */
     }
   if (sor)
