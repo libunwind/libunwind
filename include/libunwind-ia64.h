@@ -149,16 +149,13 @@ unw_tdep_save_loc_t;
 /* On IA-64, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
-/* XXX this is not ideal: an application should not be prevented from
-   using the "getcontext" name just because it's using libunwind.  We
-   can't just use __getcontext() either, because that isn't exported
-   by glibc...  */
-#define unw_tdep_getcontext(uc)		(getcontext (uc), 0)
-
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_IA64_FR) < 128)
 
 #include "libunwind-dynamic.h"
 #include "libunwind-common.h"
+
+#define unw_tdep_getcontext		UNW_ARCH_OBJ (getcontext)
+extern int unw_tdep_getcontext (ucontext_t *);
 
 /* This is a helper routine to search an ia64 unwind table.  If the
    address-space argument AS points to something other than the local
