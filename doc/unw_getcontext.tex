@@ -26,6 +26,17 @@ stack-pointer, will be stored.
 This routine is normally implemented as a macro and applications
 should not attempt to take its address.
 
+\section{Platform-specific Notes}
+
+On IA-64, \Type{unw\_context\_t} has a layout that is compatible with
+that of \Type{ucontext\_t} and such structures can be initialized with
+\Func{getcontext}() instead of \Func{unw\_getcontext}().  However, the
+reverse is \emph{not} true and it is \emph{not} safe to use structures
+initialized by \Func{unw\_getcontext()} in places where a structure
+initialized by \Func{getcontext()} is expected. The reason for this
+asymmetry is that \Func{unw\_getcontext()} is optimized for maximum
+performance and does not, for example, save the signal mask.
+
 \section{Return Value}
 
 On successful completion, \Func{unw\_getcontext}() returns 0.
