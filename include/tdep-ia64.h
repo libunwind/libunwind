@@ -157,7 +157,15 @@ struct cursor
        current frame may be backed up.  Since there are at most 96
        stacked registers and since we only have to track the current
        frame and only areas that are not empty, this puts an upper
-       limit on the # of backing-store areas we have to track.  */
+       limit on the # of backing-store areas we have to track.
+
+       Note that the rbs-area indexed by rbs_curr identifies the
+       rbs-area that was in effect at the time AR.BSP had the value
+       c->bsp.  However, this rbs area may not actually contain the
+       value in the register that c->bsp corresponds to because that
+       register may not have gotten spilled until much later, when a
+       possibly different rbs-area might have been in effect
+       already.  */
     uint8_t rbs_curr;		/* index of curr. rbs-area (contains c->bsp) */
     uint8_t rbs_left_edge;	/* index of inner-most valid rbs-area */
     struct rbs_area
