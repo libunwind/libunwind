@@ -5,8 +5,12 @@
 
 #include <libunwind.h>
 
+#define ITERATIONS	10000
+
 #define panic(args...)							  \
 	do { fprintf (stderr, args); exit (-1); } while (0)
+
+static int maxlevel = 100;
 
 static inline double
 gettime (void)
@@ -18,7 +22,7 @@ gettime (void)
 }
 
 static int
-measure_unwind (int maxlevel)
+measure_unwind (int maxlevel, double *init, double *step)
 {
   double stop, mid, start;
   unw_cursor_t cursor;
@@ -48,42 +52,69 @@ measure_unwind (int maxlevel)
     panic ("Unwound only %d levels, expected at least %d levels",
 	   level, maxlevel);
 
-  printf (" unw_{getcontext+init_local}: %9.3f nsec, unw_step: %9.3f nsec\n",
-	  1e9*(mid - start), 1e9*(stop - mid)/level);
+  *init = mid - start;
+  *step = (stop - mid) / (double) level;
   return 0;
 }
 
 static int
-f1 (int level, int maxlevel)
+f1 (int level, int maxlevel, double *init, double *step)
 {
   if (level == maxlevel)
-    return measure_unwind (maxlevel);
+    return measure_unwind (maxlevel, init, step);
   else
     /* defeat last-call/sibcall optimization */
-    return f1 (level + 1, maxlevel) + level;
+    return f1 (level + 1, maxlevel, init, step) + level;
+}
+
+static void
+doit (const char *label)
+{
+  double init, step, min_init, first_init, min_step, first_step, sum_init, sum_step;
+  int i;
+
+  sum_init = sum_step = first_init = first_step = 0.0;
+  min_init = min_step = 1e99;
+  for (i = 0; i < ITERATIONS; ++i)
+    {
+      f1 (0, maxlevel, &init, &step);
+
+      sum_init += init;
+      sum_step += step;
+
+      if (init < min_init)
+	min_init = init;
+      if (step < min_step)
+	min_step = step;
+
+      if (i == 0)
+	{
+	  first_init = init;
+	  first_step = step;
+	}
+    }
+  printf ("%s:\n"
+	  "  unw_{getcontext+init_local}: first=%9.3f min=%9.3f avg=%9.3f nsec\n"
+	  "  unw_step                   : first=%9.3f min=%9.3f avg=%9.3f nsec\n",
+	  label,
+	  1e9*first_init, 1e9*min_init, 1e9*sum_init/ITERATIONS,
+	  1e9*first_step, 1e9*min_step, 1e9*sum_step/ITERATIONS);
 }
 
 int
 main (int argc, char **argv)
 {
-  int i, maxlevel = 100;
-
   if (argc > 1)
     maxlevel = atol (argv[1]);
 
-  printf ("Caching: none\n");
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_NONE);
-  for (i = 0; i < 20; ++i)
-    f1 (0, maxlevel);
+  doit ("Caching: none");
 
-  printf ("Caching: global\n");
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_GLOBAL);
-  for (i = 0; i < 20; ++i)
-    f1 (0, maxlevel);
+  doit ("Caching: global");
 
-  printf ("Caching: per-thread\n");
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
-  for (i = 0; i < 20; ++i)
-    f1 (0, maxlevel);
+  doit ("Caching: per-thread");
+
   return 0;
 }
