@@ -68,6 +68,20 @@ struct ia64_script
     struct ia64_script_insn insn[IA64_MAX_SCRIPT_LEN];
   };
 
+struct ia64_script_cache
+  {
+    unsigned short lru_head;	/* index of lead-recently used script */
+    unsigned short lru_tail;	/* index of most-recently used script */
+
+    /* hash table that maps instruction pointer to script index: */
+    unsigned short hash[IA64_UNW_HASH_SIZE];
+
+    uint32_t generation;	/* generation number */
+
+    /* script cache: */
+    struct ia64_script buckets[IA64_UNW_CACHE_SIZE];
+  };
+
 #define ia64_script_lookup	UNW_OBJ(ia64_script_lookup)
 
 extern struct ia64_script *ia64_script_lookup (struct ia64_cursor *c);
