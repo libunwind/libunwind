@@ -28,6 +28,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
+#ifdef __linux__
+  struct cursor *c = (struct cursor *) cursor;
+  unw_accessors_t *a = unw_get_accessors (c->as);
+  unw_word_t w0, w1;
+  int ret;
+
+  /* Check if EIP points at sigreturn() sequence.  On Linux, this is:
+
+	0x58				pop %eax
+	0xb8 0x77 0x00 0x00 0x00	movl 0x77,%eax
+	0xcd 0x80			int 0x80
+  */
+  if ((ret = (*a->access_mem) (c->as, c->eip, &w0, 0, c->as_arg)) < 0
+      || (ret = (*a->access_mem) (c->as, c->eip + 4, &w1, 0, c->as_arg)) < 0)
+    return ret;
+  return (w0 == 0x0077b858) && (w1 == 0x80cd0000);
+#else
   printf ("%s: implement me\n", __FUNCTION__);
+#endif
   return -UNW_ENOINFO;
 }
