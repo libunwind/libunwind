@@ -218,6 +218,8 @@ extern int UNW_OBJ(init_remote) (unw_cursor_t *c, unw_addr_space_t as,
 extern int UNW_OBJ(step) (unw_cursor_t *c);
 extern int UNW_OBJ(resume) (unw_cursor_t *c);
 extern int UNW_OBJ(get_proc_info) (unw_cursor_t *c, unw_proc_info_t *pi);
+extern int UNW_OBJ(get_proc_info_by_ip) (unw_addr_space_t as, unw_word_t ip,
+					 unw_proc_info_t *pi, void *as_arg);
 extern int UNW_OBJ(get_reg) (unw_cursor_t *c, int regnum, unw_word_t *valp);
 extern int UNW_OBJ(set_reg) (unw_cursor_t *c, int regnum, unw_word_t val);
 extern int UNW_OBJ(get_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t *val);
@@ -274,6 +276,19 @@ extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len,
 /* Return the proc-info associated with the cursor.
    This routine is signal-safe.  */
 #define unw_get_proc_info(c,p)		UNW_OBJ(get_proc_info)(c,p)
+
+/* Return the proc-info associated instruction pointer IP or an
+   error-code if no such info can be found.  Argument AS is the
+   address-space in which the instruction-pointer IP should be looked
+   up and PI is a pointer to the unw_proc_info_t structure that should
+   be used to return the info.  ARG is an address-space-specific
+   argument and serves the same purpose as argument ARG for
+   unw_init_remote().  When AS is unw_local_addr_space, 0 must be
+   passed for this argument.
+
+   This routine is signal-safe.  */
+#define unw_get_proc_info_by_ip(as,ip,pi,arg)				   \
+				UNW_OBJ(get_proc_info_by_ip)(as,ip,pi,arg)
 
 /* Register accessor routines.  Return zero on success, negative value
    on failure.
