@@ -66,6 +66,11 @@ For local unwinding, \Func{unw\_resume}() does not return on success.
 For remote unwinding, it returns 0 on success.  On failure, the
 negative value of one of the errors below is returned.
 
+\section{Thread and Signal Safety}
+
+\Func{unw\_resume}() is thread-safe as well as safe to use from a
+signal handler.
+
 \section{Errors}
 
 \begin{Description}
