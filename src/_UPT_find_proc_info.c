@@ -51,7 +51,7 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
     {
       /* If we have a PT_DYNAMIC program header, fetch the gp-value
 	 from the DT_PLTGOT entry.  */
-      Elf64_Dyn *dyn = (Elf64_Dyn *) (pdyn->p_offset + ui->ei.image);
+      Elf64_Dyn *dyn = (Elf64_Dyn *) (pdyn->p_offset + (char *) ui->ei.image);
       for (; dyn->d_tag != DT_NULL; ++dyn)
 	if (dyn->d_tag == DT_PLTGOT)
 	  {
@@ -84,7 +84,7 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
       if (strcmp (strtab + shdr->sh_name, ".opd") == 0
 	  && shdr->sh_size >= 16)
 	{
-	  gp = ((Elf64_Addr *) (ui->ei.image + shdr->sh_offset))[1];
+	  gp = ((Elf64_Addr *) ((char *) ui->ei.image + shdr->sh_offset))[1];
 	  goto done;
 	}
       shdr = (Elf64_Shdr *) (((char *) shdr) + ehdr->e_shentsize);
