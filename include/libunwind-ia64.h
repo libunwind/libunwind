@@ -109,12 +109,11 @@ typedef enum
 
     UNW_TDEP_IP = UNW_IA64_IP,
     UNW_TDEP_SP = UNW_IA64_SP,
-    UNW_TDEP_EH_ARG0 = UNW_IA64_GR + 15,
-    UNW_TDEP_EH_ARG1 = UNW_IA64_GR + 16,
-    UNW_TDEP_EH_ARG2 = UNW_IA64_GR + 17,
-    UNW_TDEP_EH_ARG3 = UNW_IA64_GR + 18
+    UNW_TDEP_EH = UNW_IA64_GR + 15
   }
 ia64_regnum_t;
+
+#define UNW_TDEP_NUM_EH_REGS	4	/* r15-r18 are exception args */
 
 typedef struct unw_tdep_save_loc
   {
