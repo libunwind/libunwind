@@ -38,12 +38,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # else
 #  define HIDDEN
 # endif
-# define likely(x)	__builtin_expect ((x), 1)
-# define unlikely(x)	__builtin_expect ((x), 0)
+# if (__GNUC__ >= 3)
+#  define likely(x)	__builtin_expect ((x), 1)
+#  define unlikely(x)	__builtin_expect ((x), 0)
+# else
+#  define likely(x)	(x)
+#  define unlikely(x)	(x)
+# endif
 #else
 # define HIDDEN
-# define likely(x)
-# define unlikely(x)
+# define likely(x)	(x)
+# define unlikely(x)	(x)
 #endif
 
 #ifdef DEBUG
@@ -53,9 +58,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if UNW_DEBUG
 # include <stdio.h>
 # define debug(level,format...)	\
-	do { if (tdep_debug_level > level) printf (format); } while (0)
+    do { if (tdep_debug_level > level) fprintf (stderr, format); } while (0)
 # define dprintf(format...) \
-	printf (format)
+    fprintf (stderr, format)
 # ifdef __GNUC__
 #  define inline	__attribute__ ((unused))
 # endif
