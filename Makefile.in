@@ -110,6 +110,8 @@ EXTRA_DIST = include/internal.h include/mempool.h \
 	include/libunwind-hppa.h include/tdep-hppa.h \
 	include/libunwind-x86.h include/tdep-x86.h
 
+
+DISTCLEANFILES = include/libunwind.h include/tdep.h
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
@@ -418,6 +420,7 @@ clean-generic:
 
 distclean-generic:
 	-rm -f Makefile $(CONFIG_CLEAN_FILES)
+	-test -z "$(DISTCLEANFILES)" || rm -f $(DISTCLEANFILES)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
