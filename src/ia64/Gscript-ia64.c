@@ -375,7 +375,12 @@ build_script (struct cursor *c, struct ia64_script *script)
 
   compile_reg (&sr, i, script);
 
-  for (i = IA64_REG_BSP; i < IA64_NUM_PREGS; ++i)
+  /* Note: it's important here that IA64_REG_PSP gets compiled first
+     because later save-locations may depend on it's correct (updated)
+     value.  Fixed-size frames are handled speciall (see above), but
+     variable-size frames get handled as part of the normal
+     compile_reg().  */
+  for (i = IA64_REG_PSP; i < IA64_NUM_PREGS; ++i)
     compile_reg (&sr, i, script);
 
   if (sr.is_signal_frame)
