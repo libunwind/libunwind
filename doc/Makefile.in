@@ -289,7 +289,7 @@ uninstall-man: uninstall-man3
 
 
 .tex.man:
-	-bk get $@
+	-bk get -e $@
 	$(L2M_CMD) $< $@
 
 html:
