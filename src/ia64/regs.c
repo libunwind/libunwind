@@ -68,7 +68,7 @@ ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg)
       return loc;
     }
   else
-    return IA64_REG_LOC (reg);
+    return IA64_REG_LOC (c, reg);
 }
 
 /* Apply rotation to a general register.  The number REG must be in
@@ -274,11 +274,16 @@ access_nat (struct ia64_cursor *c, unw_word_t loc, unw_word_t reg_loc,
 	  /* NaT bit is saved in a NaT register.  This happens when a
 	     general register is saved to another general
 	     register.  */
+#ifdef UNW_LOCAL_ONLY
+	  mask = ((unw_word_t) 1) << reg;
+	  nat_loc = (unw_word_t) &c->uc->uc_mcontext.sc_nat;
+#else
 	  if (write)
-	    ret = ia64_put (c, UNW_IA64_NAT + reg, *valp);
+	    ret = ia64_put (c, IA64_REG_LOC (c, UNW_IA64_NAT + reg), *valp);
 	  else
-	    ret = ia64_get (c, UNW_IA64_NAT + reg, valp);
+	    ret = ia64_get (c, IA64_REG_LOC (c, UNW_IA64_NAT + reg), valp);
 	  return ret;
+#endif
 	}
       else if (reg >= 32)
 	{
@@ -370,7 +375,6 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
       loc = (&c->nat4_loc)[reg - (UNW_IA64_NAT + 4)];
       reg_loc = (&c->r4_loc)[reg - (UNW_IA64_NAT + 4)];
       return access_nat (c, loc, reg_loc, valp, write);
-
 
     case UNW_IA64_AR_BSP:	loc = c->bsp_loc; break;
     case UNW_IA64_AR_BSPSTORE:	loc = c->bspstore_loc; break;
