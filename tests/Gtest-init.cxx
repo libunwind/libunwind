@@ -32,7 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind.h>
 
-int errors;
+int verbose, errors;
 
 #define panic(args...)					\
 	{ ++errors; fprintf (stderr, args); return; }
@@ -64,7 +64,8 @@ backtrace (void)
       if (unw_get_proc_name (&cursor, name, sizeof (name), &offset) == 0
 	  && off > 0)
 	snprintf (off, sizeof (off), "+0x%lx", (long) offset);
-      printf ("  [%lx] <%s%s>\n", (long) ip, name, off);
+      if (verbose)
+	printf ("  [%lx] <%s%s>\n", (long) ip, name, off);
       if (++count > 32)
 	panic ("FAILURE: didn't reach beginning of unwind-chain\n");
     }
@@ -83,7 +84,8 @@ b (void)
 static void
 a (void)
 {
-  printf ("backtrace() from atexit()-handler:\n");
+  if (verbose)
+    printf ("backtrace() from atexit()-handler:\n");
   b();
   if (errors)
     abort ();	/* cannot portably call exit() from an atexit() handler */
@@ -91,12 +93,14 @@ a (void)
 
 Test_Class::Test_Class (void)
 {
-  printf ("backtrace() from constructor:\n");
+  if (verbose)
+    printf ("backtrace() from constructor:\n");
   b();
 }
 
 int
 main (int argc, char **argv)
 {
+  verbose = argc > 1;
   return atexit (a);
 }
