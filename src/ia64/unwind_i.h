@@ -86,7 +86,7 @@ ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
   if (!loc)
     {
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
-      return -1;
+      return -UNW_EBADREG;
     }
   *val = *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc);
   return 0;
@@ -98,7 +98,7 @@ ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
   if (!loc)
     {
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
-      return -1;
+      return -UNW_EBADREG;
     }
   *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc) = val;
   return 0;
@@ -110,7 +110,7 @@ ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
   if (!loc)
     {
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
-      return -1;
+      return -UNW_EBADREG;
     }
   *val = *(unw_word_t *) IA64_MASK_LOC_TYPE(loc);
   return 0;
@@ -122,7 +122,7 @@ ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
   if (!loc)
     {
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
-      return -1;
+      return -UNW_EBADREG;
     }
   *(unw_word_t *) IA64_MASK_LOC_TYPE(loc) = (val);
   return 0;
