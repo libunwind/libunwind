@@ -37,7 +37,7 @@ enum ia64_script_insn_opcode
     IA64_INSN_ADD_SP,		/* s[dst] = (s.sp + val) */
     IA64_INSN_MOVE,		/* s[dst] = s[val] */
     IA64_INSN_MOVE_STACKED,	/* s[dst] = ia64_rse_skip(*s.bsp_loc, val) */
-    IA64_INSN_MOVE_SIGCONTEXT,	/* s[dst] = sigcontext + val */
+    IA64_INSN_MOVE_SCRATCH,	/* s[dst] = scratch reg "val" */
     IA64_INSN_SETNAT_MEMSTK,	/* s[dst].nat.type = s.pri_unat_loc | MEMSTK */
     IA64_INSN_LOAD		/* s[dst] = *s[val] */
   };
