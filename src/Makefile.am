@@ -129,7 +129,8 @@ libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
 
 # The list of files that go both into libunwind and libunwind-x86:
 libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
-	x86/offsets.h
+	x86/offsets.h							\
+	x86/is_fpreg-x86.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
