@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -26,6 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <setjmp.h>
 
+#include "jmpbuf.h"
+
 /* Why use K&R syntax here?  setjmp() is often a macro and that
    expands into a call to, say, __setjmp() and we need to define the
    libunwind-version of setjmp() with the name of the actual function.
@@ -39,14 +41,9 @@ setjmp (env)
 {
   void **wp = (void **) env;
 
-#if UNW_TARGET_IA64
-  wp[0] = __builtin_dwarf_cfa () - 16;
-  wp[1] = __builtin_ia64_bsp ();
-#else
   /* this should work on most platforms, but may not be
      performance-optimal; check the code! */
-  wp[0] = __builtin_frame_address (0);
-  wp[1] = (void *) (uintptr_t) 0;
-#endif
+  wp[JB_SP] = __builtin_frame_address (0);
+  wp[JB_RP] = (unw_word_t) __builtin_return_address (0);
   return 0;
 }
