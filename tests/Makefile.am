@@ -17,12 +17,13 @@ perf:
 
 else
 if ARCH_IA64
- noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
+ noinst_PROGRAMS_arch = ia64-test-dyn1
  check_SCRIPTS_arch =	run-ia64-test-dyn1
  check_PROGRAMS_arch =	Gia64-test-stack Lia64-test-stack		\
 			Gia64-test-nat Lia64-test-nat			\
 			Gia64-test-rbs Lia64-test-rbs			\
-			Gia64-test-readonly Lia64-test-readonly
+			Gia64-test-readonly Lia64-test-readonly		\
+			ia64-test-setjmp ia64-test-sig
 endif
  check_SCRIPTS_cdep =	run-ptrace-mapper
  check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	  \
@@ -77,6 +78,7 @@ LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
 
 test_setjmp_LDADD = ../src/libunwind-setjmp.la
+ia64_test_setjmp_LDADD = ../src/libunwind-setjmp.la
 test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
 Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
