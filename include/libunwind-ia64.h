@@ -166,8 +166,7 @@ extern int _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
    an IA-64 unwind table.  If the entry exists in the table, the
    list-address is returned.  In all other cases, 0 is returned.  */
 extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
-					void *table, size_t table_size,
-					unw_word_t segbase, unw_word_t gp,
+					unw_dyn_info_t *di,
 					void *arg);
 
 /* This is a helper routine to obtain the kernel-unwind info.  It is
