@@ -42,8 +42,6 @@ struct UPT_info
     pid_t pid;		/* the process-id of the child we're unwinding */
     struct elf_image ei;
     unw_dyn_info_t di_cache;
-    unw_word_t dyn_info_list_addr;
-    unsigned int checked_dyn_info_list_addr : 1;
 #if UNW_TARGET_IA64
     unw_dyn_info_t ktab;
 #endif
