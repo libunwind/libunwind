@@ -76,6 +76,7 @@ AWK = @AWK@
 CC = @CC@
 CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
+CXX = @CXX@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
 ECHO = @ECHO@
@@ -97,7 +98,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST = run-ia64-test-dyn1
 
 noinst_PROGRAMS_common = 
-check_PROGRAMS_common = 
+check_PROGRAMS_common = Gtest-init Ltest-init
 check_SCRIPTS_common = 
 
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
@@ -107,7 +108,7 @@ check_SCRIPTS_common =
 @REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1 test-setjmp test-ptrace
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
-@REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = bt test-init test-varargs
+@REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = bt test-varargs
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_SCRIPTS_arch = run-ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS_arch = Gia64-test-stack Lia64-test-stack	\
@@ -136,6 +137,8 @@ Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+Gtest_init_SOURCES = Gtest-init.cxx
+Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 
@@ -146,8 +149,11 @@ subdir = tests
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
-@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@check_PROGRAMS =
-@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@check_PROGRAMS = Gtest-exc$(EXEEXT) \
+@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@check_PROGRAMS = Gtest-init$(EXEEXT) \
+@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@	Ltest-init$(EXEEXT)
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@check_PROGRAMS = Gtest-init$(EXEEXT) \
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Ltest-init$(EXEEXT) \
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Gtest-exc$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Ltest-exc$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Gtest-resume-sig$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Ltest-resume-sig$(EXEEXT) \
@@ -155,8 +161,11 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Ltest-dyn1$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-setjmp$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-ptrace$(EXEEXT)
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@check_PROGRAMS =
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS = Gtest-exc$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@check_PROGRAMS = Gtest-init$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Ltest-init$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS = Gtest-init$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-init$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gtest-exc$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-exc$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gtest-resume-sig$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-resume-sig$(EXEEXT) \
@@ -170,11 +179,9 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-rbs$(EXEEXT)
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
-@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-sig$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-dyn1$(EXEEXT)
@@ -202,6 +209,11 @@ Gtest_exc_OBJECTS = Gtest-exc.$(OBJEXT)
 Gtest_exc_LDADD = $(LDADD)
 Gtest_exc_DEPENDENCIES = ../src/libunwind-$(arch).la
 Gtest_exc_LDFLAGS =
+am_Gtest_init_OBJECTS = Gtest-init.$(OBJEXT)
+Gtest_init_OBJECTS = $(am_Gtest_init_OBJECTS)
+Gtest_init_LDADD = $(LDADD)
+Gtest_init_DEPENDENCIES = ../src/libunwind-$(arch).la
+Gtest_init_LDFLAGS =
 Gtest_resume_sig_SOURCES = Gtest-resume-sig.c
 Gtest_resume_sig_OBJECTS = Gtest-resume-sig.$(OBJEXT)
 Gtest_resume_sig_LDADD = $(LDADD)
@@ -229,6 +241,11 @@ Ltest_exc_OBJECTS = Ltest-exc.$(OBJEXT)
 Ltest_exc_LDADD = $(LDADD)
 Ltest_exc_DEPENDENCIES = ../src/libunwind-$(arch).la
 Ltest_exc_LDFLAGS =
+am_Ltest_init_OBJECTS = Ltest-init.$(OBJEXT)
+Ltest_init_OBJECTS = $(am_Ltest_init_OBJECTS)
+Ltest_init_LDADD = $(LDADD)
+Ltest_init_DEPENDENCIES = ../src/libunwind-$(arch).la
+Ltest_init_LDFLAGS =
 Ltest_resume_sig_SOURCES = Ltest-resume-sig.c
 Ltest_resume_sig_OBJECTS = Ltest-resume-sig.$(OBJEXT)
 Ltest_resume_sig_LDADD = $(LDADD)
@@ -250,11 +267,6 @@ ia64_test_sig_OBJECTS = ia64-test-sig.$(OBJEXT)
 ia64_test_sig_LDADD = $(LDADD)
 ia64_test_sig_DEPENDENCIES = ../src/libunwind-$(arch).la
 ia64_test_sig_LDFLAGS =
-test_init_SOURCES = test-init.c
-test_init_OBJECTS = test-init.$(OBJEXT)
-test_init_LDADD = $(LDADD)
-test_init_DEPENDENCIES = ../src/libunwind-$(arch).la
-test_init_LDFLAGS =
 test_ptrace_SOURCES = test-ptrace.c
 test_ptrace_OBJECTS = test-ptrace.$(OBJEXT)
 test_ptrace_LDADD = $(LDADD)
@@ -280,14 +292,16 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Gia64-test-rbs.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gia64-test-stack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gtest-dyn1.Po ./$(DEPDIR)/Gtest-exc.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/Gtest-init.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gtest-resume-sig.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-rbs.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-stack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Ltest-dyn1.Po ./$(DEPDIR)/Ltest-exc.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/Ltest-init.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Ltest-resume-sig.Po ./$(DEPDIR)/bt.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ia64-test-dyn1.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ia64-test-sig.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/test-init.Po ./$(DEPDIR)/test-ptrace.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test-ptrace.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-setjmp.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-varargs.Po
 CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
@@ -301,19 +315,29 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
+CXXCOMPILE = $(CXX) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
+	$(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CXXFLAGS) $(CXXFLAGS)
+LTCXXCOMPILE = $(LIBTOOL) --mode=compile $(CXX) $(DEFS) \
+	$(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) \
+	$(AM_CXXFLAGS) $(CXXFLAGS)
+CXXLD = $(CXX)
+CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
+	$(AM_LDFLAGS) $(LDFLAGS) -o $@
+CXXFLAGS = @CXXFLAGS@
 DIST_SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) \
-	$(Gtest_dyn1_SOURCES) Gtest-exc.c Gtest-resume-sig.c \
-	$(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) \
-	$(Ltest_dyn1_SOURCES) Ltest-exc.c Ltest-resume-sig.c bt.c \
-	$(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c \
-	test-ptrace.c test-setjmp.c test-varargs.c
+	$(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) \
+	Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) \
+	$(Lia64_test_stack_SOURCES) $(Ltest_dyn1_SOURCES) Ltest-exc.c \
+	$(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c \
+	$(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-ptrace.c \
+	test-setjmp.c test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) $(Gtest_dyn1_SOURCES) Gtest-exc.c Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) $(Ltest_dyn1_SOURCES) Ltest-exc.c Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c test-ptrace.c test-setjmp.c test-varargs.c
+SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-ptrace.c test-setjmp.c test-varargs.c
 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .S .c .lo .o .obj
+.SUFFIXES: .S .c .cxx .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --gnu  tests/Makefile
@@ -345,6 +369,9 @@ Gtest-dyn1$(EXEEXT): $(Gtest_dyn1_OBJECTS) $(Gtest_dyn1_DEPENDENCIES)
 Gtest-exc$(EXEEXT): $(Gtest_exc_OBJECTS) $(Gtest_exc_DEPENDENCIES) 
 	@rm -f Gtest-exc$(EXEEXT)
 	$(LINK) $(Gtest_exc_LDFLAGS) $(Gtest_exc_OBJECTS) $(Gtest_exc_LDADD) $(LIBS)
+Gtest-init$(EXEEXT): $(Gtest_init_OBJECTS) $(Gtest_init_DEPENDENCIES) 
+	@rm -f Gtest-init$(EXEEXT)
+	$(CXXLINK) $(Gtest_init_LDFLAGS) $(Gtest_init_OBJECTS) $(Gtest_init_LDADD) $(LIBS)
 Gtest-resume-sig$(EXEEXT): $(Gtest_resume_sig_OBJECTS) $(Gtest_resume_sig_DEPENDENCIES) 
 	@rm -f Gtest-resume-sig$(EXEEXT)
 	$(LINK) $(Gtest_resume_sig_LDFLAGS) $(Gtest_resume_sig_OBJECTS) $(Gtest_resume_sig_LDADD) $(LIBS)
@@ -360,6 +387,9 @@ Ltest-dyn1$(EXEEXT): $(Ltest_dyn1_OBJECTS) $(Ltest_dyn1_DEPENDENCIES)
 Ltest-exc$(EXEEXT): $(Ltest_exc_OBJECTS) $(Ltest_exc_DEPENDENCIES) 
 	@rm -f Ltest-exc$(EXEEXT)
 	$(LINK) $(Ltest_exc_LDFLAGS) $(Ltest_exc_OBJECTS) $(Ltest_exc_LDADD) $(LIBS)
+Ltest-init$(EXEEXT): $(Ltest_init_OBJECTS) $(Ltest_init_DEPENDENCIES) 
+	@rm -f Ltest-init$(EXEEXT)
+	$(CXXLINK) $(Ltest_init_LDFLAGS) $(Ltest_init_OBJECTS) $(Ltest_init_LDADD) $(LIBS)
 Ltest-resume-sig$(EXEEXT): $(Ltest_resume_sig_OBJECTS) $(Ltest_resume_sig_DEPENDENCIES) 
 	@rm -f Ltest-resume-sig$(EXEEXT)
 	$(LINK) $(Ltest_resume_sig_LDFLAGS) $(Ltest_resume_sig_OBJECTS) $(Ltest_resume_sig_LDADD) $(LIBS)
@@ -372,9 +402,6 @@ ia64-test-dyn1$(EXEEXT): $(ia64_test_dyn1_OBJECTS) $(ia64_test_dyn1_DEPENDENCIES
 ia64-test-sig$(EXEEXT): $(ia64_test_sig_OBJECTS) $(ia64_test_sig_DEPENDENCIES) 
 	@rm -f ia64-test-sig$(EXEEXT)
 	$(LINK) $(ia64_test_sig_LDFLAGS) $(ia64_test_sig_OBJECTS) $(ia64_test_sig_LDADD) $(LIBS)
-test-init$(EXEEXT): $(test_init_OBJECTS) $(test_init_DEPENDENCIES) 
-	@rm -f test-init$(EXEEXT)
-	$(LINK) $(test_init_LDFLAGS) $(test_init_OBJECTS) $(test_init_LDADD) $(LIBS)
 test-ptrace$(EXEEXT): $(test_ptrace_OBJECTS) $(test_ptrace_DEPENDENCIES) 
 	@rm -f test-ptrace$(EXEEXT)
 	$(LINK) $(test_ptrace_LDFLAGS) $(test_ptrace_OBJECTS) $(test_ptrace_LDADD) $(LIBS)
@@ -395,16 +422,17 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gia64-test-stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtest-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtest-exc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtest-init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtest-resume-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lia64-test-rbs.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lia64-test-stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-exc.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-resume-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-sig.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ptrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setjmp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-varargs.Po@am__quote@
@@ -439,6 +467,25 @@ distclean-depend:
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LTCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 CCDEPMODE = @CCDEPMODE@
+
+.cxx.o:
+@AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
+
+.cxx.obj:
+@AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/$*.Po' tmpdepfile='$(DEPDIR)/$*.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CXXCOMPILE) -c -o $@ `cygpath -w $<`
+
+.cxx.lo:
+@AMDEP_TRUE@	source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/$*.Plo' tmpdepfile='$(DEPDIR)/$*.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CXXDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LTCXXCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
+CXXDEPMODE = @CXXDEPMODE@
 
 mostlyclean-libtool:
 	-rm -f *.lo
