@@ -12,7 +12,7 @@
 ** Added multi-architecture supports (lets a single application use
    the unwind libraries for multiple target architectures; this is useful,
    e.g., useful for building a debugger that can support multiple targets
-   such as ia32, ia64, etc.)
+   such as x86, ia64, etc.)
 
 
 * News for v0.1:
