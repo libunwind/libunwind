@@ -185,12 +185,24 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
 #define tdep_search_unwind_table	dwarf_search_unwind_table
-#define tdep_find_proc_info		dwarf_find_proc_info
-#define tdep_put_unwind_info		dwarf_put_unwind_info
 #define tdep_uc_addr			UNW_ARCH_OBJ(uc_addr)
 #define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
 #define tdep_access_reg			UNW_OBJ(access_reg)
 #define tdep_access_fpreg		UNW_OBJ(access_fpreg)
+
+#ifdef UNW_LOCAL_ONLY
+# define tdep_find_proc_info(c,ip,n)				\
+	dwarf_find_proc_info((c)->as, (ip), &(c)->pi, (n),	\
+				       (c)->as_arg)
+# define tdep_put_unwind_info(c,pi)				\
+	dwarf_put_unwind_info((c)->as, (pi), (c)->as_arg)
+#else
+# define tdep_find_proc_info(c,ip,n)					\
+	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (n),	\
+				       (c)->as_arg)
+# define tdep_put_unwind_info(c,pi)					\
+	(*(c)->as->acc.put_unwind_info)((c)->as, (pi), (c)->as_arg)
+#endif
 
 #define tdep_get_as(c)			((c)->dwarf.as)
 #define tdep_get_as_arg(c)		((c)->dwarf.as_arg)
@@ -203,8 +215,6 @@ extern void tdep_init (void);
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);
-extern void tdep_put_unwind_info (unw_addr_space_t as,
-				  unw_proc_info_t *pi, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff);
