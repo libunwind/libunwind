@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2002, 2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -38,6 +38,14 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
     tdep_init ();
 
   Debug (2, "(cursor=%p)\n", c);
+
+  if (as == unw_local_addr_space)
+    /* This special-casing is unfortunate and shouldn't be needed;
+       however, both Linux and HP-UX need to adjust the context a bit
+       before it's usable.  Try to think of a cleaner way of doing
+       this.  Not sure it's possible though, as long as we want to be
+       able to use the context returned by getcontext() et al.  */
+    return unw_init_local (cursor, as_arg);
 
   c->as = as;
   c->as_arg = as_arg;
