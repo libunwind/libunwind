@@ -89,6 +89,9 @@ unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip, int is_local,
 
   /* not a dynamic procedure */
 
+#ifdef UNW_REMOTE_ONLY
+  return -UNW_ENOINFO;
+#else
   if (!is_local)
     /* It makes no sense to implement get_proc_name() for remote
        address spaces because that would require a callback and in
@@ -97,4 +100,5 @@ unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip, int is_local,
     return -UNW_ENOINFO;
 
   return tdep_get_proc_name (ip, buf, buf_len, offp);
+#endif
 }
