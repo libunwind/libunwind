@@ -82,8 +82,8 @@ unwind_and_resume (long iteration, int (*next_func[])())
 
   if (unw_get_reg (&c, UNW_REG_IP, &ip) < 0
       || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) &resumption_point_label) < 0
-      || unw_set_reg (&c, UNW_REG_EH_ARG0, 0)	/* ret val */
-      || unw_set_reg (&c, UNW_REG_EH_ARG1, ip))
+      || unw_set_reg (&c, UNW_REG_EH + 0, 0)	/* ret val */
+      || unw_set_reg (&c, UNW_REG_EH + 1, ip))
     panic ("failed to redirect to resumption_point\n");
 
   if (verbose)
