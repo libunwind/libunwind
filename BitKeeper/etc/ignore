@@ -3,6 +3,7 @@
 *~
 BitKeeper/*/*
 PENDING/*
+autom4te.cache/*
 src/Makefile.bak
 include/libunwind-tdep.h
 include/stamp-h
