@@ -164,13 +164,19 @@ libunwind_la_SOURCES_local = \
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
-dwarf_sources = \
-	dwarf/dwarf-eh.h						\
-	dwarf/global-dwarf.c						\
-	dwarf/Gexpr-dwarf.c dwarf/Gfde-dwarf.c dwarf/Gparser-dwarf.c	\
-	dwarf/Gpe-dwarf.c dwarf/Gstep-dwarf.c				\
+dwarf_SOURCES_common = \
+	dwarf/dwarf-eh.h			\
+	dwarf/global-dwarf.c
+
+
+dwarf_SOURCES_local = \
 	dwarf/Lexpr-dwarf.c dwarf/Lfde-dwarf.c dwarf/Lparser-dwarf.c	\
 	dwarf/Lpe-dwarf.c dwarf/Lstep-dwarf.c
+
+
+dwarf_SOURCES_generic = \
+	dwarf/Gexpr-dwarf.c dwarf/Gfde-dwarf.c dwarf/Gparser-dwarf.c	\
+	dwarf/Gpe-dwarf.c dwarf/Gstep-dwarf.c
 
 
 #
@@ -181,10 +187,10 @@ dwarf_sources = \
 #
 
 # The list of files that go both into libunwind and libunwind-ia64:
-libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	\
-	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		\
-	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		\
-	ia64/debug_level-ia64.c
+libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		    \
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
+	ia64/flush_cache-ia64.c ia64/regname-ia64.c
 
 
 # The list of files that go into libunwind:
@@ -193,8 +199,6 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 									   \
 	elf64.c elf64.h							   \
 									   \
-	ia64/flush_cache-ia64.c						   \
-	ia64/regname-ia64.c						   \
 	ia64/dyn_info_list-ia64.S					   \
 									   \
 	ia64/Lcreate_addr_space-ia64.c ia64/Ldestroy_addr_space-ia64.c	   \
@@ -240,40 +244,40 @@ libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
 
 # The list of files that go both into libunwind and libunwind-x86:
 libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
-	x86/offsets.h
+	$(dwarf_SOURCES_common)						\
+	x86/init.h x86/offsets.h x86/unwind_i.h				\
+	x86/flush_cache-x86.c x86/is_fpreg-x86.c x86/regname-x86.c
 
 
 # The list of files that go into libunwind:
-libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
-	$(libunwind_la_SOURCES_local)					\
-									\
-	elf32.c elf32.h							\
-									\
-	$(dwarf_sources)						\
-									\
-	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
-	x86/set_caching_policy-x86.c					\
-	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
-									\
-	dwarf/Lfind_proc_info-lsb.c					\
-	x86/Lcreate_addr_space-x86.c					\
-	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
-	x86/Linit_local-x86.c x86/Linit_remote-x86.c			\
-	x86/Lis_signal_frame-x86.c					\
-	x86/Lget_proc_info-x86.c x86/Lregs-x86.c			\
-	x86/Lresume-x86.c x86/Lset_reg-x86.c x86/Lstep-x86.c
+libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		   \
+	$(libunwind_la_SOURCES_local)					   \
+	elf32.c elf32.h							   \
+	$(dwarf_SOURCES_local)						   \
+	dwarf/Lfind_proc_info-lsb.c					   \
+	x86/Lcreate_addr_space-x86.c					   \
+	x86/Lget_accessors-x86.c x86/Lget_reg-x86.c			   \
+	x86/Lget_proc_name-x86.c x86/Lglobal-x86.c x86/Linit-x86.c	   \
+	x86/Linit_local-x86.c x86/Linit_remote-x86.c			   \
+	x86/Lis_signal_frame-x86.c					   \
+	x86/Lget_proc_info-x86.c x86/Lregs-x86.c			   \
+	x86/Lresume-x86.c x86/Lset_caching_policy-x86.c x86/Lset_reg-x86.c \
+	x86/Lstep-x86.c
 
 
 # The list of files that go into libunwind-x86:
-libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
-	$(libunwind_la_SOURCES_generic)					\
-	dwarf/Gfind_proc_info-lsb.c					\
-	x86/Gcreate_addr_space-x86.c					\
-	x86/Gget_reg-x86.c x86/Gget_proc_name-x86.c x86/Ginit-x86.c	\
-	x86/Ginit_local-x86.c x86/Ginit_remote-x86.c			\
-	x86/Gis_signal_frame-x86.c					\
-	x86/Gget_proc_info-x86.c x86/Gregs-x86.c			\
-	x86/Gresume-x86.c x86/Gset_reg-x86.c x86/Gstep-x86.c
+libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	   \
+	$(libunwind_la_SOURCES_generic)					   \
+	$(dwarf_SOURCES_generic)					   \
+	dwarf/Gfind_proc_info-lsb.c					   \
+	x86/Gcreate_addr_space-x86.c					   \
+	x86/Gget_accessors-x86.c x86/Gget_reg-x86.c			   \
+	x86/Gget_proc_name-x86.c x86/Gglobal-x86.c x86/Ginit-x86.c	   \
+	x86/Ginit_local-x86.c x86/Ginit_remote-x86.c			   \
+	x86/Gis_signal_frame-x86.c					   \
+	x86/Gget_proc_info-x86.c x86/Gregs-x86.c			   \
+	x86/Gresume-x86.c x86/Gset_caching_policy-x86.c x86/Gset_reg-x86.c \
+	x86/Gstep-x86.c
 
 
 @OS_HPUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
@@ -291,7 +295,7 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @ARCH_IA64_TRUE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
 @ARCH_IA64_TRUE@libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
 @ARCH_IA64_TRUE@libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
-@ARCH_IA64_TRUE@libunwind_ia64_la_LIBADD = libunwind.la
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_LIBADD = libunwind.la
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@				  $(libunwind_setjmp_la_SOURCES_x86)
 
@@ -301,12 +305,12 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @ARCH_IA64_TRUE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
 @ARCH_IA64_TRUE@				  $(libunwind_setjmp_la_SOURCES_ia64)
 
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_SOURCES = $(libunwind_la_SOURCES_hppa)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_SOURCES = $(libunwind_hppa_la_SOURCES_hppa)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_LDFLAGS = -version-info $(SOVERSION)
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_LIBADD = libunwind.la
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_SOURCES = $(libunwind_la_SOURCES_x86)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_LIBADD = libunwind.la
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LIBADD = libunwind.la
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_LIBADD = libunwind.la
 
 libunwind_la_LDFLAGS = -XCClinker -nostartfiles	-version-info $(SOVERSION)
 
@@ -349,29 +353,29 @@ am_libunwind_ptrace_a_OBJECTS = _UPT_accessors.$(OBJEXT) \
 libunwind_ptrace_a_OBJECTS = $(am_libunwind_ptrace_a_OBJECTS)
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
-@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@libunwind_hppa_la_DEPENDENCIES =
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@libunwind_hppa_la_DEPENDENCIES =
-@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@libunwind_hppa_la_DEPENDENCIES =
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_DEPENDENCIES = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	libunwind.la
-am__objects_1 = os-hpux.lo
-am__objects_2 = os-linux.lo
-@OS_HPUX_TRUE@am__objects_3 = $(am__objects_1)
-@OS_LINUX_TRUE@am__objects_3 = $(am__objects_2)
-am__objects_4 = $(am__objects_3) mi-init.lo mempool.lo
-am__objects_5 = $(am__objects_4) flush_cache-hppa.lo \
-	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
-	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
-	Ginit_local-hppa.lo Gget_proc_info-hppa.lo Gregs-hppa.lo \
-	Gstep-hppa.lo Lget_reg-hppa.lo Lget_proc_name-hppa.lo \
-	Linit-hppa.lo Linit_local-hppa.lo Lget_proc_info-hppa.lo \
-	Lregs-hppa.lo Lstep-hppa.lo
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@libunwind_hppa_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@libunwind_hppa_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@libunwind_hppa_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_DEPENDENCIES = \
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	libunwind.la
+@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@libunwind_hppa_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_DEPENDENCIES =
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_hppa_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_5)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_1)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
-@ARCH_IA64_TRUE@libunwind_ia64_la_DEPENDENCIES = libunwind.la
-@ARCH_IA64_FALSE@libunwind_ia64_la_DEPENDENCIES =
-am__objects_6 = $(am__objects_4) debug_level-ia64.lo
+@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@libunwind_ia64_la_DEPENDENCIES =
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_DEPENDENCIES =
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@libunwind_ia64_la_DEPENDENCIES =
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_DEPENDENCIES = \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	libunwind.la
+am__objects_2 = os-hpux.lo
+am__objects_3 = os-linux.lo
+@OS_HPUX_TRUE@am__objects_4 = $(am__objects_2)
+@OS_LINUX_TRUE@am__objects_4 = $(am__objects_3)
+am__objects_5 = $(am__objects_4) mi-init.lo mempool.lo
+am__objects_6 = $(am__objects_5) flush_cache-ia64.lo regname-ia64.lo
 am__objects_7 = Gdyn-extract.lo Gdyn-remote.lo \
 	Gfind_dynamic_proc_info.lo Gget_proc_info_by_ip.lo \
 	Gget_proc_name.lo Gput_dynamic_unwind_info.lo
@@ -401,17 +405,40 @@ am__objects_12 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
 @ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_9) \
 @ARCH_IA64_TRUE@	$(am__objects_12)
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_DEPENDENCIES = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	libunwind.la
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@libunwind_x86_la_DEPENDENCIES =
-@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@libunwind_x86_la_DEPENDENCIES =
-@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@libunwind_x86_la_DEPENDENCIES =
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_DEPENDENCIES =
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@libunwind_x86_la_DEPENDENCIES =
-@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@libunwind_x86_la_DEPENDENCIES =
-@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@libunwind_x86_la_DEPENDENCIES =
-am__objects_13 = $(am__objects_4)
-am__objects_14 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES = \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@	libunwind.la
+@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_FALSE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@@REMOTE_ONLY_TRUE@libunwind_x86_la_DEPENDENCIES =
+@ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES =
+am__objects_13 = global-dwarf.lo
+am__objects_14 = $(am__objects_5) $(am__objects_13) flush_cache-x86.lo \
+	is_fpreg-x86.lo regname-x86.lo
+am__objects_15 = Gexpr-dwarf.lo Gfde-dwarf.lo Gparser-dwarf.lo \
+	Gpe-dwarf.lo Gstep-dwarf.lo
+am__objects_16 = $(am__objects_14) $(am__objects_7) $(am__objects_15) \
+	Gfind_proc_info-lsb.lo Gcreate_addr_space-x86.lo \
+	Gget_accessors-x86.lo Gget_reg-x86.lo Gget_proc_name-x86.lo \
+	Gglobal-x86.lo Ginit-x86.lo Ginit_local-x86.lo \
+	Ginit_remote-x86.lo Gis_signal_frame-x86.lo \
+	Gget_proc_info-x86.lo Gregs-x86.lo Gresume-x86.lo \
+	Gset_caching_policy-x86.lo Gset_reg-x86.lo Gstep-x86.lo
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
+libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
+libunwind_la_LIBADD =
+am__objects_17 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
 	Ldyn-extract.lo Lfind_dynamic_proc_info.lo \
 	Lget_proc_info_by_ip.lo Lget_proc_name.lo \
 	Lput_dynamic_unwind_info.lo _Unwind_Backtrace.lo \
@@ -422,37 +449,38 @@ am__objects_14 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
 	_Unwind_GetTextRelBase.lo _Unwind_RaiseException.lo \
 	_Unwind_Resume.lo _Unwind_Resume_or_Rethrow.lo _Unwind_SetGR.lo \
 	_Unwind_SetIP.lo
-am__objects_15 = global-dwarf.lo Gexpr-dwarf.lo Gfde-dwarf.lo \
-	Gparser-dwarf.lo Gpe-dwarf.lo Gstep-dwarf.lo Lexpr-dwarf.lo \
-	Lfde-dwarf.lo Lparser-dwarf.lo Lpe-dwarf.lo Lstep-dwarf.lo
-am__objects_16 = $(am__objects_13) $(am__objects_14) elf32.lo \
-	$(am__objects_15) flush_cache-x86.lo get_accessors-x86.lo \
-	global-x86.lo set_caching_policy-x86.lo regname-x86.lo \
-	Lfind_proc_info-lsb.lo Lcreate_addr_space-x86.lo \
-	Lget_reg-x86.lo Lget_proc_name-x86.lo Linit-x86.lo \
+am__objects_18 = Lexpr-dwarf.lo Lfde-dwarf.lo Lparser-dwarf.lo \
+	Lpe-dwarf.lo Lstep-dwarf.lo
+am__objects_19 = $(am__objects_14) $(am__objects_17) elf32.lo \
+	$(am__objects_18) Lfind_proc_info-lsb.lo \
+	Lcreate_addr_space-x86.lo Lget_accessors-x86.lo Lget_reg-x86.lo \
+	Lget_proc_name-x86.lo Lglobal-x86.lo Linit-x86.lo \
 	Linit_local-x86.lo Linit_remote-x86.lo Lis_signal_frame-x86.lo \
 	Lget_proc_info-x86.lo Lregs-x86.lo Lresume-x86.lo \
-	Lset_reg-x86.lo Lstep-x86.lo
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
-libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
-libunwind_la_LIBADD =
-am__objects_17 = $(am__objects_6) $(am__objects_14) elf64.lo \
-	flush_cache-ia64.lo regname-ia64.lo dyn_info_list-ia64.lo \
-	Lcreate_addr_space-ia64.lo Ldestroy_addr_space-ia64.lo \
-	Lget_accessors-ia64.lo Lget_fpreg-ia64.lo \
-	Lget_proc_info-ia64.lo Lget_proc_name-ia64.lo Lget_reg-ia64.lo \
-	Lget_save_loc-ia64.lo Lglobal-ia64.lo Linit-ia64.lo \
-	Linit_local-ia64.lo Linit_remote-ia64.lo Linstall_cursor.lo \
+	Lset_caching_policy-x86.lo Lset_reg-x86.lo Lstep-x86.lo
+am__objects_20 = $(am__objects_5) flush_cache-hppa.lo \
+	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
+	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
+	Ginit_local-hppa.lo Gget_proc_info-hppa.lo Gregs-hppa.lo \
+	Gstep-hppa.lo Lget_reg-hppa.lo Lget_proc_name-hppa.lo \
+	Linit-hppa.lo Linit_local-hppa.lo Lget_proc_info-hppa.lo \
+	Lregs-hppa.lo Lstep-hppa.lo
+am__objects_21 = $(am__objects_6) $(am__objects_17) elf64.lo \
+	dyn_info_list-ia64.lo Lcreate_addr_space-ia64.lo \
+	Ldestroy_addr_space-ia64.lo Lget_accessors-ia64.lo \
+	Lget_fpreg-ia64.lo Lget_proc_info-ia64.lo \
+	Lget_proc_name-ia64.lo Lget_reg-ia64.lo Lget_save_loc-ia64.lo \
+	Lglobal-ia64.lo Linit-ia64.lo Linit_local-ia64.lo \
+	Linit_remote-ia64.lo Linstall_cursor.lo \
 	Lis_signal_frame-ia64.lo Lparser-ia64.lo Lrbs-ia64.lo \
 	Lregs-ia64.lo Lresume-ia64.lo Lscript-ia64.lo \
 	Lset_caching_policy-ia64.lo Lset_fpreg-ia64.lo Lset_reg-ia64.lo \
 	Lstep-ia64.lo Ltables-ia64.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_19)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_5)
-@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_17)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_20)
+@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_21)
 libunwind_la_OBJECTS = $(am_libunwind_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64$(EXEEXT) \
 @ARCH_IA64_TRUE@	mk_Lcursor_i-ia64$(EXEEXT)
@@ -480,30 +508,41 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Gcreate_addr_space-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gcreate_addr_space-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gdestroy_addr_space-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gdyn-extract.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gdyn-remote.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gexpr-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gfde-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gfind_dynamic_proc_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gfind_proc_info-lsb.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_accessors-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gget_accessors-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info_by_ip.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_reg-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_reg-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gget_reg-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_save_loc-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gglobal-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gglobal-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Ginit-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_local-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_local-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Ginit_local-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_remote-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Ginit_remote-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gparser-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gparser-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gpe-dwarf.Plo \
@@ -511,14 +550,19 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Grbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gregs-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gresume-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gresume-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gscript-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_caching_policy-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gset_caching_policy-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_reg-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gset_reg-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gstep-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gtables-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lcreate_addr_space-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lcreate_addr_space-x86.Plo \
@@ -529,6 +573,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lfind_dynamic_proc_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lfind_proc_info-lsb.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_accessors-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lget_accessors-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-ia64.Plo \
@@ -543,6 +588,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_reg-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_save_loc-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lglobal-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lglobal-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Linit-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Linit-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Linit-x86.Plo \
@@ -565,6 +611,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lresume-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lscript-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_caching_policy-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lset_caching_policy-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_reg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_reg-x86.Plo \
@@ -602,7 +649,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_Resume_or_Rethrow.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetGR.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetIP.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/debug_level-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-info-list.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo ./$(DEPDIR)/elf32.Plo \
@@ -611,18 +657,17 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-hppa.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/get_accessors-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-hppa.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/longjmp.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mempool.Plo ./$(DEPDIR)/mi-init.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/is_fpreg-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/longjmp.Plo ./$(DEPDIR)/mempool.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/mi-init.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mk_Gcursor_i-ia64.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/mk_Lcursor_i-ia64.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/os-hpux.Plo ./$(DEPDIR)/os-linux.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/regname-x86.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-x86.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/setjmp.Plo ./$(DEPDIR)/siglongjmp.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/regname-x86.Plo ./$(DEPDIR)/setjmp.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/siglongjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sigsetjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-hppa.Plo
 CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
@@ -716,27 +761,10 @@ clean-libLTLIBRARIES:
 	  echo "rm -f \"$${dir}/so_locations\""; \
 	  rm -f "$${dir}/so_locations"; \
 	done
-flush_cache-hppa.lo: hppa/flush_cache-hppa.c
-get_accessors-hppa.lo: hppa/get_accessors-hppa.c
-global-hppa.lo: hppa/global-hppa.c
-tables-hppa.lo: hppa/tables-hppa.c
-Gget_reg-hppa.lo: hppa/Gget_reg-hppa.c
-Gget_proc_name-hppa.lo: hppa/Gget_proc_name-hppa.c
-Ginit-hppa.lo: hppa/Ginit-hppa.c
-Ginit_local-hppa.lo: hppa/Ginit_local-hppa.c
-Gget_proc_info-hppa.lo: hppa/Gget_proc_info-hppa.c
-Gregs-hppa.lo: hppa/Gregs-hppa.c
-Gstep-hppa.lo: hppa/Gstep-hppa.c
-Lget_reg-hppa.lo: hppa/Lget_reg-hppa.c
-Lget_proc_name-hppa.lo: hppa/Lget_proc_name-hppa.c
-Linit-hppa.lo: hppa/Linit-hppa.c
-Linit_local-hppa.lo: hppa/Linit_local-hppa.c
-Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
-Lregs-hppa.lo: hppa/Lregs-hppa.c
-Lstep-hppa.lo: hppa/Lstep-hppa.c
 libunwind-hppa.la: $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_hppa_la_LDFLAGS) $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_LIBADD) $(LIBS)
-debug_level-ia64.lo: ia64/debug_level-ia64.c
+flush_cache-ia64.lo: ia64/flush_cache-ia64.c
+regname-ia64.lo: ia64/regname-ia64.c
 Gcreate_addr_space-ia64.lo: ia64/Gcreate_addr_space-ia64.c
 Gdestroy_addr_space-ia64.lo: ia64/Gdestroy_addr_space-ia64.c
 Gget_accessors-ia64.lo: ia64/Gget_accessors-ia64.c
@@ -771,25 +799,43 @@ siglongjmp-ia64.lo: ia64/siglongjmp-ia64.S
 libunwind-setjmp.la: $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_setjmp_la_LDFLAGS) $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_LIBADD) $(LIBS)
 global-dwarf.lo: dwarf/global-dwarf.c
+flush_cache-x86.lo: x86/flush_cache-x86.c
+is_fpreg-x86.lo: x86/is_fpreg-x86.c
+regname-x86.lo: x86/regname-x86.c
 Gexpr-dwarf.lo: dwarf/Gexpr-dwarf.c
 Gfde-dwarf.lo: dwarf/Gfde-dwarf.c
 Gparser-dwarf.lo: dwarf/Gparser-dwarf.c
 Gpe-dwarf.lo: dwarf/Gpe-dwarf.c
 Gstep-dwarf.lo: dwarf/Gstep-dwarf.c
+Gfind_proc_info-lsb.lo: dwarf/Gfind_proc_info-lsb.c
+Gcreate_addr_space-x86.lo: x86/Gcreate_addr_space-x86.c
+Gget_accessors-x86.lo: x86/Gget_accessors-x86.c
+Gget_reg-x86.lo: x86/Gget_reg-x86.c
+Gget_proc_name-x86.lo: x86/Gget_proc_name-x86.c
+Gglobal-x86.lo: x86/Gglobal-x86.c
+Ginit-x86.lo: x86/Ginit-x86.c
+Ginit_local-x86.lo: x86/Ginit_local-x86.c
+Ginit_remote-x86.lo: x86/Ginit_remote-x86.c
+Gis_signal_frame-x86.lo: x86/Gis_signal_frame-x86.c
+Gget_proc_info-x86.lo: x86/Gget_proc_info-x86.c
+Gregs-x86.lo: x86/Gregs-x86.c
+Gresume-x86.lo: x86/Gresume-x86.c
+Gset_caching_policy-x86.lo: x86/Gset_caching_policy-x86.c
+Gset_reg-x86.lo: x86/Gset_reg-x86.c
+Gstep-x86.lo: x86/Gstep-x86.c
+libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
+	$(LINK) -rpath $(libdir) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
 Lexpr-dwarf.lo: dwarf/Lexpr-dwarf.c
 Lfde-dwarf.lo: dwarf/Lfde-dwarf.c
 Lparser-dwarf.lo: dwarf/Lparser-dwarf.c
 Lpe-dwarf.lo: dwarf/Lpe-dwarf.c
 Lstep-dwarf.lo: dwarf/Lstep-dwarf.c
-flush_cache-x86.lo: x86/flush_cache-x86.c
-get_accessors-x86.lo: x86/get_accessors-x86.c
-global-x86.lo: x86/global-x86.c
-set_caching_policy-x86.lo: x86/set_caching_policy-x86.c
-regname-x86.lo: x86/regname-x86.c
 Lfind_proc_info-lsb.lo: dwarf/Lfind_proc_info-lsb.c
 Lcreate_addr_space-x86.lo: x86/Lcreate_addr_space-x86.c
+Lget_accessors-x86.lo: x86/Lget_accessors-x86.c
 Lget_reg-x86.lo: x86/Lget_reg-x86.c
 Lget_proc_name-x86.lo: x86/Lget_proc_name-x86.c
+Lglobal-x86.lo: x86/Lglobal-x86.c
 Linit-x86.lo: x86/Linit-x86.c
 Linit_local-x86.lo: x86/Linit_local-x86.c
 Linit_remote-x86.lo: x86/Linit_remote-x86.c
@@ -797,12 +843,27 @@ Lis_signal_frame-x86.lo: x86/Lis_signal_frame-x86.c
 Lget_proc_info-x86.lo: x86/Lget_proc_info-x86.c
 Lregs-x86.lo: x86/Lregs-x86.c
 Lresume-x86.lo: x86/Lresume-x86.c
+Lset_caching_policy-x86.lo: x86/Lset_caching_policy-x86.c
 Lset_reg-x86.lo: x86/Lset_reg-x86.c
 Lstep-x86.lo: x86/Lstep-x86.c
-libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
-	$(LINK) -rpath $(libdir) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
-flush_cache-ia64.lo: ia64/flush_cache-ia64.c
-regname-ia64.lo: ia64/regname-ia64.c
+flush_cache-hppa.lo: hppa/flush_cache-hppa.c
+get_accessors-hppa.lo: hppa/get_accessors-hppa.c
+global-hppa.lo: hppa/global-hppa.c
+tables-hppa.lo: hppa/tables-hppa.c
+Gget_reg-hppa.lo: hppa/Gget_reg-hppa.c
+Gget_proc_name-hppa.lo: hppa/Gget_proc_name-hppa.c
+Ginit-hppa.lo: hppa/Ginit-hppa.c
+Ginit_local-hppa.lo: hppa/Ginit_local-hppa.c
+Gget_proc_info-hppa.lo: hppa/Gget_proc_info-hppa.c
+Gregs-hppa.lo: hppa/Gregs-hppa.c
+Gstep-hppa.lo: hppa/Gstep-hppa.c
+Lget_reg-hppa.lo: hppa/Lget_reg-hppa.c
+Lget_proc_name-hppa.lo: hppa/Lget_proc_name-hppa.c
+Linit-hppa.lo: hppa/Linit-hppa.c
+Linit_local-hppa.lo: hppa/Linit_local-hppa.c
+Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
+Lregs-hppa.lo: hppa/Lregs-hppa.c
+Lstep-hppa.lo: hppa/Lstep-hppa.c
 dyn_info_list-ia64.lo: ia64/dyn_info_list-ia64.S
 Lcreate_addr_space-ia64.lo: ia64/Lcreate_addr_space-ia64.c
 Ldestroy_addr_space-ia64.lo: ia64/Ldestroy_addr_space-ia64.c
@@ -853,30 +914,41 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gcreate_addr_space-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gcreate_addr_space-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdestroy_addr_space-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdyn-extract.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdyn-remote.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gexpr-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfde-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfind_dynamic_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfind_proc_info-lsb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_accessors-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_accessors-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info_by_ip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_reg-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_reg-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_reg-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_save_loc-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gglobal-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gglobal-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_local-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_local-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_local-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_remote-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_remote-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gparser-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gparser-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gpe-dwarf.Plo@am__quote@
@@ -884,14 +956,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Grbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gresume-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gresume-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gscript-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_caching_policy-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_caching_policy-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_reg-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_reg-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtables-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lcreate_addr_space-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lcreate_addr_space-x86.Plo@am__quote@
@@ -902,6 +979,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lfind_dynamic_proc_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lfind_proc_info-lsb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_accessors-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_accessors-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-ia64.Plo@am__quote@
@@ -916,6 +994,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_reg-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_save_loc-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lglobal-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lglobal-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit-x86.Plo@am__quote@
@@ -938,6 +1017,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lresume-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lscript-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_caching_policy-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_caching_policy-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_reg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_reg-x86.Plo@am__quote@
@@ -975,7 +1055,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_Resume_or_Rethrow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetGR.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetIP.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug_level-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-info-list.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-register.Plo@am__quote@
@@ -985,10 +1064,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flush_cache-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flush_cache-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-hppa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-hppa.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/is_fpreg-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/longjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mi-init.Plo@am__quote@
@@ -998,7 +1076,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-x86.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/setjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siglongjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigsetjmp.Plo@am__quote@
@@ -1106,347 +1183,41 @@ Linstall_cursor.lo: ia64/Linstall_cursor.S
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LTCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
-flush_cache-hppa.o: hppa/flush_cache-hppa.c
-@AMDEP_TRUE@	source='hppa/flush_cache-hppa.c' object='flush_cache-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-hppa.Po' tmpdepfile='$(DEPDIR)/flush_cache-hppa.TPo' @AMDEPBACKSLASH@
+flush_cache-ia64.o: ia64/flush_cache-ia64.c
+@AMDEP_TRUE@	source='ia64/flush_cache-ia64.c' object='flush_cache-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-ia64.Po' tmpdepfile='$(DEPDIR)/flush_cache-ia64.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-hppa.o `test -f 'hppa/flush_cache-hppa.c' || echo '$(srcdir)/'`hppa/flush_cache-hppa.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-ia64.o `test -f 'ia64/flush_cache-ia64.c' || echo '$(srcdir)/'`ia64/flush_cache-ia64.c
 
-flush_cache-hppa.obj: hppa/flush_cache-hppa.c
-@AMDEP_TRUE@	source='hppa/flush_cache-hppa.c' object='flush_cache-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-hppa.Po' tmpdepfile='$(DEPDIR)/flush_cache-hppa.TPo' @AMDEPBACKSLASH@
+flush_cache-ia64.obj: ia64/flush_cache-ia64.c
+@AMDEP_TRUE@	source='ia64/flush_cache-ia64.c' object='flush_cache-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-ia64.Po' tmpdepfile='$(DEPDIR)/flush_cache-ia64.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-hppa.obj `cygpath -w hppa/flush_cache-hppa.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-ia64.obj `cygpath -w ia64/flush_cache-ia64.c`
 
-flush_cache-hppa.lo: hppa/flush_cache-hppa.c
-@AMDEP_TRUE@	source='hppa/flush_cache-hppa.c' object='flush_cache-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-hppa.Plo' tmpdepfile='$(DEPDIR)/flush_cache-hppa.TPlo' @AMDEPBACKSLASH@
+flush_cache-ia64.lo: ia64/flush_cache-ia64.c
+@AMDEP_TRUE@	source='ia64/flush_cache-ia64.c' object='flush_cache-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-ia64.Plo' tmpdepfile='$(DEPDIR)/flush_cache-ia64.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-hppa.lo `test -f 'hppa/flush_cache-hppa.c' || echo '$(srcdir)/'`hppa/flush_cache-hppa.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-ia64.lo `test -f 'ia64/flush_cache-ia64.c' || echo '$(srcdir)/'`ia64/flush_cache-ia64.c
 
-get_accessors-hppa.o: hppa/get_accessors-hppa.c
-@AMDEP_TRUE@	source='hppa/get_accessors-hppa.c' object='get_accessors-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-hppa.Po' tmpdepfile='$(DEPDIR)/get_accessors-hppa.TPo' @AMDEPBACKSLASH@
+regname-ia64.o: ia64/regname-ia64.c
+@AMDEP_TRUE@	source='ia64/regname-ia64.c' object='regname-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-ia64.Po' tmpdepfile='$(DEPDIR)/regname-ia64.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-hppa.o `test -f 'hppa/get_accessors-hppa.c' || echo '$(srcdir)/'`hppa/get_accessors-hppa.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-ia64.o `test -f 'ia64/regname-ia64.c' || echo '$(srcdir)/'`ia64/regname-ia64.c
 
-get_accessors-hppa.obj: hppa/get_accessors-hppa.c
-@AMDEP_TRUE@	source='hppa/get_accessors-hppa.c' object='get_accessors-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-hppa.Po' tmpdepfile='$(DEPDIR)/get_accessors-hppa.TPo' @AMDEPBACKSLASH@
+regname-ia64.obj: ia64/regname-ia64.c
+@AMDEP_TRUE@	source='ia64/regname-ia64.c' object='regname-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-ia64.Po' tmpdepfile='$(DEPDIR)/regname-ia64.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-hppa.obj `cygpath -w hppa/get_accessors-hppa.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-ia64.obj `cygpath -w ia64/regname-ia64.c`
 
-get_accessors-hppa.lo: hppa/get_accessors-hppa.c
-@AMDEP_TRUE@	source='hppa/get_accessors-hppa.c' object='get_accessors-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-hppa.Plo' tmpdepfile='$(DEPDIR)/get_accessors-hppa.TPlo' @AMDEPBACKSLASH@
+regname-ia64.lo: ia64/regname-ia64.c
+@AMDEP_TRUE@	source='ia64/regname-ia64.c' object='regname-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-ia64.Plo' tmpdepfile='$(DEPDIR)/regname-ia64.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-hppa.lo `test -f 'hppa/get_accessors-hppa.c' || echo '$(srcdir)/'`hppa/get_accessors-hppa.c
-
-global-hppa.o: hppa/global-hppa.c
-@AMDEP_TRUE@	source='hppa/global-hppa.c' object='global-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/global-hppa.Po' tmpdepfile='$(DEPDIR)/global-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-hppa.o `test -f 'hppa/global-hppa.c' || echo '$(srcdir)/'`hppa/global-hppa.c
-
-global-hppa.obj: hppa/global-hppa.c
-@AMDEP_TRUE@	source='hppa/global-hppa.c' object='global-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/global-hppa.Po' tmpdepfile='$(DEPDIR)/global-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-hppa.obj `cygpath -w hppa/global-hppa.c`
-
-global-hppa.lo: hppa/global-hppa.c
-@AMDEP_TRUE@	source='hppa/global-hppa.c' object='global-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/global-hppa.Plo' tmpdepfile='$(DEPDIR)/global-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-hppa.lo `test -f 'hppa/global-hppa.c' || echo '$(srcdir)/'`hppa/global-hppa.c
-
-tables-hppa.o: hppa/tables-hppa.c
-@AMDEP_TRUE@	source='hppa/tables-hppa.c' object='tables-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-hppa.Po' tmpdepfile='$(DEPDIR)/tables-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-hppa.o `test -f 'hppa/tables-hppa.c' || echo '$(srcdir)/'`hppa/tables-hppa.c
-
-tables-hppa.obj: hppa/tables-hppa.c
-@AMDEP_TRUE@	source='hppa/tables-hppa.c' object='tables-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-hppa.Po' tmpdepfile='$(DEPDIR)/tables-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-hppa.obj `cygpath -w hppa/tables-hppa.c`
-
-tables-hppa.lo: hppa/tables-hppa.c
-@AMDEP_TRUE@	source='hppa/tables-hppa.c' object='tables-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-hppa.Plo' tmpdepfile='$(DEPDIR)/tables-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-hppa.lo `test -f 'hppa/tables-hppa.c' || echo '$(srcdir)/'`hppa/tables-hppa.c
-
-Gget_reg-hppa.o: hppa/Gget_reg-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_reg-hppa.c' object='Gget_reg-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_reg-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-hppa.o `test -f 'hppa/Gget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Gget_reg-hppa.c
-
-Gget_reg-hppa.obj: hppa/Gget_reg-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_reg-hppa.c' object='Gget_reg-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_reg-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-hppa.obj `cygpath -w hppa/Gget_reg-hppa.c`
-
-Gget_reg-hppa.lo: hppa/Gget_reg-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_reg-hppa.c' object='Gget_reg-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-hppa.Plo' tmpdepfile='$(DEPDIR)/Gget_reg-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-hppa.lo `test -f 'hppa/Gget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Gget_reg-hppa.c
-
-Gget_proc_name-hppa.o: hppa/Gget_proc_name-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_proc_name-hppa.c' object='Gget_proc_name-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-hppa.o `test -f 'hppa/Gget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_name-hppa.c
-
-Gget_proc_name-hppa.obj: hppa/Gget_proc_name-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_proc_name-hppa.c' object='Gget_proc_name-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-hppa.obj `cygpath -w hppa/Gget_proc_name-hppa.c`
-
-Gget_proc_name-hppa.lo: hppa/Gget_proc_name-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_proc_name-hppa.c' object='Gget_proc_name-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-hppa.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_name-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-hppa.lo `test -f 'hppa/Gget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_name-hppa.c
-
-Ginit-hppa.o: hppa/Ginit-hppa.c
-@AMDEP_TRUE@	source='hppa/Ginit-hppa.c' object='Ginit-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-hppa.o `test -f 'hppa/Ginit-hppa.c' || echo '$(srcdir)/'`hppa/Ginit-hppa.c
-
-Ginit-hppa.obj: hppa/Ginit-hppa.c
-@AMDEP_TRUE@	source='hppa/Ginit-hppa.c' object='Ginit-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-hppa.obj `cygpath -w hppa/Ginit-hppa.c`
-
-Ginit-hppa.lo: hppa/Ginit-hppa.c
-@AMDEP_TRUE@	source='hppa/Ginit-hppa.c' object='Ginit-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-hppa.Plo' tmpdepfile='$(DEPDIR)/Ginit-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-hppa.lo `test -f 'hppa/Ginit-hppa.c' || echo '$(srcdir)/'`hppa/Ginit-hppa.c
-
-Ginit_local-hppa.o: hppa/Ginit_local-hppa.c
-@AMDEP_TRUE@	source='hppa/Ginit_local-hppa.c' object='Ginit_local-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit_local-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-hppa.o `test -f 'hppa/Ginit_local-hppa.c' || echo '$(srcdir)/'`hppa/Ginit_local-hppa.c
-
-Ginit_local-hppa.obj: hppa/Ginit_local-hppa.c
-@AMDEP_TRUE@	source='hppa/Ginit_local-hppa.c' object='Ginit_local-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit_local-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-hppa.obj `cygpath -w hppa/Ginit_local-hppa.c`
-
-Ginit_local-hppa.lo: hppa/Ginit_local-hppa.c
-@AMDEP_TRUE@	source='hppa/Ginit_local-hppa.c' object='Ginit_local-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-hppa.Plo' tmpdepfile='$(DEPDIR)/Ginit_local-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-hppa.lo `test -f 'hppa/Ginit_local-hppa.c' || echo '$(srcdir)/'`hppa/Ginit_local-hppa.c
-
-Gget_proc_info-hppa.o: hppa/Gget_proc_info-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_proc_info-hppa.c' object='Gget_proc_info-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-hppa.o `test -f 'hppa/Gget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_info-hppa.c
-
-Gget_proc_info-hppa.obj: hppa/Gget_proc_info-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_proc_info-hppa.c' object='Gget_proc_info-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-hppa.obj `cygpath -w hppa/Gget_proc_info-hppa.c`
-
-Gget_proc_info-hppa.lo: hppa/Gget_proc_info-hppa.c
-@AMDEP_TRUE@	source='hppa/Gget_proc_info-hppa.c' object='Gget_proc_info-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-hppa.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_info-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-hppa.lo `test -f 'hppa/Gget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_info-hppa.c
-
-Gregs-hppa.o: hppa/Gregs-hppa.c
-@AMDEP_TRUE@	source='hppa/Gregs-hppa.c' object='Gregs-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-hppa.Po' tmpdepfile='$(DEPDIR)/Gregs-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-hppa.o `test -f 'hppa/Gregs-hppa.c' || echo '$(srcdir)/'`hppa/Gregs-hppa.c
-
-Gregs-hppa.obj: hppa/Gregs-hppa.c
-@AMDEP_TRUE@	source='hppa/Gregs-hppa.c' object='Gregs-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-hppa.Po' tmpdepfile='$(DEPDIR)/Gregs-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-hppa.obj `cygpath -w hppa/Gregs-hppa.c`
-
-Gregs-hppa.lo: hppa/Gregs-hppa.c
-@AMDEP_TRUE@	source='hppa/Gregs-hppa.c' object='Gregs-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-hppa.Plo' tmpdepfile='$(DEPDIR)/Gregs-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-hppa.lo `test -f 'hppa/Gregs-hppa.c' || echo '$(srcdir)/'`hppa/Gregs-hppa.c
-
-Gstep-hppa.o: hppa/Gstep-hppa.c
-@AMDEP_TRUE@	source='hppa/Gstep-hppa.c' object='Gstep-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-hppa.Po' tmpdepfile='$(DEPDIR)/Gstep-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-hppa.o `test -f 'hppa/Gstep-hppa.c' || echo '$(srcdir)/'`hppa/Gstep-hppa.c
-
-Gstep-hppa.obj: hppa/Gstep-hppa.c
-@AMDEP_TRUE@	source='hppa/Gstep-hppa.c' object='Gstep-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-hppa.Po' tmpdepfile='$(DEPDIR)/Gstep-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-hppa.obj `cygpath -w hppa/Gstep-hppa.c`
-
-Gstep-hppa.lo: hppa/Gstep-hppa.c
-@AMDEP_TRUE@	source='hppa/Gstep-hppa.c' object='Gstep-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-hppa.Plo' tmpdepfile='$(DEPDIR)/Gstep-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-hppa.lo `test -f 'hppa/Gstep-hppa.c' || echo '$(srcdir)/'`hppa/Gstep-hppa.c
-
-Lget_reg-hppa.o: hppa/Lget_reg-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_reg-hppa.c' object='Lget_reg-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_reg-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg-hppa.o `test -f 'hppa/Lget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Lget_reg-hppa.c
-
-Lget_reg-hppa.obj: hppa/Lget_reg-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_reg-hppa.c' object='Lget_reg-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_reg-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg-hppa.obj `cygpath -w hppa/Lget_reg-hppa.c`
-
-Lget_reg-hppa.lo: hppa/Lget_reg-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_reg-hppa.c' object='Lget_reg-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-hppa.Plo' tmpdepfile='$(DEPDIR)/Lget_reg-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg-hppa.lo `test -f 'hppa/Lget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Lget_reg-hppa.c
-
-Lget_proc_name-hppa.o: hppa/Lget_proc_name-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_proc_name-hppa.c' object='Lget_proc_name-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-hppa.o `test -f 'hppa/Lget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_name-hppa.c
-
-Lget_proc_name-hppa.obj: hppa/Lget_proc_name-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_proc_name-hppa.c' object='Lget_proc_name-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-hppa.obj `cygpath -w hppa/Lget_proc_name-hppa.c`
-
-Lget_proc_name-hppa.lo: hppa/Lget_proc_name-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_proc_name-hppa.c' object='Lget_proc_name-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-hppa.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_name-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-hppa.lo `test -f 'hppa/Lget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_name-hppa.c
-
-Linit-hppa.o: hppa/Linit-hppa.c
-@AMDEP_TRUE@	source='hppa/Linit-hppa.c' object='Linit-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit-hppa.Po' tmpdepfile='$(DEPDIR)/Linit-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit-hppa.o `test -f 'hppa/Linit-hppa.c' || echo '$(srcdir)/'`hppa/Linit-hppa.c
-
-Linit-hppa.obj: hppa/Linit-hppa.c
-@AMDEP_TRUE@	source='hppa/Linit-hppa.c' object='Linit-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit-hppa.Po' tmpdepfile='$(DEPDIR)/Linit-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit-hppa.obj `cygpath -w hppa/Linit-hppa.c`
-
-Linit-hppa.lo: hppa/Linit-hppa.c
-@AMDEP_TRUE@	source='hppa/Linit-hppa.c' object='Linit-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit-hppa.Plo' tmpdepfile='$(DEPDIR)/Linit-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit-hppa.lo `test -f 'hppa/Linit-hppa.c' || echo '$(srcdir)/'`hppa/Linit-hppa.c
-
-Linit_local-hppa.o: hppa/Linit_local-hppa.c
-@AMDEP_TRUE@	source='hppa/Linit_local-hppa.c' object='Linit_local-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Linit_local-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-hppa.o `test -f 'hppa/Linit_local-hppa.c' || echo '$(srcdir)/'`hppa/Linit_local-hppa.c
-
-Linit_local-hppa.obj: hppa/Linit_local-hppa.c
-@AMDEP_TRUE@	source='hppa/Linit_local-hppa.c' object='Linit_local-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Linit_local-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-hppa.obj `cygpath -w hppa/Linit_local-hppa.c`
-
-Linit_local-hppa.lo: hppa/Linit_local-hppa.c
-@AMDEP_TRUE@	source='hppa/Linit_local-hppa.c' object='Linit_local-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-hppa.Plo' tmpdepfile='$(DEPDIR)/Linit_local-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-hppa.lo `test -f 'hppa/Linit_local-hppa.c' || echo '$(srcdir)/'`hppa/Linit_local-hppa.c
-
-Lget_proc_info-hppa.o: hppa/Lget_proc_info-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_proc_info-hppa.c' object='Lget_proc_info-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info-hppa.o `test -f 'hppa/Lget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_info-hppa.c
-
-Lget_proc_info-hppa.obj: hppa/Lget_proc_info-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_proc_info-hppa.c' object='Lget_proc_info-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info-hppa.obj `cygpath -w hppa/Lget_proc_info-hppa.c`
-
-Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
-@AMDEP_TRUE@	source='hppa/Lget_proc_info-hppa.c' object='Lget_proc_info-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info-hppa.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_info-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info-hppa.lo `test -f 'hppa/Lget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_info-hppa.c
-
-Lregs-hppa.o: hppa/Lregs-hppa.c
-@AMDEP_TRUE@	source='hppa/Lregs-hppa.c' object='Lregs-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-hppa.Po' tmpdepfile='$(DEPDIR)/Lregs-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-hppa.o `test -f 'hppa/Lregs-hppa.c' || echo '$(srcdir)/'`hppa/Lregs-hppa.c
-
-Lregs-hppa.obj: hppa/Lregs-hppa.c
-@AMDEP_TRUE@	source='hppa/Lregs-hppa.c' object='Lregs-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-hppa.Po' tmpdepfile='$(DEPDIR)/Lregs-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-hppa.obj `cygpath -w hppa/Lregs-hppa.c`
-
-Lregs-hppa.lo: hppa/Lregs-hppa.c
-@AMDEP_TRUE@	source='hppa/Lregs-hppa.c' object='Lregs-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-hppa.Plo' tmpdepfile='$(DEPDIR)/Lregs-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-hppa.lo `test -f 'hppa/Lregs-hppa.c' || echo '$(srcdir)/'`hppa/Lregs-hppa.c
-
-Lstep-hppa.o: hppa/Lstep-hppa.c
-@AMDEP_TRUE@	source='hppa/Lstep-hppa.c' object='Lstep-hppa.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Po' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.o `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
-
-Lstep-hppa.obj: hppa/Lstep-hppa.c
-@AMDEP_TRUE@	source='hppa/Lstep-hppa.c' object='Lstep-hppa.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Po' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.obj `cygpath -w hppa/Lstep-hppa.c`
-
-Lstep-hppa.lo: hppa/Lstep-hppa.c
-@AMDEP_TRUE@	source='hppa/Lstep-hppa.c' object='Lstep-hppa.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Plo' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.lo `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
-
-debug_level-ia64.o: ia64/debug_level-ia64.c
-@AMDEP_TRUE@	source='ia64/debug_level-ia64.c' object='debug_level-ia64.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/debug_level-ia64.Po' tmpdepfile='$(DEPDIR)/debug_level-ia64.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o debug_level-ia64.o `test -f 'ia64/debug_level-ia64.c' || echo '$(srcdir)/'`ia64/debug_level-ia64.c
-
-debug_level-ia64.obj: ia64/debug_level-ia64.c
-@AMDEP_TRUE@	source='ia64/debug_level-ia64.c' object='debug_level-ia64.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/debug_level-ia64.Po' tmpdepfile='$(DEPDIR)/debug_level-ia64.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o debug_level-ia64.obj `cygpath -w ia64/debug_level-ia64.c`
-
-debug_level-ia64.lo: ia64/debug_level-ia64.c
-@AMDEP_TRUE@	source='ia64/debug_level-ia64.c' object='debug_level-ia64.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/debug_level-ia64.Plo' tmpdepfile='$(DEPDIR)/debug_level-ia64.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o debug_level-ia64.lo `test -f 'ia64/debug_level-ia64.c' || echo '$(srcdir)/'`ia64/debug_level-ia64.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-ia64.lo `test -f 'ia64/regname-ia64.c' || echo '$(srcdir)/'`ia64/regname-ia64.c
 
 Gcreate_addr_space-ia64.o: ia64/Gcreate_addr_space-ia64.c
 @AMDEP_TRUE@	source='ia64/Gcreate_addr_space-ia64.c' object='Gcreate_addr_space-ia64.o' libtool=no @AMDEPBACKSLASH@
@@ -1880,6 +1651,60 @@ global-dwarf.lo: dwarf/global-dwarf.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-dwarf.lo `test -f 'dwarf/global-dwarf.c' || echo '$(srcdir)/'`dwarf/global-dwarf.c
 
+flush_cache-x86.o: x86/flush_cache-x86.c
+@AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Po' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-x86.o `test -f 'x86/flush_cache-x86.c' || echo '$(srcdir)/'`x86/flush_cache-x86.c
+
+flush_cache-x86.obj: x86/flush_cache-x86.c
+@AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Po' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-x86.obj `cygpath -w x86/flush_cache-x86.c`
+
+flush_cache-x86.lo: x86/flush_cache-x86.c
+@AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Plo' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-x86.lo `test -f 'x86/flush_cache-x86.c' || echo '$(srcdir)/'`x86/flush_cache-x86.c
+
+is_fpreg-x86.o: x86/is_fpreg-x86.c
+@AMDEP_TRUE@	source='x86/is_fpreg-x86.c' object='is_fpreg-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/is_fpreg-x86.Po' tmpdepfile='$(DEPDIR)/is_fpreg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o is_fpreg-x86.o `test -f 'x86/is_fpreg-x86.c' || echo '$(srcdir)/'`x86/is_fpreg-x86.c
+
+is_fpreg-x86.obj: x86/is_fpreg-x86.c
+@AMDEP_TRUE@	source='x86/is_fpreg-x86.c' object='is_fpreg-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/is_fpreg-x86.Po' tmpdepfile='$(DEPDIR)/is_fpreg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o is_fpreg-x86.obj `cygpath -w x86/is_fpreg-x86.c`
+
+is_fpreg-x86.lo: x86/is_fpreg-x86.c
+@AMDEP_TRUE@	source='x86/is_fpreg-x86.c' object='is_fpreg-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/is_fpreg-x86.Plo' tmpdepfile='$(DEPDIR)/is_fpreg-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o is_fpreg-x86.lo `test -f 'x86/is_fpreg-x86.c' || echo '$(srcdir)/'`x86/is_fpreg-x86.c
+
+regname-x86.o: x86/regname-x86.c
+@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Po' tmpdepfile='$(DEPDIR)/regname-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.o `test -f 'x86/regname-x86.c' || echo '$(srcdir)/'`x86/regname-x86.c
+
+regname-x86.obj: x86/regname-x86.c
+@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Po' tmpdepfile='$(DEPDIR)/regname-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.obj `cygpath -w x86/regname-x86.c`
+
+regname-x86.lo: x86/regname-x86.c
+@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Plo' tmpdepfile='$(DEPDIR)/regname-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.lo `test -f 'x86/regname-x86.c' || echo '$(srcdir)/'`x86/regname-x86.c
+
 Gexpr-dwarf.o: dwarf/Gexpr-dwarf.c
 @AMDEP_TRUE@	source='dwarf/Gexpr-dwarf.c' object='Gexpr-dwarf.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Gexpr-dwarf.Po' tmpdepfile='$(DEPDIR)/Gexpr-dwarf.TPo' @AMDEPBACKSLASH@
@@ -1969,6 +1794,294 @@ Gstep-dwarf.lo: dwarf/Gstep-dwarf.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-dwarf.Plo' tmpdepfile='$(DEPDIR)/Gstep-dwarf.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-dwarf.lo `test -f 'dwarf/Gstep-dwarf.c' || echo '$(srcdir)/'`dwarf/Gstep-dwarf.c
+
+Gfind_proc_info-lsb.o: dwarf/Gfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Gfind_proc_info-lsb.c' object='Gfind_proc_info-lsb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Gfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfind_proc_info-lsb.o `test -f 'dwarf/Gfind_proc_info-lsb.c' || echo '$(srcdir)/'`dwarf/Gfind_proc_info-lsb.c
+
+Gfind_proc_info-lsb.obj: dwarf/Gfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Gfind_proc_info-lsb.c' object='Gfind_proc_info-lsb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Gfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfind_proc_info-lsb.obj `cygpath -w dwarf/Gfind_proc_info-lsb.c`
+
+Gfind_proc_info-lsb.lo: dwarf/Gfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Gfind_proc_info-lsb.c' object='Gfind_proc_info-lsb.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfind_proc_info-lsb.Plo' tmpdepfile='$(DEPDIR)/Gfind_proc_info-lsb.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfind_proc_info-lsb.lo `test -f 'dwarf/Gfind_proc_info-lsb.c' || echo '$(srcdir)/'`dwarf/Gfind_proc_info-lsb.c
+
+Gcreate_addr_space-x86.o: x86/Gcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Gcreate_addr_space-x86.c' object='Gcreate_addr_space-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space-x86.Po' tmpdepfile='$(DEPDIR)/Gcreate_addr_space-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space-x86.o `test -f 'x86/Gcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Gcreate_addr_space-x86.c
+
+Gcreate_addr_space-x86.obj: x86/Gcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Gcreate_addr_space-x86.c' object='Gcreate_addr_space-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space-x86.Po' tmpdepfile='$(DEPDIR)/Gcreate_addr_space-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space-x86.obj `cygpath -w x86/Gcreate_addr_space-x86.c`
+
+Gcreate_addr_space-x86.lo: x86/Gcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Gcreate_addr_space-x86.c' object='Gcreate_addr_space-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space-x86.Plo' tmpdepfile='$(DEPDIR)/Gcreate_addr_space-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space-x86.lo `test -f 'x86/Gcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Gcreate_addr_space-x86.c
+
+Gget_accessors-x86.o: x86/Gget_accessors-x86.c
+@AMDEP_TRUE@	source='x86/Gget_accessors-x86.c' object='Gget_accessors-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_accessors-x86.Po' tmpdepfile='$(DEPDIR)/Gget_accessors-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_accessors-x86.o `test -f 'x86/Gget_accessors-x86.c' || echo '$(srcdir)/'`x86/Gget_accessors-x86.c
+
+Gget_accessors-x86.obj: x86/Gget_accessors-x86.c
+@AMDEP_TRUE@	source='x86/Gget_accessors-x86.c' object='Gget_accessors-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_accessors-x86.Po' tmpdepfile='$(DEPDIR)/Gget_accessors-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_accessors-x86.obj `cygpath -w x86/Gget_accessors-x86.c`
+
+Gget_accessors-x86.lo: x86/Gget_accessors-x86.c
+@AMDEP_TRUE@	source='x86/Gget_accessors-x86.c' object='Gget_accessors-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_accessors-x86.Plo' tmpdepfile='$(DEPDIR)/Gget_accessors-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_accessors-x86.lo `test -f 'x86/Gget_accessors-x86.c' || echo '$(srcdir)/'`x86/Gget_accessors-x86.c
+
+Gget_reg-x86.o: x86/Gget_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gget_reg-x86.c' object='Gget_reg-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gget_reg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-x86.o `test -f 'x86/Gget_reg-x86.c' || echo '$(srcdir)/'`x86/Gget_reg-x86.c
+
+Gget_reg-x86.obj: x86/Gget_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gget_reg-x86.c' object='Gget_reg-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gget_reg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-x86.obj `cygpath -w x86/Gget_reg-x86.c`
+
+Gget_reg-x86.lo: x86/Gget_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gget_reg-x86.c' object='Gget_reg-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-x86.Plo' tmpdepfile='$(DEPDIR)/Gget_reg-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-x86.lo `test -f 'x86/Gget_reg-x86.c' || echo '$(srcdir)/'`x86/Gget_reg-x86.c
+
+Gget_proc_name-x86.o: x86/Gget_proc_name-x86.c
+@AMDEP_TRUE@	source='x86/Gget_proc_name-x86.c' object='Gget_proc_name-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-x86.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-x86.o `test -f 'x86/Gget_proc_name-x86.c' || echo '$(srcdir)/'`x86/Gget_proc_name-x86.c
+
+Gget_proc_name-x86.obj: x86/Gget_proc_name-x86.c
+@AMDEP_TRUE@	source='x86/Gget_proc_name-x86.c' object='Gget_proc_name-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-x86.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-x86.obj `cygpath -w x86/Gget_proc_name-x86.c`
+
+Gget_proc_name-x86.lo: x86/Gget_proc_name-x86.c
+@AMDEP_TRUE@	source='x86/Gget_proc_name-x86.c' object='Gget_proc_name-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-x86.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_name-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-x86.lo `test -f 'x86/Gget_proc_name-x86.c' || echo '$(srcdir)/'`x86/Gget_proc_name-x86.c
+
+Gglobal-x86.o: x86/Gglobal-x86.c
+@AMDEP_TRUE@	source='x86/Gglobal-x86.c' object='Gglobal-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gglobal-x86.Po' tmpdepfile='$(DEPDIR)/Gglobal-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gglobal-x86.o `test -f 'x86/Gglobal-x86.c' || echo '$(srcdir)/'`x86/Gglobal-x86.c
+
+Gglobal-x86.obj: x86/Gglobal-x86.c
+@AMDEP_TRUE@	source='x86/Gglobal-x86.c' object='Gglobal-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gglobal-x86.Po' tmpdepfile='$(DEPDIR)/Gglobal-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gglobal-x86.obj `cygpath -w x86/Gglobal-x86.c`
+
+Gglobal-x86.lo: x86/Gglobal-x86.c
+@AMDEP_TRUE@	source='x86/Gglobal-x86.c' object='Gglobal-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gglobal-x86.Plo' tmpdepfile='$(DEPDIR)/Gglobal-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gglobal-x86.lo `test -f 'x86/Gglobal-x86.c' || echo '$(srcdir)/'`x86/Gglobal-x86.c
+
+Ginit-x86.o: x86/Ginit-x86.c
+@AMDEP_TRUE@	source='x86/Ginit-x86.c' object='Ginit-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-x86.Po' tmpdepfile='$(DEPDIR)/Ginit-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-x86.o `test -f 'x86/Ginit-x86.c' || echo '$(srcdir)/'`x86/Ginit-x86.c
+
+Ginit-x86.obj: x86/Ginit-x86.c
+@AMDEP_TRUE@	source='x86/Ginit-x86.c' object='Ginit-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-x86.Po' tmpdepfile='$(DEPDIR)/Ginit-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-x86.obj `cygpath -w x86/Ginit-x86.c`
+
+Ginit-x86.lo: x86/Ginit-x86.c
+@AMDEP_TRUE@	source='x86/Ginit-x86.c' object='Ginit-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-x86.Plo' tmpdepfile='$(DEPDIR)/Ginit-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-x86.lo `test -f 'x86/Ginit-x86.c' || echo '$(srcdir)/'`x86/Ginit-x86.c
+
+Ginit_local-x86.o: x86/Ginit_local-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_local-x86.c' object='Ginit_local-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-x86.Po' tmpdepfile='$(DEPDIR)/Ginit_local-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-x86.o `test -f 'x86/Ginit_local-x86.c' || echo '$(srcdir)/'`x86/Ginit_local-x86.c
+
+Ginit_local-x86.obj: x86/Ginit_local-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_local-x86.c' object='Ginit_local-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-x86.Po' tmpdepfile='$(DEPDIR)/Ginit_local-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-x86.obj `cygpath -w x86/Ginit_local-x86.c`
+
+Ginit_local-x86.lo: x86/Ginit_local-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_local-x86.c' object='Ginit_local-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-x86.Plo' tmpdepfile='$(DEPDIR)/Ginit_local-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-x86.lo `test -f 'x86/Ginit_local-x86.c' || echo '$(srcdir)/'`x86/Ginit_local-x86.c
+
+Ginit_remote-x86.o: x86/Ginit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_remote-x86.c' object='Ginit_remote-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote-x86.Po' tmpdepfile='$(DEPDIR)/Ginit_remote-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote-x86.o `test -f 'x86/Ginit_remote-x86.c' || echo '$(srcdir)/'`x86/Ginit_remote-x86.c
+
+Ginit_remote-x86.obj: x86/Ginit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_remote-x86.c' object='Ginit_remote-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote-x86.Po' tmpdepfile='$(DEPDIR)/Ginit_remote-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote-x86.obj `cygpath -w x86/Ginit_remote-x86.c`
+
+Ginit_remote-x86.lo: x86/Ginit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_remote-x86.c' object='Ginit_remote-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote-x86.Plo' tmpdepfile='$(DEPDIR)/Ginit_remote-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote-x86.lo `test -f 'x86/Ginit_remote-x86.c' || echo '$(srcdir)/'`x86/Ginit_remote-x86.c
+
+Gis_signal_frame-x86.o: x86/Gis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Gis_signal_frame-x86.c' object='Gis_signal_frame-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame-x86.Po' tmpdepfile='$(DEPDIR)/Gis_signal_frame-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame-x86.o `test -f 'x86/Gis_signal_frame-x86.c' || echo '$(srcdir)/'`x86/Gis_signal_frame-x86.c
+
+Gis_signal_frame-x86.obj: x86/Gis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Gis_signal_frame-x86.c' object='Gis_signal_frame-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame-x86.Po' tmpdepfile='$(DEPDIR)/Gis_signal_frame-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame-x86.obj `cygpath -w x86/Gis_signal_frame-x86.c`
+
+Gis_signal_frame-x86.lo: x86/Gis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Gis_signal_frame-x86.c' object='Gis_signal_frame-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame-x86.Plo' tmpdepfile='$(DEPDIR)/Gis_signal_frame-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame-x86.lo `test -f 'x86/Gis_signal_frame-x86.c' || echo '$(srcdir)/'`x86/Gis_signal_frame-x86.c
+
+Gget_proc_info-x86.o: x86/Gget_proc_info-x86.c
+@AMDEP_TRUE@	source='x86/Gget_proc_info-x86.c' object='Gget_proc_info-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-x86.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-x86.o `test -f 'x86/Gget_proc_info-x86.c' || echo '$(srcdir)/'`x86/Gget_proc_info-x86.c
+
+Gget_proc_info-x86.obj: x86/Gget_proc_info-x86.c
+@AMDEP_TRUE@	source='x86/Gget_proc_info-x86.c' object='Gget_proc_info-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-x86.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-x86.obj `cygpath -w x86/Gget_proc_info-x86.c`
+
+Gget_proc_info-x86.lo: x86/Gget_proc_info-x86.c
+@AMDEP_TRUE@	source='x86/Gget_proc_info-x86.c' object='Gget_proc_info-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-x86.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_info-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-x86.lo `test -f 'x86/Gget_proc_info-x86.c' || echo '$(srcdir)/'`x86/Gget_proc_info-x86.c
+
+Gregs-x86.o: x86/Gregs-x86.c
+@AMDEP_TRUE@	source='x86/Gregs-x86.c' object='Gregs-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-x86.Po' tmpdepfile='$(DEPDIR)/Gregs-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-x86.o `test -f 'x86/Gregs-x86.c' || echo '$(srcdir)/'`x86/Gregs-x86.c
+
+Gregs-x86.obj: x86/Gregs-x86.c
+@AMDEP_TRUE@	source='x86/Gregs-x86.c' object='Gregs-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-x86.Po' tmpdepfile='$(DEPDIR)/Gregs-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-x86.obj `cygpath -w x86/Gregs-x86.c`
+
+Gregs-x86.lo: x86/Gregs-x86.c
+@AMDEP_TRUE@	source='x86/Gregs-x86.c' object='Gregs-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-x86.Plo' tmpdepfile='$(DEPDIR)/Gregs-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-x86.lo `test -f 'x86/Gregs-x86.c' || echo '$(srcdir)/'`x86/Gregs-x86.c
+
+Gresume-x86.o: x86/Gresume-x86.c
+@AMDEP_TRUE@	source='x86/Gresume-x86.c' object='Gresume-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume-x86.Po' tmpdepfile='$(DEPDIR)/Gresume-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume-x86.o `test -f 'x86/Gresume-x86.c' || echo '$(srcdir)/'`x86/Gresume-x86.c
+
+Gresume-x86.obj: x86/Gresume-x86.c
+@AMDEP_TRUE@	source='x86/Gresume-x86.c' object='Gresume-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume-x86.Po' tmpdepfile='$(DEPDIR)/Gresume-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume-x86.obj `cygpath -w x86/Gresume-x86.c`
+
+Gresume-x86.lo: x86/Gresume-x86.c
+@AMDEP_TRUE@	source='x86/Gresume-x86.c' object='Gresume-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume-x86.Plo' tmpdepfile='$(DEPDIR)/Gresume-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume-x86.lo `test -f 'x86/Gresume-x86.c' || echo '$(srcdir)/'`x86/Gresume-x86.c
+
+Gset_caching_policy-x86.o: x86/Gset_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/Gset_caching_policy-x86.c' object='Gset_caching_policy-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/Gset_caching_policy-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_caching_policy-x86.o `test -f 'x86/Gset_caching_policy-x86.c' || echo '$(srcdir)/'`x86/Gset_caching_policy-x86.c
+
+Gset_caching_policy-x86.obj: x86/Gset_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/Gset_caching_policy-x86.c' object='Gset_caching_policy-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/Gset_caching_policy-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_caching_policy-x86.obj `cygpath -w x86/Gset_caching_policy-x86.c`
+
+Gset_caching_policy-x86.lo: x86/Gset_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/Gset_caching_policy-x86.c' object='Gset_caching_policy-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_caching_policy-x86.Plo' tmpdepfile='$(DEPDIR)/Gset_caching_policy-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_caching_policy-x86.lo `test -f 'x86/Gset_caching_policy-x86.c' || echo '$(srcdir)/'`x86/Gset_caching_policy-x86.c
+
+Gset_reg-x86.o: x86/Gset_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gset_reg-x86.c' object='Gset_reg-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gset_reg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg-x86.o `test -f 'x86/Gset_reg-x86.c' || echo '$(srcdir)/'`x86/Gset_reg-x86.c
+
+Gset_reg-x86.obj: x86/Gset_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gset_reg-x86.c' object='Gset_reg-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gset_reg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg-x86.obj `cygpath -w x86/Gset_reg-x86.c`
+
+Gset_reg-x86.lo: x86/Gset_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gset_reg-x86.c' object='Gset_reg-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg-x86.Plo' tmpdepfile='$(DEPDIR)/Gset_reg-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg-x86.lo `test -f 'x86/Gset_reg-x86.c' || echo '$(srcdir)/'`x86/Gset_reg-x86.c
+
+Gstep-x86.o: x86/Gstep-x86.c
+@AMDEP_TRUE@	source='x86/Gstep-x86.c' object='Gstep-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-x86.Po' tmpdepfile='$(DEPDIR)/Gstep-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-x86.o `test -f 'x86/Gstep-x86.c' || echo '$(srcdir)/'`x86/Gstep-x86.c
+
+Gstep-x86.obj: x86/Gstep-x86.c
+@AMDEP_TRUE@	source='x86/Gstep-x86.c' object='Gstep-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-x86.Po' tmpdepfile='$(DEPDIR)/Gstep-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-x86.obj `cygpath -w x86/Gstep-x86.c`
+
+Gstep-x86.lo: x86/Gstep-x86.c
+@AMDEP_TRUE@	source='x86/Gstep-x86.c' object='Gstep-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-x86.Plo' tmpdepfile='$(DEPDIR)/Gstep-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-x86.lo `test -f 'x86/Gstep-x86.c' || echo '$(srcdir)/'`x86/Gstep-x86.c
 
 Lexpr-dwarf.o: dwarf/Lexpr-dwarf.c
 @AMDEP_TRUE@	source='dwarf/Lexpr-dwarf.c' object='Lexpr-dwarf.o' libtool=no @AMDEPBACKSLASH@
@@ -2060,96 +2173,6 @@ Lstep-dwarf.lo: dwarf/Lstep-dwarf.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-dwarf.lo `test -f 'dwarf/Lstep-dwarf.c' || echo '$(srcdir)/'`dwarf/Lstep-dwarf.c
 
-flush_cache-x86.o: x86/flush_cache-x86.c
-@AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Po' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-x86.o `test -f 'x86/flush_cache-x86.c' || echo '$(srcdir)/'`x86/flush_cache-x86.c
-
-flush_cache-x86.obj: x86/flush_cache-x86.c
-@AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Po' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-x86.obj `cygpath -w x86/flush_cache-x86.c`
-
-flush_cache-x86.lo: x86/flush_cache-x86.c
-@AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Plo' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-x86.lo `test -f 'x86/flush_cache-x86.c' || echo '$(srcdir)/'`x86/flush_cache-x86.c
-
-get_accessors-x86.o: x86/get_accessors-x86.c
-@AMDEP_TRUE@	source='x86/get_accessors-x86.c' object='get_accessors-x86.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-x86.Po' tmpdepfile='$(DEPDIR)/get_accessors-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-x86.o `test -f 'x86/get_accessors-x86.c' || echo '$(srcdir)/'`x86/get_accessors-x86.c
-
-get_accessors-x86.obj: x86/get_accessors-x86.c
-@AMDEP_TRUE@	source='x86/get_accessors-x86.c' object='get_accessors-x86.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-x86.Po' tmpdepfile='$(DEPDIR)/get_accessors-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-x86.obj `cygpath -w x86/get_accessors-x86.c`
-
-get_accessors-x86.lo: x86/get_accessors-x86.c
-@AMDEP_TRUE@	source='x86/get_accessors-x86.c' object='get_accessors-x86.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-x86.Plo' tmpdepfile='$(DEPDIR)/get_accessors-x86.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-x86.lo `test -f 'x86/get_accessors-x86.c' || echo '$(srcdir)/'`x86/get_accessors-x86.c
-
-global-x86.o: x86/global-x86.c
-@AMDEP_TRUE@	source='x86/global-x86.c' object='global-x86.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/global-x86.Po' tmpdepfile='$(DEPDIR)/global-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-x86.o `test -f 'x86/global-x86.c' || echo '$(srcdir)/'`x86/global-x86.c
-
-global-x86.obj: x86/global-x86.c
-@AMDEP_TRUE@	source='x86/global-x86.c' object='global-x86.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/global-x86.Po' tmpdepfile='$(DEPDIR)/global-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-x86.obj `cygpath -w x86/global-x86.c`
-
-global-x86.lo: x86/global-x86.c
-@AMDEP_TRUE@	source='x86/global-x86.c' object='global-x86.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/global-x86.Plo' tmpdepfile='$(DEPDIR)/global-x86.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-x86.lo `test -f 'x86/global-x86.c' || echo '$(srcdir)/'`x86/global-x86.c
-
-set_caching_policy-x86.o: x86/set_caching_policy-x86.c
-@AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/set_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/set_caching_policy-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_caching_policy-x86.o `test -f 'x86/set_caching_policy-x86.c' || echo '$(srcdir)/'`x86/set_caching_policy-x86.c
-
-set_caching_policy-x86.obj: x86/set_caching_policy-x86.c
-@AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/set_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/set_caching_policy-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_caching_policy-x86.obj `cygpath -w x86/set_caching_policy-x86.c`
-
-set_caching_policy-x86.lo: x86/set_caching_policy-x86.c
-@AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/set_caching_policy-x86.Plo' tmpdepfile='$(DEPDIR)/set_caching_policy-x86.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_caching_policy-x86.lo `test -f 'x86/set_caching_policy-x86.c' || echo '$(srcdir)/'`x86/set_caching_policy-x86.c
-
-regname-x86.o: x86/regname-x86.c
-@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Po' tmpdepfile='$(DEPDIR)/regname-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.o `test -f 'x86/regname-x86.c' || echo '$(srcdir)/'`x86/regname-x86.c
-
-regname-x86.obj: x86/regname-x86.c
-@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Po' tmpdepfile='$(DEPDIR)/regname-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.obj `cygpath -w x86/regname-x86.c`
-
-regname-x86.lo: x86/regname-x86.c
-@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Plo' tmpdepfile='$(DEPDIR)/regname-x86.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.lo `test -f 'x86/regname-x86.c' || echo '$(srcdir)/'`x86/regname-x86.c
-
 Lfind_proc_info-lsb.o: dwarf/Lfind_proc_info-lsb.c
 @AMDEP_TRUE@	source='dwarf/Lfind_proc_info-lsb.c' object='Lfind_proc_info-lsb.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Lfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
@@ -2186,6 +2209,24 @@ Lcreate_addr_space-x86.lo: x86/Lcreate_addr_space-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space-x86.lo `test -f 'x86/Lcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Lcreate_addr_space-x86.c
 
+Lget_accessors-x86.o: x86/Lget_accessors-x86.c
+@AMDEP_TRUE@	source='x86/Lget_accessors-x86.c' object='Lget_accessors-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_accessors-x86.Po' tmpdepfile='$(DEPDIR)/Lget_accessors-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_accessors-x86.o `test -f 'x86/Lget_accessors-x86.c' || echo '$(srcdir)/'`x86/Lget_accessors-x86.c
+
+Lget_accessors-x86.obj: x86/Lget_accessors-x86.c
+@AMDEP_TRUE@	source='x86/Lget_accessors-x86.c' object='Lget_accessors-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_accessors-x86.Po' tmpdepfile='$(DEPDIR)/Lget_accessors-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_accessors-x86.obj `cygpath -w x86/Lget_accessors-x86.c`
+
+Lget_accessors-x86.lo: x86/Lget_accessors-x86.c
+@AMDEP_TRUE@	source='x86/Lget_accessors-x86.c' object='Lget_accessors-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_accessors-x86.Plo' tmpdepfile='$(DEPDIR)/Lget_accessors-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_accessors-x86.lo `test -f 'x86/Lget_accessors-x86.c' || echo '$(srcdir)/'`x86/Lget_accessors-x86.c
+
 Lget_reg-x86.o: x86/Lget_reg-x86.c
 @AMDEP_TRUE@	source='x86/Lget_reg-x86.c' object='Lget_reg-x86.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-x86.Po' tmpdepfile='$(DEPDIR)/Lget_reg-x86.TPo' @AMDEPBACKSLASH@
@@ -2221,6 +2262,24 @@ Lget_proc_name-x86.lo: x86/Lget_proc_name-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-x86.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_name-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-x86.lo `test -f 'x86/Lget_proc_name-x86.c' || echo '$(srcdir)/'`x86/Lget_proc_name-x86.c
+
+Lglobal-x86.o: x86/Lglobal-x86.c
+@AMDEP_TRUE@	source='x86/Lglobal-x86.c' object='Lglobal-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lglobal-x86.Po' tmpdepfile='$(DEPDIR)/Lglobal-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lglobal-x86.o `test -f 'x86/Lglobal-x86.c' || echo '$(srcdir)/'`x86/Lglobal-x86.c
+
+Lglobal-x86.obj: x86/Lglobal-x86.c
+@AMDEP_TRUE@	source='x86/Lglobal-x86.c' object='Lglobal-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lglobal-x86.Po' tmpdepfile='$(DEPDIR)/Lglobal-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lglobal-x86.obj `cygpath -w x86/Lglobal-x86.c`
+
+Lglobal-x86.lo: x86/Lglobal-x86.c
+@AMDEP_TRUE@	source='x86/Lglobal-x86.c' object='Lglobal-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lglobal-x86.Plo' tmpdepfile='$(DEPDIR)/Lglobal-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lglobal-x86.lo `test -f 'x86/Lglobal-x86.c' || echo '$(srcdir)/'`x86/Lglobal-x86.c
 
 Linit-x86.o: x86/Linit-x86.c
 @AMDEP_TRUE@	source='x86/Linit-x86.c' object='Linit-x86.o' libtool=no @AMDEPBACKSLASH@
@@ -2348,6 +2407,24 @@ Lresume-x86.lo: x86/Lresume-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lresume-x86.lo `test -f 'x86/Lresume-x86.c' || echo '$(srcdir)/'`x86/Lresume-x86.c
 
+Lset_caching_policy-x86.o: x86/Lset_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/Lset_caching_policy-x86.c' object='Lset_caching_policy-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/Lset_caching_policy-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_caching_policy-x86.o `test -f 'x86/Lset_caching_policy-x86.c' || echo '$(srcdir)/'`x86/Lset_caching_policy-x86.c
+
+Lset_caching_policy-x86.obj: x86/Lset_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/Lset_caching_policy-x86.c' object='Lset_caching_policy-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/Lset_caching_policy-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_caching_policy-x86.obj `cygpath -w x86/Lset_caching_policy-x86.c`
+
+Lset_caching_policy-x86.lo: x86/Lset_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/Lset_caching_policy-x86.c' object='Lset_caching_policy-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_caching_policy-x86.Plo' tmpdepfile='$(DEPDIR)/Lset_caching_policy-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_caching_policy-x86.lo `test -f 'x86/Lset_caching_policy-x86.c' || echo '$(srcdir)/'`x86/Lset_caching_policy-x86.c
+
 Lset_reg-x86.o: x86/Lset_reg-x86.c
 @AMDEP_TRUE@	source='x86/Lset_reg-x86.c' object='Lset_reg-x86.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_reg-x86.Po' tmpdepfile='$(DEPDIR)/Lset_reg-x86.TPo' @AMDEPBACKSLASH@
@@ -2384,41 +2461,329 @@ Lstep-x86.lo: x86/Lstep-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-x86.lo `test -f 'x86/Lstep-x86.c' || echo '$(srcdir)/'`x86/Lstep-x86.c
 
-flush_cache-ia64.o: ia64/flush_cache-ia64.c
-@AMDEP_TRUE@	source='ia64/flush_cache-ia64.c' object='flush_cache-ia64.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-ia64.Po' tmpdepfile='$(DEPDIR)/flush_cache-ia64.TPo' @AMDEPBACKSLASH@
+flush_cache-hppa.o: hppa/flush_cache-hppa.c
+@AMDEP_TRUE@	source='hppa/flush_cache-hppa.c' object='flush_cache-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-hppa.Po' tmpdepfile='$(DEPDIR)/flush_cache-hppa.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-ia64.o `test -f 'ia64/flush_cache-ia64.c' || echo '$(srcdir)/'`ia64/flush_cache-ia64.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-hppa.o `test -f 'hppa/flush_cache-hppa.c' || echo '$(srcdir)/'`hppa/flush_cache-hppa.c
 
-flush_cache-ia64.obj: ia64/flush_cache-ia64.c
-@AMDEP_TRUE@	source='ia64/flush_cache-ia64.c' object='flush_cache-ia64.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-ia64.Po' tmpdepfile='$(DEPDIR)/flush_cache-ia64.TPo' @AMDEPBACKSLASH@
+flush_cache-hppa.obj: hppa/flush_cache-hppa.c
+@AMDEP_TRUE@	source='hppa/flush_cache-hppa.c' object='flush_cache-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-hppa.Po' tmpdepfile='$(DEPDIR)/flush_cache-hppa.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-ia64.obj `cygpath -w ia64/flush_cache-ia64.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-hppa.obj `cygpath -w hppa/flush_cache-hppa.c`
 
-flush_cache-ia64.lo: ia64/flush_cache-ia64.c
-@AMDEP_TRUE@	source='ia64/flush_cache-ia64.c' object='flush_cache-ia64.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-ia64.Plo' tmpdepfile='$(DEPDIR)/flush_cache-ia64.TPlo' @AMDEPBACKSLASH@
+flush_cache-hppa.lo: hppa/flush_cache-hppa.c
+@AMDEP_TRUE@	source='hppa/flush_cache-hppa.c' object='flush_cache-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-hppa.Plo' tmpdepfile='$(DEPDIR)/flush_cache-hppa.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-ia64.lo `test -f 'ia64/flush_cache-ia64.c' || echo '$(srcdir)/'`ia64/flush_cache-ia64.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o flush_cache-hppa.lo `test -f 'hppa/flush_cache-hppa.c' || echo '$(srcdir)/'`hppa/flush_cache-hppa.c
 
-regname-ia64.o: ia64/regname-ia64.c
-@AMDEP_TRUE@	source='ia64/regname-ia64.c' object='regname-ia64.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-ia64.Po' tmpdepfile='$(DEPDIR)/regname-ia64.TPo' @AMDEPBACKSLASH@
+get_accessors-hppa.o: hppa/get_accessors-hppa.c
+@AMDEP_TRUE@	source='hppa/get_accessors-hppa.c' object='get_accessors-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-hppa.Po' tmpdepfile='$(DEPDIR)/get_accessors-hppa.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-ia64.o `test -f 'ia64/regname-ia64.c' || echo '$(srcdir)/'`ia64/regname-ia64.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-hppa.o `test -f 'hppa/get_accessors-hppa.c' || echo '$(srcdir)/'`hppa/get_accessors-hppa.c
 
-regname-ia64.obj: ia64/regname-ia64.c
-@AMDEP_TRUE@	source='ia64/regname-ia64.c' object='regname-ia64.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-ia64.Po' tmpdepfile='$(DEPDIR)/regname-ia64.TPo' @AMDEPBACKSLASH@
+get_accessors-hppa.obj: hppa/get_accessors-hppa.c
+@AMDEP_TRUE@	source='hppa/get_accessors-hppa.c' object='get_accessors-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-hppa.Po' tmpdepfile='$(DEPDIR)/get_accessors-hppa.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-ia64.obj `cygpath -w ia64/regname-ia64.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-hppa.obj `cygpath -w hppa/get_accessors-hppa.c`
 
-regname-ia64.lo: ia64/regname-ia64.c
-@AMDEP_TRUE@	source='ia64/regname-ia64.c' object='regname-ia64.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-ia64.Plo' tmpdepfile='$(DEPDIR)/regname-ia64.TPlo' @AMDEPBACKSLASH@
+get_accessors-hppa.lo: hppa/get_accessors-hppa.c
+@AMDEP_TRUE@	source='hppa/get_accessors-hppa.c' object='get_accessors-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/get_accessors-hppa.Plo' tmpdepfile='$(DEPDIR)/get_accessors-hppa.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-ia64.lo `test -f 'ia64/regname-ia64.c' || echo '$(srcdir)/'`ia64/regname-ia64.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o get_accessors-hppa.lo `test -f 'hppa/get_accessors-hppa.c' || echo '$(srcdir)/'`hppa/get_accessors-hppa.c
+
+global-hppa.o: hppa/global-hppa.c
+@AMDEP_TRUE@	source='hppa/global-hppa.c' object='global-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/global-hppa.Po' tmpdepfile='$(DEPDIR)/global-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-hppa.o `test -f 'hppa/global-hppa.c' || echo '$(srcdir)/'`hppa/global-hppa.c
+
+global-hppa.obj: hppa/global-hppa.c
+@AMDEP_TRUE@	source='hppa/global-hppa.c' object='global-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/global-hppa.Po' tmpdepfile='$(DEPDIR)/global-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-hppa.obj `cygpath -w hppa/global-hppa.c`
+
+global-hppa.lo: hppa/global-hppa.c
+@AMDEP_TRUE@	source='hppa/global-hppa.c' object='global-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/global-hppa.Plo' tmpdepfile='$(DEPDIR)/global-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-hppa.lo `test -f 'hppa/global-hppa.c' || echo '$(srcdir)/'`hppa/global-hppa.c
+
+tables-hppa.o: hppa/tables-hppa.c
+@AMDEP_TRUE@	source='hppa/tables-hppa.c' object='tables-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-hppa.Po' tmpdepfile='$(DEPDIR)/tables-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-hppa.o `test -f 'hppa/tables-hppa.c' || echo '$(srcdir)/'`hppa/tables-hppa.c
+
+tables-hppa.obj: hppa/tables-hppa.c
+@AMDEP_TRUE@	source='hppa/tables-hppa.c' object='tables-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-hppa.Po' tmpdepfile='$(DEPDIR)/tables-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-hppa.obj `cygpath -w hppa/tables-hppa.c`
+
+tables-hppa.lo: hppa/tables-hppa.c
+@AMDEP_TRUE@	source='hppa/tables-hppa.c' object='tables-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-hppa.Plo' tmpdepfile='$(DEPDIR)/tables-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-hppa.lo `test -f 'hppa/tables-hppa.c' || echo '$(srcdir)/'`hppa/tables-hppa.c
+
+Gget_reg-hppa.o: hppa/Gget_reg-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_reg-hppa.c' object='Gget_reg-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_reg-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-hppa.o `test -f 'hppa/Gget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Gget_reg-hppa.c
+
+Gget_reg-hppa.obj: hppa/Gget_reg-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_reg-hppa.c' object='Gget_reg-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_reg-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-hppa.obj `cygpath -w hppa/Gget_reg-hppa.c`
+
+Gget_reg-hppa.lo: hppa/Gget_reg-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_reg-hppa.c' object='Gget_reg-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-hppa.Plo' tmpdepfile='$(DEPDIR)/Gget_reg-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg-hppa.lo `test -f 'hppa/Gget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Gget_reg-hppa.c
+
+Gget_proc_name-hppa.o: hppa/Gget_proc_name-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_proc_name-hppa.c' object='Gget_proc_name-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-hppa.o `test -f 'hppa/Gget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_name-hppa.c
+
+Gget_proc_name-hppa.obj: hppa/Gget_proc_name-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_proc_name-hppa.c' object='Gget_proc_name-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-hppa.obj `cygpath -w hppa/Gget_proc_name-hppa.c`
+
+Gget_proc_name-hppa.lo: hppa/Gget_proc_name-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_proc_name-hppa.c' object='Gget_proc_name-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name-hppa.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_name-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name-hppa.lo `test -f 'hppa/Gget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_name-hppa.c
+
+Ginit-hppa.o: hppa/Ginit-hppa.c
+@AMDEP_TRUE@	source='hppa/Ginit-hppa.c' object='Ginit-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-hppa.o `test -f 'hppa/Ginit-hppa.c' || echo '$(srcdir)/'`hppa/Ginit-hppa.c
+
+Ginit-hppa.obj: hppa/Ginit-hppa.c
+@AMDEP_TRUE@	source='hppa/Ginit-hppa.c' object='Ginit-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-hppa.obj `cygpath -w hppa/Ginit-hppa.c`
+
+Ginit-hppa.lo: hppa/Ginit-hppa.c
+@AMDEP_TRUE@	source='hppa/Ginit-hppa.c' object='Ginit-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit-hppa.Plo' tmpdepfile='$(DEPDIR)/Ginit-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit-hppa.lo `test -f 'hppa/Ginit-hppa.c' || echo '$(srcdir)/'`hppa/Ginit-hppa.c
+
+Ginit_local-hppa.o: hppa/Ginit_local-hppa.c
+@AMDEP_TRUE@	source='hppa/Ginit_local-hppa.c' object='Ginit_local-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit_local-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-hppa.o `test -f 'hppa/Ginit_local-hppa.c' || echo '$(srcdir)/'`hppa/Ginit_local-hppa.c
+
+Ginit_local-hppa.obj: hppa/Ginit_local-hppa.c
+@AMDEP_TRUE@	source='hppa/Ginit_local-hppa.c' object='Ginit_local-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Ginit_local-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-hppa.obj `cygpath -w hppa/Ginit_local-hppa.c`
+
+Ginit_local-hppa.lo: hppa/Ginit_local-hppa.c
+@AMDEP_TRUE@	source='hppa/Ginit_local-hppa.c' object='Ginit_local-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-hppa.Plo' tmpdepfile='$(DEPDIR)/Ginit_local-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-hppa.lo `test -f 'hppa/Ginit_local-hppa.c' || echo '$(srcdir)/'`hppa/Ginit_local-hppa.c
+
+Gget_proc_info-hppa.o: hppa/Gget_proc_info-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_proc_info-hppa.c' object='Gget_proc_info-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-hppa.o `test -f 'hppa/Gget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_info-hppa.c
+
+Gget_proc_info-hppa.obj: hppa/Gget_proc_info-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_proc_info-hppa.c' object='Gget_proc_info-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-hppa.obj `cygpath -w hppa/Gget_proc_info-hppa.c`
+
+Gget_proc_info-hppa.lo: hppa/Gget_proc_info-hppa.c
+@AMDEP_TRUE@	source='hppa/Gget_proc_info-hppa.c' object='Gget_proc_info-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info-hppa.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_info-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info-hppa.lo `test -f 'hppa/Gget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Gget_proc_info-hppa.c
+
+Gregs-hppa.o: hppa/Gregs-hppa.c
+@AMDEP_TRUE@	source='hppa/Gregs-hppa.c' object='Gregs-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-hppa.Po' tmpdepfile='$(DEPDIR)/Gregs-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-hppa.o `test -f 'hppa/Gregs-hppa.c' || echo '$(srcdir)/'`hppa/Gregs-hppa.c
+
+Gregs-hppa.obj: hppa/Gregs-hppa.c
+@AMDEP_TRUE@	source='hppa/Gregs-hppa.c' object='Gregs-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-hppa.Po' tmpdepfile='$(DEPDIR)/Gregs-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-hppa.obj `cygpath -w hppa/Gregs-hppa.c`
+
+Gregs-hppa.lo: hppa/Gregs-hppa.c
+@AMDEP_TRUE@	source='hppa/Gregs-hppa.c' object='Gregs-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-hppa.Plo' tmpdepfile='$(DEPDIR)/Gregs-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-hppa.lo `test -f 'hppa/Gregs-hppa.c' || echo '$(srcdir)/'`hppa/Gregs-hppa.c
+
+Gstep-hppa.o: hppa/Gstep-hppa.c
+@AMDEP_TRUE@	source='hppa/Gstep-hppa.c' object='Gstep-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-hppa.Po' tmpdepfile='$(DEPDIR)/Gstep-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-hppa.o `test -f 'hppa/Gstep-hppa.c' || echo '$(srcdir)/'`hppa/Gstep-hppa.c
+
+Gstep-hppa.obj: hppa/Gstep-hppa.c
+@AMDEP_TRUE@	source='hppa/Gstep-hppa.c' object='Gstep-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-hppa.Po' tmpdepfile='$(DEPDIR)/Gstep-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-hppa.obj `cygpath -w hppa/Gstep-hppa.c`
+
+Gstep-hppa.lo: hppa/Gstep-hppa.c
+@AMDEP_TRUE@	source='hppa/Gstep-hppa.c' object='Gstep-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-hppa.Plo' tmpdepfile='$(DEPDIR)/Gstep-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-hppa.lo `test -f 'hppa/Gstep-hppa.c' || echo '$(srcdir)/'`hppa/Gstep-hppa.c
+
+Lget_reg-hppa.o: hppa/Lget_reg-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_reg-hppa.c' object='Lget_reg-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_reg-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg-hppa.o `test -f 'hppa/Lget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Lget_reg-hppa.c
+
+Lget_reg-hppa.obj: hppa/Lget_reg-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_reg-hppa.c' object='Lget_reg-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_reg-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg-hppa.obj `cygpath -w hppa/Lget_reg-hppa.c`
+
+Lget_reg-hppa.lo: hppa/Lget_reg-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_reg-hppa.c' object='Lget_reg-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-hppa.Plo' tmpdepfile='$(DEPDIR)/Lget_reg-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg-hppa.lo `test -f 'hppa/Lget_reg-hppa.c' || echo '$(srcdir)/'`hppa/Lget_reg-hppa.c
+
+Lget_proc_name-hppa.o: hppa/Lget_proc_name-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_proc_name-hppa.c' object='Lget_proc_name-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-hppa.o `test -f 'hppa/Lget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_name-hppa.c
+
+Lget_proc_name-hppa.obj: hppa/Lget_proc_name-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_proc_name-hppa.c' object='Lget_proc_name-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_name-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-hppa.obj `cygpath -w hppa/Lget_proc_name-hppa.c`
+
+Lget_proc_name-hppa.lo: hppa/Lget_proc_name-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_proc_name-hppa.c' object='Lget_proc_name-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name-hppa.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_name-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name-hppa.lo `test -f 'hppa/Lget_proc_name-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_name-hppa.c
+
+Linit-hppa.o: hppa/Linit-hppa.c
+@AMDEP_TRUE@	source='hppa/Linit-hppa.c' object='Linit-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit-hppa.Po' tmpdepfile='$(DEPDIR)/Linit-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit-hppa.o `test -f 'hppa/Linit-hppa.c' || echo '$(srcdir)/'`hppa/Linit-hppa.c
+
+Linit-hppa.obj: hppa/Linit-hppa.c
+@AMDEP_TRUE@	source='hppa/Linit-hppa.c' object='Linit-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit-hppa.Po' tmpdepfile='$(DEPDIR)/Linit-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit-hppa.obj `cygpath -w hppa/Linit-hppa.c`
+
+Linit-hppa.lo: hppa/Linit-hppa.c
+@AMDEP_TRUE@	source='hppa/Linit-hppa.c' object='Linit-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit-hppa.Plo' tmpdepfile='$(DEPDIR)/Linit-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit-hppa.lo `test -f 'hppa/Linit-hppa.c' || echo '$(srcdir)/'`hppa/Linit-hppa.c
+
+Linit_local-hppa.o: hppa/Linit_local-hppa.c
+@AMDEP_TRUE@	source='hppa/Linit_local-hppa.c' object='Linit_local-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Linit_local-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-hppa.o `test -f 'hppa/Linit_local-hppa.c' || echo '$(srcdir)/'`hppa/Linit_local-hppa.c
+
+Linit_local-hppa.obj: hppa/Linit_local-hppa.c
+@AMDEP_TRUE@	source='hppa/Linit_local-hppa.c' object='Linit_local-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-hppa.Po' tmpdepfile='$(DEPDIR)/Linit_local-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-hppa.obj `cygpath -w hppa/Linit_local-hppa.c`
+
+Linit_local-hppa.lo: hppa/Linit_local-hppa.c
+@AMDEP_TRUE@	source='hppa/Linit_local-hppa.c' object='Linit_local-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-hppa.Plo' tmpdepfile='$(DEPDIR)/Linit_local-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-hppa.lo `test -f 'hppa/Linit_local-hppa.c' || echo '$(srcdir)/'`hppa/Linit_local-hppa.c
+
+Lget_proc_info-hppa.o: hppa/Lget_proc_info-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_proc_info-hppa.c' object='Lget_proc_info-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info-hppa.o `test -f 'hppa/Lget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_info-hppa.c
+
+Lget_proc_info-hppa.obj: hppa/Lget_proc_info-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_proc_info-hppa.c' object='Lget_proc_info-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info-hppa.Po' tmpdepfile='$(DEPDIR)/Lget_proc_info-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info-hppa.obj `cygpath -w hppa/Lget_proc_info-hppa.c`
+
+Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
+@AMDEP_TRUE@	source='hppa/Lget_proc_info-hppa.c' object='Lget_proc_info-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info-hppa.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_info-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info-hppa.lo `test -f 'hppa/Lget_proc_info-hppa.c' || echo '$(srcdir)/'`hppa/Lget_proc_info-hppa.c
+
+Lregs-hppa.o: hppa/Lregs-hppa.c
+@AMDEP_TRUE@	source='hppa/Lregs-hppa.c' object='Lregs-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-hppa.Po' tmpdepfile='$(DEPDIR)/Lregs-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-hppa.o `test -f 'hppa/Lregs-hppa.c' || echo '$(srcdir)/'`hppa/Lregs-hppa.c
+
+Lregs-hppa.obj: hppa/Lregs-hppa.c
+@AMDEP_TRUE@	source='hppa/Lregs-hppa.c' object='Lregs-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-hppa.Po' tmpdepfile='$(DEPDIR)/Lregs-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-hppa.obj `cygpath -w hppa/Lregs-hppa.c`
+
+Lregs-hppa.lo: hppa/Lregs-hppa.c
+@AMDEP_TRUE@	source='hppa/Lregs-hppa.c' object='Lregs-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-hppa.Plo' tmpdepfile='$(DEPDIR)/Lregs-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-hppa.lo `test -f 'hppa/Lregs-hppa.c' || echo '$(srcdir)/'`hppa/Lregs-hppa.c
+
+Lstep-hppa.o: hppa/Lstep-hppa.c
+@AMDEP_TRUE@	source='hppa/Lstep-hppa.c' object='Lstep-hppa.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Po' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.o `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
+
+Lstep-hppa.obj: hppa/Lstep-hppa.c
+@AMDEP_TRUE@	source='hppa/Lstep-hppa.c' object='Lstep-hppa.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Po' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.obj `cygpath -w hppa/Lstep-hppa.c`
+
+Lstep-hppa.lo: hppa/Lstep-hppa.c
+@AMDEP_TRUE@	source='hppa/Lstep-hppa.c' object='Lstep-hppa.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Plo' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.lo `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
 
 Lcreate_addr_space-ia64.o: ia64/Lcreate_addr_space-ia64.c
 @AMDEP_TRUE@	source='ia64/Lcreate_addr_space-ia64.c' object='Lcreate_addr_space-ia64.o' libtool=no @AMDEPBACKSLASH@
