@@ -69,6 +69,7 @@ unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip,
 	  break;
 
 	case UNW_INFO_FORMAT_TABLE:
+	case UNW_INFO_FORMAT_REMOTE_TABLE:
 	  /* XXX should we create a fake name, e.g.: "tablenameN",
 	     where N is the index of the function in the table??? */
 	  ret = -UNW_ENOINFO;
