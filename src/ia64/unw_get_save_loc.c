@@ -61,14 +61,10 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	      if (nat_loc >= c->rbs_top)
 		nat_loc = c->top_rnat_loc;
 	    }
-	  else if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+	  else if (c->sigcontext_loc)
 	    {
 	      /* NaT bit is saved in a sigcontext.  */
-	      ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &sc_addr);
-	      if (ret < 0)
-		return ret;
-
-	      loc = sc_addr + SIGCONTEXT_NAT_OFF;
+	      loc = c->sigcontext_loc + SIGCONTEXT_NAT_OFF;
 	    }
 	}
       break;
