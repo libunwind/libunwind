@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -368,6 +368,8 @@ struct ia64_labeled_state
 #define ia64_create_state_record	UNW_OBJ(create_state_record)
 #define ia64_free_state_record		UNW_OBJ(free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(find_save_locs)
+#define ia64_validate_cache		UNW_OBJ(ia64_validate_cache)
+#define ia64_local_validate_cache	UNW_OBJ(ia64_local_validate_cache)
 #define ia64_per_thread_cache		UNW_OBJ(per_thread_cache)
 #define ia64_access_reg			UNW_OBJ(access_reg)
 #define ia64_access_fpreg		UNW_OBJ(access_fpreg)
@@ -390,6 +392,8 @@ extern int ia64_create_state_record (struct cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
 extern int ia64_find_save_locs (struct cursor *c);
+extern void ia64_validate_cache (unw_addr_space_t as, void *arg);
+extern int ia64_local_validate_cache (unw_addr_space_t as, void *arg);
 extern void ia64_local_addr_space_init (void);
 extern void ia64_init (void);
 extern int ia64_access_reg (struct cursor *c, unw_regnum_t reg,
