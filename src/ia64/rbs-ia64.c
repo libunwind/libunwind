@@ -40,102 +40,63 @@ purpose.  */
 #include "unwind_i.h"
 
 HIDDEN int
-rbs_record_switch (struct cursor *c,
-		   unw_word_t saved_bsp, unw_word_t saved_bspstore,
-		   unw_word_t saved_rnat_loc)
+rbs_switch (struct cursor *c,
+	    unw_word_t saved_bsp, unw_word_t saved_bspstore,
+	    unw_word_t saved_rnat_loc)
 {
-  unw_word_t bsp, i, j, lo, ndirty, nregs, right_edge = c->rbs_right_edge;
+  struct rbs_area *rbs = &c->rbs_area[c->rbs_curr];
+  unw_word_t lo, ndirty;
 
-  debug (10, "%s: (left=%u, curr=%u, right=%u)\n\t", __FUNCTION__,
-	 c->rbs_left_edge, c->rbs_curr, c->rbs_right_edge);
-
-  bsp = c->bsp;
-
-  /* If other stacks are already pending, we need to convert "bsp" to
-     equivalent address on the final stack.  The conversion is easy
-     because we know that the low end of a stack corresponds to the
-     high end of the next stack. */
-  for (i = c->rbs_curr; i != right_edge; i = (i + 1) % NELEMS (c->rbs_area))
-    {
-      j = (i + 1) % NELEMS (c->rbs_area);
-      nregs = ia64_rse_num_regs (c->rbs_area[i].end - c->rbs_area[i].size,
-				 bsp);
-      bsp = ia64_rse_skip_regs (c->rbs_area[j].end, nregs);
-    }
+  debug (10, "%s: (left=%u, curr=%u)\n\t",
+	 __FUNCTION__, c->rbs_left_edge, c->rbs_curr);
 
   /* Calculate address "lo" at which the backing store starts:  */
   ndirty = ia64_rse_num_regs (saved_bspstore, saved_bsp);
-  lo = ia64_rse_skip_regs (bsp, -ndirty);
+  lo = ia64_rse_skip_regs (c->bsp, -ndirty);
 
-  c->rbs_area[right_edge].size = (c->rbs_area[right_edge].end - lo);
+  rbs->size = (rbs->end - lo);
 
   /* If the previously-recorded rbs-area is empty we don't need to
      track it and we can simply overwrite it... */
-  if (c->rbs_area[right_edge].size)
+  if (rbs->size)
     {
       debug (10, "inner=[0x%lx-0x%lx)\n\t",
-	     (long) (c->rbs_area[right_edge].end
-		     - c->rbs_area[right_edge].size),
-	     (long) c->rbs_area[right_edge].end);
-
-      right_edge = (right_edge + 1) % NELEMS (c->rbs_area);
-      c->rbs_right_edge = right_edge;
-
-      assert (right_edge != c->rbs_curr);
-
-      if (right_edge == c->rbs_left_edge)
-	c->rbs_left_edge = (right_edge + 1) % NELEMS (c->rbs_area);
-    }
-  c->rbs_area[right_edge].end = saved_bspstore;
-  c->rbs_area[right_edge].size = ~(unw_word_t) 0;	/* initial guess... */
-  c->rbs_area[right_edge].rnat_loc = saved_rnat_loc;
-
-  debug (10, "outer=[?????????????????\?-0x%lx), rnat@0x%lx\n",
-	 (long) c->rbs_area[right_edge].end,
-	 (long) c->rbs_area[right_edge].rnat_loc);
-  return 0;
-}
-
-HIDDEN void
-rbs_underflow (struct cursor *c)
-{
-  size_t num_regs;
-
-  assert (c->rbs_area[c->rbs_curr].end - c->bsp
-	  > c->rbs_area[c->rbs_curr].size);
-
-  while (1)
-    {
-      unw_word_t old_base = (c->rbs_area[c->rbs_curr].end
-			     - c->rbs_area[c->rbs_curr].size);
-
-      /* # of register we were short on old rbs-area: */
-      num_regs = ia64_rse_num_regs (c->bsp, old_base);
+	     (long) (rbs->end - rbs->size), (long) rbs->end);
 
       c->rbs_curr = (c->rbs_curr + 1) % NELEMS (c->rbs_area);
-      c->bsp = ia64_rse_skip_regs (c->rbs_area[c->rbs_curr].end, -num_regs);
+      rbs = c->rbs_area + c->rbs_curr;
 
-      if (c->rbs_area[c->rbs_curr].end - c->bsp
-	  <= c->rbs_area[c->rbs_curr].size)
-	{
-	  debug (10, "%s: [0x%016lx-0x%016lx), bsp=0x%lx\n",
-		 __FUNCTION__, (long) (c->rbs_area[c->rbs_curr].end
-				       - c->rbs_area[c->rbs_curr].size),
-		 (long) c->rbs_area[c->rbs_curr].end, c->bsp);
-	  return;
-	}
-
-      assert (c->rbs_curr != c->rbs_right_edge);
+      if (c->rbs_curr == c->rbs_left_edge)
+	c->rbs_left_edge = (c->rbs_left_edge + 1) % NELEMS (c->rbs_area);
     }
+  rbs->end = saved_bspstore;
+  rbs->size = ((unw_word_t) 1) << 63; /* initial guess... */
+  rbs->rnat_loc = saved_rnat_loc;
+
+  c->bsp = saved_bsp;
+
+  debug (10, "outer=[?????????????????\?-0x%lx), rnat@0x%lx\n",
+	 (long) rbs->end, (long) rbs->rnat_loc);
+  return 0;
 }
 
 HIDDEN int
 rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 		  unw_word_t *locp, unw_word_t *rnat_locp)
 {
-  unw_word_t nregs, bsp = c->bsp, curr = c->rbs_curr;
+  unw_word_t nregs, bsp = c->bsp, curr = c->rbs_curr, n;
   unw_word_t left_edge = c->rbs_left_edge;
+#ifdef UNW_DEBUG
   int reg = 32 + regs_to_skip;
+#endif
+
+  while (!rbs_contains (&c->rbs_area[curr], bsp))
+    {
+      n = ia64_rse_num_regs (c->rbs_area[curr].end, bsp);
+      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
+      bsp = ia64_rse_skip_regs (c->rbs_area[curr].end - c->rbs_area[curr].size,
+				n);
+    }
 
   while (1)
     {
@@ -148,7 +109,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 	  if (rnat_locp)
 	    {
 	      *rnat_locp = ia64_rse_rnat_addr (*locp);
-	      if (*rnat_locp >= c->rbs_area[curr].end)
+	      if (!rbs_contains (&c->rbs_area[curr], *rnat_locp))
 		*rnat_locp = c->rbs_area[curr].rnat_loc;
 	    }
 	  return 0;
@@ -172,7 +133,7 @@ get_rnat (struct cursor *c, struct rbs_area *rbs, unw_word_t bsp,
 	  unw_word_t *__restrict rnat_locp, unw_word_t *__restrict rnatp)
 {
   *rnat_locp = ia64_rse_rnat_addr (bsp);
-  if (*rnat_locp >= rbs->end)
+  if (!rbs_contains (rbs, *rnat_locp))
     *rnat_locp = rbs->rnat_loc;
   return ia64_get (c, *rnat_locp, rnatp);
 }
@@ -200,10 +161,10 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
   dst_rbs = c->rbs_area + curr;
   final_bsp = ia64_rse_skip_regs (c->bsp, nregs);	/* final bsp */
   dst_rnat_loc = ia64_rse_rnat_addr (ia64_rse_skip_regs (c->bsp, nregs - 1));
-  if (likely (final_bsp <= dst_rbs->end || curr == left_edge))
+  if (likely (rbs_contains (dst_rbs, final_bsp) || curr == left_edge))
     {
       c->bsp = final_bsp;
-      if (dst_rnat_loc < dst_rbs->end)
+      if (rbs_contains (dst_rbs, dst_rnat_loc))
 	c->rnat_loc = dst_rnat_loc;
       return 0;
     }
@@ -215,9 +176,22 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
   if ((ret = get_rnat (c, dst_rbs, dst_bsp, &dst_rnat_loc, &dst_rnat)) < 0)
     return ret;
 
-  while (dst_bsp < final_bsp)
+  /* This may seem a bit surprising, but with a hyper-lazy RSE, it's
+     perfectly common that ar.bspstore points to an RNaT slot at the
+     time of a backing-store switch.  When that happens, install the
+     appropriate RNaT value (if necessary) and move on to the next
+     slot.  */
+  if (ia64_rse_is_rnat_slot (dst_bsp))
     {
-      while (src_bsp >= c->rbs_area[curr].end)
+      if (dst_rnat_loc != dst_bsp
+	  && (ret = ia64_put (c, dst_bsp, dst_rnat)) < 0)
+	return ret;
+      dst_bsp = src_bsp = dst_bsp + 8;
+    }
+
+  while (dst_bsp != final_bsp)
+    {
+      while (!rbs_contains (&c->rbs_area[curr], src_bsp))
 	{
 	  /* switch to next rbs-area, adjust src_bsp accordingly: */
 	  if (curr == left_edge)
