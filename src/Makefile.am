@@ -1,5 +1,12 @@
-SOVERSION=2:0:1		# See comments at end of file.
+SOVERSION=3:0:2		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
+#
+# Don't link with standard libraries, because those may mention
+# libunwind already.
+#
+COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles	\
+			-XCClinker -nostdlib		\
+			$(LDFLAGS_STATIC_LIBCXA)
 
 if REMOTE_ONLY
 LIBRARIES_cdep			=
@@ -20,8 +27,9 @@ libunwind_ptrace_a_SOURCES =						  \
 	ptrace/_UPT_reg_offset.c ptrace/_UPT_resume.c
 
 ### libunwind-setjmp:
-libunwind_setjmp_la_LDFLAGS		= -version-info $(SETJMP_SO_VERSION)
-libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la
+libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
+					  -version-info $(SETJMP_SO_VERSION)
+libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la -lc
 libunwind_setjmp_la_SOURCES_common	= longjmp.c siglongjmp.c
 libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp-ia64.S		\
 					  ia64/sigsetjmp-ia64.S		\
@@ -101,6 +109,9 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 	$(libunwind_la_SOURCES_local)					   \
 									   \
 	elf64.c elf64.h							   \
+									   \
+	/* blech, needed for Intel C++ 8.0 compatibility */ 		   \
+	mi/_ReadULEB.c mi/_ReadSLEB.c					   \
 									   \
 	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
 									   \
@@ -204,9 +215,9 @@ Lcursor_i.h: mk_Lcursor_i-ia64
  lib_LTLIBRARIES_arch = libunwind-ia64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
- libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
+ libunwind_ia64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 if !REMOTE_ONLY
- libunwind_ia64_la_LIBADD = libunwind.la
+ libunwind_ia64_la_LIBADD = libunwind.la -lc
 endif
  libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
 				  $(libunwind_setjmp_la_SOURCES_ia64)
@@ -215,9 +226,9 @@ if ARCH_HPPA
  lib_LTLIBRARIES_arch = libunwind-hppa.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_hppa)
  libunwind_hppa_la_SOURCES = $(libunwind_hppa_la_SOURCES_hppa)
- libunwind_hppa_la_LDFLAGS = -version-info $(SOVERSION)
+ libunwind_hppa_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 if !REMOTE_ONLY
- libunwind_hppa_la_LIBADD = libunwind.la
+ libunwind_hppa_la_LIBADD = libunwind.la -lc
 endif
  libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
 				  $(libunwind_setjmp_la_SOURCES_hppa)
@@ -226,9 +237,9 @@ if ARCH_X86
  lib_LTLIBRARIES_arch = libunwind-x86.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86)
  libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
- libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
+ libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 if !REMOTE_ONLY
- libunwind_x86_la_LIBADD = libunwind.la
+ libunwind_x86_la_LIBADD = libunwind.la -lc
 endif
  libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
 				  $(libunwind_setjmp_la_SOURCES_x86)
@@ -236,7 +247,8 @@ endif # ARCH_X86
 endif # ARCH_HPPA
 endif # ARCH_IA64
 
-libunwind_la_LDFLAGS = -XCClinker -nostartfiles	-version-info $(SOVERSION)
+libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+libunwind_la_LIBADD  = -lc
 
 lib_LIBRARIES = $(LIBRARIES_cdep)
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
