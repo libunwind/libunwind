@@ -103,6 +103,15 @@ typedef struct unw_ia64_table
   }
 unw_ia64_table_t;
 
+typedef struct unw_tdep_save_loc
+  {
+    /* Additional target-dependent info on a save location.  On IA-64,
+       we could use this to specify the bit number in which a NaT bit
+       gets saved.  For now, nobody wants to know this, so it's not
+       currently implemented.  */
+  }
+unw_tdep_save_loc_t;
+
 /* On IA-64, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
