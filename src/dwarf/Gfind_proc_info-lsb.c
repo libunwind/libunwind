@@ -308,7 +308,7 @@ remote_lookup (unw_addr_space_t as,
 
 #endif /* UNW_LOCAL_ONLY */
 
-HIDDEN int
+PROTECTED int
 dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 			   unw_dyn_info_t *di, unw_proc_info_t *pi,
 			   int need_unwind_info, void *arg)
