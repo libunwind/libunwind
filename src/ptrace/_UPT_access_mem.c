@@ -35,7 +35,7 @@ _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
   errno = 0;
   if (write)
     {
-      Debug (16, "%s: mem[%lx] <- %lx\n", (long) addr, (long) *val);
+      Debug (16, "mem[%lx] <- %lx\n", (long) addr, (long) *val);
 #ifdef HAVE_TTRACE
 #	warning No support for ttrace() yet.
 #else
@@ -53,7 +53,7 @@ _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
       if (errno)
 	return -UNW_EINVAL;
 #endif
-      Debug (16, "%s: mem[%lx] -> %lx\n", (long) addr, (long) *val);
+      Debug (16, "mem[%lx] -> %lx\n", (long) addr, (long) *val);
     }
   return 0;
 }
