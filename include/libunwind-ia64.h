@@ -137,10 +137,12 @@ ia64_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  On IA-64,
-       we could use this to specify the bit number in which a NaT bit
-       gets saved.  For now, nobody wants to know this, so it's not
-       currently implemented.  */
-    char dummy;		/* ANSI C doesn't allow empty structs... */
+       we use this to provide the bit number in which a NaT bit gets
+       saved.  */
+    uint8_t nat_bitnr;
+
+    /* Padding reserved for future use.  */
+    uint8_t reserved[7];
   }
 unw_tdep_save_loc_t;
 
