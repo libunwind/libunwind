@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -25,10 +25,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <errno.h>
 #include <execinfo.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 #include <libunwind.h>
 
@@ -88,8 +90,10 @@ foo (void)
   void *buffer[20];
   int i, n;
 
+  printf ("\texplicit backtrace:\n");
   do_backtrace ();
 
+  printf ("\tvia backtrace():\n");
   n = backtrace (buffer, 20);
   for (i = 0; i < n; ++i)
     printf ("[%d] ip=%p\n", i, buffer[i]);
@@ -102,7 +106,9 @@ sighandler (int signal, struct sigcontext sc)
 sighandler (int signal, void *siginfo, struct sigcontext *sc)
 #endif
 {
-  printf ("sighandler: got signal %d", signal);
+  int sp;
+
+  printf ("sighandler: got signal %d, sp=%p", signal, &sp);
 #if UNW_TARGET_IA64
   printf (" @ %lx", sc->sc_ip);
 #elif UNW_TARGET_X86
@@ -116,9 +122,31 @@ sighandler (int signal, void *siginfo, struct sigcontext *sc)
 int
 main (int argc, char **argv)
 {
+  struct sigaction act;
+  stack_t stk;
+
+  printf ("Normal backtrace:\n");
   foo ();
 
+  printf ("\nBacktrace across signal handler:\n");
   signal (SIGTERM, (sighandler_t) sighandler);
   kill (getpid (), SIGTERM);
+
+  printf ("Backtrace across signal handler on alternate stack:\n");
+  stk.ss_sp = malloc (SIGSTKSZ);
+  if (!stk.ss_sp)
+    panic ("failed to allocate SIGSTKSZ (%u) bytes\n", SIGSTKSZ);
+  stk.ss_size = SIGSTKSZ;
+  stk.ss_flags = 0;
+  if (sigaltstack (&stk, NULL) < 0)
+    panic ("sigaltstack: %s\n", strerror (errno));
+
+  memset (&act, 0, sizeof (act));
+  act.sa_handler = (void (*)(int)) sighandler;
+  act.sa_flags = SA_ONSTACK;
+  if (sigaction (SIGTERM, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
+  kill (getpid (), SIGTERM);
+
   return 0;
 }
