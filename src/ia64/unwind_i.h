@@ -31,8 +31,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind-ia64.h>
 
+#include "ia64/rse.h"
+
 #include "internal.h"
-#include "rse.h"
 
 #define IA64_UNW_VER(x)		    ((x) >> 48)
 #define IA64_UNW_FLAG_MASK	    ((unw_word_t) 0x0000ffff00000000ULL)
