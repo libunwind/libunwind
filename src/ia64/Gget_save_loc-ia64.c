@@ -1,3 +1,28 @@
+/* libunwind - a platform-independent unwind library
+   Copyright (C) 2002-2003 Hewlett-Packard Co
+	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+
+This file is part of libunwind.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
 #include <assert.h>
 
 #include "offsets.h"
@@ -8,7 +33,8 @@ int
 unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 {
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t loc, reg_loc, nat_loc;
+  unw_word_t loc, reg_loc;
+  int ret;
 
   loc = 0;		/* default to "not saved" */
 
@@ -54,9 +80,10 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	    }
 	  else if (reg >= 32)
 	    {
-	      loc = ia64_rse_rnat_addr (reg_loc);	/* XXX looks wrong */
-	      if (nat_loc >= c->rbs_top)
-		nat_loc = c->top_rnat_loc;
+	      reg = rotate_gr (c, reg - 32);
+	      ret = ia64_get_stacked (c, reg, NULL, &loc);
+	      if (ret < 0)
+		return ret;
 	    }
 	  else if (c->sigcontext_loc)
 	    {
@@ -83,16 +110,15 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
       break;
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
-      reg = rotate_gr (c, reg - UNW_IA64_GR) + UNW_IA64_GR;
-      loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_GR + 32));
+      reg = rotate_gr (c, reg - UNW_IA64_GR);
+      ret = ia64_get_stacked (c, reg, &loc, NULL);
+      if (ret < 0)
+	return ret;
       break;
 
     case UNW_IA64_NAT + 32 ... UNW_IA64_NAT + 127:	/* stacked reg */
-      reg = rotate_gr (c, reg - UNW_IA64_NAT) + UNW_IA64_NAT;
-      loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_NAT + 32));
-      loc = ia64_rse_rnat_addr (loc);
-      if (loc > c->rbs_top)
-	loc = c->top_rnat_loc;
+      reg = rotate_gr (c, reg - UNW_IA64_NAT);
+      ret = ia64_get_stacked (c, reg, NULL, &loc);
       break;
 
     case UNW_IA64_AR_EC:
