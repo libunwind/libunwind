@@ -39,5 +39,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   if (ret < 0)
     return ret;
 
-  return sr.is_signal_frame;
+  /* For now, we assume that any non-zero abi marker implies a signal frame.
+     This should get us pretty far.  */
+  return (sr.abi_marker != 0);
 }
