@@ -43,6 +43,7 @@ unwi_put_dynamic_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi,
       break;
 
     case UNW_INFO_FORMAT_TABLE:
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
 #ifdef tdep_put_unwind_info
       tdep_put_unwind_info (as, pi, arg);
       break;
