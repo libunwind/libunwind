@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define UNW_PASTE2(x,y)	x##y
 #define UNW_PASTE(x,y)	UNW_PASTE2(x,y)
 #define UNW_OBJ(fn)	UNW_PASTE(UNW_PREFIX, fn)
+#define UNW_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_U,UNW_TARGET),_), fn)
 
 #ifdef UNW_LOCAL_ONLY
 # define UNW_PREFIX	UNW_PASTE(UNW_PASTE(_UL,UNW_TARGET),_)
@@ -53,7 +54,7 @@ typedef enum
     UNW_ESTOPUNWIND,		/* stop unwinding */
     UNW_EINVALIDIP,		/* invalid IP */
     UNW_EBADFRAME,		/* bad frame */
-    UNW_EINVAL,			/* unsupported operation */
+    UNW_EINVAL,			/* unsupported operation or bad value */
     UNW_EBADVERSION,		/* unwind info has unsupported version */
     UNW_ENOINFO			/* no unwind info found */
   }
@@ -70,9 +71,6 @@ typedef enum
   {
     UNW_REG_IP = UNW_TDEP_IP,		/* (rw) instruction pointer (pc) */
     UNW_REG_SP = UNW_TDEP_SP,		/* (ro) stack pointer */
-    UNW_REG_PROC_START = UNW_TDEP_PROC_START,	/* (ro) proc startaddr */
-    UNW_REG_HANDLER = UNW_TDEP_HANDLER,	/* (ro) addr. of personality routine */
-    UNW_REG_LSDA = UNW_TDEP_LSDA,	/* (ro) addr. of lang.-specific data */
     UNW_REG_LAST = UNW_TDEP_LAST_REG
   }
 unw_frame_regnum_t;
@@ -120,28 +118,45 @@ unw_fpreg_t;
 
 typedef struct unw_addr_space *unw_addr_space_t;
 
+typedef struct unw_proc_info
+  {
+    unw_word_t start_ip;	/* first IP covered by this procedure */
+    unw_word_t end_ip;		/* first IP NOT covered by this procedure */
+    unw_word_t lsda;		/* address of lang.-spec. data area (if any) */
+    unw_word_t handler;		/* optional personality routine */
+    unw_word_t gp;		/* global-pointer value for this procedure */
+    unw_word_t flags;		/* misc. flags */
+    const char *proc_name;	/* optional name of procedure */
+
+    int format;			/* unwind-info format (arch-specific) */
+    void *unwind_info;		/* unwind-info (arch-specific) */
+    size_t unwind_info_size;	/* size of the informat (if applicable) */
+  }
+unw_proc_info_t;
+
 /* These are backend callback routines that provide access to the
    state of a "remote" process.  This can be used, for example, to
    unwind another process through the ptrace() interface.  */
 typedef struct unw_accessors
   {
-    /* Lock for unwind info for address IP.  The architecture specific
-       UNWIND_INFO is updated as necessary.  */
-    int (*acquire_unwind_info) (unw_word_t ip, void *unwind_info, void *arg);
-    int (*release_unwind_info) (void *unwind_info, void *arg);
+    /* Look up the unwind info associated with instruction-pointer IP.
+       On success, the routine fills in the PROC_INFO structure.  */
+    int (*find_proc_info) (unw_addr_space_t as, unw_word_t ip,
+			   unw_proc_info_t *proc_info, void *arg);
 
     /* Access aligned word at address ADDR.  */
-    int (*access_mem) (unw_word_t addr, unw_word_t *val, int write, void *arg);
+    int (*access_mem) (unw_addr_space_t as, unw_word_t addr,
+		       unw_word_t *val, int write, void *arg);
 
     /* Access register number REG at address ADDR.  */
-    int (*access_reg) (unw_regnum_t reg, unw_word_t *val, int write,
-		       void *arg);
+    int (*access_reg) (unw_addr_space_t as, unw_regnum_t reg,
+		       unw_word_t *val, int write, void *arg);
 
     /* Access register number REG at address ADDR.  */
-    int (*access_fpreg) (unw_regnum_t reg, unw_fpreg_t *val, int write,
-			 void *arg);
+    int (*access_fpreg) (unw_addr_space_t as, unw_regnum_t reg,
+			 unw_fpreg_t *val, int write, void *arg);
 
-    int (*resume) (unw_cursor_t *c, void *arg);
+    int (*resume) (unw_addr_space_t as, unw_cursor_t *c, void *arg);
   }
 unw_accessors_t;
 
@@ -166,17 +181,21 @@ typedef struct unw_save_loc
   }
 unw_save_loc_t;
 
+#include <libunwind-dynamic.h>
+
 /* These routines work both for local and remote unwinding.  */
 
 extern unw_addr_space_t UNW_OBJ(local_addr_space);
 
 extern unw_addr_space_t UNW_OBJ(create_addr_space) (unw_accessors_t *a);
+extern unw_accessors_t *UNW_OBJ(get_accessors) (unw_addr_space_t as);
 extern void UNW_OBJ(destroy_addr_space) (unw_addr_space_t as);
 extern int UNW_OBJ(init_local) (unw_cursor_t *c, ucontext_t *u);
 extern int UNW_OBJ(init_remote) (unw_cursor_t *c, unw_addr_space_t as,
 				 void *as_arg);
 extern int UNW_OBJ(step) (unw_cursor_t *c);
 extern int UNW_OBJ(resume) (unw_cursor_t *c);
+extern int UNW_OBJ(get_proc_info) (unw_cursor_t *c, unw_proc_info_t *pi);
 extern int UNW_OBJ(get_reg) (unw_cursor_t *c, int regnum, unw_word_t *valp);
 extern int UNW_OBJ(set_reg) (unw_cursor_t *c, int regnum, unw_word_t val);
 extern int UNW_OBJ(get_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t *val);
@@ -184,7 +203,9 @@ extern int UNW_OBJ(set_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t val);
 extern int UNW_OBJ(get_save_loc) (unw_cursor_t *c, int regnum,
 				  unw_save_loc_t *loc);
 extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
-extern const char *UNW_OBJ(regname) (int regnum);
+extern const char *UNW_ARCH_OBJ(regname) (int regnum);
+extern int UNW_OBJ(find_dynamic_proc_info) (unw_addr_space_t as, unw_word_t ip,
+					    unw_proc_info_t *pi, void *arg);
 
 #define unw_local_addr_space		UNW_OBJ(local_addr_space)
 
@@ -192,6 +213,11 @@ extern const char *UNW_OBJ(regname) (int regnum);
    local_addr_space).
    This routine is NOT signal-safe.  */
 #define unw_create_addr_space(a)	UNW_OBJ(create_addr_space)(a)
+
+/* Retrieve a pointer to the accessors structure associated with
+   address space AS.
+   This routine is signal-safe. */
+#define unw_get_accessors(as)		UNW_OBJ(get_accessors)(as)
 
 /* Destroy an address space.
    This routine is NOT signal-safe.  */
@@ -218,6 +244,10 @@ extern const char *UNW_OBJ(regname) (int regnum);
 /* Resume execution at the point identified by the cursor.
    This routine is signal-safe.  */
 #define unw_resume(c)		UNW_OBJ(resume)(c)
+
+/* Return the proc-info associated with the cursor.
+   This routine is signal-safe.  */
+#define unw_get_proc_info(c,p)	UNW_OBJ(get_proc_info)(c,p)
 
 /* Register accessor routines.  Return zero on success, negative value
    on failure.
@@ -249,7 +279,7 @@ extern const char *UNW_OBJ(regname) (int regnum);
    this one is re-entrant (i.e., the returned string must be a string
    constant.
    This routine is signal-safe.  */
-#define unw_regname(r)		UNW_OBJ(regname)(r)
+#define unw_regname(r)		UNW_ARCH_OBJ(regname)(r)
 
 /* Sets the caching policy of address space AS.  Caching can be
    disabled completely by setting the policy to UNW_CACHE_NONE.  With
@@ -268,5 +298,12 @@ extern const char *UNW_OBJ(regname) (int regnum);
    and HI are both 0, the entire address-range is flushed.  This
    function must be called if any of unwind information might have
    changed (e.g., because a library might have been removed via a call
-   to dlclose()).  This routine is signal-safe.  */
+   to dlclose()).
+   This routine is signal-safe.  */
 #define unw_flush_cache(as,lo,hi)	UNW_OBJ(flush_cache)(as, lo, hi)
+
+/* Locate the procedure info for instruction pointer IP, assuming
+   the procedure was registered dynamically (at runtime).
+   This routine is signal-safe.  */
+#define unw_find_dynamic_proc_info(as,ip,pi,arg)			\
+		UNW_OBJ(find_dynamic_proc_info)(as, ip, pi, arg)
