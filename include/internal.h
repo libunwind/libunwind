@@ -52,6 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 
 #ifdef __GNUC__
+# define UNUSED		__attribute__((unused))
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
 #  define HIDDEN	__attribute__((visibility ("hidden")))
 # else
@@ -65,6 +66,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #  define unlikely(x)	(x)
 # endif
 #else
+# define UNUSED
 # define HIDDEN
 # define likely(x)	(x)
 # define unlikely(x)	(x)
@@ -72,6 +74,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifdef DEBUG
 # define UNW_DEBUG	1
+#else
+# define UNW_DEBUG	0
 #endif
 
 #if UNW_DEBUG
@@ -82,7 +86,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
     fprintf (stderr, format)
 # ifdef __GNUC__
 #  undef inline
-#  define inline	__attribute__ ((unused))
+#  define inline	UNUSED
 # endif
 #else
 # define debug(level,format...)
@@ -110,7 +114,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 							    (AO_T) (_o),  \
 							    (AO_T) (_n))
 # define fetch_and_add1(_ptr)		AO_fetch_and_add1(_ptr)
-# define HAVE_CMPXCHG
+   /* GCC 3.2.0 on HP-UX crashes on cmpxchg_ptr() */
+#  if !(defined(__hpux) && __GNUC__ == 3 && __GNUC_MINOR__ == 2)
+#   define HAVE_CMPXCHG
+#  endif
 # define HAVE_FETCH_AND_ADD1
 #else
 # ifdef HAVE_IA64INTRIN_H
