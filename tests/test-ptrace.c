@@ -40,6 +40,7 @@ int verbose = 1;
 	do { fprintf (stderr, args); ++nerrors; } while (0)
 
 static unw_addr_space_t as;
+static struct UPT_info *ui;
 
 void
 do_backtrace (pid_t target_pid)
@@ -49,9 +50,7 @@ do_backtrace (pid_t target_pid)
   unw_cursor_t c;
   char buf[512];
   int ret;
-  struct UPT_info *ui;
 
-  ui = _UPT_create (target_pid);
   ret = unw_init_remote (&c, as, ui);
   if (ret < 0)
     panic ("unw_init_remote() failed: ret=%d\n", ret);
@@ -88,8 +87,6 @@ do_backtrace (pid_t target_pid)
 	}
     }
   while (ret > 0);
-
-  _UPT_destroy (ui);
 
   if (ret < 0)
     panic ("unwind failed with ret=%d\n", ret);
@@ -129,6 +126,8 @@ main (int argc, char **argv)
       _exit (-1);
     }
 
+  ui = _UPT_create (target_pid);
+
   while (1)
     {
       pid = wait4 (-1, &status,  0, 0);
@@ -165,6 +164,8 @@ main (int argc, char **argv)
       ptrace (PTRACE_SINGLESTEP, target_pid, 0, 0);		/* continue */
 #endif
     }
+
+  _UPT_destroy (ui);
 
   if (nerrors)
     {
