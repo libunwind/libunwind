@@ -51,6 +51,7 @@ libunwind_la_SOURCES_generic =						\
 
 # List of arch-independent files needed by local-only library (libunwind):
 libunwind_la_SOURCES_local =						\
+	mi/backtrace.c							\
 	mi/dyn-cancel.c mi/dyn-info-list.c mi/dyn-register.c		\
 	mi/Ldyn-extract.c mi/Lfind_dynamic_proc_info.c			\
 	mi/Lget_accessors.c						\
