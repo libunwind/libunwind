@@ -86,15 +86,15 @@ common_init (struct cursor *c)
   if (ret < 0)
     return ret;
 
-  ret = ia64_get (c, c->bsp_loc, &bspstore);
+  ret = ia64_get (c, c->bspstore_loc, &bspstore);
   if (ret < 0)
     return ret;
 
-  c->rbs_curr = c->rbs_wridx = c->rbs_nvalid = 0;
+  c->rbs_curr = c->rbs_left_edge = c->rbs_right_edge = 0;
   c->rbs_area[0].end = bspstore;
   c->rbs_area[0].size = ~(unw_word_t) 0;	/* initial guess... */
   c->rbs_area[0].rnat_loc = IA64_REG_LOC (c, UNW_IA64_AR_RNAT);
-  debug (10, "%s: initial rbs-area: [?-0x%lx), rnat @ 0x%lx\n", __FUNCTION__,
+  debug (10, "%s: initial rbs-area: [?-0x%lx), rnat@0x%lx\n", __FUNCTION__,
 	 (long) c->rbs_area[0].end, (long) c->rbs_area[0].rnat_loc);
 
   c->pi.flags = 0;
