@@ -25,28 +25,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
-#ifdef UNW_TARGET_IA64
+#if UNW_TARGET_IA64 && defined(__linux)
 # include "elf64.h"
 # include "os-linux.h"
-#endif
 
-int
-_UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
-			     void *arg)
+static inline int
+get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
+	       int *countp)
 {
-#if UNW_TARGET_IA64
   unsigned long lo, hi, off;
   struct UPT_info *ui = arg;
   struct map_iterator mi;
   char path[PATH_MAX];
   unw_dyn_info_t *di;
   unw_word_t res;
-#endif
   int count = 0;
 
-  Debug (12, "looking for dyn_info list\n");
-
-#if UNW_TARGET_IA64
   maps_init (&mi, ui->pid);
   while (maps_next (&mi, &lo, &hi, &off, path, sizeof (path)))
     {
@@ -77,9 +71,24 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 	}
     }
   maps_close (&mi);
+  *countp = count;
+  return 0;
+}
+
 #else
-# warning Implement me, please.
+# warning Implement get_list_addr(), please.
 #endif
+
+int
+_UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
+			     void *arg)
+{
+  int count, ret;
+
+  Debug (12, "looking for dyn_info list\n");
+
+  if ((ret = get_list_addr (as, dil_addr, arg, &count)) < 0)
+    return ret;
 
   /* If multiple dynamic-info list addresses are found, we would have
      to determine which was is the one actually in use (since the
