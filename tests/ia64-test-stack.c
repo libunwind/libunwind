@@ -106,13 +106,13 @@ do_unwind_tests (void)
 	  if ((ret = unw_get_reg (&c, UNW_IA64_CFM, &cfm)) < 0)
 	    break;
 	  sof = cfm & 0x7f;
-	  if (sof != (i & 1))
+	  if (sof != (unw_word_t) (i & 1))
 	      panic ("\texpected sof=%d, found sof=%lu\n", i - 1, sof);
 	  if (sof == 1)
 	    {
 	      if ((ret = unw_get_reg (&c, UNW_IA64_GR + 32, &r32)) < 0)
 		break;
-	      if (r32 != i - 1)
+	      if (r32 != (unw_word_t) (i - 1))
 		panic ("\texpected r32=%d, found r32=%lu\n", i - 1, r32);
 	    }
 	}

@@ -14,13 +14,13 @@ rotate_gr (struct cursor *c, int reg)
   rrb_gr = (c->cfm >> 18) & 0x7f;
 
   if ((unsigned) (reg - 32) > sof)
-    return reg;		/* not a valid stacked register: just return original value */
+    return reg;	/* not a valid stacked register: just return original value */
   else if ((unsigned) (reg - 32) > sor)
-    preg = reg;		/* register not part of the rotating partition */
+    preg = reg;	/* register not part of the rotating partition */
   else
     {
       preg = reg + rrb_gr;	/* apply rotation */
-      if (preg > 32 + sor)
+      if (preg > 32 + (int) sor)
 	preg -= sor;		/* wrap around */
     }
   debug (100, "%s: sor=%u rrb.gr=%u, r%d -> r%d\n",

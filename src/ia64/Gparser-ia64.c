@@ -210,7 +210,7 @@ finish_prologue (struct ia64_state_record *sr)
 
   /* First, resolve implicit register save locations (see Section
      "11.4.2.3 Rules for Using Unwind Descriptors", rule 3). */
-  for (i = 0; i < NELEMS (unw.save_order); ++i)
+  for (i = 0; i < (int) NELEMS (unw.save_order); ++i)
     {
       reg = sr->curr.reg + unw.save_order[i];
       if (reg->where == IA64_WHERE_GR_SAVE)
@@ -238,7 +238,7 @@ finish_prologue (struct ia64_state_record *sr)
       regs[1] = sr->curr.reg + IA64_REG_R4;
       regs[2] = sr->curr.reg + IA64_REG_B1;
 
-      for (t = 0; t < sr->region_len; ++t)
+      for (t = 0; (int) t < sr->region_len; ++t)
 	{
 	  if ((t & 3) == 0)
 	    mask = *cp++;
@@ -920,7 +920,8 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     {
       /* No info, return default unwinder (leaf proc, no mem stack, no
          saved regs), rp in b0, pfs in ar.pfs.  */
-      dprintf ("unwind.parser: no unwind info for ip=0x%lx\n", (long) ip);
+      dprintf ("unwind.parser: no unwind info for ip=0x%lx (gp=%lx)\n",
+	       (long) ip, (long) c->pi.gp);
       sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
       sr->curr.reg[IA64_REG_RP].when = -1;
       sr->curr.reg[IA64_REG_RP].val = 0;

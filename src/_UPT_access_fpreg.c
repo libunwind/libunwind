@@ -39,7 +39,7 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
   errno = 0;
   if (write)
-    for (i = 0; i < sizeof (*val) / sizeof (wp[i]); ++i)
+    for (i = 0; i < (int) (sizeof (*val) / sizeof (wp[i])); ++i)
       {
 	ptrace (PTRACE_POKEUSER, pid, _UPT_reg_offset[reg] + i * sizeof(wp[i]),
 		wp[i]);
@@ -47,7 +47,7 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 	  return -UNW_EBADREG;
       }
   else
-    for (i = 0; i < sizeof (*val) / sizeof (wp[i]); ++i)
+    for (i = 0; i < (int) (sizeof (*val) / sizeof (wp[i])); ++i)
       {
 	wp[i] = ptrace (PTRACE_PEEKUSER, pid,
 			_UPT_reg_offset[reg] + i * sizeof(wp[i]), 0);
