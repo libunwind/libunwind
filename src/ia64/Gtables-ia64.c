@@ -554,21 +554,21 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 static int
 check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
-#ifdef HAVE_DLPI_REMOVALS
+#ifdef HAVE_STRUCT_DL_PHDR_INFO_DLPI_SUBS
   unw_addr_space_t as = ptr;
 
-  if (size < offsetof (struct dl_phdr_info, dlpi_removals)
-      + sizeof (info->dlpi_removals))
+  if (size <
+      offsetof (struct dl_phdr_info, dlpi_subs) + sizeof (info->dlpi_subs))
     /* It would be safer to flush the cache here, but that would
        disable caching for older libc's which would be incompatible
        with the behavior of older versions of libunwind so we return 1
        instead and hope nobody runs into stale cache info...  */
     return 1;
 
-  if (info->dlpi_removals == as->shared_object_removals)
+  if (info->dlpi_subs == as->shared_object_subs)
     return 1;
 
-  as->shared_object_removals = info->dlpi_removals;
+  as->shared_object_subs = info->dlpi_subs;
   unw_flush_cache (as, 0, 0);
   return -1;		/* indicate that there were no new removals */
 #else
