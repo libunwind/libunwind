@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -210,8 +210,7 @@ finish_prologue (struct ia64_state_record *sr)
 
   /* First, resolve implicit register save locations (see Section
      "11.4.2.3 Rules for Using Unwind Descriptors", rule 3). */
-  for (i = 0; i < (int) sizeof (unw.save_order) / sizeof (unw.save_order[0]);
-       ++i)
+  for (i = 0; i < NELEMS (unw.save_order); ++i)
     {
       reg = sr->curr.reg + unw.save_order[i];
       if (reg->where == IA64_WHERE_GR_SAVE)
@@ -972,6 +971,17 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
       sr->curr.reg[IA64_REG_RP].val = sr->return_link_reg;
     }
 
+  if ((sr->curr.reg[IA64_REG_BSP].when != IA64_WHEN_NEVER
+       && sr->curr.reg[IA64_REG_BSP].when >= sr->when_target)
+      && (sr->curr.reg[IA64_REG_BSPSTORE].when != IA64_WHEN_NEVER
+	  && sr->curr.reg[IA64_REG_BSPSTORE].when >= sr->when_target)
+      && (sr->curr.reg[IA64_REG_RNAT].when != IA64_WHEN_NEVER
+	  && sr->curr.reg[IA64_REG_RNAT].when >= sr->when_target))
+    {
+      debug (10, "unwind: func 0x%lx may switch the register-backing-store\n",
+	     c->pi.start_ip);
+      c->pi.flags |= UNW_PI_FLAG_IA64_RBS_SWITCH;
+    }
   out:
 #if UNW_DEBUG
   if (unw.debug_level > 0)
