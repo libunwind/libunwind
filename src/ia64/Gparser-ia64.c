@@ -971,13 +971,10 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
       sr->curr.reg[IA64_REG_RP].val = sr->return_link_reg;
     }
 
-  if ((sr->curr.reg[IA64_REG_BSP].when != IA64_WHEN_NEVER
-       && sr->curr.reg[IA64_REG_BSP].when >= sr->when_target)
-      && (sr->curr.reg[IA64_REG_BSPSTORE].when != IA64_WHEN_NEVER
-	  && sr->curr.reg[IA64_REG_BSPSTORE].when >= sr->when_target)
-      && (sr->curr.reg[IA64_REG_RNAT].when != IA64_WHEN_NEVER
-	  && sr->curr.reg[IA64_REG_RNAT].when >= sr->when_target))
-    {
+  if (sr->when_target > sr->curr.reg[IA64_REG_BSP].when
+      && sr->when_target > sr->curr.reg[IA64_REG_BSPSTORE].when
+      && sr->when_target > sr->curr.reg[IA64_REG_RNAT].when)
+  {
       debug (10, "unwind: func 0x%lx may switch the register-backing-store\n",
 	     c->pi.start_ip);
       c->pi.flags |= UNW_PI_FLAG_IA64_RBS_SWITCH;
