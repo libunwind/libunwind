@@ -84,63 +84,10 @@ PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 #else /* !HAVE_SYS_UC_ACCESS_H */
 
-static inline void *
-uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
-{
-  unw_word_t reg_addr;
-  void *addr;
-
-  switch (reg)
-    {
-    case UNW_IA64_GR + 0:	addr = &unw.r0; break;
-    case UNW_IA64_NAT + 0:	addr = &unw.r0; break;
-    case UNW_IA64_IP:		addr = &uc->uc_mcontext.sc_br[0]; break;
-    case UNW_IA64_CFM:		addr = &uc->uc_mcontext.sc_ar_pfs; break;
-    case UNW_IA64_AR_RNAT:	addr = &uc->uc_mcontext.sc_ar_rnat; break;
-    case UNW_IA64_AR_UNAT:	addr = &uc->uc_mcontext.sc_ar_unat; break;
-    case UNW_IA64_AR_LC:	addr = &uc->uc_mcontext.sc_ar_lc; break;
-    case UNW_IA64_AR_FPSR:	addr = &uc->uc_mcontext.sc_ar_fpsr; break;
-    case UNW_IA64_PR:		addr = &uc->uc_mcontext.sc_pr; break;
-      /* This may look confusing, but it's correct: AR_BSPSTORE needs
-         to return the address past the last word written, which is
-         stored in sc_ar_bsp.  On the other hand, AR_BSP needs to
-         return the address that was in ar.bsp at the time the context
-         was captured.  As described in unw_init_local(), sc_ar_bsp is
-         (ab-)used for this purpose.  */
-    case UNW_IA64_AR_BSP:	addr = &uc->uc_mcontext.sc_rbs_base; break;
-    case UNW_IA64_AR_BSPSTORE:	addr = &uc->uc_mcontext.sc_ar_bsp; break;
-
-    case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
-    case UNW_IA64_GR + 12:
-      addr = &uc->uc_mcontext.sc_gr[reg - UNW_IA64_GR];
-      break;
-
-    case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
-    case UNW_IA64_NAT + 12:
-      addr = &uc->uc_mcontext.sc_nat;
-      reg_addr = (unw_word_t) &uc->uc_mcontext.sc_gr[reg - UNW_IA64_NAT];
-      *nat_bitnr = reg - UNW_IA64_NAT;
-      break;
-
-    case UNW_IA64_BR + 1 ... UNW_IA64_BR + 5:
-      addr = &uc->uc_mcontext.sc_br[reg - UNW_IA64_BR];
-      break;
-
-    case UNW_IA64_FR+ 2 ... UNW_IA64_FR+ 5:
-    case UNW_IA64_FR+16 ... UNW_IA64_FR+31:
-      addr = &uc->uc_mcontext.sc_fr[reg - UNW_IA64_FR];
-      break;
-
-    default:
-      addr = NULL;
-    }
-  return addr;
-}
-
 HIDDEN void *
 tdep_uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
 {
-  return uc_addr (uc, reg, nat_bitnr);
+  return inlined_uc_addr (uc, reg, nat_bitnr);
 }
 
 #endif /* !HAVE_SYS_UC_ACCESS_H */
@@ -366,7 +313,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
       return 0;
     }
 
-  addr = uc_addr (uc, reg, NULL);
+  addr = tdep_uc_addr (uc, reg, NULL);
   if (!addr)
     goto badreg;
 
@@ -397,7 +344,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (reg < UNW_IA64_FR || reg >= UNW_IA64_FR + 128)
     goto badreg;
 
-  addr = uc_addr (uc, reg, NULL);
+  addr = tdep_uc_addr (uc, reg, NULL);
   if (!addr)
     goto badreg;
 
