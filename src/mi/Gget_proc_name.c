@@ -35,7 +35,7 @@ intern_string (unw_addr_space_t as, unw_accessors_t *a,
 
   for (i = 0; i < buf_len; ++i)
     {
-      if ((ret = fetch8 (as, a, &addr, buf + i, arg)) < 0)
+      if ((ret = fetch8 (as, a, &addr, (int8_t *) buf + i, arg)) < 0)
 	return ret;
 
       if (buf[i] == '\0')
