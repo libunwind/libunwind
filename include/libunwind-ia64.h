@@ -164,24 +164,21 @@ typedef ucontext_t unw_tdep_context_t;
    with malloc(), and should be free()d during the put_unwind_info()
    callback.  This routine is signal-safe for the local-address-space
    case ONLY.  */
-extern int UNW_OBJ(search_unwind_table) (unw_addr_space_t as, unw_word_t ip,
-					 unw_dyn_info_t *di,
-					 unw_proc_info_t *pi,
-					 int need_unwind_info, void *arg);
-#define unw_search_ia64_unwind_table(as,ip,di,pi,n,arg) \
-	UNW_OBJ(search_unwind_table)(as,ip,di,pi,n,arg)
+#define unw_search_ia64_unwind_table	UNW_OBJ(search_unwind_table)
+extern int unw_search_ia64_unwind_table (unw_addr_space_t, unw_word_t,
+					 unw_dyn_info_t *, unw_proc_info_t *,
+					 int, void *);
 
 /* This is a helper routine which the get_dyn_info_list_addr()
    callback can use to locate the special dynamic-info list entry in
    an IA-64 unwind table.  If the entry exists in the table, the
    list-address is returned.  In all other cases, 0 is returned.  */
-extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
-					unw_dyn_info_t *di,
-					void *arg);
+extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t, unw_dyn_info_t *,
+					void *);
 
 /* This is a helper routine to obtain the kernel-unwind info.  It is
    signal-safe.  */
-extern int _Uia64_get_kernel_table (unw_dyn_info_t *di);
+extern int _Uia64_get_kernel_table (unw_dyn_info_t *);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
