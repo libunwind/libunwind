@@ -58,7 +58,8 @@ rbs_record_switch (struct cursor *c,
   for (i = c->rbs_curr; i != right_edge; i = (i + 1) % NELEMS (c->rbs_area))
     {
       j = (i + 1) % NELEMS (c->rbs_area);
-      nregs = ia64_rse_num_regs (c->rbs_area[i].end - c->rbs_area[i].size, bsp);
+      nregs = ia64_rse_num_regs (c->rbs_area[i].end - c->rbs_area[i].size,
+				 bsp);
       bsp = ia64_rse_skip_regs (c->rbs_area[j].end, nregs);
     }
 
@@ -73,7 +74,8 @@ rbs_record_switch (struct cursor *c,
   if (c->rbs_area[right_edge].size)
     {
       debug (10, "inner=[0x%lx-0x%lx)\n\t",
-	     (long) (c->rbs_area[right_edge].end - c->rbs_area[right_edge].size),
+	     (long) (c->rbs_area[right_edge].end
+		     - c->rbs_area[right_edge].size),
 	     (long) c->rbs_area[right_edge].end);
 
       right_edge = (right_edge + 1) % NELEMS (c->rbs_area);
@@ -89,7 +91,8 @@ rbs_record_switch (struct cursor *c,
   c->rbs_area[right_edge].rnat_loc = saved_rnat_loc;
 
   debug (10, "outer=[?????????????????\?-0x%lx), rnat@0x%lx\n",
-	 (long) c->rbs_area[right_edge].end, (long) c->rbs_area[right_edge].rnat_loc);
+	 (long) c->rbs_area[right_edge].end,
+	 (long) c->rbs_area[right_edge].rnat_loc);
   return 0;
 }
 
@@ -98,7 +101,8 @@ rbs_underflow (struct cursor *c)
 {
   size_t num_regs;
 
-  assert (c->rbs_area[c->rbs_curr].end - c->bsp > c->rbs_area[c->rbs_curr].size);
+  assert (c->rbs_area[c->rbs_curr].end - c->bsp
+	  > c->rbs_area[c->rbs_curr].size);
 
   while (1)
     {
@@ -111,7 +115,8 @@ rbs_underflow (struct cursor *c)
       c->rbs_curr = (c->rbs_curr + 1) % NELEMS (c->rbs_area);
       c->bsp = ia64_rse_skip_regs (c->rbs_area[c->rbs_curr].end, -num_regs);
 
-      if (c->rbs_area[c->rbs_curr].end - c->bsp <= c->rbs_area[c->rbs_curr].size)
+      if (c->rbs_area[c->rbs_curr].end - c->bsp
+	  <= c->rbs_area[c->rbs_curr].size)
 	{
 	  debug (10, "%s: [0x%016lx-0x%016lx), bsp=0x%lx\n",
 		 __FUNCTION__, (long) (c->rbs_area[c->rbs_curr].end
@@ -128,7 +133,8 @@ HIDDEN int
 rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 		  unw_word_t *locp, unw_word_t *rnat_locp)
 {
-  unw_word_t nregs, bsp = c->bsp, curr = c->rbs_curr, left_edge = c->rbs_left_edge;
+  unw_word_t nregs, bsp = c->bsp, curr = c->rbs_curr;
+  unw_word_t left_edge = c->rbs_left_edge;
   int reg = 32 + regs_to_skip;
 
   while (1)
@@ -159,4 +165,107 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
       curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
       bsp = c->rbs_area[curr].end - c->rbs_area[curr].size;
     }
+}
+
+static inline int
+get_rnat (struct cursor *c, struct rbs_area *rbs, unw_word_t bsp,
+	  unw_word_t *__restrict rnat_locp, unw_word_t *__restrict rnatp)
+{
+  *rnat_locp = ia64_rse_rnat_addr (bsp);
+  if (*rnat_locp >= rbs->end)
+    *rnat_locp = rbs->rnat_loc;
+  return ia64_get (c, *rnat_locp, rnatp);
+}
+
+/* Ensure that the first "nregs" stacked registers are on the current
+   register backing store area.  This effectively simulates the effect
+   of a "cover" followed by a "flushrs" for the current frame.
+
+   Note: This does not modify the rbs_area[] structure in any way.  */
+HIDDEN int
+rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
+{
+  unw_word_t src_bsp, dst_bsp, src_rnat_loc, dst_rnat_loc, src_rnat, dst_rnat;
+  unw_word_t src_mask, dst_mask, curr, val, left_edge = c->rbs_left_edge;
+  unw_word_t final_bsp;
+  struct rbs_area *dst_rbs;
+  int ret;
+
+  if (nregs < 1)
+    return 0;		/* nothing to do... */
+
+  /* Handle the common case quickly: */
+
+  curr = c->rbs_curr;
+  dst_rbs = c->rbs_area + curr;
+  final_bsp = ia64_rse_skip_regs (c->bsp, nregs);	/* final bsp */
+  if (likely (final_bsp <= dst_rbs->end))
+    {
+      c->bsp = final_bsp;
+      return 0;
+    }
+
+  /* Skip over regs that are already on the destination rbs-area: */
+
+  dst_bsp = src_bsp = dst_rbs->end;
+
+  if ((ret = get_rnat (c, dst_rbs, dst_bsp, &dst_rnat_loc, &dst_rnat)) < 0)
+    return ret;
+
+  while (dst_bsp < final_bsp)
+    {
+      while (src_bsp >= c->rbs_area[curr].end)
+	{
+	  /* switch to next rbs-area, adjust src_bsp accordingly: */
+	  if (curr == left_edge)
+	    {
+	      debug (1, "%s: rbs-underflow while flushing %lu regs, "
+		     "src_bsp=0x%lx, dst_bsp=0x%lx\n",
+		     __FUNCTION__, nregs, src_bsp, dst_bsp);
+	      return -UNW_EBADREG;
+	    }
+	  curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
+	  src_bsp = c->rbs_area[curr].end - c->rbs_area[curr].size;
+	}
+
+      /* OK, found the right rbs-area.  Now copy both the register
+	 value and its NaT bit:  */
+
+      if ((ret = get_rnat (c, c->rbs_area + curr, src_bsp,
+			   &src_rnat_loc, &src_rnat)) < 0)
+	return ret;
+
+      src_mask = ((unw_word_t) 1) << ia64_rse_slot_num (src_bsp);
+      dst_mask = ((unw_word_t) 1) << ia64_rse_slot_num (dst_bsp);
+
+      if (src_rnat & src_mask)
+	dst_rnat |= dst_mask;
+      else
+	dst_rnat &= ~dst_mask;
+
+      if ((ret = ia64_get (c, src_bsp, &val)) < 0
+	  || (ret = ia64_put (c, dst_bsp, val)) < 0)
+	return ret;
+
+      /* advance src_bsp & dst_bsp to next slot: */
+
+      src_bsp += 8;
+      if (ia64_rse_is_rnat_slot (src_bsp))
+	src_bsp += 8;
+
+      dst_bsp += 8;
+      if (ia64_rse_is_rnat_slot (dst_bsp))
+	{
+	  if ((ret = ia64_put (c, dst_rnat_loc, dst_rnat)) < 0)
+	    return ret;
+
+	  dst_bsp += 8;
+
+	  if ((ret = get_rnat (c, dst_rbs, dst_bsp,
+			       &dst_rnat_loc, &dst_rnat)) < 0)
+	    return ret;
+	}
+    }
+  c->bsp = dst_bsp;
+  return ia64_put (c, dst_rnat_loc, dst_rnat);
 }
