@@ -162,7 +162,7 @@ main (int argc, char *argv[])
 
   memset (&di, 0, sizeof (di));
   di.start_ip = (long) mem;
-  di.end_ip = (long) mem + 256;
+  di.end_ip = (long) mem + 16*region->insn_count/3;
   di.gp = get_gp (fdesc);
   di.format = UNW_INFO_FORMAT_DYNAMIC;
   di.u.pi.name_ptr = (unw_word_t) "copy_of_template";
