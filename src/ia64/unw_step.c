@@ -21,13 +21,12 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
-#include <signal.h>
-
+#include "offsets.h"
 #include "rse.h"
 #include "unwind_i.h"
 
-int
-ia64_get_frame_state (struct ia64_cursor *c)
+static inline int
+update_frame_state (struct ia64_cursor *c)
 {
   unw_word_t prev_ip, prev_sp, prev_bsp, ip, pr, num_regs, cfm;
   int ret;
@@ -36,8 +35,8 @@ ia64_get_frame_state (struct ia64_cursor *c)
   prev_sp = c->sp;
   prev_bsp = c->bsp;
 
-  /* restore the ip */
-  ret = ia64_get (c, c->rp_loc, &ip);
+  /* update the IP cache: */
+  ret = ia64_get (c, c->ip_loc, &ip);
   if (ret < 0)
     return ret;
   c->ip = ip;
@@ -45,8 +44,7 @@ ia64_get_frame_state (struct ia64_cursor *c)
   if ((ip & 0xf) != 0)
     {
       /* don't let obviously bad addresses pollute the cache */
-      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, c->ip);
-      c->rp_loc = 0;
+      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
       return -UNW_EINVALIDIP;
     }
 
@@ -64,8 +62,7 @@ ia64_get_frame_state (struct ia64_cursor *c)
       if (ret < 0)
 	return ret;
 
-      ret = ia64_get (c, (sigcontext_addr
-			  + struct_offset (struct sigcontext, sc_flags)),
+      ret = ia64_get (c, (sigcontext_addr + SIGCONTEXT_FLAGS_OFF),
 		      &sigcontext_flags);
       if (ret < 0)
 	return ret;
@@ -80,8 +77,7 @@ ia64_get_frame_state (struct ia64_cursor *c)
 
 	  num_regs = cfm & 0x7f;	/* size of frame */
 	}
-      c->pfs_loc = (c->sp + 0x10 + struct_offset (struct sigcontext,
-						  sc_ar_pfs));
+      c->pfs_loc = (c->sp + 0x10 + SIGCONTEXT_AR_PFS_OFF);
     }
   else
     {
@@ -90,16 +86,15 @@ ia64_get_frame_state (struct ia64_cursor *c)
 	return ret;
       num_regs = (cfm >> 7) & 0x7f;	/* size of locals */
     }
-  c->bsp = (unsigned long) ia64_rse_skip_regs ((unsigned long *) c->bsp,
-					       -num_regs);
+  c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
 
   /* restore the sp: */
   c->sp = c->psp;
 
   if (c->ip == prev_ip && c->sp == prev_sp && c->bsp == prev_bsp)
     {
-      dprintf ("%s: ip, sp, bsp remain unchanged; stopping here (ip=0x%lx)\n",
-	       __FUNCTION__, ip);
+      dprintf ("%s: ip, sp, and bsp unchanged; stopping here (ip=0x%lx)\n",
+	       __FUNCTION__, (long) ip);
       STAT(unw.stat.api.unwind_time += ia64_get_itc () - start);
       return -UNW_EBADFRAME;
     }
@@ -126,7 +121,7 @@ unw_step (unw_cursor_t *cursor)
   if (ret < 0)
     return ret;
 
-  ret = ia64_get_frame_state (c);
+  ret = update_frame_state (c);
   if (ret < 0)
     return ret;
 
