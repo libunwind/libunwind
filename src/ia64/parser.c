@@ -809,13 +809,12 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
   if (!c->pi.desc)
     {
       /* No info, return default unwinder (leaf proc, no mem stack, no
-         saved regs).  */
+         saved regs), rp in b0, pfs in ar.pfs.  */
       dprintf ("unwind: no unwind info for ip=0x%lx\n", (long) ip);
       sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
       sr->curr.reg[IA64_REG_RP].when = -1;
       sr->curr.reg[IA64_REG_RP].val = 0;
-      STAT(unw.stat.parse.time += ia64_get_itc () - start);
-      return 0;
+      goto out;
     }
 
   sr->when_target = (3 * ((ip & ~0xfUL) - c->pi.proc_start)
@@ -854,6 +853,7 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
       sr->curr.reg[IA64_REG_RP].val = sr->return_link_reg;
     }
 
+  out:
 #if IA64_UNW_DEBUG
   if (unw.debug_level > 0)
     {
