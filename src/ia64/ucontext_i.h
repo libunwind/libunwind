@@ -29,6 +29,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define SIG_UNBLOCK	1
 #define SIG_SETMASK	2
 
+#define IA64_SC_FLAG_SYNCHRONOUS_BIT	63
+
+#define SC_FLAGS 0x000
 #define SC_NAT	0x008
 #define SC_BSP	0x048
 #define SC_RNAT	0x050
@@ -43,10 +46,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define SC_MASK	0x9d0
 
 
-#define rTMP	r14
-#define rPOS	r14
-#define rCPOS	r17
-#define rNAT	r18
+#define rTMP	r10
+#define rPOS	r11
+#define rCPOS	r14
+#define rNAT	r15
+#define rFLAGS	r16
 
 #define rB5	r18
 #define rB4	r19
