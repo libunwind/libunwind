@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define NUM_RUNS		1024
 //#define NUM_RUNS		1
 #define MAX_CHECKS		1024
-//#define MAX_CHECKS		2
+//#define MAX_CHECKS		6
 #define MAX_VALUES_PER_FUNC	4
 
 #define panic(args...)							  \
@@ -83,16 +83,16 @@ static struct
   }
 all_funcs[] =
   {
-    { save_static_to_stacked,	check_static_to_stacked },
 #if 1
+    { save_static_to_stacked,	check_static_to_stacked },
     { save_static_to_fr,	check_static_to_fr },
+#endif
     { save_static_to_br,	check_static_to_br },
+#if 1
     { save_static_to_mem,	check_static_to_mem },
     { save_static_to_scratch,	check_static_to_scratch },
 #endif
     { rotate_regs,		check_rotate_regs },
-#if 0
-#endif
   };
 
 void
@@ -358,7 +358,9 @@ check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
 static unw_word_t *
 check_rotate_regs (unw_cursor_t *c, unw_word_t *vals)
 {
-  return vals;	/* nothing to do here... */
+  if (verbose)
+    printf ("  %s()\n", __FUNCTION__);
+  return vals - 1;
 }
 
 static void
