@@ -81,7 +81,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 	elf32.c elf32.h							\
 									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
-	x86/tables-x86.c						\
+	x86/tables-x86.c x86/set_caching_policy-x86.c			\
 	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
 									\
 	x86/Gcreate_addr_space-x86.c					\
