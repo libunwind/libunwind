@@ -31,13 +31,11 @@ libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
 					  -version-info $(SETJMP_SO_VERSION)
 libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la -lc
 libunwind_setjmp_la_SOURCES_common	= longjmp.c siglongjmp.c
-libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp-ia64.S		\
-					  ia64/sigsetjmp-ia64.S		\
-					  ia64/siglongjmp-ia64.S
-libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c		\
-					  hppa/siglongjmp-hppa.S
-libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c	\
-					  x86/siglongjmp-x86.S
+libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S ia64/sigsetjmp.S \
+					  ia64/siglongjmp.S
+libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c	\
+					  hppa/siglongjmp.S
+libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c x86/siglongjmp.S
 
 ### libunwind:
 
@@ -85,77 +83,58 @@ libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 dwarf_SOURCES_common =				\
 	dwarf/dwarf-eh.h			\
-	dwarf/global-dwarf.c
+	dwarf/global.c
 
-dwarf_SOURCES_local =							\
-	dwarf/Lexpr-dwarf.c dwarf/Lfde-dwarf.c dwarf/Lparser-dwarf.c	\
-	dwarf/Lpe-dwarf.c dwarf/Lstep-dwarf.c
+dwarf_SOURCES_local =							     \
+	dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c dwarf/Lpe.c dwarf/Lstep.c
 
-dwarf_SOURCES_generic =							\
-	dwarf/Gexpr-dwarf.c dwarf/Gfde-dwarf.c dwarf/Gparser-dwarf.c	\
-	dwarf/Gpe-dwarf.c dwarf/Gstep-dwarf.c
-
-#
-# Note: As of automake-1.6, there is a stupid limitation which requires
-#	that each filename be unique.  This prevents us from having, e.g.,
-#	ia64/tables.c and x86/tables.c.  The fix for now is to uglify the
-#	filenames by appending the arch-name (e.g., tables-ia64.c).  Oh, well.
-#
+dwarf_SOURCES_generic =							     \
+	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c
 
 # The list of files that go both into libunwind and libunwind-ia64:
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 	ia64/init.h ia64/offsets.h ia64/regs.h				    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
-	ia64/regname-ia64.c
+	ia64/regname.c
 
 # The list of files that go into libunwind:
-libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
-	$(libunwind_la_SOURCES_local)					   \
-									   \
-	elf64.c elf64.h							   \
-									   \
-	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
-									   \
-	ia64/Lcreate_addr_space-ia64.c					   \
-	ia64/Lget_proc_info-ia64.c					   \
-	ia64/Lget_save_loc-ia64.c					   \
-	ia64/Lglobal-ia64.c						   \
-	ia64/Linit-ia64.c ia64/Linit_local-ia64.c ia64/Linit_remote-ia64.c \
-	ia64/Linstall_cursor-ia64.S ia64/Lis_signal_frame-ia64.c	   \
-	ia64/Lparser-ia64.c ia64/Lrbs-ia64.c ia64/Lregs-ia64.c		   \
-	ia64/Lresume-ia64.c ia64/Lscript-ia64.c				   \
-	ia64/Lstep-ia64.c ia64/Ltables-ia64.c
+libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
+	$(libunwind_la_SOURCES_local)					     \
+									     \
+	elf64.c elf64.h							     \
+									     \
+	ia64/dyn_info_list.S ia64/getcontext.S				     \
+									     \
+	ia64/Lcreate_addr_space.c ia64/Lget_proc_info.c ia64/Lget_save_loc.c \
+	ia64/Lglobal.c ia64/Linit.c ia64/Linit_local.c ia64/Linit_remote.c   \
+	ia64/Linstall_cursor.S ia64/Lis_signal_frame.c ia64/Lparser.c	     \
+	ia64/Lrbs.c ia64/Lregs.c ia64/Lresume.c ia64/Lscript.c ia64/Lstep.c  \
+	ia64/Ltables.c
 
 # The list of files that go into libunwind-ia64:
-libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	   \
-	$(libunwind_la_SOURCES_generic)					   \
-	ia64/Gcreate_addr_space-ia64.c					   \
-	ia64/Gget_proc_info-ia64.c					   \
-	ia64/Gget_save_loc-ia64.c					   \
-	ia64/Gglobal-ia64.c						   \
-	ia64/Ginit-ia64.c ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c \
-	ia64/Ginstall_cursor-ia64.S ia64/Gis_signal_frame-ia64.c	   \
-	ia64/Gparser-ia64.c ia64/Grbs-ia64.c ia64/Gregs-ia64.c		   \
-	ia64/Gresume-ia64.c ia64/Gscript-ia64.c				   \
-	ia64/Gstep-ia64.c ia64/Gtables-ia64.c
+libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
+	$(libunwind_la_SOURCES_generic)					     \
+	ia64/Gcreate_addr_space.c ia64/Gget_proc_info.c ia64/Gget_save_loc.c \
+	ia64/Gglobal.c ia64/Ginit.c ia64/Ginit_local.c ia64/Ginit_remote.c   \
+	ia64/Ginstall_cursor.S ia64/Gis_signal_frame.c ia64/Gparser.c	     \
+	ia64/Grbs.c ia64/Gregs.c ia64/Gresume.c ia64/Gscript.c ia64/Gstep.c  \
+	ia64/Gtables.c
 
-libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
-	hppa/global-hppa.c hppa/tables-hppa.c				\
-	hppa/init.h hppa/unwind_i.h					\
-									\
-	hppa/Gget_reg-hppa.c						\
-	hppa/Ginit-hppa.c hppa/Ginit_local-hppa.c			\
-	hppa/Gget_proc_info-hppa.c hppa/Gregs-hppa.c hppa/Gstep-hppa.c	\
-									\
-	hppa/Lget_reg-hppa.c hppa/Lget_proc_name-hppa.c			\
-	hppa/Linit-hppa.c hppa/Linit_local-hppa.c			\
-	hppa/Lget_proc_info-hppa.c hppa/Lregs-hppa.c hppa/Lstep-hppa.c
+libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		      \
+	hppa/global.c hppa/tables.c					      \
+	hppa/init.h hppa/unwind_i.h					      \
+									      \
+	hppa/Gget_reg.c hppa/Gget_proc_name.c hppa/Ginit.c hppa/Ginit_local.c \
+	hppa/Gget_proc_info.c hppa/Gregs.c hppa/Gstep.c			      \
+									      \
+	hppa/Lget_reg.c hppa/Lget_proc_name.c hppa/Linit.c hppa/Linit_local.c \
+	hppa/Lget_proc_info.c hppa/Lregs.c hppa/Lstep.c
 
 # The list of files that go both into libunwind and libunwind-x86:
 libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
 	x86/init.h x86/offsets.h x86/unwind_i.h				\
-	x86/is_fpreg-x86.c x86/regname-x86.c
+	x86/is_fpreg.c x86/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
@@ -163,24 +142,20 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
 	elf32.c elf32.h							\
 	$(dwarf_SOURCES_local)						\
 	dwarf/Lfind_proc_info-lsb.c					\
-	x86/Lcreate_addr_space-x86.c					\
-	x86/Lget_save_loc-x86.c x86/Lglobal-x86.c x86/Linit-x86.c	\
-	x86/Linit_local-x86.c x86/Linit_remote-x86.c			\
-	x86/Lis_signal_frame-x86.c					\
-	x86/Lget_proc_info-x86.c x86/Lregs-x86.c			\
-	x86/Lresume-x86.c x86/Lstep-x86.c
+	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c	\
+	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c		\
+	x86/Lis_signal_frame.c x86/Lget_proc_info.c x86/Lregs.c		\
+	x86/Lresume.c x86/Lstep.c
 
 # The list of files that go into libunwind-x86:
 libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 	$(libunwind_la_SOURCES_generic)					\
 	$(dwarf_SOURCES_generic)					\
 	dwarf/Gfind_proc_info-lsb.c					\
-	x86/Gcreate_addr_space-x86.c					\
-	x86/Gget_save_loc-x86.c x86/Gglobal-x86.c x86/Ginit-x86.c	\
-	x86/Ginit_local-x86.c x86/Ginit_remote-x86.c			\
-	x86/Gis_signal_frame-x86.c					\
-	x86/Gget_proc_info-x86.c x86/Gregs-x86.c			\
-	x86/Gresume-x86.c x86/Gstep-x86.c
+	x86/Gcreate_addr_space.c x86/Gget_save_loc.c x86/Gglobal.c	\
+	x86/Ginit.c x86/Ginit_local.c x86/Ginit_remote.c		\
+	x86/Gis_signal_frame.c x86/Gget_proc_info.c x86/Gregs.c		\
+	x86/Gresume.c x86/Gstep.c
 
 if REMOTE_ONLY
 install-exec-hook:
@@ -207,14 +182,14 @@ if OS_HPUX
 endif
 
 if ARCH_IA64
- mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i-ia64.c
- mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i-ia64.c
- noinst_PROGRAMS = mk_Gcursor_i-ia64 mk_Lcursor_i-ia64
+ mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i.c
+ mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i.c
+ noinst_PROGRAMS = ia64/mk_Gcursor_i ia64/mk_Lcursor_i
  BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
-Gcursor_i.h: mk_Gcursor_i-ia64
-	./mk_Gcursor_i-ia64 > $@
-Lcursor_i.h: mk_Lcursor_i-ia64
-	./mk_Lcursor_i-ia64 > $@
+Gcursor_i.h: ia64/mk_Gcursor_i
+	ia64/mk_Gcursor_i > $@
+Lcursor_i.h: ia64/mk_Lcursor_i
+	ia64/mk_Lcursor_i > $@
  lib_LTLIBRARIES_arch = libunwind-ia64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
