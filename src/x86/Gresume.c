@@ -84,12 +84,12 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       if (c->eh_valid_mask & 0x8) sc->sc_gr[18] = c->eh_args[3];
 #endif
 
-      Debug (9, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
+      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
       sigreturn (sc);
     }
   else
     {
-      Debug (9, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
+      Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
       setcontext (uc);
     }
 #else
