@@ -33,7 +33,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #ifdef __GNUC__
-# define HIDDEN		__attribute__((visibility ("hidden")))
+# if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
+#  define HIDDEN	__attribute__((visibility ("hidden")))
+# else
+#  define HIDDEN
+# endif
 # define likely(x)	__builtin_expect ((x), 1)
 # define unlikely(x)	__builtin_expect ((x), 0)
 #else
@@ -99,7 +103,8 @@ extern void UNWI_ARCH_OBJ(dyn_remote_put_unwind_info) (unw_addr_space_t as,
 						       void *arg);
 extern int UNWI_ARCH_OBJ(get_proc_name) (unw_addr_space_t as,
 					 unw_word_t ip, int is_local,
-					 char *buf, size_t buf_len, void *arg);
+					 char *buf, size_t buf_len,
+					 unw_word_t *offp, void *arg);
 
 #define unwi_find_dynamic_proc_info(as,ip,pi,n,arg)			\
 	UNWI_OBJ(find_dynamic_proc_info)(as, ip, pi, n, arg)
@@ -119,8 +124,8 @@ extern int UNWI_ARCH_OBJ(get_proc_name) (unw_addr_space_t as,
 #define unwi_dyn_remote_put_unwind_info(as,p,arg)			\
 	UNWI_ARCH_OBJ(dyn_remote_put_unwind_info)(as, p, arg)
 
-#define unwi_get_proc_name(as,ip,l,b,s,arg)				\
-	UNWI_ARCH_OBJ(get_proc_name)(as, ip, l, b, s, arg)
+#define unwi_get_proc_name(as,ip,l,b,s,o,arg)				\
+	UNWI_ARCH_OBJ(get_proc_name)(as, ip, l, b, s, o, arg)
 
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
@@ -205,6 +210,14 @@ fetchw (unw_addr_space_t as, unw_accessors_t *a,
 #define mi_init		UNWI_ARCH_OBJ(mi_init)
 
 extern void mi_init (void);	/* machine-independent initializations */
+
+/* This is needed/used by ELF targets only.  */
+
+struct elf_image
+  {
+    void *image;		/* pointer to mmap'd image */
+    size_t size;		/* (file-) size of the image */
+  };
 
 #include <tdep.h>
 
