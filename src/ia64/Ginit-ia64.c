@@ -23,6 +23,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <alloca.h>
 #include <stdlib.h>
 
 #include "rse.h"
@@ -182,7 +183,6 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 {
   ucontext_t *uc = arg;
   unsigned int nat, mask;
-  unw_word_t cfm, sol; 
   uint64_t value;
   uint16_t reason;
   int ret;
@@ -222,23 +222,24 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
     case UNW_IA64_AR  ... UNW_IA64_AR + 127:
       if (reg == UNW_IA64_AR_BSP)
 	{
-	  if (reason == REASON_SYSCALL)
-	    ret = __uc_get_grs (uc, SYSCALL_CFM_SAVE_REG, 1, &cfm, &nat);
-	  else
-	    ret = __uc_get_cfm (uc, &cfm);
-	  if (ret)
-	    break;
-	  sol = (cfm >> 7) & 0x7f;
-
-	  if (write)
-	    ret = __uc_set_ar (uc, (reg - UNW_IA64_AR),
-			       ia64_rse_skip_regs (*val, sol));
-	  else
-	    {
-	      ret = __uc_get_ar (uc, (reg - UNW_IA64_AR), val);
-	      *val = ia64_rse_skip_regs (*val, -sol);
-	    }
+  	  if (write)
+	    ret = __uc_set_ar (uc, (reg - UNW_IA64_AR), *val);
+ 	  else
+ 	    ret = __uc_get_ar (uc, (reg - UNW_IA64_AR), val);
 	}
+      else if (reg == UNW_IA64_AR_PFS && reason == REASON_SYSCALL)
+ 	{
+	  /* As of HP-UX 11.22, getcontext() does not have unwind info
+	     and because of that, we need to hack thins manually here.
+	     Hopefully, this is OK because the HP-UX kernel also needs
+	     to know where AR.PFS has been saved, so the use of
+	     register r11 for this purpose is pretty much nailed
+	     down.  */
+ 	  if (write)
+ 	    ret = __uc_set_grs (uc, SYSCALL_CFM_SAVE_REG, 1, val, 0);
+ 	  else
+ 	    ret = __uc_get_grs (uc, SYSCALL_CFM_SAVE_REG, 1, val, &nat);
+ 	}
       else
 	{
 	  if (write)
@@ -263,40 +264,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
       break;
 
     case UNW_IA64_IP:
-      if (reason == REASON_SYSCALL)
-	{
-	  if (write)
-	    ret = __uc_set_brs (uc, 0, 1, val);
-	  else
-	    ret = __uc_get_brs (uc, 0, 1, val);
-	}
+      if (write)
+	ret = __uc_set_ip (uc, *val);
       else
-	{
-	  if (write)
-	    ret = __uc_set_ip (uc, *val);
-	  else
-	    ret = __uc_get_ip (uc, val);
-	}
+	ret = __uc_get_ip (uc, val);
       break;
 
     case UNW_IA64_CFM:
-      if (reason == REASON_SYSCALL)
-	{
-	  ret = __uc_get_grs (uc, SYSCALL_CFM_SAVE_REG, 1, &cfm, &nat);
-	  if (write)
-	    {
-	      if (ret)
-		break;
-	      ret = __uc_set_grs (uc, SYSCALL_CFM_SAVE_REG, 1, &cfm, nat);
-	    }
-	}
+      if (write)
+	ret = __uc_set_cfm (uc, *val);
       else
-	{
-	  if (write)
-	    ret = __uc_set_cfm (uc, *val);
-	  else
-	    ret = __uc_get_cfm (uc, val);
-	}
+	ret = __uc_get_cfm (uc, val);
       break;
 
     case UNW_IA64_FR  ... UNW_IA64_FR + 127:
@@ -306,7 +284,11 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
     }
 
   if (ret != 0)
-    return -UNW_EBADREG;
+    {
+      debug (1, "%s: failed to %s %s\n",
+	     __FUNCTION__, write ? "write" : "read", unw_regname (reg));
+      return -UNW_EBADREG;
+    }
 
   if (write)
     debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
@@ -437,6 +419,131 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
 #endif /* !HAVE_SYS_UC_ACCESS_H */
 
+HIDDEN int
+ia64_uc_access_reg (struct cursor *c, ia64_loc_t loc, unw_word_t *valp,
+		    int write)
+{
+#ifdef HAVE_SYS_UC_ACCESS_H
+  unw_word_t uc_addr = IA64_GET_AUX_ADDR (loc);
+  ucontext_t *ucp;
+  int ret;
+
+  debug (100, "%s: %s locaction %s\n", __FUNCTION__,
+	 write ? "writing" : "reading", ia64_strloc (loc));
+
+  if (c->as == unw_local_addr_space)
+    ucp = (ucontext_t *) uc_addr;
+  else
+    {
+      unw_word_t *dst, src;
+
+      /* Need to copy-in ucontext_t first.  */
+      ucp = alloca (sizeof (ucontext_t));
+      if (!ucp)
+	return -UNW_ENOMEM;
+
+      /* For now, there is no non-HP-UX implementation of the
+         uc_access(3) interface.  Because of that, we cannot, e.g.,
+         unwind an HP-UX program from a Linux program.  Should that
+         become possible at some point in the future, the
+         copy-in/copy-out needs to be adjusted to do byte-swapping if
+         necessary. */
+      assert (c->as->big_endian == (__BYTE_ORDER == __BIG_ENDIAN));
+
+      dst = (unw_word_t *) ucp;
+      for (src = uc_addr; src < uc_addr + sizeof (ucontext_t); src += 8)
+	if ((ret = (*c->as->acc.access_mem) (c->as, src, dst++, 0, c->as_arg))
+	    < 0)
+	  return ret;
+    }
+
+  if (IA64_IS_REG_LOC (loc))
+    ret = access_reg (unw_local_addr_space, IA64_GET_REG (loc), valp, write,
+		      ucp);
+  else
+    {
+      /* Must be an access to the RSE backing store in ucontext_t.  */
+      unw_word_t addr = IA64_GET_ADDR (loc);
+
+      if (write)
+	ret = __uc_set_rsebs (ucp, (uint64_t *) addr, 1, valp);
+      else
+	ret = __uc_get_rsebs (ucp, (uint64_t *) addr, 1, valp);
+      if (ret != 0)
+	ret = -UNW_EBADREG;
+    }
+  if (ret < 0)
+    return ret;
+
+  if (write && c->as != unw_local_addr_space)
+    {
+      /* need to copy-out ucontext_t: */
+      unw_word_t dst, *src = (unw_word_t *) ucp;
+      for (dst = uc_addr; dst < uc_addr + sizeof (ucontext_t); dst += 8)
+	if ((ret = (*c->as->acc.access_mem) (c->as, dst, src++, 1, c->as_arg))
+	    < 0)
+	  return ret;
+    }
+  return 0;
+#else /* !HAVE_SYS_UC_ACCESS_H */
+  return -UNW_EINVAL;
+#endif /* !HAVE_SYS_UC_ACCESS_H */
+}
+
+HIDDEN int
+ia64_uc_access_fpreg (struct cursor *c, ia64_loc_t loc, unw_fpreg_t *valp,
+		      int write)
+{
+#ifdef HAVE_SYS_UC_ACCESS_H
+  unw_word_t uc_addr = IA64_GET_AUX_ADDR (loc);
+  ucontext_t *ucp;
+  int ret;
+
+  if (c->as == unw_local_addr_space)
+    ucp = (ucontext_t *) uc_addr;
+  else
+    {
+      unw_word_t *dst, src;
+
+      /* Need to copy-in ucontext_t first.  */
+      ucp = alloca (sizeof (ucontext_t));
+      if (!ucp)
+	return -UNW_ENOMEM;
+
+      /* For now, there is no non-HP-UX implementation of the
+         uc_access(3) interface.  Because of that, we cannot, e.g.,
+         unwind an HP-UX program from a Linux program.  Should that
+         become possible at some point in the future, the
+         copy-in/copy-out needs to be adjusted to do byte-swapping if
+         necessary. */
+      assert (c->as->big_endian == (__BYTE_ORDER == __BIG_ENDIAN));
+
+      dst = (unw_word_t *) ucp;
+      for (src = uc_addr; src < uc_addr + sizeof (ucontext_t); src += 8)
+	if ((ret = (*c->as->acc.access_mem) (c->as, src, dst++, 0, c->as_arg))
+	    < 0)
+	  return ret;
+    }
+
+  if ((ret = access_fpreg (unw_local_addr_space, IA64_GET_REG (loc), valp,
+			   write, ucp)) < 0)
+    return ret;
+
+  if (write && c->as != unw_local_addr_space)
+    {
+      /* need to copy-out ucontext_t: */
+      unw_word_t dst, *src = (unw_word_t *) ucp;
+      for (dst = uc_addr; dst < uc_addr + sizeof (ucontext_t); dst += 8)
+	if ((ret = (*c->as->acc.access_mem) (c->as, dst, src++, 1, c->as_arg))
+	    < 0)
+	  return ret;
+    }
+  return 0;
+#else /* !HAVE_SYS_UC_ACCESS_H */
+  return -UNW_EINVAL;
+#endif /* !HAVE_SYS_UC_ACCESS_H */
+}
+
 static int
 get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
 		      char *buf, size_t buf_len, unw_word_t *offp,
@@ -451,6 +558,11 @@ ia64_local_addr_space_init (void)
   memset (&local_addr_space, 0, sizeof (local_addr_space));
   ia64_script_cache_init (&local_addr_space.global_cache);
   local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
+#if defined(__linux)
+  local_addr_space.abi = ABI_LINUX;
+#elif defined(__hpux)
+  local_addr_space.abi = ABI_HPUX;
+#endif
   local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
   local_addr_space.acc.find_proc_info = UNW_ARCH_OBJ (find_proc_info);
   local_addr_space.acc.put_unwind_info = put_unwind_info;
