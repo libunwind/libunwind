@@ -48,10 +48,10 @@ static char big[64*MB];	/* should be >> max. cache size */
 static inline double
 gettime (void)
 {
-  struct timespec ts;
+  struct timeval tv;
 
-  clock_gettime(CLOCK_REALTIME, &ts);
-  return ts.tv_sec + 1e-9*ts.tv_nsec;
+  gettimeofday (&tv, NULL);
+  return tv.tv_sec + 1e-6*tv.tv_usec;
 }
 
 static int
@@ -137,7 +137,7 @@ static void
 measure_init (void)
 {
 # define N	100
-# define M	10	/* must be at least 2 to get steady-state */
+# define M	1000000	/* must be at least 2 to get steady-state */
   double stop, start, get_cold, get_warm, init_cold, init_warm, delta;
   struct
     {
@@ -153,6 +153,7 @@ measure_init (void)
   uc[N];
   int i, j;
 
+#if 0
   /* Run each test M times and take the minimum to filter out noise
      such dynamic linker resolving overhead, context-switches,
      page-in, cache, and TLB effects.  */
@@ -198,6 +199,9 @@ measure_init (void)
       if (delta < get_warm)
 	get_warm = delta;
     }
+#else
+  unw_getcontext (&uc[0].uc);
+#endif
 
   init_warm = 1e99;
   for (j = 0; j < M; ++j)
@@ -215,6 +219,7 @@ measure_init (void)
 	  1e9 * get_cold, 1e9 * get_warm);
   printf ("unw_init_local : cold avg=%9.3f nsec, warm avg=%9.3f nsec\n",
 	  1e9 * init_cold, 1e9 * init_warm);
+  exit (0);
 }
 
 int
