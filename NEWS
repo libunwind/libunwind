@@ -1,5 +1,30 @@
 -*-Mode: outline-*-
 
+* News for v0.98:
+
+** Update libunwind to be compliant with the updated/expanded
+   ia64 unwind specificiation by HJ Lu.  This is needed for
+   GCC 3.4 compatibility.
+
+** Initial support for x86-64 has been added courtesy of Max Asbock.
+   Along with this came a bunch of DWARF2 unwinder fixes.
+
+** A new rountine unw_strerror() has been added courtesy of
+   Thomas Hallgren.
+
+** Including <libunwind.h> now defines 4 macros that can be used
+   to determine the version number of libunwind.  Specifically,
+   UNW_VERSION_MAJOR, UNW_VERSION_MINOR, UNW_VERSION, and
+   UNW_VERSION_CODE are defined by the header now.
+
+** Bug fixes
+*** Fix a memory-leak in _UPT_get_dyn_info_list_addr() courtesy of Ed Connell.
+*** Fix a crash in libunwind-ptrace courtesy of Mark Young.
+*** Fix a bug in ia64-version of unw_init_remote() which prevented
+    it from working correctly for the local address space.  Reported by
+    Troy Heber.
+*** Many other small and not so small fixes.
+
 * News for v0.97:
 
 ** unw_get_proc_name() may now be called from signal-handler.
