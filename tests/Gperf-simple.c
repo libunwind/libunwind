@@ -39,7 +39,7 @@ static int maxlevel = 100;
 
 #define MB	(1024*1024)
 
-static char big[128*MB];
+static char big[512*MB];
 
 static inline double
 gettime (void)
@@ -118,13 +118,14 @@ doit (const char *label)
 }
 
 static long
-sum (char *buf, size_t size)
+sum (void *buf, size_t size)
 {
   long s = 0;
+  char *cp = buf;
   size_t i;
 
-  for (i = 0; i < size; ++i)
-    s += *buf++;
+  for (i = 0; i < size; i += 64)
+    s += *cp++;
   return s;
 }
 
@@ -132,42 +133,69 @@ static void
 measure_init (void)
 {
 # define N	1000
-  double stop, start, getcontext_cold, getcontext_warm, init_cold, init_warm;
+# define M	10
+  double stop, start, get_cold, get_warm, init_cold, init_warm, delta;
   unw_cursor_t cursor[N];
   unw_context_t uc[N];
-  int i;
+  int i, j;
 
-  /* Ensure memory is paged in but not in the cache: */
-  memset (cursor, 0, sizeof (cursor));
-  memset (uc, 0, sizeof (uc));
-  dummy = sum (big, sizeof (big));
+  /* Run each test M times and take the minimum to filter out noise
+     such dynamic linker resolving overhead, context-switches,
+     page-in, cache, and TLB effects.  */
 
-  start = gettime ();
-  for (i = 0; i < N; ++i)
-    unw_getcontext (&uc[i]);
-  stop = gettime ();
-  getcontext_cold = (stop - start) / N;
+  get_cold = 1e99;
+  for (j = 0; j < M; ++j)
+    {
+      dummy += sum (big, sizeof (big));	/* flush the cache */
 
-  start = gettime ();
-  for (i = 0; i < N; ++i)
-    unw_init_local (&cursor[i], &uc[i]);
-  stop = gettime ();
-  init_cold = (stop - start) / N;
+      start = gettime ();
+      for (i = 0; i < N; ++i)
+	unw_getcontext (&uc[i]);
+      stop = gettime ();
+      delta = (stop - start) / N;
+      if (delta < get_cold)
+	get_cold = delta;
+    }
+  //exit (0);
+  init_cold = 1e99;
+  for (j = 0; j < M; ++j)
+    {
+      dummy += sum (big, sizeof (big));	/* flush cache */
+      start = gettime ();
+      for (i = 0; i < N; ++i)
+	unw_init_local (&cursor[i], &uc[i]);
+      stop = gettime ();
+      delta = (stop - start) / N;
+      if (delta < init_cold)
+	init_cold = delta;
+    }
 
-  start = gettime ();
-  for (i = 0; i < N; ++i)
-    unw_getcontext (&uc[0]);
-  stop = gettime ();
-  getcontext_warm = (stop - start) / N;
+  get_warm = 1e99;
+  for (j = 0; j < M; ++j)
+    {
+      start = gettime ();
+      for (i = 0; i < N; ++i)
+	unw_getcontext (&uc[0]);
+      stop = gettime ();
+      delta = (stop - start) / N;
+      if (delta < get_warm)
+	get_warm = delta;
+    }
 
-  start = gettime ();
-  for (i = 0; i < N; ++i)
-    unw_init_local (&cursor[0], &uc[0]);
-  stop = gettime ();
-  init_warm = (stop - start) / N;
+  init_warm = 1e99;
+  for (j = 0; j < M; ++j)
+    {
+      start = gettime ();
+      for (i = 0; i < N; ++i)
+	unw_init_local (&cursor[0], &uc[0]);
+      stop = gettime ();
+      delta = (stop - start) / N;
+      if (delta < init_warm)
+	init_warm = delta;
+    }
 
   printf ("unw_getcontext : cold avg=%9.3f nsec, warm avg=%9.3f nsec\n",
-	  1e9 * getcontext_cold, 1e9 * getcontext_warm);
+	  1e9 * get_cold, 1e9 * get_warm);
   printf ("unw_init_local : cold avg=%9.3f nsec, warm avg=%9.3f nsec\n",
 	  1e9 * init_cold, 1e9 * init_warm);
 }
