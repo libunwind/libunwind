@@ -112,6 +112,7 @@ common_init (struct cursor *c)
 
   c->sigcontext_addr = 0;
   c->abi_marker = 0;
+  c->last_abi_marker = 0;
 
   c->hint = 0;
   c->prev_script = 0;
