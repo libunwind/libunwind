@@ -136,13 +136,13 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r17 = c->eh_args[2];
       extra.r18 = c->eh_args[3];
     }
-  _Uia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
+  ia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
 }
 
 HIDDEN int
 ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-  return -UNW_EINVAL;
+  return local_resume (as, cursor, arg);
 }
 
 #endif /* !UNW_REMOTE_ONLY */
@@ -152,7 +152,6 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 static inline int
 remote_install_cursor (struct cursor *c)
 {
-#if 0
 #ifndef __hpux
   int (*access_reg) (unw_addr_space_t, unw_regnum_t, unw_word_t *,
 		     int write, void *);
@@ -169,12 +168,11 @@ remote_install_cursor (struct cursor *c)
 	 memory, not registers.  Furthermore, R4-R7 and NAT4-NAT7 are
 	 taken care of by ia64_local_resume() so they don't need to be
 	 handled here.  */
-      unw_word_t *locp;
-#     define MEMIFY(preg, reg)					\
-      do {							\
-	locp = ((unw_word_t *) c) + unw.preg_index[(preg)];	\
-	if (IA64_IS_REG_LOC (*locp))				\
-	  *locp = (unw_word_t) tdep_uc_addr (c->as_arg, (reg));	\
+#     define MEMIFY(preg, reg)						     \
+      do {								     \
+	if (IA64_IS_REG_LOC (c->loc[(preg)]))				     \
+	  c->loc[(preg)] = IA64_LOC_ADDR((unw_word_t)			     \
+					 tdep_uc_addr(c->as_arg, (reg)), 0); \
       } while (0)
       MEMIFY (IA64_REG_PR,	UNW_IA64_PR);
       MEMIFY (IA64_REG_PFS,	UNW_IA64_AR_PFS);
@@ -230,10 +228,9 @@ remote_install_cursor (struct cursor *c)
     }
   return (*c->as->acc.resume) (c->as, (unw_cursor_t *) c, c->as_arg);
 #endif
-#endif
 }
 
-#endif
+#endif /* !UNW_LOCAL_ONLY */
 
 int
 unw_resume (unw_cursor_t *cursor)
