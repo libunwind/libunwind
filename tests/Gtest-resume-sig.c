@@ -23,11 +23,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /*  Verify that unw_resume() restores the signal mask at proper time.  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <libunwind.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+
+#ifdef HAVE_IA64INTRIN_H
+# include <ia64intrin.h>
+#endif
 
 #define panic(args...)						\
 	do { fprintf (stderr, args); ++nerrors; } while (0)
@@ -47,7 +55,11 @@ handler (int sig)
   char foo;
 
 #if UNW_TARGET_IA64
+# ifdef __ECC
+  void *bsp = (void *) __getReg(_IA64_REG_AR_BSP);
+# else
   void *bsp = __builtin_ia64_bsp ();
+#endif
   if (verbose)
     printf ("bsp = %p\n", bsp);
 #endif
