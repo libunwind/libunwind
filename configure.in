@@ -48,7 +48,8 @@ AC_CHECK_TYPES([sighandler_t], [], [],
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(dl_iterate_phdr dlmodinfo getunwind ttrace)
+AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
+		ttrace)
 
 get_arch() {
  case "$1" in
@@ -80,7 +81,19 @@ AC_ARG_ENABLE(debug,
 
 LIBUNWIND___THREAD
 
-if test x$GCC = xyes; then
+save_LDFLAGS="$LDFLAGS"
+LDFLAGS="$LDFLAGS -static-libcxa"
+AC_TRY_LINK([], [], [have_static_libcxa=yes])
+LDFLAGS="$save_LDFLAGS"
+if test "x$have_static_libcxa" = xyes; then
+  LDFLAGS_STATIC_LIBCXA="-XCClinker -static-libcxa"
+fi
+
+AC_TRY_COMPILE([], [#ifndef __INTEL_COMPILER
+#error choke me
+#endif], [intel_compiler=yes])
+
+if test x$GCC = xyes -a x$intel_compiler != xyes; then
   CFLAGS="${CFLAGS} -Wall -Wsign-compare"
 fi
 
@@ -91,6 +104,7 @@ ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
 AC_SUBST(arch)
 AC_SUBST(ARCH)
+AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile
 		doc/Makefile doc/common.tex)
