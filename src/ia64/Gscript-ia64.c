@@ -496,15 +496,14 @@ ia64_find_save_locs (struct cursor *c)
   sigset_t saved_sigmask;
   int ret = 0;
 
-  ret = ia64_fetch_proc_info (c, c->ip, 1);
-  if (ret < 0)
-    return ret;
-
   cache = get_script_cache (c->as, &saved_sigmask);
   {
     if (c->as->caching_policy == UNW_CACHE_NONE)
       {
 	struct ia64_script tmp_script;
+
+	if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
+	  goto out;
 
 	script = &tmp_script;
 	script->ip = c->ip;
@@ -519,6 +518,9 @@ ia64_find_save_locs (struct cursor *c)
 	       __FUNCTION__, (long) c->ip, script ? "hit" : "missed");
 	if (!script)
 	  {
+	    if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
+	      goto out;
+
 	    script = script_new (cache, c->ip);
 	    if (!script)
 	      {
