@@ -63,7 +63,7 @@ sos_alloc (size_t size)
 	abort ();
       u.cp = sos_memp;
     }
-  while (cmpxchg_ptr (&u.lp, old_mem, mem) != old_mem);
+  while (!cmpxchg_ptr (&u.lp, old_mem, mem));
 #else
   static pthread_mutex_t sos_lock = PTHREAD_MUTEX_INITIALIZER;
   sigset_t saved_sigmask;
