@@ -207,6 +207,10 @@ extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
 
 #define unw_get_save_loc(c,r,l)	UNW_OBJ(get_save_loc)(c,r,l)
 
+/* Return 1 if register number R is a floating-point register, zero
+   otherwise.  */
+#define unw_is_fpreg(r)		unw_tdep_is_fpreg(r)
+
 /* Returns non-zero value if the cursor points to a signal frame.  */
 #define unw_is_signal_frame(c)	UNW_OBJ(is_signal_frame)(c)
 
