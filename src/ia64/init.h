@@ -103,27 +103,12 @@ common_init (struct cursor *c)
 
   c->pi.flags = 0;
 
-#ifdef UNW_LOCAL_ONLY
-  c->eh_args[0] = c->eh_args[1] = c->eh_args[2] = c->eh_args[3] = 0;
-#else
-  for (i = 0; i < 4; ++i)
-    {
-      ret = ia64_get (c, IA64_REG_LOC (c, UNW_IA64_GR + 15 + i),
-		      &c->eh_args[i]);
-      if (ret < 0)
-	{
-	  if (ret == -UNW_EBADREG)
-	    c->eh_args[i] = 0;
-	  else
-	    return ret;
-	}
-    }
-#endif
   c->sigcontext_loc = 0;
   c->is_signal_frame = 0;
 
   c->hint = 0;
   c->prev_script = 0;
+  c->eh_valid_mask = 0;
   c->pi_valid = 0;
   return 0;
 }
