@@ -1,8 +1,8 @@
 if ARCH_IA64
 include_HEADERS_tdep = include/libunwind-ia64.h
 else
-if ARCH_IA32
-include_HEADERS_tdep = include/libunwind-ia32.h
+if ARCH_X86
+include_HEADERS_tdep = include/libunwind-x86.h
 endif
 endif
 
@@ -17,5 +17,5 @@ endif
 
 SUBDIRS = src tests doc
 
-EXTRA_DIST = include/internal.h \
+EXTRA_DIST = include/internal.h include/mempool.h \
 	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/script.h
