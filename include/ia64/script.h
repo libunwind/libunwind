@@ -44,31 +44,6 @@ enum ia64_script_insn_opcode
     IA64_INSN_LOAD		/* s[dst] = *s[val] */
   };
 
-/* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-This file is part of libunwind.
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
-
 struct ia64_script_insn
   {
     unsigned int opc;
@@ -97,6 +72,7 @@ struct ia64_script
 
 struct ia64_script_cache
   {
+    pthread_mutex_t lock;
     unsigned short lru_head;	/* index of lead-recently used script */
     unsigned short lru_tail;	/* index of most-recently used script */
 
@@ -109,8 +85,8 @@ struct ia64_script_cache
     struct ia64_script buckets[IA64_UNW_CACHE_SIZE];
   };
 
-#define ia64_script_lookup	UNW_OBJ(ia64_script_lookup)
+#define ia64_get_cached_proc_info	UNW_OBJ(ia64_get_cached_proc_info)
 
 struct cursor;			/* forward declaration */
 
-extern struct ia64_script *ia64_script_lookup (struct cursor *c);
+extern int ia64_get_cached_proc_info (struct cursor *c);
