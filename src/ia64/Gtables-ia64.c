@@ -136,6 +136,92 @@ tdep_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
     }
 }
 
+PROTECTED unw_word_t
+_Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
+{
+  unw_word_t hdr_addr, info_addr, hdr, directives, pers, cookie, off;
+  unw_word_t start_offset, end_offset, info_offset, segbase;
+  struct ia64_table_entry *e;
+  size_t table_size;
+  unw_word_t gp = di->gp;
+  int ret;
+
+  switch (di->format)
+    {
+    case UNW_INFO_FORMAT_DYNAMIC:
+    default:
+      return 0;
+
+    case UNW_INFO_FORMAT_TABLE:
+      e = (struct ia64_table_entry *) di->u.ti.table_data;
+      table_size = di->u.ti.table_len * sizeof (di->u.ti.table_data[0]);
+      segbase = di->u.ti.segbase;
+      if (table_size < sizeof (struct ia64_table_entry))
+	return 0;
+      start_offset = e[0].start_offset;
+      end_offset = e[0].end_offset;
+      info_offset = e[0].info_offset;
+      break;
+
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
+      {
+	unw_accessors_t *a = unw_get_accessors (as);
+	unw_word_t e_addr = di->u.rti.table_data;
+
+	table_size = di->u.rti.table_len * sizeof (unw_word_t);
+	segbase = di->u.rti.segbase;
+	if (table_size < sizeof (struct ia64_table_entry))
+	  return 0;
+
+	if (   (ret = remote_read (e_addr, start_offset) < 0)
+	    || (ret = remote_read (e_addr, end_offset) < 0)
+	    || (ret = remote_read (e_addr, info_offset) < 0))
+	  return ret;
+      }
+      break;
+    }
+
+  if (start_offset != end_offset)
+    /* dyn-list entry cover a zero-length "procedure" and should be
+       first entry (note: technically a binary could contain code
+       below the segment base, but this doesn't happen for normal
+       binaries and certainly doesn't happen when libunwind is a
+       separate shared object.  For weird cases, the application may
+       have to provide its own (slower) version of this routine.  */
+    return 0;
+
+  hdr_addr = info_offset + segbase;
+  info_addr = hdr_addr + 8;
+
+  /* read the header word: */
+  if ((ret = read_mem (as, hdr_addr, &hdr, arg)) < 0)
+    return ret;
+
+  if (IA64_UNW_VER (hdr) != 1
+      || IA64_UNW_FLAG_EHANDLER (hdr) || IA64_UNW_FLAG_UHANDLER (hdr))
+    /* dyn-list entry must be version 1 and doesn't have ehandler
+       or uhandler */
+    return 0;
+
+  if (IA64_UNW_LENGTH (hdr) != 1)
+    /* dyn-list entry must consist of a single word of NOP directives */
+    return 0;
+
+  if (   ((ret = read_mem (as, info_addr, &directives, arg)) < 0)
+      || ((ret = read_mem (as, info_addr + 0x08, &pers, arg)) < 0)
+      || ((ret = read_mem (as, info_addr + 0x10, &cookie, arg)) < 0)
+      || ((ret = read_mem (as, info_addr + 0x18, &off, arg)) < 0))
+    return 0;
+
+  if (directives != 0 || pers != 0
+      || (!as->big_endian && cookie != 0x7473696c2d6e7964ULL)
+      || ( as->big_endian && cookie != 0x64796e2d6c697374ULL))
+    return 0;
+
+  /* OK, we ran the gauntlet and found it: */
+  return off + gp;
+}
+
 #endif /* !UNW_LOCAL_ONLY */
 
 static inline const struct ia64_table_entry *
@@ -272,28 +358,23 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
-#if defined(HAVE_DL_ITERATE_PHDR)
+# if defined(HAVE_DL_ITERATE_PHDR)
+#  include <link.h>
+#  include <stdlib.h>
 
-#include <link.h>
-#include <stdlib.h>
+#  if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 2) \
+      || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && !defined(DT_CONFIG))
+#    error You need GLIBC 2.2.4 or later on IA-64 Linux
+#  endif
 
-#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 2) \
-    || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && !defined(DT_CONFIG))
-# error You need GLIBC 2.2.4 or later on IA-64 Linux
-#endif
-
-#if defined(HAVE_GETUNWIND)
-
-extern unsigned long getunwind (void *buf, size_t len);
-
-#else /* HAVE_GETUNWIND */
-
-#include <unistd.h>
-#include <sys/syscall.h>
-
-# ifndef __NR_getunwind
-#  define __NR_getunwind	1215
-# endif
+#  if defined(HAVE_GETUNWIND)
+     extern unsigned long getunwind (void *buf, size_t len);
+#  else /* HAVE_GETUNWIND */
+#   include <unistd.h>
+#   include <sys/syscall.h>
+#   ifndef __NR_getunwind
+#     define __NR_getunwind	1215
+#   endif
 
 static unsigned long
 getunwind (void *buf, size_t len)
@@ -301,7 +382,7 @@ getunwind (void *buf, size_t len)
   return syscall (SYS_getunwind, buf, len);
 }
 
-#endif /* HAVE_GETUNWIND */
+#  endif /* HAVE_GETUNWIND */
 
 static unw_dyn_info_t kernel_table;
 
@@ -342,8 +423,9 @@ get_kernel_table (unw_dyn_info_t *di)
   return 0;
 }
 
-#ifndef UNW_LOCAL_ONLY
+#  ifndef UNW_LOCAL_ONLY
 
+/* This is exported for the benefit of libunwind-ptrace.a.  */
 PROTECTED int
 _Uia64_get_kernel_table (unw_dyn_info_t *di)
 {
@@ -357,108 +439,19 @@ _Uia64_get_kernel_table (unw_dyn_info_t *di)
   return 0;
 }
 
-PROTECTED unw_word_t
-_Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
-{
-  unw_word_t hdr_addr, info_addr, hdr, directives, pers, cookie, off;
-  unw_word_t start_offset, end_offset, info_offset, segbase;
-  struct ia64_table_entry *e;
-  size_t table_size;
-  unw_word_t gp = di->gp;
-  int ret;
-
-  switch (di->format)
-    {
-    case UNW_INFO_FORMAT_DYNAMIC:
-    default:
-      return 0;
-
-    case UNW_INFO_FORMAT_TABLE:
-      e = (struct ia64_table_entry *) di->u.ti.table_data;
-      table_size = di->u.ti.table_len * sizeof (di->u.ti.table_data[0]);
-      segbase = di->u.ti.segbase;
-      if (table_size < sizeof (struct ia64_table_entry))
-	return 0;
-      start_offset = e[0].start_offset;
-      end_offset = e[0].end_offset;
-      info_offset = e[0].info_offset;
-      break;
-
-#ifndef UNW_LOCAL_ONLY
-    case UNW_INFO_FORMAT_REMOTE_TABLE:
-      {
-	unw_accessors_t *a = unw_get_accessors (as);
-	unw_word_t e_addr = di->u.rti.table_data;
-
-	table_size = di->u.rti.table_len * sizeof (unw_word_t);
-	segbase = di->u.rti.segbase;
-	if (table_size < sizeof (struct ia64_table_entry))
-	  return 0;
-
-	if (   (ret = remote_read (e_addr, start_offset) < 0)
-	    || (ret = remote_read (e_addr, end_offset) < 0)
-	    || (ret = remote_read (e_addr, info_offset) < 0))
-	  return ret;
-      }
-      break;
-#endif
-    }
-
-
-  if (start_offset != end_offset)
-    /* dyn-list entry cover a zero-length "procedure" and should be
-       first entry (note: technically a binary could contain code
-       below the segment base, but this doesn't happen for normal
-       binaries and certainly doesn't happen when libunwind is a
-       separate shared object.  For weird cases, the application may
-       have to provide its own (slower) version of this routine.  */
-    return 0;
-
-  hdr_addr = info_offset + segbase;
-  info_addr = hdr_addr + 8;
-
-  /* read the header word: */
-  if ((ret = read_mem (as, hdr_addr, &hdr, arg)) < 0)
-    return ret;
-
-  if (IA64_UNW_VER (hdr) != 1
-      || IA64_UNW_FLAG_EHANDLER (hdr) || IA64_UNW_FLAG_UHANDLER (hdr))
-    /* dyn-list entry must be version 1 and doesn't have ehandler
-       or uhandler */
-    return 0;
-
-  if (IA64_UNW_LENGTH (hdr) != 1)
-    /* dyn-list entry must consist of a single word of NOP directives */
-    return 0;
-
-  if (   ((ret = read_mem (as, info_addr, &directives, arg)) < 0)
-      || ((ret = read_mem (as, info_addr + 0x08, &pers, arg)) < 0)
-      || ((ret = read_mem (as, info_addr + 0x10, &cookie, arg)) < 0)
-      || ((ret = read_mem (as, info_addr + 0x18, &off, arg)) < 0))
-    return 0;
-
-  if (directives != 0 || pers != 0
-      || (!as->big_endian && cookie != 0x7473696c2d6e7964)
-      || ( as->big_endian && cookie != 0x64796e2d6c697374))
-    return 0;
-
-  /* OK, we ran the gauntlet and found it: */
-  return off + gp;
-}
-
-#endif /* !UNW_LOCAL_ONLY */
+#  endif /* !UNW_LOCAL_ONLY */
 
 static inline unsigned long
 current_gp (void)
 {
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
+#  if defined(__GNUC__) && !defined(__INTEL_COMPILER)
       register unsigned long gp __asm__("gp");
       return gp;
-#elif HAVE_IA64INTRIN_H
-      return __getReg(_IA64_REG_GP);
-#else
-# error Implement me.
-#endif
+#  elif HAVE_IA64INTRIN_H
+      return __getReg (_IA64_REG_GP);
+#  else
+#    error Implement me.
+#  endif
 }
 
 static int
@@ -553,7 +546,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   return 1;
 }
 
-# ifdef HAVE_DL_PHDR_REMOVALS_COUNTER
+#  ifdef HAVE_DL_PHDR_REMOVALS_COUNTER
 
 static inline int
 validate_cache (unw_addr_space_t as)
@@ -579,7 +572,7 @@ validate_cache (unw_addr_space_t as)
   return -1;
 }
 
-# else /* HAVE_DL_PHDR_REMOVALS_COUNTER */
+#  else /* !HAVE_DL_PHDR_REMOVALS_COUNTER */
 
 /* Check whether any phdrs have been removed since we last flushed the
    cache.  If so we flush the cache and return -1, if not, we do
@@ -588,7 +581,7 @@ validate_cache (unw_addr_space_t as)
 static int
 check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
-#ifdef HAVE_STRUCT_DL_PHDR_INFO_DLPI_SUBS
+#   ifdef HAVE_STRUCT_DL_PHDR_INFO_DLPI_SUBS
   unw_addr_space_t as = ptr;
 
   if (size <
@@ -605,9 +598,9 @@ check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   as->shared_object_removals = info->dlpi_subs;
   unw_flush_cache (as, 0, 0);
   return -1;		/* indicate that there were removals */
-#else
+#   else
   return 1;
-#endif
+#   endif
 }
 
 static inline int
@@ -622,11 +615,11 @@ validate_cache (unw_addr_space_t as)
   return ret;
 }
 
-# endif /* HAVE_DL_PHDR_REMOVALS_COUNTER */
+#  endif /* HAVE_DL_PHDR_REMOVALS_COUNTER */
 
-#elif defined(HAVE_DLMODINFO)
+# elif defined(HAVE_DLMODINFO)
   /* Support for HP-UX-style dlmodinfo() */
-# include <dlfcn.h>
+#  include <dlfcn.h>
 
 static inline int
 validate_cache (unw_addr_space_t as)
@@ -634,13 +627,13 @@ validate_cache (unw_addr_space_t as)
   return 1;
 }
 
-#endif
+# endif /* !HAVE_DLMODINFO */
 
 HIDDEN int
 tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 		     unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
-#if defined(HAVE_DL_ITERATE_PHDR)
+# if defined(HAVE_DL_ITERATE_PHDR)
   unw_dyn_info_t di, *dip = &di;
   sigset_t saved_sigmask;
   int ret;
@@ -662,7 +655,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 	return -UNW_ENOINFO;
       dip = &kernel_table;
     }
-#elif defined(HAVE_DLMODINFO)
+# elif defined(HAVE_DLMODINFO)
 # define UNWIND_TBL_32BIT	0x8000000000000000
   struct load_module_desc lmd;
   unw_dyn_info_t di, *dip = &di;
@@ -706,7 +699,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   Debug (16, "found table `%s': segbase=%lx, len=%lu, gp=%lx, "
  	 "table_data=%p\n", (char *) di.u.ti.name_ptr, di.u.ti.segbase,
  	 di.u.ti.table_len, di.gp, di.u.ti.table_data);
-#endif
+# endif
 
   /* now search the table: */
   return tdep_search_unwind_table (as, ip, dip, pi, need_unwind_info, arg);
