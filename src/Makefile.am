@@ -1,4 +1,5 @@
 SOVERSION=1:0:0		# See comments at end of file.
+SETJMP_SO_VERSION=0:0:0
 
 if REMOTE_ONLY
 # Nothing special.
@@ -12,6 +13,15 @@ libunwind_la_SOURCES_cdep =						     \
 	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
 	_UPT_reg_offset.c
 
+lib_LTLIBRARIES_cdep		= libunwind-setjmp.la
+libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
+libunwind_setjmp_la_LDFLAGS	= -version-info $(SETJMP_SO_VERSION)
+libunwind_setjmp_la_LIBADD	= libunwind-$(arch).la
+
+libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp-ia64.S ia64/sigsetjmp-ia64.S \
+				   ia64/siglongjmp-ia64.S
+libunwind_setjmp_la_SOURCES_hppa = setjmp.c sigsetjmp.c hppa/siglongjmp-hppa.S
+libunwind_setjmp_la_SOURCES_x86	 = setjmp.c sigsetjmp.c x86/siglongjmp-x86.S
 #
 # This is not ideal, but I know of no other way to install an
 # alias for a library.
@@ -22,7 +32,12 @@ install-exec-hook:
 
 endif
 
+if OS_LINUX
+ libunwind_la_SOURCES_os = os-linux.h os-linux.c
+endif
+
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
+	$(libunwind_la_SOURCES_os)				\
 	backtrace.c get_proc_name.c				\
 	dyn-cancel.c dyn-extract.c dyn-register.c		\
 	dyn-remote.c						\
@@ -42,7 +57,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
-	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
+	elf64.c								      \
+	ia64/_Uia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
@@ -92,27 +108,41 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 	x86/Lstep-x86.c
 
 if ARCH_IA64
- lib_LTLIBRARIES = libunwind-ia64.la
+ mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
+ noinst_PROGRAMS = mk_cursor_i-ia64
+ BUILT_SOURCES = cursor_i.h
+cursor_i.h: mk_cursor_i-ia64
+	mk_cursor_i-ia64 > $@
+ lib_LTLIBRARIES_arch = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
+ libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
+				  $(libunwind_setjmp_la_SOURCES_ia64)
 else
 if ARCH_HPPA
- lib_LTLIBRARIES = libunwind-hppa.la
+ lib_LTLIBRARIES_arch = libunwind-hppa.la
  libunwind_hppa_la_SOURCES = $(libunwind_la_SOURCES_hppa)
  libunwind_hppa_la_LDFLAGS = -version-info $(SOVERSION)
+ libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
+				  $(libunwind_setjmp_la_SOURCES_hppa)
 else
 if ARCH_X86
- lib_LTLIBRARIES = libunwind-x86.la
+ lib_LTLIBRARIES_arch = libunwind-x86.la
  libunwind_x86_la_SOURCES = $(libunwind_la_SOURCES_x86)
  libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
+ libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
+				  $(libunwind_setjmp_la_SOURCES_x86)
 endif # ARCH_X86
 endif # ARCH_HPPA
 endif # ARCH_IA64
 
+lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
+
 # XXX Need to create symlinks from libunwind-ia64.so to libunwind.so
 # XXX end libunwind-ia64.a to libunwind.a
 
-AM_CPPFLAGS = -I$(top_srcdir)/include
+AM_CPPFLAGS = -I$(top_srcdir)/include -I.
+AM_CCASFLAGS = $(AM_CPPFLAGS)
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
