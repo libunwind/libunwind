@@ -1,7 +1,11 @@
 CPPFLAGS = -I../../include
 CFLAGS = -g -O -Wall
 
-PROGS = bt exc
+local_PROGS = bt exc
+
+ifeq ($(ARCH),$(HOSTARCH))
+  PROGS += $(local_PROGS)
+endif
 
 all: $(PROGS)
 
