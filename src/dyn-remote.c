@@ -67,8 +67,8 @@ intern_regions (unw_addr_space_t as, unw_accessors_t *a,
     return 0;	/* NULL region-list */
 
   if ((ret = fetchw (as, a, addr, &next_addr, arg)) < 0
-      || (ret = fetch32 (as, a, addr, &insn_count, arg)) < 0
-      || (ret = fetch32 (as, a, addr, &op_count, arg)) < 0)
+      || (ret = fetch32 (as, a, addr, (int32_t *) &insn_count, arg)) < 0
+      || (ret = fetch32 (as, a, addr, (int32_t *) &op_count, arg)) < 0)
     return ret;
 
   region = calloc (1, _U_dyn_region_info_size (op_count));
@@ -162,7 +162,8 @@ intern_dyn_info (unw_addr_space_t as, unw_accessors_t *a,
     case UNW_INFO_FORMAT_DYNAMIC:
       if ((ret = fetchw (as, a, addr, &di->u.pi.name_ptr, arg)) < 0
 	  || (ret = fetchw (as, a, addr, &di->u.pi.handler, arg)) < 0
-	  || (ret = fetch32 (as, a, addr, &di->u.pi.flags, arg)) < 0)
+	  || (ret = fetch32 (as, a, addr,
+			     (int32_t *) &di->u.pi.flags, arg)) < 0)
 	goto out;
       *addr += 4;	/* skip over pad0 */
       if ((ret = fetchw (as, a, addr, &first_region, arg)) < 0
