@@ -26,7 +26,13 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
+#ifndef LIBUNWIND_H
+#define LIBUNWIND_H
+
+#include <stdint.h>
 #include <ucontext.h>
+
+#define UNW_TARGET	ia64
 
 typedef uint64_t unw_tdep_word_t;
 
@@ -122,3 +128,7 @@ typedef ucontext_t unw_tdep_context_t;
 #define unw_tdep_getcontext(uc)		getcontext(uc)
 
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_IA64_FR) < 128)
+
+#include "libunwind-common.h"
+
+#endif /* LIBUNWIND_H */
