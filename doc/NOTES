@@ -72,3 +72,41 @@ stack trace:
 
 Note that this particular example should work on pretty much any
 architecture, as it doesn't rely on any arch-specific registers.
+
+* Multiarchitecture support
+
+If libunwind is configured for a target other than the local (native)
+host, the library is installed as libunwind-$ARCH, where $ARCH is
+the target architecture name (e.g., ia32, ia64, or alpha).  Similarly,
+the header file is installed as libunwind-$ARCH.
+
+With this setup, an application should:
+
+	- include <libunwind.h>, and
+	- link against -lunwind
+
+if the application needs to use the unwinder of the host.  An
+application wanting to use the unwinder for a different target (e.g.,
+a cross-debugger) should:
+
+	- include <libunwind-$ARCH.h>, and
+	- link against -lunwind-$ARCH
+
+The global symbols exported by -lunwind-$ARCH are unique such that the
+same application can be linked against the separate unwind libraries
+of multiple targets.  However, a single compilation unit can include
+the header file for only one target.  For example, foo.c might include
+<libunwind-ia64.h> and bar.c might include <libunwind.h> and the
+entire application would have to be linked against both -lunwind and
+-lunwind-ia64.
+
+Note: the unwind header files of all targets have a common dependency
+on libunwind-common.h.  To avoid version conflicts, it is necessary to
+ensure that the unwind libraries for all targets were derived from the
+same release of libunwind.  That is, if the unwind library for one
+target is upgraded to a newer version, the libraries for all other
+targets also need to be upgraded.
+
+Note 2: The assumption is that a cross-unwinder can handle all
+interesting flavors of a target.  For example, the unwinder for the
+ia64 target is expected to be able to handle both Linux and HP-UX.
