@@ -154,8 +154,15 @@ typedef ucontext_t unw_tdep_context_t;
 #include "libunwind-dynamic.h"
 #include "libunwind-common.h"
 
-#define unw_tdep_getcontext		UNW_ARCH_OBJ (getcontext)
-extern int unw_tdep_getcontext (ucontext_t *);
+#ifdef __hpux
+  /* In theory, we could use _Uia64_getcontext() on HP-UX as well, but
+     the benefit of doing so would be marginal given that it can't
+     support UNW_LOCAL_ONLY.  */
+# define unw_tdep_getcontext		getcontext
+#else
+# define unw_tdep_getcontext		UNW_ARCH_OBJ (getcontext)
+  extern int unw_tdep_getcontext (unw_tdep_context_t *);
+#endif
 
 /* This is a helper routine to search an ia64 unwind table.  If the
    address-space argument AS points to something other than the local
