@@ -1,21 +1,15 @@
-This is version 0.2 of the unwind library.  At the moment, only the
-IA-64 Linux (IPF Linux) platform is supported and even that support
-has received only light testing.  Consequently, this release is
-intended primarily to expose the unwind API to more developers and to
-collect feedback on what does and does not work.  Having said that,
-backtracing through gcc-generated code might work reasonably well.
+-*- mode: Outline -*-
 
-There is virtually no documentation at the moment.  A brief outline of
-the unwind API is in file NOTES.  To get a feel for how things are
-intended to work, you may also want to take a look at
-include/libunwind.h and include/libunwind-ia64.h.  Finally, the test
-program in tests/bt.c shows two ways of how to do a simple backtrace:
-one uses libunwind directly, the other uses a libunwind-based
-implementation of the backtrace() function.  The test program in
-tests/exc.c shows the basics of how to do exception handling with this
-library.
+This is version 0.92 of the unwind library.  At the moment, only the
+IA-64 Linux (IPF Linux) platform is fully supported.  Some very basic
+support for x86 exists also.  However, the x86 support is based purely
+on the frame-chain and does not use unwind information, so its utility
+is limited.
 
-The following steps should be used to compile and install this library:
+* General Build Instructions
+
+In general, this library can be built and installed with the following
+commands:
 
 	$ ./configure
 	$ make
@@ -25,6 +19,38 @@ where PREFIX is the installation prefix.  By default, a prefix of
 /usr/local is used, such that libunwind.a is installed in
 /usr/local/lib and unwind.h is installed in /usr/local/include.  For
 testing, you may want to use a prefix of /usr/local instead.
+
+* Building with Intel ECC
+
+To build libunwind with the Intel Electron compiler (ECC), it is
+recommended to run configure like this:
+
+	$ ./configure CC=ecc CXX=ecc CCAS=gcc
+
+The reason for this is that ECC uses the Intel assembler, which
+doesn't grok some of the IA-64 assembly code in the "tests" directory.
+
+For an ECC-built version of libunwind to work properly, you also need
+to ensure that /usr/include/asm/fpu.h contains a "long double" member
+called "__dummy" in the declaration of "struct ia64_fpreg".  Without
+that member, variables of type unw_context_t won't be aligned
+properly.
+
+* Regression Testing
+
+After building the library, you can run a set of regression tests with:
+
+	$ make check
+
+Unless you have a very recent library and compiler installed, it is
+currently expected to have the following tests fail:
+
+	Gtest-init		(should work with glibc-2.3.1)
+	Ltest-init		(should work with glibc-2.3.1)
+	test-ptrace		(should work with glibc-2.3.1)
+	run-ia64-test-dyn1	(should work with glibc-2.3.1)
+
+* Contacting the Developers
 
 Please direct all questions regarding this library to:
 
@@ -41,5 +67,3 @@ you'll not be able to use the Web interface to manage your
 subscription.  Send a mail containing "help" to
 libunwind-request@linux.hpl.hp.com for information on how to manage
 your subscription via email.
-
-	--david
