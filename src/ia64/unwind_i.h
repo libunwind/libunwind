@@ -59,8 +59,15 @@ inlined_uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
 
   switch (reg)
     {
-    case UNW_IA64_GR + 0:	addr = &unw.r0; break;
-    case UNW_IA64_NAT + 0:	addr = &unw.r0; break;
+    case UNW_IA64_GR + 0:	addr = &unw.read_only.r0; break;
+    case UNW_IA64_NAT + 0:	addr = &unw.read_only.r0; break;
+    case UNW_IA64_FR + 0:	addr = &unw.read_only.f0; break;
+    case UNW_IA64_FR + 1:
+      if (__BYTE_ORDER == __BIG_ENDIAN)
+	addr = &unw.read_only.f1_be;
+      else
+	addr = &unw.read_only.f1_le;
+      break;
     case UNW_IA64_IP:		addr = &uc->uc_mcontext.sc_br[0]; break;
     case UNW_IA64_CFM:		addr = &uc->uc_mcontext.sc_ar_pfs; break;
     case UNW_IA64_AR_RNAT:	addr = &uc->uc_mcontext.sc_ar_rnat; break;
@@ -111,6 +118,15 @@ uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
     return inlined_uc_addr (uc, reg, nat_bitnr);
   else
     return tdep_uc_addr (uc, reg, nat_bitnr);
+}
+
+/* Return TRUE if ADDR points inside unw.read_only_reg.  */
+
+static inline long
+ia64_read_only_reg (void *addr)
+{
+  return ((unsigned long) ((char *) addr - (char *) &unw.read_only)
+	  < sizeof (unw.read_only));
 }
 
 #endif /* !defined(HAVE_SYS_UC_ACCESS_H) && !defined(UNW_REMOTE_ONLY) */
@@ -165,19 +181,26 @@ ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 static inline int
 ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 {
-  if (IA64_IS_NULL_LOC(loc))
+  unw_fpreg_t *addr = (unw_fpreg_t *) IA64_GET_ADDR (loc);
+
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
     }
-  *(unw_fpreg_t *) IA64_GET_ADDR (loc) = val;
+  else if (ia64_read_only_reg (addr))
+    {
+      Debug (16, "attempt to read-only register\n");
+      return -UNW_EREADONLYREG;
+    }
+  *addr = val;
   return 0;
 }
 
 static inline int
 ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 {
-  if (IA64_IS_NULL_LOC(loc))
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -189,12 +212,19 @@ ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 static inline int
 ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 {
-  if (IA64_IS_NULL_LOC(loc))
+  unw_word_t *addr = (unw_word_t *) IA64_GET_ADDR (loc);
+
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
     }
-  *(unw_word_t *) IA64_GET_ADDR (loc) = (val);
+  else if (ia64_read_only_reg (addr))
+    {
+      Debug (16, "attempt to read-only register\n");
+      return -UNW_EREADONLYREG;
+    }
+  *addr = val;
   return 0;
 }
 
@@ -251,7 +281,7 @@ ia64_getfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t *val)
   unw_word_t addr;
   int ret;
 
-  if (IA64_IS_NULL_LOC(loc))
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -280,7 +310,7 @@ ia64_putfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t val)
   unw_word_t addr;
   int ret;
 
-  if (IA64_IS_NULL_LOC(loc))
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -311,7 +341,7 @@ ia64_putfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t val)
 static inline int
 ia64_get (struct cursor *c, ia64_loc_t loc, unw_word_t *val)
 {
-  if (IA64_IS_NULL_LOC(loc))
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -347,7 +377,7 @@ ia64_get (struct cursor *c, ia64_loc_t loc, unw_word_t *val)
 static inline int
 ia64_put (struct cursor *c, ia64_loc_t loc, unw_word_t val)
 {
-  if (IA64_IS_NULL_LOC(loc))
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
