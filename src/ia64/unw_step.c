@@ -41,6 +41,8 @@ update_frame_state (struct ia64_cursor *c)
   if ((c->pi.flags & IA64_FLAG_SIGTRAMP) != 0)
     {
       ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &c->sigcontext_loc);
+      debug (100, "%s: sigcontext_loc=%lx (ret=%d)\n",
+	     __FUNCTION__, c->sigcontext_loc, ret);
       if (ret < 0)
 	return ret;
 
