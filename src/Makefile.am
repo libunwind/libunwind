@@ -182,8 +182,8 @@ if OS_HPUX
 endif
 
 if ARCH_IA64
- mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i.c
- mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i.c
+ ia64_mk_Gcursor_i_SOURCES = ia64/mk_Gcursor_i.c
+ ia64_mk_Lcursor_i_SOURCES = ia64/mk_Lcursor_i.c
  noinst_PROGRAMS = ia64/mk_Gcursor_i ia64/mk_Lcursor_i
  BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
 Gcursor_i.h: ia64/mk_Gcursor_i
