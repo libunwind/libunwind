@@ -19,6 +19,7 @@ if ARCH_IA64
 endif
  check_SCRIPTS_cdep =
  check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	\
+			Gtest-concurrent Ltest-concurrent		\
 			Gtest-resume-sig Ltest-resume-sig		\
 			Gtest-dyn1 Ltest-dyn1				\
 			test-flush-cache test-setjmp test-ptrace
@@ -48,6 +49,9 @@ Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 
-LDADD = ../src/libunwind-$(arch).la
+LIBUNWIND = ../src/libunwind-$(arch).la
+LDADD = $(LIBUNWIND)
 
 test_setjmp_LDADD = ../src/libunwind-setjmp.la
+Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
+Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
