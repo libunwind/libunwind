@@ -103,7 +103,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # endif
 
 # define cmpxchg_ptr(_ptr,_o,_n)					\
-	((void *) __sync_val_compare_and_swap((long *) (_ptr),		\
+	((void *) __sync_val_compare_and_swap((volatile long *) (_ptr),	\
 					      (long) (_o), (long) (_n)))
 #endif
 
