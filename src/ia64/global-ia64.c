@@ -35,11 +35,11 @@ struct ia64_global_unwind_state unw =
     preg_index: {
       struct_offset (struct cursor, pri_unat_loc)/8, /* PRI_UNAT_GR */
       struct_offset (struct cursor, pri_unat_loc)/8, /* PRI_UNAT_MEM */
+      struct_offset (struct cursor, psp)/8,
       struct_offset (struct cursor, bsp_loc)/8,
       struct_offset (struct cursor, bspstore_loc)/8,
       struct_offset (struct cursor, pfs_loc)/8,
       struct_offset (struct cursor, rnat_loc)/8,
-      struct_offset (struct cursor, psp)/8,
       struct_offset (struct cursor, ip_loc)/8,
       struct_offset (struct cursor, r4_loc)/8,
       struct_offset (struct cursor, r5_loc)/8,
@@ -82,8 +82,8 @@ struct ia64_global_unwind_state unw =
 #if UNW_DEBUG
     debug_level: 0,
     preg_name: {
-      "pri_unat_gr", "pri_unat_mem", "bsp", "bspstore", "ar.pfs", "ar.rnat",
-      "psp", "rp",
+      "pri_unat_gr", "pri_unat_mem", "psp", "bsp", "bspstore",
+      "ar.pfs", "ar.rnat", "rp",
       "r4", "r5", "r6", "r7",
       "ar.unat", "pr", "ar.lc", "ar.fpsr",
       "b1", "b2", "b3", "b4", "b5",
