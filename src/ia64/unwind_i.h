@@ -48,6 +48,72 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "tdep.h"
 
+#if !defined(HAVE_SYS_UC_ACCESS_H) && !defined(UNW_REMOTE_ONLY)
+
+static inline ALWAYS_INLINE void *
+inlined_uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
+{
+  unw_word_t reg_addr;
+  void *addr;
+
+  switch (reg)
+    {
+    case UNW_IA64_GR + 0:	addr = &unw.r0; break;
+    case UNW_IA64_NAT + 0:	addr = &unw.r0; break;
+    case UNW_IA64_IP:		addr = &uc->uc_mcontext.sc_br[0]; break;
+    case UNW_IA64_CFM:		addr = &uc->uc_mcontext.sc_ar_pfs; break;
+    case UNW_IA64_AR_RNAT:	addr = &uc->uc_mcontext.sc_ar_rnat; break;
+    case UNW_IA64_AR_UNAT:	addr = &uc->uc_mcontext.sc_ar_unat; break;
+    case UNW_IA64_AR_LC:	addr = &uc->uc_mcontext.sc_ar_lc; break;
+    case UNW_IA64_AR_FPSR:	addr = &uc->uc_mcontext.sc_ar_fpsr; break;
+    case UNW_IA64_PR:		addr = &uc->uc_mcontext.sc_pr; break;
+      /* This may look confusing, but it's correct: AR_BSPSTORE needs
+         to return the address past the last word written, which is
+         stored in sc_ar_bsp.  On the other hand, AR_BSP needs to
+         return the address that was in ar.bsp at the time the context
+         was captured.  As described in unw_init_local(), sc_ar_bsp is
+         (ab-)used for this purpose.  */
+    case UNW_IA64_AR_BSP:	addr = &uc->uc_mcontext.sc_rbs_base; break;
+    case UNW_IA64_AR_BSPSTORE:	addr = &uc->uc_mcontext.sc_ar_bsp; break;
+
+    case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
+    case UNW_IA64_GR + 12:
+      addr = &uc->uc_mcontext.sc_gr[reg - UNW_IA64_GR];
+      break;
+
+    case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
+    case UNW_IA64_NAT + 12:
+      addr = &uc->uc_mcontext.sc_nat;
+      reg_addr = (unw_word_t) &uc->uc_mcontext.sc_gr[reg - UNW_IA64_NAT];
+      *nat_bitnr = reg - UNW_IA64_NAT;
+      break;
+
+    case UNW_IA64_BR + 1 ... UNW_IA64_BR + 5:
+      addr = &uc->uc_mcontext.sc_br[reg - UNW_IA64_BR];
+      break;
+
+    case UNW_IA64_FR+ 2 ... UNW_IA64_FR+ 5:
+    case UNW_IA64_FR+16 ... UNW_IA64_FR+31:
+      addr = &uc->uc_mcontext.sc_fr[reg - UNW_IA64_FR];
+      break;
+
+    default:
+      addr = NULL;
+    }
+  return addr;
+}
+
+static inline void *
+uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
+{
+  if (__builtin_constant_p (reg))
+    return inlined_uc_addr (uc, reg, nat_bitnr);
+  else
+    return tdep_uc_addr (uc, reg, nat_bitnr);
+}
+
+#endif /* !defined(HAVE_SYS_UC_ACCESS_H) && !defined(UNW_REMOTE_ONLY) */
+
 /* Bits 0 and 1 of a location are used to encode its type:
 	bit 0: set if location uses floating-point format.
 	bit 1: set if location is a NaT bit on memory stack.  */
@@ -56,7 +122,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define IA64_LOC_TYPE_MEMSTK_NAT	(1 << 1)
 
 #ifdef UNW_LOCAL_ONLY
-
 #define IA64_LOC_REG(r,t)	(((r) << 2) | (t))
 #define IA64_LOC_ADDR(a,t)	(((a) & ~0x3) | (t))
 #define IA64_LOC_UC_ADDR(a,t)	IA64_LOC_ADDR(a, t)
@@ -70,11 +135,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define IA64_IS_REG_LOC(l)	0
 #define IA64_IS_UC_LOC(l)	0
 
-#define IA64_REG_LOC(c,r)	((unw_word_t) tdep_uc_addr((c)->as_arg, r, \
-							   NULL))
-#define IA64_REG_NAT_LOC(c,r,n)	((unw_word_t) tdep_uc_addr((c)->as_arg, r, n))
+#define IA64_REG_LOC(c,r)	((unw_word_t) uc_addr((c)->as_arg, r, NULL))
+#define IA64_REG_NAT_LOC(c,r,n)	((unw_word_t) uc_addr((c)->as_arg, r, n))
 #define IA64_FPREG_LOC(c,r)						 \
-	((unw_word_t) tdep_uc_addr((c)->as_arg, (r), NULL) | IA64_LOC_TYPE_FP)
+	((unw_word_t) uc_addr((c)->as_arg, (r), NULL) | IA64_LOC_TYPE_FP)
 
 # define ia64_find_proc_info(c,ip,n)					\
 	tdep_find_proc_info(unw_local_addr_space, (ip), &(c)->pi, (n),	\
@@ -82,7 +146,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define ia64_put_unwind_info(c, pi)	do { ; } while (0)
 
 /* Note: the register accessors (ia64_{get,set}{,fp}()) must check for
-   NULL locations because tdep_uc_addr() returns NULL for unsaved
+   NULL locations because uc_addr() returns NULL for unsaved
    registers.  */
 
 static inline int
