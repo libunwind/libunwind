@@ -31,8 +31,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
-HIDDEN inline int
-ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+static inline int
+local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
   unw_word_t val, sol, sof, pri_unat, n, pfs;
   struct cursor *c = (struct cursor *) cursor;
@@ -139,6 +139,12 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   _Uia64_install_context (c, pri_unat, (unw_word_t *) &extra);
 }
 
+HIDDEN int
+ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+{
+  return local_resume (as, cursor, arg);
+}
+
 #endif /* !UNW_REMOTE_ONLY */
 
 #ifndef UNW_LOCAL_ONLY
@@ -231,7 +237,7 @@ unw_resume (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
 
 #ifdef UNW_LOCAL_ONLY
-  return ia64_local_resume (c->as, cursor, c->as_arg);
+  return local_resume (c->as, cursor, c->as_arg);
 #else
   {
     int ret;
