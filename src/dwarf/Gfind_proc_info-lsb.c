@@ -191,12 +191,18 @@ HIDDEN int
 dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 		      unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
+  sigset_t saved_sigmask;
   unw_dyn_info_t di;
+  int ret;
 
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
   di.u.rti.segbase = ip;	/* this is cheap... */
 
-  if (dl_iterate_phdr (callback, &di) <= 0)
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  ret = dl_iterate_phdr (callback, &di);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+
+  if (ret <= 0)
     {
       Debug (14, "IP=0x%lx not found\n", (long) ip);
       return -UNW_ENOINFO;
