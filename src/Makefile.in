@@ -97,12 +97,16 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 	ia64/unw_regname.c						   \
 									   \
 	ia64/init.c ia64/parser.c ia64/regs.c ia64/script.c		   \
+	ia64/unw_create_addr_space.c ia64/unw_destroy_addr_space.c	   \
+	ia64/unw_set_caching_policy.c ia64/unw_flush_cache.c		   \
 	ia64/unw_get_reg.c ia64/unw_get_fpreg.c ia64/unw_get_save_loc.c	   \
 	ia64/unw_is_signal_frame.c					   \
 	ia64/unw_resume.c ia64/unw_set_reg.c ia64/unw_set_fpreg.c	   \
 	ia64/unw_init_local.c ia64/unw_init_remote.c ia64/unw_step.c	   \
 									   \
 	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		   \
+	ia64/Lunw_create_addr_space.c ia64/Lunw_destroy_addr_space.c	   \
+	ia64/Lunw_set_caching_policy.c ia64/Lunw_flush_cache.c		   \
 	ia64/Lunw_get_reg.c ia64/Lunw_get_fpreg.c ia64/Lunw_get_save_loc.c \
 	ia64/Lunw_is_signal_frame.c					   \
 	ia64/Lunw_resume.c ia64/Lunw_set_reg.c ia64/Lunw_set_fpreg.c	   \
@@ -142,6 +146,10 @@ libunwind_ia64_la_LIBADD =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	tables-glibc.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_regname.lo init.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	parser.lo regs.lo script.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_create_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_destroy_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_set_caching_policy.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_flush_cache.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_reg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_fpreg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_save_loc.lo \
@@ -152,7 +160,12 @@ libunwind_ia64_la_LIBADD =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_init_remote.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_step.lo Linit.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lparser.lo Lregs.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lscript.lo Lunw_get_reg.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lscript.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_create_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_destroy_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_set_caching_policy.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_flush_cache.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_reg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_fpreg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_save_loc.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_is_signal_frame.lo \
@@ -168,6 +181,10 @@ libunwind_ia64_la_LIBADD =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	tables-glibc.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_regname.lo init.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	parser.lo regs.lo script.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_create_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_destroy_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_set_caching_policy.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_flush_cache.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_reg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_fpreg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_save_loc.lo \
@@ -178,7 +195,12 @@ libunwind_ia64_la_LIBADD =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_init_remote.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_step.lo Linit.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lparser.lo Lregs.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lscript.lo Lunw_get_reg.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lscript.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_create_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_destroy_addr_space.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_set_caching_policy.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_flush_cache.lo \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_reg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_fpreg.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_save_loc.lo \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_is_signal_frame.lo \
@@ -198,6 +220,9 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 @AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Linit.Plo $(DEPDIR)/Lparser.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lregs.Plo $(DEPDIR)/Lscript.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lunw_create_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lunw_destroy_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lunw_flush_cache.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_get_fpreg.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_get_reg.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_get_save_loc.Plo \
@@ -205,12 +230,16 @@ depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_init_remote.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_is_signal_frame.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_resume.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lunw_set_caching_policy.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_set_fpreg.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/Lunw_set_reg.Plo $(DEPDIR)/Lunw_step.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/backtrace.Plo $(DEPDIR)/init.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/mempool.Plo $(DEPDIR)/parser.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/regs.Plo $(DEPDIR)/script.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/tables-glibc.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/unw_create_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/unw_destroy_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/unw_flush_cache.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_get_fpreg.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_get_reg.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_get_save_loc.Plo \
@@ -218,6 +247,7 @@ depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 @AMDEP_TRUE@	$(DEPDIR)/unw_init_remote.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_is_signal_frame.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_regname.Plo $(DEPDIR)/unw_resume.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/unw_set_caching_policy.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_set_fpreg.Plo \
 @AMDEP_TRUE@	$(DEPDIR)/unw_set_reg.Plo $(DEPDIR)/unw_step.Plo
 ASCOMPILE = $(AS) $(AM_ASFLAGS) $(ASFLAGS)
@@ -282,6 +312,10 @@ init.lo: ia64/init.c
 parser.lo: ia64/parser.c
 regs.lo: ia64/regs.c
 script.lo: ia64/script.c
+unw_create_addr_space.lo: ia64/unw_create_addr_space.c
+unw_destroy_addr_space.lo: ia64/unw_destroy_addr_space.c
+unw_set_caching_policy.lo: ia64/unw_set_caching_policy.c
+unw_flush_cache.lo: ia64/unw_flush_cache.c
 unw_get_reg.lo: ia64/unw_get_reg.c
 unw_get_fpreg.lo: ia64/unw_get_fpreg.c
 unw_get_save_loc.lo: ia64/unw_get_save_loc.c
@@ -296,6 +330,10 @@ Linit.lo: ia64/Linit.c
 Lparser.lo: ia64/Lparser.c
 Lregs.lo: ia64/Lregs.c
 Lscript.lo: ia64/Lscript.c
+Lunw_create_addr_space.lo: ia64/Lunw_create_addr_space.c
+Lunw_destroy_addr_space.lo: ia64/Lunw_destroy_addr_space.c
+Lunw_set_caching_policy.lo: ia64/Lunw_set_caching_policy.c
+Lunw_flush_cache.lo: ia64/Lunw_flush_cache.c
 Lunw_get_reg.lo: ia64/Lunw_get_reg.c
 Lunw_get_fpreg.lo: ia64/Lunw_get_fpreg.c
 Lunw_get_save_loc.lo: ia64/Lunw_get_save_loc.c
@@ -319,6 +357,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lparser.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lregs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lscript.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_create_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_destroy_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_flush_cache.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_reg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_save_loc.Plo@am__quote@
@@ -326,6 +367,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_init_remote.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_is_signal_frame.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_resume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_set_caching_policy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_set_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_set_reg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_step.Plo@am__quote@
@@ -336,6 +378,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/regs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/script.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/tables-glibc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_create_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_destroy_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_flush_cache.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_reg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_save_loc.Plo@am__quote@
@@ -344,6 +389,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_is_signal_frame.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_regname.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_resume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_set_caching_policy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_set_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_set_reg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_step.Plo@am__quote@
@@ -494,6 +540,78 @@ script.lo: ia64/script.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/script.Plo' tmpdepfile='$(DEPDIR)/script.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o script.lo `test -f ia64/script.c || echo '$(srcdir)/'`ia64/script.c
+
+unw_create_addr_space.o: ia64/unw_create_addr_space.c
+@AMDEP_TRUE@	source='ia64/unw_create_addr_space.c' object='unw_create_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_create_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_create_addr_space.o `test -f ia64/unw_create_addr_space.c || echo '$(srcdir)/'`ia64/unw_create_addr_space.c
+
+unw_create_addr_space.obj: ia64/unw_create_addr_space.c
+@AMDEP_TRUE@	source='ia64/unw_create_addr_space.c' object='unw_create_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_create_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_create_addr_space.obj `cygpath -w ia64/unw_create_addr_space.c`
+
+unw_create_addr_space.lo: ia64/unw_create_addr_space.c
+@AMDEP_TRUE@	source='ia64/unw_create_addr_space.c' object='unw_create_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_create_addr_space.Plo' tmpdepfile='$(DEPDIR)/unw_create_addr_space.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_create_addr_space.lo `test -f ia64/unw_create_addr_space.c || echo '$(srcdir)/'`ia64/unw_create_addr_space.c
+
+unw_destroy_addr_space.o: ia64/unw_destroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/unw_destroy_addr_space.c' object='unw_destroy_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_destroy_addr_space.o `test -f ia64/unw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/unw_destroy_addr_space.c
+
+unw_destroy_addr_space.obj: ia64/unw_destroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/unw_destroy_addr_space.c' object='unw_destroy_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_destroy_addr_space.obj `cygpath -w ia64/unw_destroy_addr_space.c`
+
+unw_destroy_addr_space.lo: ia64/unw_destroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/unw_destroy_addr_space.c' object='unw_destroy_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_destroy_addr_space.Plo' tmpdepfile='$(DEPDIR)/unw_destroy_addr_space.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_destroy_addr_space.lo `test -f ia64/unw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/unw_destroy_addr_space.c
+
+unw_set_caching_policy.o: ia64/unw_set_caching_policy.c
+@AMDEP_TRUE@	source='ia64/unw_set_caching_policy.c' object='unw_set_caching_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/unw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_caching_policy.o `test -f ia64/unw_set_caching_policy.c || echo '$(srcdir)/'`ia64/unw_set_caching_policy.c
+
+unw_set_caching_policy.obj: ia64/unw_set_caching_policy.c
+@AMDEP_TRUE@	source='ia64/unw_set_caching_policy.c' object='unw_set_caching_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/unw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_caching_policy.obj `cygpath -w ia64/unw_set_caching_policy.c`
+
+unw_set_caching_policy.lo: ia64/unw_set_caching_policy.c
+@AMDEP_TRUE@	source='ia64/unw_set_caching_policy.c' object='unw_set_caching_policy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_caching_policy.Plo' tmpdepfile='$(DEPDIR)/unw_set_caching_policy.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_caching_policy.lo `test -f ia64/unw_set_caching_policy.c || echo '$(srcdir)/'`ia64/unw_set_caching_policy.c
+
+unw_flush_cache.o: ia64/unw_flush_cache.c
+@AMDEP_TRUE@	source='ia64/unw_flush_cache.c' object='unw_flush_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_flush_cache.Po' tmpdepfile='$(DEPDIR)/unw_flush_cache.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_flush_cache.o `test -f ia64/unw_flush_cache.c || echo '$(srcdir)/'`ia64/unw_flush_cache.c
+
+unw_flush_cache.obj: ia64/unw_flush_cache.c
+@AMDEP_TRUE@	source='ia64/unw_flush_cache.c' object='unw_flush_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_flush_cache.Po' tmpdepfile='$(DEPDIR)/unw_flush_cache.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_flush_cache.obj `cygpath -w ia64/unw_flush_cache.c`
+
+unw_flush_cache.lo: ia64/unw_flush_cache.c
+@AMDEP_TRUE@	source='ia64/unw_flush_cache.c' object='unw_flush_cache.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_flush_cache.Plo' tmpdepfile='$(DEPDIR)/unw_flush_cache.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_flush_cache.lo `test -f ia64/unw_flush_cache.c || echo '$(srcdir)/'`ia64/unw_flush_cache.c
 
 unw_get_reg.o: ia64/unw_get_reg.c
 @AMDEP_TRUE@	source='ia64/unw_get_reg.c' object='unw_get_reg.o' libtool=no @AMDEPBACKSLASH@
@@ -746,6 +864,78 @@ Lscript.lo: ia64/Lscript.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lscript.Plo' tmpdepfile='$(DEPDIR)/Lscript.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lscript.lo `test -f ia64/Lscript.c || echo '$(srcdir)/'`ia64/Lscript.c
+
+Lunw_create_addr_space.o: ia64/Lunw_create_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lunw_create_addr_space.c' object='Lunw_create_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_create_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_create_addr_space.o `test -f ia64/Lunw_create_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_create_addr_space.c
+
+Lunw_create_addr_space.obj: ia64/Lunw_create_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lunw_create_addr_space.c' object='Lunw_create_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_create_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_create_addr_space.obj `cygpath -w ia64/Lunw_create_addr_space.c`
+
+Lunw_create_addr_space.lo: ia64/Lunw_create_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lunw_create_addr_space.c' object='Lunw_create_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_create_addr_space.Plo' tmpdepfile='$(DEPDIR)/Lunw_create_addr_space.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_create_addr_space.lo `test -f ia64/Lunw_create_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_create_addr_space.c
+
+Lunw_destroy_addr_space.o: ia64/Lunw_destroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lunw_destroy_addr_space.c' object='Lunw_destroy_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_destroy_addr_space.o `test -f ia64/Lunw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_destroy_addr_space.c
+
+Lunw_destroy_addr_space.obj: ia64/Lunw_destroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lunw_destroy_addr_space.c' object='Lunw_destroy_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_destroy_addr_space.obj `cygpath -w ia64/Lunw_destroy_addr_space.c`
+
+Lunw_destroy_addr_space.lo: ia64/Lunw_destroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lunw_destroy_addr_space.c' object='Lunw_destroy_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_destroy_addr_space.Plo' tmpdepfile='$(DEPDIR)/Lunw_destroy_addr_space.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_destroy_addr_space.lo `test -f ia64/Lunw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_destroy_addr_space.c
+
+Lunw_set_caching_policy.o: ia64/Lunw_set_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Lunw_set_caching_policy.c' object='Lunw_set_caching_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/Lunw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_caching_policy.o `test -f ia64/Lunw_set_caching_policy.c || echo '$(srcdir)/'`ia64/Lunw_set_caching_policy.c
+
+Lunw_set_caching_policy.obj: ia64/Lunw_set_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Lunw_set_caching_policy.c' object='Lunw_set_caching_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/Lunw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_caching_policy.obj `cygpath -w ia64/Lunw_set_caching_policy.c`
+
+Lunw_set_caching_policy.lo: ia64/Lunw_set_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Lunw_set_caching_policy.c' object='Lunw_set_caching_policy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_caching_policy.Plo' tmpdepfile='$(DEPDIR)/Lunw_set_caching_policy.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_caching_policy.lo `test -f ia64/Lunw_set_caching_policy.c || echo '$(srcdir)/'`ia64/Lunw_set_caching_policy.c
+
+Lunw_flush_cache.o: ia64/Lunw_flush_cache.c
+@AMDEP_TRUE@	source='ia64/Lunw_flush_cache.c' object='Lunw_flush_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_flush_cache.Po' tmpdepfile='$(DEPDIR)/Lunw_flush_cache.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_flush_cache.o `test -f ia64/Lunw_flush_cache.c || echo '$(srcdir)/'`ia64/Lunw_flush_cache.c
+
+Lunw_flush_cache.obj: ia64/Lunw_flush_cache.c
+@AMDEP_TRUE@	source='ia64/Lunw_flush_cache.c' object='Lunw_flush_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_flush_cache.Po' tmpdepfile='$(DEPDIR)/Lunw_flush_cache.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_flush_cache.obj `cygpath -w ia64/Lunw_flush_cache.c`
+
+Lunw_flush_cache.lo: ia64/Lunw_flush_cache.c
+@AMDEP_TRUE@	source='ia64/Lunw_flush_cache.c' object='Lunw_flush_cache.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_flush_cache.Plo' tmpdepfile='$(DEPDIR)/Lunw_flush_cache.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_flush_cache.lo `test -f ia64/Lunw_flush_cache.c || echo '$(srcdir)/'`ia64/Lunw_flush_cache.c
 
 Lunw_get_reg.o: ia64/Lunw_get_reg.c
 @AMDEP_TRUE@	source='ia64/Lunw_get_reg.c' object='Lunw_get_reg.o' libtool=no @AMDEPBACKSLASH@
