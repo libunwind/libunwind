@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:25:05 PST 2003
+.\" Manual page created with latex2man on Wed Apr  2 12:52:29 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_GET\\_FPREG" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_GET\\_FPREG" "3" "02 April 2003" "Programming Library " "Programming Library "
 .SH NAME
 unw_get_fpreg
 \-\- get contents of floating\-point register 
