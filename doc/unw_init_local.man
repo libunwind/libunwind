@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:18:02 PST 2003
+.\" Manual page created with latex2man on Thu Aug  5 10:00:51 CEST 2004
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_INIT\\_LOCAL" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_INIT\\_LOCAL" "3" "05 August 2004" "Programming Library " "Programming Library "
 .SH NAME
 unw_init_local
 \-\- initialize cursor for local unwinding 

@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:18:03 PST 2003
+.\" Manual page created with latex2man on Thu Aug  5 10:20:31 CEST 2004
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_SET\\_CACHING\\_POLICY" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_SET\\_CACHING\\_POLICY" "3" "05 August 2004" "Programming Library " "Programming Library "
 .SH NAME
 unw_set_caching_policy
 \-\- set unwind caching policy 
