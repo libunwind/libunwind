@@ -135,7 +135,6 @@ struct cursor
        limit on the # of backing-store areas we have to track.  */
     uint8_t rbs_curr;		/* index of curr. rbs-area (contains c->bsp) */
     uint8_t rbs_left_edge;	/* index of inner-most valid rbs-area */
-    uint8_t rbs_right_edge;	/* index of outer-most valid rbs-area */
     struct rbs_area
       {
 	unw_word_t end;
