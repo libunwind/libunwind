@@ -19,6 +19,7 @@ GNU General Public License for more details.  */
 
 #include <signal.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #include <libunwind-ia64.h>
 
@@ -55,7 +56,7 @@ sighandler (int signal)
 
   /* skip faulting instruction (doesn't handle MLX template) */
   ++ip;
-  if (ip & 0x3 == 0x3)
+  if ((ip & 0x3) == 0x3)
     ip += 13;
 
   if (unw_set_reg (&cursor2, UNW_REG_IP, ip) < 0)
