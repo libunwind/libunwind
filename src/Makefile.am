@@ -2,9 +2,10 @@ SOVERSION=0:0:0		# See comments at end of file.
 
 libunwind_la_SOURCES_common =					\
 	backtrace.c get_proc_name.c				\
-	dyn-cancel.c dyn-extract.c dyn-local.c dyn-register.c	\
+	dyn-cancel.c dyn-extract.c dyn-register.c		\
 	dyn-remote.c					 	\
-	mempool.c mempool.h					\
+	mi-init.c						\
+	mempool.c						\
 	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
 	Lfind_dynamic_proc_info.c Lput_dynamic_unwind_info.c
 
@@ -21,40 +22,63 @@ install-exec-hook:
 
 endif
 
-libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		  \
-	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		  \
-	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		  \
-									  \
-	ia64/__ia64_install_context.S ia64/tables.c			  \
-	ia64/unw_regname.c						  \
-									  \
-	ia64/Ginit.c ia64/Gparser.c ia64/Gregs.c ia64/Gscript.c		  \
-	ia64/Gcreate_addr_space.c ia64/Gdestroy_addr_space.c		  \
-	ia64/Gset_caching_policy.c ia64/Gflush_cache.c			  \
-	ia64/Gget_accessors.c ia64/Gget_proc_info.c ia64/Gget_proc_name.c \
-	ia64/Gget_reg.c ia64/Gget_fpreg.c ia64/Gget_save_loc.c		  \
-	ia64/Gis_signal_frame.c						  \
-	ia64/Gresume.c ia64/Gset_reg.c ia64/Gset_fpreg.c		  \
-	ia64/Ginit_local.c ia64/Ginit_remote.c ia64/Gstep.c		  \
-									  \
-	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		  \
-	ia64/Lcreate_addr_space.c ia64/Ldestroy_addr_space.c		  \
-	ia64/Lset_caching_policy.c ia64/Lflush_cache.c			  \
-	ia64/Lget_accessors.c ia64/Lget_proc_info.c ia64/Lget_proc_name.c \
-	ia64/Lget_reg.c ia64/Lget_fpreg.c ia64/Lget_save_loc.c		  \
-	ia64/Lis_signal_frame.c						  \
-	ia64/Lresume.c ia64/Lset_reg.c ia64/Lset_fpreg.c		  \
-	ia64/Linit_local.c ia64/Linit_remote.c ia64/Lstep.c
+#
+# Note: As of automake-1.6, there is a stupid limitation which requires
+#	that each filename is unique.  This prevents us from having, e.g.,
+#	ia64/tables.c and x86/tables.c.  The fix for now is to uglify the
+#	filenames by appending the arch-name (e.g., tables-ia64.c).  Oh, well.
+#
+
+libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
+	ia64/ia64-init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
+									      \
+	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/tables-ia64.c   \
+	ia64/get_accessors-ia64.c					      \
+	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
+	ia64/regname-ia64.c						      \
+									      \
+	ia64/Ginit-ia64.c ia64/Gparser-ia64.c ia64/Gregs-ia64.c		      \
+	ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c		      \
+	ia64/Gdestroy_addr_space-ia64.c					      \
+	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c		      \
+	ia64/Gget_reg-ia64.c ia64/Gget_fpreg-ia64.c ia64/Gget_save_loc-ia64.c \
+	ia64/Gis_signal_frame-ia64.c					      \
+	ia64/Gresume-ia64.c ia64/Gset_reg-ia64.c ia64/Gset_fpreg-ia64.c	      \
+	ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c ia64/Gstep-ia64.c    \
+									      \
+	ia64/Linit-ia64.c ia64/Lparser-ia64.c ia64/Lregs-ia64.c		      \
+	ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c		      \
+	ia64/Ldestroy_addr_space-ia64.c					      \
+	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c		      \
+	ia64/Lget_reg-ia64.c ia64/Lget_fpreg-ia64.c ia64/Lget_save_loc-ia64.c \
+	ia64/Lis_signal_frame-ia64.c					      \
+	ia64/Lresume-ia64.c ia64/Lset_reg-ia64.c ia64/Lset_fpreg-ia64.c	      \
+	ia64/Linit_local-ia64.c ia64/Linit_remote-ia64.c ia64/Lstep-ia64.c
 
 if ARCH_IA64
  lib_LTLIBRARIES = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
 else
-if ARCH_IA32
- lib_LTLIBRARIES = libunwind-ia32.la
- libunwind_ia32_la_SOURCES = $(libunwind_la_SOURCES_ia32)
- libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
+if ARCH_X86
+
+libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		   \
+	x86/tables-x86.c x86/global-x86.c				   \
+									   \
+	x86/Gflush_cache-x86.c x86/Gget_accessors-x86.c x86/Gget_reg-x86.c \
+	x86/Gget_proc_name.c x86/Ginit-x86.c x86/Ginit_local-x86.c	   \
+	x86/Gget_proc_info.c x86/Gregs.c				   \
+	x86/Gstep-x86.c							   \
+									   \
+	x86/Lflush_cache-x86.c x86/Lget_accessors-x86.c x86/Lget_reg-x86.c \
+	x86/Lget_proc_name.c x86/Linit-x86.c x86/Linit_local-x86.c	   \
+	x86/Lget_proc_info.c x86/Gregs.c				   \
+	x86/Lstep-x86.c
+
+ lib_LTLIBRARIES = libunwind-x86.la
+ libunwind_x86_la_SOURCES = $(libunwind_la_SOURCES_x86)
+ libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
 endif
 endif
 
