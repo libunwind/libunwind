@@ -106,8 +106,13 @@ function check_local_unw_abi {
 	    match _UL${plat}_search_unwind_table
 	    match _U${plat}_get_elf_image
 	    ;;
+	x86)
+	    match _U${plat}_get_elf_image
+	    match _U${plat}_is_fpreg
+	    match _UL${plat}_dwarf_search_unwind_table
+	    ;;
 	*)
-	    match _UL${plat}_is_fpreg
+	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
 	    ;;
     esac
@@ -145,6 +150,11 @@ function check_generic_unw_abi {
 		    match _U${plat}_get_kernel_table
 		    ;;
 	    esac
+	    ;;
+	x86)
+	    match _U${plat}_get_elf_image
+	    match _U${plat}_is_fpreg
+	    match _U${plat}_dwarf_search_unwind_table
 	    ;;
 	*)
 	    match _U${plat}_is_fpreg
