@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <setjmp.h>
 #include <stdlib.h>
 
+#include "jmpbuf.h"
+
 int
 sigsetjmp (sigjmp_buf env, int savemask)
 {
@@ -35,13 +37,14 @@ sigsetjmp (sigjmp_buf env, int savemask)
   /* This should work on most platforms, but may not be
      performance-optimal; check the code! */
 
-  wp[0] = (unw_word_t) __builtin_frame_address (0);
-  wp[1] = (unw_word_t) __builtin_return_address (0);
-  wp[2] = savemask;
+  wp[JB_SP] = (unw_word_t) __builtin_frame_address (0);
+  wp[JB_RP] = (unw_word_t) __builtin_return_address (0);
+  wp[JB_MASK_SAVED] = savemask;
 
   /* Note: we assume here that "wp" has same or better alignment as
      sigset_t.  */
-  if (savemask && sigprocmask (SIG_BLOCK, NULL, (sigset_t *) (wp + 3)) < 0)
+  if (savemask
+      && sigprocmask (SIG_BLOCK, NULL, (sigset_t *) (wp + JB_MASK)) < 0)
     abort ();
   return 0;
 }
