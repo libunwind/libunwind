@@ -73,7 +73,7 @@ get_kernel_table (void *ptr)
   debug (100, "unwind: checking kernel unwind table");
 
   size = getunwind (NULL, 0);
-  ktab = malloc (size);
+  ktab = sos_alloc (size);
   if (!ktab)
     {
       dprintf (__FILE__".%s: failed to allocate %Zu bytes",
@@ -88,7 +88,7 @@ get_kernel_table (void *ptr)
   if (info->segbase < ktab[0].start_offset
       || info->segbase >= etab[-1].end_offset)
     {
-      free (ktab);
+      sos_free (ktab);
       return -1;
     }
 
