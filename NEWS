@@ -1,5 +1,10 @@
 -*-Mode: outline-*-
 
+* News for v0.98.4:
+
+** Fix a typo in _ReadSLEB.c which caused hangs when throwing exceptions
+   from Intel ICC-compiled programs.  Reported by Tommy Hoffner.
+
 * News for v0.98.3:
 
 ** Make it possible to link against libunwind-ia64.a only (i.e., without
