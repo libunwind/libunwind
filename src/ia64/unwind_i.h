@@ -310,8 +310,7 @@ struct ia64_labeled_state
 #define ia64_local_resume		UNW_OBJ(local_resume)
 #define ia64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
 #define ia64_init			UNW_ARCH_OBJ(init)
-#define rbs_record_switch		UNW_ARCH_OBJ(rbs_record_switch)
-#define rbs_underflow			UNW_ARCH_OBJ(rbs_underflow)
+#define rbs_switch			UNW_ARCH_OBJ(rbs_switch)
 #define rbs_find_stacked		UNW_ARCH_OBJ(rbs_find_stacked)
 #define rbs_cover_and_flush		UNW_ARCH_OBJ(rbs_cover_and_flush)
 
@@ -333,13 +332,29 @@ extern void _Uia64_install_context (struct cursor *c, unw_word_t pri_unat,
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
-extern int rbs_record_switch (struct cursor *c,
-			      unw_word_t saved_bsp, unw_word_t saved_bspstore,
-			      unw_word_t saved_rnat_loc);
-extern void rbs_underflow (struct cursor *c);
+extern int rbs_switch (struct cursor *c,
+		       unw_word_t saved_bsp, unw_word_t saved_bspstore,
+		       unw_word_t saved_rnat_loc);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 			     unw_word_t *locp, unw_word_t *rnat_locp);
 extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs);
+
+/* Return true if BSP points to a word that's stored on register
+   backing-store RBS.  */
+static inline int
+rbs_contains (struct rbs_area *rbs, unw_word_t bsp)
+{
+  int result;
+
+  /* Caveat: this takes advantage of unsigned arithmetic.  The full
+     test is (bsp >= rbs->end - rbs->size) && (bsp < rbs->end).  We
+     take advantage of the fact that -n == ~n + 1.  */
+  result = bsp - rbs->end > ~rbs->size;
+  debug (150, "%s: 0x%lx in [0x%lx-0x%lx) => %d\n\t(from %p)\n", __FUNCTION__,
+	 (long) bsp, (long) (rbs->end - rbs->size), (long) rbs->end, result,
+	 __builtin_return_address (0));
+  return result;
+}
 
 static inline int
 ia64_get_stacked (struct cursor *c, unw_word_t reg,
@@ -355,11 +370,11 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
   if (rnat_locp)
     {
       *rnat_locp = ia64_rse_rnat_addr (loc);
-      if (*rnat_locp >= rbs->end)
+      if (!rbs_contains (rbs, *rnat_locp))
 	*rnat_locp = rbs->rnat_loc;
     }
 
-  if (loc >= rbs->end)
+  if (!rbs_contains (rbs, loc))
     ret = rbs_find_stacked (c, regs_to_skip, locp, rnat_locp);
   return ret;
 }
