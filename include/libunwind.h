@@ -26,8 +26,6 @@ License.  */
 
 #include <stdint.h>
 
-#include "libunwind-config.h"
-
 #ifdef UNW_LOCAL_ONLY
 # define UNW_PREFIX	_Ul_
 #else /* !UNW_LOCAL_ONLY */
@@ -38,11 +36,7 @@ License.  */
 #define UNW_PASTE(x,y)	UNW_PASTE2(x,y)
 #define UNW_OBJ(fn)	UNW_PASTE(UNW_PREFIX, fn)
 
-#if defined(UNW_TARGET_IA64)
-# include "libunwind-ia64.h"
-#else
-# error Sorry, target architecture is not yet supported.
-#endif
+#include "libunwind-tdep.h"
 
 typedef unw_tdep_word_t unw_word_t;
 
