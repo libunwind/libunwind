@@ -190,14 +190,46 @@ extern void *_Uia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
 	_Uia64_glibc_acquire_unwind_info((ip), (i), (c)->uc)
 # define ia64_release_unwind_info(c,ip,i)			\
 	_Uia64_glibc_release_unwind_info((i), (c)->uc)
-# define ia64_get(c,l,v)					\
-	(*(v) = *(unw_word_t *) IA64_MASK_LOC_TYPE(l), 0)
-# define ia64_put(c,l,v)					\
-	(*(unw_word_t *) IA64_MASK_LOC_TYPE(l) = (v), 0)
-# define ia64_getfp(c,l,v)					\
-	(*(v) = *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(l), 0)
-# define ia64_putfp(c,l,v)					\
-	(*(unw_fpreg_t *) IA64_MASK_LOC_TYPE(l) = (v), 0)
+
+/* Note: the register accessors (ia64_{get,set}{,fp}()) must check for
+   NULL locations because _Uia64_uc_addr() returns NULL for unsaved
+   registers.  */
+
+static inline int
+ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
+{
+  if (!loc)
+    return -1;
+  *val = *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc);
+  return 0;
+}
+
+static inline int
+ia64_putfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t val)
+{
+  if (!loc)
+    return -1;
+  *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc) = val;
+  return 0;
+}
+
+static inline int
+ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
+{
+  if (!loc)
+    return -1;
+  *val = *(unw_word_t *) IA64_MASK_LOC_TYPE(loc);
+  return 0;
+}
+
+static inline int
+ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
+{
+  if (!loc)
+    return -1;
+  *(unw_word_t *) IA64_MASK_LOC_TYPE(loc) = (val);
+  return 0;
+}
 
 #else /* !UNW_LOCAL_ONLY */
 
