@@ -35,15 +35,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 int nerrors = 0;
 int verbose = 0;
+int depth = 13;
 
-static void b (void *);
+extern void b (int);
 
-static void
-raise_exception (void *addr)
+void
+raise_exception (void)
 {
   unw_cursor_t cursor;
-  unw_word_t ip;
   unw_context_t uc;
+  int i;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -59,27 +60,17 @@ raise_exception (void *addr)
       return;
     }
 
-  /* unwind to frame a(): */
-  if (unw_step (&cursor) < 0)
-    {
-      panic ("unw_step() failed!\n");
-      return;
-    }
-
-  unw_get_reg (&cursor, UNW_REG_IP, &ip);
-  if (verbose)
-    printf ("old ip = %lx, new ip = %p\n", (long) ip, addr);
-
-  if (unw_set_reg (&cursor, UNW_REG_IP, (unw_word_t) addr) < 0)
-    {
-      panic ("unw_set_reg() failed!\n");
-      return;
-    }
-
+  /* unwind to top-most frame a(): */
+  for (i = 0; i < depth - 1; ++i)
+    if (unw_step (&cursor) < 0)
+      {
+	panic ("unw_step() failed!\n");
+	return;
+      }
   unw_resume (&cursor);	/* transfer control to exception handler */
 }
 
-#if !UNW_TARGET_IA64
+#if !UNW_TARGET_IA64 || defined(__INTEL_COMPILER)
 
 void *
 __builtin_ia64_bsp (void)
@@ -89,29 +80,22 @@ __builtin_ia64_bsp (void)
 
 #endif
 
-static int
-a (void)
+int
+a (int n)
 {
   long stack;
 
-#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
-  void *label;
+  if (verbose)
+    printf ("a(n=%d)\n", n);
+
+  if (n > 0)
+    return a (n - 1);
 
   if (verbose)
     printf ("a: sp=%p bsp=%p\n", &stack, __builtin_ia64_bsp ());
-#ifdef UNW_TARGET_IA64
-  asm ("movl %0=Label" : "=r"(label));
-#else
-  label = &&handler;
-#endif
-  b (label);
-  panic ("FAILURE: unexpected return from func()!\n");
 
-#if UNW_TARGET_IA64
-  asm volatile ("Label:");	/* force a new bundle */
-#else
-  handler:
-#endif
+  b (16);
+
   if (verbose)
     {
       printf ("exception handler: here we go (sp=%p, bsp=%p)...\n",
@@ -121,19 +105,18 @@ a (void)
 	 __builtin_ia64_bsp() gets predicated.  */
       getpid ();
     }
-#else
-  if (verbose)
-    printf ("a: this test only works with GNU C compiler.\n");
-#endif
   return 0;
 }
 
-static void
-b (void *addr)
+void
+b (int n)
 {
-  if (verbose)
-    printf ("b() calling raise_exception()\n");
-  raise_exception (addr);
+  if ((n & 1) == 0)
+    {
+      if (verbose)
+	printf ("b(n=%d) calling raise_exception()\n", n);
+      raise_exception ();
+    }
   panic ("FAILURE: b() returned from raise_exception()!!\n");
 }
 
@@ -141,9 +124,12 @@ int
 main (int argc, char **argv)
 {
   if (argc > 1)
-    ++verbose;
+    {
+      ++verbose;
+      depth = atol (argv[1]);
+    }
 
-  if (a () != 0 || nerrors > 0)
+  if (a (depth) != 0 || nerrors > 0)
     {
       fprintf (stderr, "FAILURE: test failed; try again?\n");
       exit (-1);
