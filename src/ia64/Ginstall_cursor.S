@@ -37,7 +37,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
-/*  ia64_install_cursor (const cursor *c, long pri_unat, long *extra)
+/*  ia64_install_cursor (const cursor *c, long pri_unat, long *extra,
+			 long bspstore, long dirty_size, long *dirty_partition,
+			 long dirty_rnat)
 
   Restores the machine-state represented by C and thereby resumes execution
   in that frame.  If the frame or one of its descendants was interrupted
@@ -53,7 +55,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global ia64_install_cursor
 	.proc ia64_install_cursor
 ia64_install_cursor:
-	alloc r3 = ar.pfs, 3, 0, 0, 0
+	alloc r3 = ar.pfs, 7, 0, 0, 0
 	invala
 	add r2 = FR_LOC_OFF, in0
 	;;
@@ -231,7 +233,7 @@ ia64_install_cursor:
 	ld8 r27 = [r27]			// r27 = *fpsr_loc
 	and r28 = -4, r28
 
-	ld8 r30 = [r2]			// r30 = bsp
+	mov r30 = in3			// make backup-copy of new bsp
 	ld8 r31 = [r3]			// r31 = pr
 	mov rp = r15
 	;;
@@ -242,9 +244,29 @@ ia64_install_cursor:
 	;;
 
 	loadrs				// drop dirty partition
+	mov r9 = in2			// make backup-copy of &extra[r16]
+	cmp.eq p8, p0 = in4, r0		// dirty-size == 0?
+(p8)	br.cond.dpnt.many .skip_load_dirty
+
+	mov r2 = in4			// make backup-copy of dirty_size
+	mov r15 = in5			// make backup-copy of dirty_partition
+	mov r16 = in6			// make backup-copy of dirty_rnat
 	;;
+
+	alloc r3 = ar.pfs, 0, 0, 0, 0	// drop register frame
+	dep r11 = r2, r11, 16, 16
+	;;
+	mov.m ar.bspstore = r15
+	;;
+	mov.m ar.rnat = r16
+	mov.m ar.rsc = r11		// 14 cycles latency to loadrs
+	;;
+	loadrs				// loadup new dirty partition
+	;;
+
+.skip_load_dirty:
 	mov.m ar.bspstore = r30		// restore register backing-store
-	add r3 = 8, in2			// r3 = &extra[r16]
+	add r3 = 8, r9			// r3 = &extra[r16]
 	;;
 
 (pRet)	mov.m ar.fpsr = r27		// fpsr restored (don't touch no more)
@@ -254,12 +276,12 @@ ia64_install_cursor:
 /****** Return via br.ret: */
 
 	ld8 r14 = [r14]			// r14 = *pfs_loc
-	ld8 r15 = [in2], 16		// r15 restored (don't touch no more)
+	ld8 r15 = [r9], 16		// r15 restored (don't touch no more)
 	mov pr = r31, -1		// pr restored (don't touch no more)
 	;;
 
 	ld8 r16 = [r3], 16		// r16 restored (don't touch no more)
-	ld8 r17 = [in2]			// r17 restored (don't touch no more)
+	ld8 r17 = [r9]			// r17 restored (don't touch no more)
 	nop.i 0
 	;;
 
