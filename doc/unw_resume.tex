@@ -29,7 +29,10 @@ machine state normally involves restoring the ``preserved''
 (callee-saved) registers.  However, if execution in any of the stack
 frames younger (more deeply nested) than the one identified by
 \Var{cursor} was interrupted by a signal, then \Func{unw\_resume}()
-will restore all registers as well as the signal mask.
+will restore all registers as well as the signal mask.  Attempting to
+call \Func{unw\_resume}() on a cursor which identifies the stack frame
+of another thread results in undefined behavior (e.g., the program may
+crash).
 
 For remote unwinding, \Func{unw\_resume}() installs the machine state
 identified by the cursor by calling the \Func{access\_reg} and
