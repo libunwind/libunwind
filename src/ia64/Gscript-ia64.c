@@ -520,7 +520,7 @@ ia64_find_save_locs (struct cursor *c)
     }
   if (ret < 0)
     {
-      if (ret != UNW_ESTOPUNWIND)
+      if (ret != -UNW_ESTOPUNWIND)
 	dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
 		 __FUNCTION__, (long) c->ip);
       goto out;
