@@ -585,7 +585,13 @@ check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 static inline int
 validate_cache (unw_addr_space_t as)
 {
-  return dl_iterate_phdr (check_callback, as);
+  sigset_t saved_sigmask;
+  int ret;
+
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  ret = dl_iterate_phdr (check_callback, as);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  return ret;
 }
 
 #elif defined(HAVE_DLMODINFO)
@@ -606,11 +612,16 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 {
 #if defined(HAVE_DL_ITERATE_PHDR)
   unw_dyn_info_t di, *dip = &di;
+  sigset_t saved_sigmask;
   int ret;
 
   di.u.ti.segbase = ip;	/* this is cheap... */
 
-  if (dl_iterate_phdr (callback, &di) <= 0)
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  ret = dl_iterate_phdr (callback, &di);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+
+  if (ret <= 0)
     {
       if (!kernel_table.u.ti.table_data)
 	{
