@@ -21,6 +21,7 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 
 /* See glibc manual for a description of this function.  */

@@ -19,6 +19,8 @@ GNU General Public License for more details.  */
 
 #include <stdio.h>
 #include <stdlib.h>
+
+#define UNW_LOCAL_ONLY
 #include <libunwind.h>
 
 #define panic(args...)				\
