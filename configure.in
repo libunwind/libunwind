@@ -1,6 +1,6 @@
 define(pkg_major, 0)
 define(pkg_minor, 98)
-define(pkg_extra, .1)
+define(pkg_extra, .2)
 define(pkg_maintainer, libunwind@linux.hpl.hp.com)
 define(mkvers, $1.$2$3)
 dnl Process this file with autoconf to produce a configure script.
@@ -102,6 +102,7 @@ AC_TRY_COMPILE([], [#ifndef __INTEL_COMPILER
 
 if test x$GCC = xyes -a x$intel_compiler != xyes; then
   CFLAGS="${CFLAGS} -Wall -Wsign-compare"
+  LIBCRTS="`$CC --print-libgcc-file-name`"
 fi
 
 CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
@@ -120,6 +121,7 @@ AC_SUBST(target_os)
 AC_SUBST(arch)
 AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
+AC_SUBST(LIBCRTS)
 AC_SUBST(PKG_MAJOR)
 AC_SUBST(PKG_MINOR)
 AC_SUBST(PKG_EXTRA)
