@@ -4,18 +4,15 @@
 
 This file is part of libunwind.  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include <assert.h>
 #include <stdlib.h>
 #include <stddef.h>
+
+#include "unwind_i.h"
+
 #ifdef HAVE_IA64INTRIN_H
 # include <ia64intrin.h>
 #endif
-
-#include "unwind_i.h"
 
 extern unw_addr_space_t _ULia64_local_addr_space;
 
