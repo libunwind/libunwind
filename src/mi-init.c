@@ -50,6 +50,4 @@ mi_init (void)
 
   if (sizeof (struct cursor) > sizeof (unw_cursor_t))
     unw_cursor_t_is_too_small ();
-
-  sigfillset (&unwi_full_sigmask);
 }
