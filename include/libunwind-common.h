@@ -333,3 +333,25 @@ extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len);
    to dlclose()).
    This routine is signal-safe.  */
 #define unw_flush_cache(as,lo,hi)	UNW_ARCH_OBJ(flush_cache)(as, lo, hi)
+
+/* Helper routines which make it easy to use libunwind via ptrace().
+   They're available only if UNW_REMOTE is _not_ defined and they
+   aren't really part of the libunwind API.  They are simple enough
+   not to warrant creating a separate library for them.  */
+
+extern void *_UPT_create (pid_t);
+extern void _UPT_destroy (void *upt);
+extern int _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+				unw_proc_info_t *pi, int need_unwind_info,
+				void *arg);
+extern void _UPT_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi,
+				  void *arg);
+extern int _UPT_get_dyn_info_list_addr (unw_addr_space_t as,
+					unw_word_t *dil_addr, void *arg);
+extern int _UPT_access_mem (unw_addr_space_t as, unw_word_t addr,
+			    unw_word_t *val, int write, void *arg);
+extern int _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg,
+			    unw_word_t *val, int write, void *arg);
+extern int _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg,
+			      unw_fpreg_t *val, int write, void *arg);
+extern unw_accessors_t _UPT_accessors;
