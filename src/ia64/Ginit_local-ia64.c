@@ -49,6 +49,8 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   if (tdep_needs_initialization)
     tdep_init ();
 
+  Debug (2, "(cursor=%p)\n", c);
+
 #ifdef __hpux
   {
     int ret;
