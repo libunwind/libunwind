@@ -431,7 +431,6 @@ HIDDEN void
 ia64_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
-  ia64_script_cache_init (&local_addr_space.global_cache);
   local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
 #if defined(__linux)
   local_addr_space.abi = ABI_LINUX;
@@ -447,6 +446,7 @@ ia64_local_addr_space_init (void)
   local_addr_space.acc.access_fpreg = access_fpreg;
   local_addr_space.acc.resume = ia64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
+  unw_flush_cache (&local_addr_space, 0, 0);
 }
 
 #endif /* !UNW_REMOTE_ONLY */
