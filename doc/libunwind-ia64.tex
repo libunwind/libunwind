@@ -109,10 +109,16 @@ The following normal register name macros are available:
 \item[\Const{UNW\_IA64\_GR}:] The base-index for general (integer)
   registers.  Add an index in the range from 0..127 to get a
   particular general register.  For example, to access \texttt{r4},
-  the index \Const{UNW\_IA64\_GR}\texttt{+4} should be used.  Register
-  \texttt{r0} is read-only, and any attempt to write to index
-  \Const{UNW\_IA64\_GR}\texttt{+0} will result in an error
-  (\texttt{-}\Const{UNW\_EREADONLYREG}).
+  the index \Const{UNW\_IA64\_GR}\texttt{+4} should be used.
+  Registers \texttt{r0} and \texttt{r1} (\texttt{gp}) are read-only,
+  and any attempt to write them will result in an error
+  (\texttt{-}\Const{UNW\_EREADONLYREG}).  Even though \texttt{r1} is
+  read-only, \Prog{libunwind} will automatically adjust its value if
+  the instruction-pointer (\Const{UNW\_IA64\_IP}) is modified.  For
+  example, if \Const{UNW\_IA64\_IP} is set to a value inside a
+  function \Func{func}(), then reading
+  \Const{UNW\_IA64\_GR}\texttt{+1} will return the global-pointer
+  value for this function.
 \item[\Const{UNW\_IA64\_NAT}:] The base-index for the NaT bits of the
   general (integer) registers.  A non-zero value in these registers
   corresponds to a set NaT-bit.  Add an index in the range from 0..127
@@ -152,35 +158,35 @@ The following normal register name macros are available:
 Convenience macros are simply aliases for certain frequently used
 registers:
 \begin{Description}
-\item[\Const{UNW\_IA64\_GP}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+1}.
-  The global-pointer register.  For unwinding-purposes, this register
-  is treated as read-only.
-\item[\Const{UNW\_IA64\_TP}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+13}.
-  The thread-pointer register.  For unwinding-purposes, this register is
-  treated as read-only.
-\item[\Const{UNW\_IA64\_AR\_RSC}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+16}.
-  The register-stack configuration register.
+\item[\Const{UNW\_IA64\_GP}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+1},
+  the global-pointer register.
+\item[\Const{UNW\_IA64\_TP}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+13},
+  the thread-pointer register.
+\item[\Const{UNW\_IA64\_AR\_RSC}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+16},
+  the register-stack configuration register.
 \item[\Const{UNW\_IA64\_AR\_BSP}:] Alias for
   \Const{UNW\_IA64\_GR}\texttt{+17}.  This register index accesses the
   value of register \texttt{ar.bsp} as of the time it was last saved
   explicitly.  This is rarely what you want.  Normally, you'll want to
   use \Const{UNW\_IA64\_BSP} instead.
-\item[\Const{UNW\_IA64\_AR\_BSPSTORE}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+18}.
-  The register-backing store write pointer.
-\item[\Const{UNW\_IA64\_AR\_RNAT}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+19}.
-  The register-backing store NaT-collection register.
-\item[\Const{UNW\_IA64\_AR\_CCV}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+32}.
-  The compare-and-swap value register.
-\item[\Const{UNW\_IA64\_AR\_UNAT}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+36}.
-  The user NaT-collection register.
-\item[\Const{UNW\_IA64\_AR\_FPSR}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+40}.
-  The floating-point status (and control) register.
-\item[\Const{UNW\_IA64\_AR\_PFS}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+64}.
-  The previous frame-state register.
-\item[\Const{UNW\_IA64\_AR\_LC}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+65}.
-  The loop-count register.
-\item[\Const{UNW\_IA64\_AR\_EC}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+66}.
-  The epilogue-count register.
+\item[\Const{UNW\_IA64\_AR\_BSPSTORE}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+18},
+  the register-backing store write pointer.
+\item[\Const{UNW\_IA64\_AR\_RNAT}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+19},
+  the register-backing store NaT-collection register.
+\item[\Const{UNW\_IA64\_AR\_CCV}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+32},
+  the compare-and-swap value register.
+\item[\Const{UNW\_IA64\_AR\_CSD}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+25},
+  the compare-and-swap-data register (used by 16-byte atomic operations).
+\item[\Const{UNW\_IA64\_AR\_UNAT}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+36},
+  the user NaT-collection register.
+\item[\Const{UNW\_IA64\_AR\_FPSR}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+40},
+  the floating-point status (and control) register.
+\item[\Const{UNW\_IA64\_AR\_PFS}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+64},
+  the previous frame-state register.
+\item[\Const{UNW\_IA64\_AR\_LC}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+65}
+  the loop-count register.
+\item[\Const{UNW\_IA64\_AR\_EC}:] Alias for \Const{UNW\_IA64\_GR}\texttt{+66},
+  the epilogue-count register.
 \end{Description}
 
 
