@@ -218,15 +218,13 @@ libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
 	ia64/regname-ia64.c
 
+@OS_LINUX_TRUE@libunwind_la_SOURCES_ia64_os = mi/_ReadULEB.c mi/_ReadSLEB.c
 
 # The list of files that go into libunwind:
-#  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
-	$(libunwind_la_SOURCES_local)					   \
+	$(libunwind_la_SOURCES_local) $(libunwind_la_SOURCES_ia64_os)	   \
 									   \
 	elf64.c elf64.h							   \
-									   \
-	mi/_ReadULEB.c mi/_ReadSLEB.c					   \
 									   \
 	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
 									   \
@@ -482,11 +480,12 @@ am__objects_20 = $(am__objects_5) global-hppa.lo tables-hppa.lo \
 	Lget_reg-hppa.lo Lget_proc_name-hppa.lo Linit-hppa.lo \
 	Linit_local-hppa.lo Lget_proc_info-hppa.lo Lregs-hppa.lo \
 	Lstep-hppa.lo
-am__objects_21 = $(am__objects_6) $(am__objects_17) elf64.lo \
-	_ReadULEB.lo _ReadSLEB.lo dyn_info_list-ia64.lo \
-	getcontext-ia64.lo Lcreate_addr_space-ia64.lo \
-	Lget_proc_info-ia64.lo Lget_save_loc-ia64.lo Lglobal-ia64.lo \
-	Linit-ia64.lo Linit_local-ia64.lo Linit_remote-ia64.lo \
+@OS_LINUX_TRUE@am__objects_21 = _ReadULEB.lo _ReadSLEB.lo
+am__objects_22 = $(am__objects_6) $(am__objects_17) $(am__objects_21) \
+	elf64.lo dyn_info_list-ia64.lo getcontext-ia64.lo \
+	Lcreate_addr_space-ia64.lo Lget_proc_info-ia64.lo \
+	Lget_save_loc-ia64.lo Lglobal-ia64.lo Linit-ia64.lo \
+	Linit_local-ia64.lo Linit_remote-ia64.lo \
 	Linstall_cursor-ia64.lo Lis_signal_frame-ia64.lo \
 	Lparser-ia64.lo Lrbs-ia64.lo Lregs-ia64.lo Lresume-ia64.lo \
 	Lscript-ia64.lo Lstep-ia64.lo Ltables-ia64.lo
@@ -494,7 +493,7 @@ am__objects_21 = $(am__objects_6) $(am__objects_17) elf64.lo \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_19)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_la_OBJECTS = \
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_20)
-@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_21)
+@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_22)
 libunwind_la_OBJECTS = $(am_libunwind_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64$(EXEEXT) \
 @ARCH_IA64_TRUE@	mk_Lcursor_i-ia64$(EXEEXT)
@@ -4037,6 +4036,8 @@ uninstall-am: uninstall-info-am uninstall-libLIBRARIES \
 	tags uninstall uninstall-am uninstall-info-am \
 	uninstall-libLIBRARIES uninstall-libLTLIBRARIES
 
+
+@OS_LINUX_TRUE@  #  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 
 @REMOTE_ONLY_TRUE@install-exec-hook:
 #	Nothing to do here....
