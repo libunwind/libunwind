@@ -94,7 +94,7 @@ a (void)
 {
   long stack;
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__INTEL_COMPILER)
   void *label;
 
   if (verbose)
