@@ -49,18 +49,26 @@ cache_match (struct ia64_script *script, unw_word_t ip, unw_word_t pr)
 }
 
 static inline void
-flush_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache)
+flush_script_cache (struct ia64_script_cache *cache)
 {
   int i;
 
-  for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i)
-    cache->buckets[i].ip = 0;
+  cache->lru_head = IA64_UNW_CACHE_SIZE - 1;
+  cache->lru_tail = 0;
 
-  cache->generation = as->cache_generation;
+  for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i)
+    {
+      if (i > 0)
+	cache->buckets[i].lru_chain = (i - 1);
+      cache->buckets[i].coll_chain = -1;
+      cache->buckets[i].ip = 0;
+    }
+  for (i = 0; i<IA64_UNW_HASH_SIZE; ++i)
+    cache->hash[i] = -1;
 }
 
 static inline struct ia64_script_cache *
-get_script_cache (unw_addr_space_t as)
+get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
 {
   struct ia64_script_cache *cache = &as->global_cache;
 
@@ -69,10 +77,29 @@ get_script_cache (unw_addr_space_t as)
     cache = &ia64_per_thread_cache;
 #endif
 
-  if (as->cache_generation != cache->generation)
-    flush_script_cache (as, cache);
+  if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
+    {
+      sigprocmask (SIG_SETMASK, &unwi_full_sigmask, saved_sigmaskp);
+      mutex_lock (&cache->lock);
+    }
 
+  if (as->cache_generation != cache->generation)
+    {
+      flush_script_cache (cache);
+      cache->generation = as->cache_generation;
+    }
   return cache;
+}
+
+static inline void
+put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
+		  sigset_t *saved_sigmaskp)
+{
+  if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
+    {
+      mutex_unlock (&cache->lock);
+      sigprocmask (SIG_SETMASK, saved_sigmaskp, NULL);
+    }
 }
 
 static struct ia64_script *
@@ -111,28 +138,17 @@ script_lookup (struct ia64_script_cache *cache, struct cursor *c)
 HIDDEN int
 ia64_get_cached_proc_info (struct cursor *c)
 {
-  int global_cache = (c->as->caching_policy == UNW_CACHE_GLOBAL);
   struct ia64_script_cache *cache;
   struct ia64_script *script;
   sigset_t saved_sigmask;
 
-  cache = get_script_cache (c->as);
-
-  if (likely (global_cache))
-    {
-      sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
-      mutex_lock (&cache->lock);
-    }
-
-  script = script_lookup (cache, c);
-  if (script)
-    c->pi = script->pi;
-
-  if (likely (global_cache))
-    {
-      mutex_unlock (&cache->lock);
-      sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
-    }
+  cache = get_script_cache (c->as, &saved_sigmask);
+  {
+    script = script_lookup (cache, c);
+    if (script)
+      c->pi = script->pi;
+  }
+  put_script_cache (c->as, cache, &saved_sigmask);
   return script ? 0 : -UNW_ENOINFO;
 }
 
@@ -475,7 +491,6 @@ run_script (struct ia64_script *script, struct cursor *c)
 HIDDEN int
 ia64_find_save_locs (struct cursor *c)
 {
-  int global_cache = (c->as->caching_policy == UNW_CACHE_GLOBAL);
   struct ia64_script_cache *cache = NULL;
   struct ia64_script *script = NULL;
   sigset_t saved_sigmask;
@@ -485,77 +500,57 @@ ia64_find_save_locs (struct cursor *c)
   if (ret < 0)
     return ret;
 
-  cache = get_script_cache (c->as);
+  cache = get_script_cache (c->as, &saved_sigmask);
+  {
+    if (c->as->caching_policy == UNW_CACHE_NONE)
+      {
+	struct ia64_script tmp_script;
 
-  if (likely (global_cache))
-    {
-      sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
-      mutex_lock (&cache->lock);
-    }
+	script = &tmp_script;
+	script->ip = c->ip;
+	script->hint = 0;
+	script->count = 0;
+	ret = build_script (c, script);
+      }
+    else
+      {
+	script = script_lookup (cache, c);
+	debug (125, "%s: ip %lx %s in script cache\n",
+	       __FUNCTION__, (long) c->ip, script ? "hit" : "missed");
+	if (!script)
+	  {
+	    script = script_new (cache, c->ip);
+	    if (!script)
+	      {
+		dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
+		ret = -UNW_EUNSPEC;
+		goto out;
+	      }
+	    cache->buckets[c->prev_script].hint = script - cache->buckets;
 
-  if (c->as->caching_policy == UNW_CACHE_NONE)
-    {
-      struct ia64_script tmp_script;
+	    ret = build_script (c, script);
+	  }
+	c->hint = script->hint;
+	c->prev_script = script - cache->buckets;
+      }
+    if (ret < 0)
+      {
+	if (ret != -UNW_ESTOPUNWIND)
+	  dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
+		   __FUNCTION__, (long) c->ip);
+	goto out;
+      }
 
-      script = &tmp_script;
-      script->ip = c->ip;
-      script->hint = 0;
-      script->count = 0;
-      ret = build_script (c, script);
-    }
-  else
-    {
-      script = script_lookup (cache, c);
-      if (!script)
-	{
-	  script = script_new (cache, c->ip);
-	  if (!script)
-	    {
-	      dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
-	      ret = -UNW_EUNSPEC;
-	      goto out;
-	    }
-	  cache->buckets[c->prev_script].hint = script - cache->buckets;
-
-	  ret = build_script (c, script);
-	}
-      c->hint = script->hint;
-      c->prev_script = script - cache->buckets;
-    }
-  if (ret < 0)
-    {
-      if (ret != -UNW_ESTOPUNWIND)
-	dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
-		 __FUNCTION__, (long) c->ip);
-      goto out;
-    }
-
-  run_script (script, c);
-
+    run_script (script, c);
+  }
  out:
-  if (likely (global_cache))
-    {
-      mutex_unlock (&cache->lock);
-      sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
-    }
+  put_script_cache (c->as, cache, &saved_sigmask);
   return ret;
 }
 
 HIDDEN void
 ia64_script_cache_init (struct ia64_script_cache *cache)
 {
-  int i;
-
   mutex_init (&cache->lock);
-  cache->lru_head = IA64_UNW_CACHE_SIZE - 1;
-  cache->lru_tail = 0;
-
-  for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i)
-    {
-      if (i > 0)
-	cache->buckets[i].lru_chain = (i - 1);
-      cache->buckets[i].coll_chain = -1;
-    }
-  for (i = 0; i<IA64_UNW_HASH_SIZE; ++i)
-    cache->hash[i] = -1;
+  flush_script_cache (cache);
 }
