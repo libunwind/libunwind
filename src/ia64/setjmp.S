@@ -34,12 +34,12 @@ _setjmp:
 	st8 [r32] = r12		// jmp_buf[0] = sp
 	mov r3 = rp
 
-	adds r16 = 8, r32
-	adds r17 = 16, r32
+	adds r16 = 0x40, r32
+	adds r17 = 0x88, r32
 	mov r8 = 0
 	;;
-	st8 [r16] = r3		// jmp_buf[1] = rp
-	st8 [r17] = r2		// jmp_buf[2] = bsp
+	st8 [r16] = r3		// jmp_buf[8] = rp
+	st8 [r17] = r2		// jmp_buf[17] = bsp
 	br.ret.sptk.many rp
 
 	.endp _setjmp
