@@ -31,6 +31,10 @@ common_init (struct cursor *c)
   unw_word_t bspstore;
   int i, ret;
 
+  if (c->as->caching_policy != UNW_CACHE_NONE)
+    /* ensure cache doesn't have any stale contents: */
+    ia64_validate_cache(c->as);
+
   c->cfm_loc =			IA64_REG_LOC (c, UNW_IA64_CFM);
   c->loc[IA64_REG_BSP] =	IA64_REG_LOC (c, UNW_IA64_AR_BSP);
   c->loc[IA64_REG_BSPSTORE] =	IA64_REG_LOC (c, UNW_IA64_AR_BSPSTORE);
