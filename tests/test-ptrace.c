@@ -137,17 +137,18 @@ main (int argc, char **argv)
       argv = args;
     }
   else if (argc > 1)
-    {
-      if (strcmp (argv[optind], "-v") == 0)
-	++optind, verbose = 1;
-      if (strcmp (argv[optind], "-i") == 0)
-	++optind, trace_mode = INSTRUCTION;	/* backtrace at each insn */
-      else if (strcmp (argv[optind], "-s") == 0)
-	++optind, trace_mode = SYSCALL;		/* backtrace at each syscall */
-      else if (strcmp (argv[optind], "-t") == 0)
-	/* Execute until syscall(-1), then backtrace at each insn.  */
-	++optind, trace_mode = TRIGGER;
-    }
+    while (argv[optind][0] == '-')
+      {
+	if (strcmp (argv[optind], "-v") == 0)
+	  ++optind, verbose = 1;
+	if (strcmp (argv[optind], "-i") == 0)
+	  ++optind, trace_mode = INSTRUCTION;	/* backtrace at each insn */
+	else if (strcmp (argv[optind], "-s") == 0)
+	  ++optind, trace_mode = SYSCALL;		/* backtrace at each syscall */
+	else if (strcmp (argv[optind], "-t") == 0)
+	  /* Execute until syscall(-1), then backtrace at each insn.  */
+	  ++optind, trace_mode = TRIGGER;
+      }
 
   target_pid = fork ();
   if (!target_pid)
