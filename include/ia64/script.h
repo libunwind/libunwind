@@ -74,7 +74,11 @@ struct ia64_script
 
 struct ia64_script_cache
   {
+#ifdef HAVE_ATOMIC_OPS_H
+    AO_TS_T busy;		/* is the script-cache busy? */
+#else
     pthread_mutex_t lock;
+#endif
     unsigned short lru_head;	/* index of lead-recently used script */
     unsigned short lru_tail;	/* index of most-recently used script */
 
