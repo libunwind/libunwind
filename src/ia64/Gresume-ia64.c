@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN inline int
 ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-  unw_word_t val, sol, sof, pri_unat, loadrs, n, bspstore, pfs;
+  unw_word_t val, sol, sof, pri_unat, loadrs, n, pfs;
   struct cursor *c = (struct cursor *) cursor;
   struct
     {
@@ -105,9 +105,7 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       c->psp = (c->sigcontext_loc - c->sigcontext_off);
 
       sof = (c->cfm & 0x7f);
-      bspstore = c->bsp;
-      c->bsp = ia64_rse_skip_regs (bspstore, sof);
-      loadrs = 0;
+      rbs_cover_and_flush (c, sof);
 
       sc->sc_ip = c->ip;
       sc->sc_cfm = c->cfm & (((unw_word_t) 1 << 38) - 1);
@@ -130,8 +128,7 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       if ((ret = ia64_get (c, c->pfs_loc, &pfs)) < 0)
 	return ret;
       sol = (pfs >> 7) & 0x7f;
-      c->bsp = ia64_rse_skip_regs (c->bsp, sol);
-      loadrs = 0;
+      rbs_cover_and_flush (c, sol);
 
       extra.r1 = c->pi.gp;
       extra.r15 = c->eh_args[0];
@@ -139,7 +136,7 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r17 = c->eh_args[2];
       extra.r18 = c->eh_args[3];
     }
-  _Uia64_install_context (c, pri_unat, (unw_word_t *) &extra, loadrs);
+  _Uia64_install_context (c, pri_unat, (unw_word_t *) &extra);
 }
 
 #endif /* !UNW_REMOTE_ONLY */
