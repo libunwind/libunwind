@@ -70,7 +70,7 @@ main (int argc, char **argv)
   if (argc > 1)
     maxlevel = atol (argv[1]);
 
-  for (i = 0; i < 10; ++i)
+  for (i = 0; i < 20; ++i)
     f1 (0, maxlevel);
   return 0;
 }
