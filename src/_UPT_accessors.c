@@ -33,8 +33,6 @@ unw_accessors_t _UPT_accessors =
     .access_mem			= _UPT_access_mem,
     .access_reg			= _UPT_access_reg,
     .access_fpreg		= _UPT_access_fpreg,
-#if 0
-    .resume			= _UPT_resume_single_block, /* XXX fix me */
-#endif
+    .resume			= _UPT_resume,
     .get_proc_name		= _UPT_get_proc_name
   };
