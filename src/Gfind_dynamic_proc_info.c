@@ -58,10 +58,7 @@ remote_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   if (ret < 0)
     return ret;
 
-  /* Note: this can't go into dyn-remote.c because that file get's
-     compiled exactly once (there are no separate local/general
-     versions) and the call to unw_flush_cache() must evaluate to
-     either the local or generic version.  */
+  /* XXX fix me; this checks/flushes the cache at the wrong time.  */
   if (as->dyn_generation != generation)
     {
       unw_flush_cache (as, 0, 0);
