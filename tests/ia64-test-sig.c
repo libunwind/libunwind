@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -21,7 +21,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/* This shows how to use the unwind interface to modify any ancestor
+/* This test uses the unwind interface to modify the IP in an ancestor
    frame while still returning to the parent frame.  */
 
 #include <signal.h>
@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
+int verbose;
+
 static void
 sighandler (int signal)
 {
@@ -40,7 +42,8 @@ sighandler (int signal)
   unw_word_t ip;
   unw_context_t uc;
 
-  printf ("caught signal %d\n", signal);
+  if (verbose)
+    printf ("caught signal %d\n", signal);
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -81,13 +84,19 @@ doit (volatile char *p)
 
   ch = *p;	/* trigger SIGSEGV */
 
-  printf ("doit: finishing execution!\n");
+  if (verbose)
+    printf ("doit: finishing execution!\n");
 }
 
 int
 main (int argc, char **argv)
 {
+  if (argc > 1)
+    verbose = 1;
+
   signal (SIGSEGV, sighandler);
   doit (0);
+  if (verbose)
+    printf ("SUCCESS\n");
   return 0;
 }
