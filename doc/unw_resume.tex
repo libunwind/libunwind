@@ -19,22 +19,34 @@
 \section{Description}
 
 The \Func{unw\_resume}() routine resumes execution at the stack frame
-identified by \Var{cursor}.  Normally, this is accomplished by
-restoring the ``preserved'' (callee-saved) machine state.  However, if
-execution in any of the stack frames younger (more deeply nested) than
-the one identified by \Var{cursor} was interrupted by a signal, then
-\Func{unw\_resume}() will restore the entire machine state, including
-the ``preserved'' and ``scratch'' (caller-saved) registers, as well as
-the signal mask.
+identified by \Var{cursor}.  The behavior of this routine differs
+slightly for local and remote unwinding.
+
+For local unwinding, \Func{unw\_resume}() restores the machine state
+and then directly resumes execution in the target stack frame.  Thus
+\Func{unw\_resume}() does not return in this case.  Restoring the
+machine state normally involves restoring the ``preserved''
+(callee-saved) registers.  However, if execution in any of the stack
+frames younger (more deeply nested) than the one identified by
+\Var{cursor} was interrupted by a signal, then \Func{unw\_resume}()
+will restore all registers as well as the signal mask.
+
+For remote unwinding, \Func{unw\_resume}() installs the machine state
+identified by the cursor by calling the \Func{access\_reg} and
+\Func{access\_fpreg} accessor callbacks as needed.  Once that is
+accomplished, the \Func{resume} accessor callback is invoked.  The
+\Func{unw\_resume} routine then returns normally (that is, unlikely
+for local unwinding, \Func{unw\_resume} will always return for remote
+unwinding).
 
 Most platforms reserve some registers to pass arguments to exception
 handlers (e.g., IA-64 uses \texttt{r15}-\texttt{r18} for this
 purpose).  These registers are normally treated like ``scratch''
-registers.  However, if \Prog{libunwind} is used to define an
-exception argument register, e.g., by calling \Func{unw\_set\_reg}(),
-then \Func{unw\_resume}() will always install the new value as the
-contents of that register.  In other words, the exception handling
-arguments are installed even in cases where normally only the
+registers.  However, if \Prog{libunwind} is used to set an exception
+argument register to a particular value (e.g., via
+\Func{unw\_set\_reg}()), then \Func{unw\_resume}() will install this
+value as the contents of the register.  In other words, the exception
+handling arguments are installed even in cases where normally only the
 ``preserved'' registers are restored.
 
 Note that \Func{unw\_resume}() does \emph{not} invoke any unwind
