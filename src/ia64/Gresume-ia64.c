@@ -34,6 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
+#if defined(__linux)
   unw_word_t val, sol, sof, pri_unat, n, pfs;
   struct cursor *c = (struct cursor *) cursor;
   struct
@@ -137,6 +138,12 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r18 = c->eh_args[3];
     }
   ia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
+#elif defined(__hpux)
+  struct cursor *c = (struct cursor *) cursor;
+
+  setcontext (c->as_arg);	/* should not return */
+#endif
+  return -UNW_EINVAL;
 }
 
 HIDDEN int
@@ -152,7 +159,6 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 static inline int
 remote_install_cursor (struct cursor *c)
 {
-#ifndef __hpux
   int (*access_reg) (unw_addr_space_t, unw_regnum_t, unw_word_t *,
 		     int write, void *);
   int (*access_fpreg) (unw_addr_space_t, unw_regnum_t, unw_fpreg_t *,
@@ -161,6 +167,7 @@ remote_install_cursor (struct cursor *c)
   unw_word_t val;
   int reg;
 
+#ifdef __linux
   if (c->as == unw_local_addr_space)
     {
       /* Take a short-cut: we directly resume out of the cursor and
@@ -208,26 +215,28 @@ remote_install_cursor (struct cursor *c)
       MEMIFY (IA64_REG_F31,	UNW_IA64_FR + 31);
     }
   else
+#endif /* __linux */
     {
       access_reg = c->as->acc.access_reg;
       access_fpreg = c->as->acc.access_fpreg;
+
+      debug (1, "%s: copying out cursor state\n", __FUNCTION__);
 
       for (reg = 0; reg < UNW_REG_LAST; ++reg)
 	{
 	  if (unw_is_fpreg (reg))
 	    {
-	      if (ia64_access_fpreg (c, reg, &fpval, 0) > 0)
+	      if (ia64_access_fpreg (c, reg, &fpval, 0) >= 0)
 		(*access_fpreg) (c->as, reg, &fpval, 1, c->as_arg);
 	    }
 	  else
 	    {
-	      if (ia64_access_reg (c, reg, &val, 0) > 0)
+	      if (ia64_access_reg (c, reg, &val, 0) >= 0)
 		(*access_reg) (c->as, reg, &val, 1, c->as_arg);
 	    }
 	}
     }
   return (*c->as->acc.resume) (c->as, (unw_cursor_t *) c, c->as_arg);
-#endif
 }
 
 #endif /* !UNW_LOCAL_ONLY */
@@ -240,12 +249,6 @@ unw_resume (unw_cursor_t *cursor)
 #ifdef UNW_LOCAL_ONLY
   return local_resume (c->as, cursor, c->as_arg);
 #else
-  {
-    int ret;
-
-    if ((ret = remote_install_cursor (c)) < 0)
-      return ret;
-    return (*c->as->acc.resume) (c->as, cursor, c->as_arg);
-  }
+  return remote_install_cursor (c);
 #endif
 }
