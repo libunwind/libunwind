@@ -86,7 +86,8 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 		return ret;
 	    }
 #if !defined(UNW_LOCAL_ONLY) || defined(__linux)
-	  else if (c->last_abi_marker == ABI_MARKER_LINUX_SIGTRAMP)
+	  else if (c->last_abi_marker == ABI_MARKER_LINUX_SIGTRAMP
+		   || c->last_abi_marker == ABI_MARKER_OLD_LINUX_SIGTRAMP)
 	    /* NaT bit is saved in a sigcontext.  */
 	    loc = IA64_LOC_ADDR (c->sigcontext_addr + LINUX_SC_NAT_OFF, 0);
 #endif
@@ -145,7 +146,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_BR + 7:
     case UNW_IA64_AR_RSC:
     case UNW_IA64_AR_CSD:
-    case UNW_IA64_AR_26:
+    case UNW_IA64_AR_SSD:
     case UNW_IA64_AR_CCV:
       loc = ia64_scratch_loc (c, reg);
       break;
