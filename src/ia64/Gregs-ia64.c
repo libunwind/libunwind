@@ -61,7 +61,7 @@ ia64_scratch_loc (struct cursor *c, unw_regnum_t reg)
 	case UNW_IA64_BR + 6: loc += SIGCONTEXT_BR_OFF + 6*8; break;
 	case UNW_IA64_BR + 7: loc += SIGCONTEXT_BR_OFF + 7*8; break;
 	case UNW_IA64_AR_RSC: loc += SIGCONTEXT_AR_RSC_OFF; break;
-	case UNW_IA64_AR_25:  loc += SIGCONTEXT_AR_25_OFF; break;
+	case UNW_IA64_AR_CSD: loc += SIGCONTEXT_AR_CSD_OFF; break;
 	case UNW_IA64_AR_26:  loc += SIGCONTEXT_AR_26_OFF; break;
 	case UNW_IA64_AR_CCV: loc += SIGCONTEXT_AR_CCV; break;
 	}
@@ -398,7 +398,7 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_BR + 6:
     case UNW_IA64_BR + 7:
     case UNW_IA64_AR_RSC:
-    case UNW_IA64_AR_25:
+    case UNW_IA64_AR_CSD:
     case UNW_IA64_AR_26:
     case UNW_IA64_AR_CCV:
       loc = ia64_scratch_loc (c, reg);
