@@ -25,15 +25,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* This file tests corner-cases of NaT-bit handling.  */
 
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include <libunwind.h>
+
+#include <asm/rse.h>
 
 //#define NUM_RUNS		1024
 #define NUM_RUNS		1
 //#define MAX_CHECKS		1024
-#define MAX_CHECKS		2
+#define MAX_CHECKS		4
 #define MAX_VALUES_PER_FUNC	4
 
 #define panic(args...)							  \
@@ -56,6 +60,9 @@ static check_func_t check_static_to_br;
 extern save_func_t save_static_to_mem;
 static check_func_t check_static_to_mem;
 
+extern save_func_t save_static_to_scratch;
+static check_func_t check_static_to_scratch;
+
 static int verbose;
 static int nerrors;
 
@@ -74,8 +81,58 @@ all_funcs[] =
     //    { save_static_to_stacked,	check_static_to_stacked },
     //    { save_static_to_fr,	check_static_to_fr }
     //    { save_static_to_br,	check_static_to_br }
-    { save_static_to_mem,	check_static_to_mem }
+    //    { save_static_to_mem,	check_static_to_mem }
+    { save_static_to_scratch,	check_static_to_scratch }
   };
+
+void
+sighandler (int signal, void *siginfo, void *context)
+{
+  unsigned long *bsp, *arg1;
+  save_func_t **arg0;
+  ucontext_t *uc = context;
+  long sof;
+  int sp;
+
+  printf ("sighandler: got signal %d, sp=%p, nat=%lx\n",
+	  signal, &sp, uc->uc_mcontext.sc_nat);
+
+  sof = uc->uc_mcontext.sc_cfm & 0x7f;
+  bsp = ia64_rse_skip_regs ((unsigned long *) uc->uc_mcontext.sc_ar_bsp,
+			    -sof);
+  arg0 = (save_func_t **) *bsp;
+  bsp = ia64_rse_skip_regs (bsp, 1);
+  arg1 = (unsigned long *) *bsp;
+
+  (*arg0[0]) (arg0 + 1, arg1);
+
+  /* skip over the instruction which triggered sighandler() */
+  ++uc->uc_mcontext.sc_ip;
+}
+
+static void
+enable_sighandler (void)
+{
+  struct sigaction act;
+
+  memset (&act, 0, sizeof (act));
+  act.sa_handler = (void (*)(int)) sighandler;
+  act.sa_flags = SA_SIGINFO | SA_NOMASK;
+  if (sigaction (SIGSEGV, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
+}
+
+static void
+disable_sighandler (void)
+{
+  struct sigaction act;
+
+  memset (&act, 0, sizeof (act));
+  act.sa_handler = SIG_DFL;
+  act.sa_flags = SA_SIGINFO | SA_NOMASK;
+  if (sigaction (SIGSEGV, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
+}
 
 static unw_word_t *
 check_static_to_stacked (unw_cursor_t *c, unw_word_t *vals)
@@ -91,12 +148,12 @@ check_static_to_stacked (unw_cursor_t *c, unw_word_t *vals)
 
   for (i = 0; i < 4; ++i)
     if ((ret = unw_get_reg (c, UNW_IA64_GR + 4 + i, &r[i])) < 0)
-      panic ("%s: failed to read register r%d, error=%d",
+      panic ("%s: failed to read register r%d, error=%d\n",
 	     __FUNCTION__, 4 + i, ret);
 
   for (i = 0; i < 4; ++i)
     if ((ret = unw_get_reg (c, UNW_IA64_NAT + 4 + i, &nat[i])) < 0)
-      panic ("%s: failed to read register nat%d, error=%d",
+      panic ("%s: failed to read register nat%d, error=%d\n",
 	     __FUNCTION__, 4 + i, ret);
 
   for (i = 0; i < 4; ++i)
@@ -136,10 +193,10 @@ check_static_to_fr (unw_cursor_t *c, unw_word_t *vals)
   vals -= 1;
 
   if ((ret = unw_get_reg (c, UNW_IA64_GR + 4, &r4)) < 0)
-    panic ("%s: failed to read register r4, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register r4, error=%d\n", __FUNCTION__, ret);
 
   if ((ret = unw_get_reg (c, UNW_IA64_NAT + 4, &nat4)) < 0)
-    panic ("%s: failed to read register nat4, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register nat4, error=%d\n", __FUNCTION__, ret);
 
   if (verbose)
     printf ("    r4 = %c%016lx (expected %c%016lx)\n",
@@ -170,7 +227,7 @@ check_static_to_br (unw_cursor_t *c, unw_word_t *vals)
     printf ("  %s()\n", __FUNCTION__);
 
   if ((ret = unw_get_reg (c, UNW_IA64_PR, &pr)) < 0)
-    panic ("%s: failed to read register pr, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register pr, error=%d\n", __FUNCTION__, ret);
 
   if (!(pr & 1))
     /* r4 contained a NaT, so the routine didn't do anything.  */
@@ -179,10 +236,10 @@ check_static_to_br (unw_cursor_t *c, unw_word_t *vals)
   vals -= 1;
 
   if ((ret = unw_get_reg (c, UNW_IA64_GR + 4, &r4)) < 0)
-    panic ("%s: failed to read register r4, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register r4, error=%d\n", __FUNCTION__, ret);
 
   if ((ret = unw_get_reg (c, UNW_IA64_NAT + 4, &nat4)) < 0)
-    panic ("%s: failed to read register nat4, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register nat4, error=%d\n", __FUNCTION__, ret);
 
   if (verbose)
     printf ("    r4 = %c%016lx (expected %c%016lx)\n",
@@ -215,10 +272,10 @@ check_static_to_mem (unw_cursor_t *c, unw_word_t *vals)
   vals -= 1;
 
   if ((ret = unw_get_reg (c, UNW_IA64_GR + 5, &r5)) < 0)
-    panic ("%s: failed to read register r5, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register r5, error=%d\n", __FUNCTION__, ret);
 
   if ((ret = unw_get_reg (c, UNW_IA64_NAT + 5, &nat5)) < 0)
-    panic ("%s: failed to read register nat5, error=%d", __FUNCTION__, ret);
+    panic ("%s: failed to read register nat5, error=%d\n", __FUNCTION__, ret);
 
   if (verbose)
     printf ("    r5 = %c%016lx (expected %c%016lx)\n",
@@ -239,6 +296,59 @@ check_static_to_mem (unw_cursor_t *c, unw_word_t *vals)
   return vals;
 }
 
+static unw_word_t *
+check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
+{
+  unw_word_t r[4], nat[4];
+  int i, ret;
+
+  if (verbose)
+    printf ("  %s()\n", __FUNCTION__);
+
+  vals -= 4;
+
+  while (!unw_is_signal_frame (c))
+    if ((ret = unw_step (c)) < 0)
+      panic ("%s: unw_step (ret=%d): Failed to skip over signal handler\n",
+	     __FUNCTION__, ret);
+  if ((ret = unw_step (c)) < 0)
+    panic ("%s: unw_step (ret=%d): Failed to skip over signal handler\n",
+	   __FUNCTION__, ret);
+
+  for (i = 0; i < 4; ++i)
+    if ((ret = unw_get_reg (c, UNW_IA64_GR + 4 + i, &r[i])) < 0)
+      panic ("%s: failed to read register r%d, error=%d\n",
+	     __FUNCTION__, 4 + i, ret);
+
+  for (i = 0; i < 4; ++i)
+    if ((ret = unw_get_reg (c, UNW_IA64_NAT + 4 + i, &nat[i])) < 0)
+      panic ("%s: failed to read register nat%d, error=%d\n",
+	     __FUNCTION__, 4 + i, ret);
+
+  for (i = 0; i < 4; ++i)
+    {
+      if (verbose)
+	printf ("    r%d = %c%016lx (expected %c%016lx)\n",
+		4 + i, nat[i] ? '*' : ' ', r[i],
+		(vals[i] & 1) ? '*' : ' ', vals[i]);
+
+      if (vals[i] & 1)
+	{
+	  if (!nat[i])
+	    panic ("%s: r%d not a NaT!\n", __FUNCTION__, 4 + i);
+	}
+      else
+	{
+	  if (nat[i])
+	    panic ("%s: r%d a NaT!\n", __FUNCTION__, 4 + i);
+	  if (r[i] != vals[i])
+	    panic ("%s: r%d=%lx instead of %lx!\n",
+		   __FUNCTION__, 4 + i, r[i], vals[i]);
+	}
+    }
+  return vals;
+}
+
 static void
 start_checks (void *funcs, unsigned long *vals)
 {
@@ -246,20 +356,22 @@ start_checks (void *funcs, unsigned long *vals)
   unw_cursor_t c;
   int i, ret;
 
+  disable_sighandler ();
+
   unw_getcontext (&uc);
 
   if ((ret = unw_init_local (&c, &uc)) < 0)
-    panic ("%s: unw_init_local (ret=%d)", __FUNCTION__, ret);
+    panic ("%s: unw_init_local (ret=%d)\n", __FUNCTION__, ret);
 
   if ((ret = unw_step (&c)) < 0)
-    panic ("%s: unw_step (ret=%d)", __FUNCTION__, ret);
+    panic ("%s: unw_step (ret=%d)\n", __FUNCTION__, ret);
 
   for (i = 0; i < num_checks; ++i)
     {
       vals = (*checks[i]) (&c, vals);
 
       if ((ret = unw_step (&c)) < 0)
-	panic ("%s: unw_step (ret=%d)", __FUNCTION__, ret);
+	panic ("%s: unw_step (ret=%d)\n", __FUNCTION__, ret);
     }
 }
 
@@ -282,6 +394,7 @@ run_check (int test)
 
   funcs[num_checks] = start_checks;
 
+  enable_sighandler ();
   (*funcs[0]) (funcs + 1, values);
 }
 
@@ -296,7 +409,7 @@ main (int argc, char **argv)
   for (i = 0; i < NUM_RUNS; ++i)
     {
       if (verbose)
-	printf ("Run %d", i + 1);
+	printf ("Run %d\n", i + 1);
       run_check (i + 1);
     }
 
