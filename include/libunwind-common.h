@@ -169,6 +169,7 @@ extern int UNW_OBJ(set_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t val);
 extern int UNW_OBJ(get_save_loc) (unw_cursor_t *c, int regnum,
 				  unw_save_loc_t *loc);
 extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
+extern const char *UNW_OBJ(regname) (int regnum);
 
 /* Initialize cursor C such that unwinding starts at the point
    represented by the context U.  Returns zero on success, negative
@@ -206,3 +207,9 @@ extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
 
 /* Returns non-zero value if the cursor points to a signal frame.  */
 #define unw_is_signal_frame(c)	UNW_OBJ(is_signal_frame)(c)
+
+/* Returns the canonical register name of register R.  R must be in
+   the range from 0 to UNW_REG_LAST.  Like all other unwind routines,
+   this one is re-entrant (i.e., the returned string must be a string
+   constant.  */
+#define unw_regname(r)		UNW_OBJ(regname)(r)
