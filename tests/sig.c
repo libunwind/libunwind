@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -89,4 +89,5 @@ main (int argc, char **argv)
 {
   signal (SIGSEGV, sighandler);
   doit (0);
+  return 0;
 }
