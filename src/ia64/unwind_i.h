@@ -147,6 +147,7 @@ struct ia64_cursor
     unw_word_t f2_loc, f3_loc, f4_loc, f5_loc, fr_loc[16];
 
     unw_word_t eh_args[4];	/* exception handler arguments */
+    unw_word_t sigcontext_loc;	/* location of sigcontext or NULL */
 
 #ifdef IA64_UNW_SCRIPT_CACHE
     short hint;
