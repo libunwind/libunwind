@@ -1,10 +1,12 @@
 -*- mode: Outline -*-
 
-This is version 0.92 of the unwind library.  At the moment, only the
+This is version 0.95 of the unwind library.  At the moment, only the
 IA-64 Linux (IPF Linux) platform is fully supported.  Some very basic
-support for x86 exists also.  However, the x86 support is based purely
-on the frame-chain and does not use unwind information, so its utility
-is limited.
+support for x86 and HP-UX/IPF exists also.  However, the x86 support
+is based purely on the frame-chain and does not use unwind
+information, so its utility is limited.  Similarly, the HP-UX/IPF
+support is incomplete, though it is sufficient to do a basic
+backtrace.  unw_resume() is not supported, however.
 
 * General Build Instructions
 
@@ -31,7 +33,9 @@ September 2003, this appears to be a common problem for Debian
 option "--disable-__thread".
 
 
-* Building with Intel ECC
+* Building with Intel compiler
+
+** Up to version 7
 
 To build libunwind with the Intel Electron compiler (ECC), it is
 recommended to run configure like this:
@@ -47,14 +51,30 @@ called "__dummy" in the declaration of "struct ia64_fpreg".  Without
 that member, variables of type unw_context_t won't be aligned
 properly.
 
+** Version 8 and later
+
+Starting with version 8, the preferred name for the IA-64 Intel
+compiler is "icc" (same name as on x86).  Thus, the configure-line
+should look like this:
+
+	$ ./configure CC=icc CXX=icc CCAS=gcc
+
 * Building on HP-UX
 
 For the time being, libunwind must be built with GCC on HP-UX.
-Unfortunately, gcc-3.0 ships with a bad version of sys/types.h.
-The workaround for this is:
+Unfortunately, gcc-3.0 and gcc-3.2 ship with a bad version of
+sys/types.h.  The workaround for this is:
 
     $ mkdir $top_dir/include/sys
     $ cp /usr/include/sys/types.h $top_dir/include/sys
+
+Apart from this glitch, libunwind should configure and install on
+HP-UX like this:
+
+    $ ./configure CFLAGS="-g -O2 -mlp64"
+
+Caveat: Unwinding of 32-bit (ILP32) binaries is not supported
+	at the moment.
 
 * Regression Testing
 
@@ -62,8 +82,10 @@ After building the library, you can run a set of regression tests with:
 
 	$ make check
 
+** Expected results on IA-64 Linux
+
 Unless you have a very recent C library and compiler installed, it is
-currently expected to have the following tests fail:
+currently expected to have the following tests fail on IA-64 Linux:
 
 	Gtest-init		(should pass starting with glibc-2.3.x/gcc-3.4)
 	Ltest-init		(should pass starting with glibc-2.3.x/gcc-3.4)
@@ -74,6 +96,22 @@ This does not mean that libunwind cannot be used with older compilers
 or C libraries, it just means that for certain corner cases, unwinding
 will fail.  Since they're corner cases, it is not likely for
 applications to trigger them.
+
+** Expected results on x86 Linux
+
+The following tests are expected to fail on x86 Linux:
+
+	test-proc-info		(x86 unwinder doesn't use unwind-info yet)
+	Gtest-exc		(unw_resume() not implmented yet)
+	Ltest-exc		(unw_resume() not implmented yet)
+	test-setjmp		(unw_resume() not implmented yet)
+
+** Expected results on HP-UX
+
+"make check" is currently unsupported for HP-UX.  The only test
+programs that are known to work at this time are tests/bt (which
+produces various backtraces) and tests/Gperf-simple, which does some
+simple performance measurements.
 
 * Contacting the Developers
 
