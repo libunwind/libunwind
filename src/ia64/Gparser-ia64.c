@@ -318,7 +318,8 @@ static inline void
 desc_abi (unsigned char abi, unsigned char context,
 	  struct ia64_state_record *sr)
 {
-  if (abi == 0 && context == 's')
+  if ((abi == 0 && context == 's')	/* Linux signal trampoline */
+      || (abi == 1 && context == 1))	/* HP-UX signal trampoline */
     sr->is_signal_frame = 1;
   else
     dprintf ("libunwind: ignoring unwabi(abi=0x%x,context=0x%x)\n",
