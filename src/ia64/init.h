@@ -23,7 +23,7 @@ License.  */
 
 #include "unwind_i.h"
 
-static inline
+static inline int
 common_init (struct ia64_cursor *c)
 {
   int i, ret;
