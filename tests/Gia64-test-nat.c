@@ -78,11 +78,15 @@ static struct
   }
 all_funcs[] =
   {
-    //    { save_static_to_stacked,	check_static_to_stacked },
-    //    { save_static_to_fr,	check_static_to_fr }
-    //    { save_static_to_br,	check_static_to_br }
-    //    { save_static_to_mem,	check_static_to_mem }
+#if 0
+    { save_static_to_stacked,	check_static_to_stacked },
+    { save_static_to_fr,	check_static_to_fr }
+#endif
+    { save_static_to_br,	check_static_to_br }
+#if 0
+    { save_static_to_mem,	check_static_to_mem }
     { save_static_to_scratch,	check_static_to_scratch }
+#endif
   };
 
 void
