@@ -10,7 +10,7 @@ if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig
  TESTS_arch = ia64-test-stack
 endif
- TESTS_cdep = test-dyn1
+ TESTS_cdep = test-dyn1 test-ptrace
  noinst_PROGRAMS_cdep = bt exc test-init test-varargs test-dyn1 test-resume-sig
 endif
 
