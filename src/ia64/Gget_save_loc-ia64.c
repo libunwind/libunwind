@@ -116,7 +116,6 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_BR + 5:	loc = c->loc[IA64_REG_B5]; break;
     case UNW_IA64_CFM:		loc = c->cfm_loc; break;
     case UNW_IA64_PR:		loc = c->loc[IA64_REG_PR]; break;
-      break;
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
       reg = rotate_gr (c, reg - UNW_IA64_GR);
