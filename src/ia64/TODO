@@ -1,3 +1,13 @@
-- c->prev_script is redundant now that we have c->script
+- unify UNW_IA64_AR_BSP and UNW_IA64_BSP
+
+- debuggers need additional frame info:
+	- ability to determine first non-prologue instruction
+	  (gdb calls this skip_prologue) => this doesn't really
+	  make much sense for optimized code: there may be now
+	  single IP at which the .body starts; the gdb maintainers
+	  are aware of this and are planning to modify gdb such that
+	  skip_prologue can always return 0
+	- ability to find out whether and where a frame saved a register
+
 - finish & test unwinding across signal frame (pay attention that signal
   frame gets updated)
