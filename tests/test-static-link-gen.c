@@ -53,20 +53,20 @@ static void *funcs[] =
 int
 test_generic (void)
 {
-  unw_cursor_t c;
-
   if (verbose)
     printf (__FILE__": funcs[0]=%p\n", funcs[0]);
 
 #ifndef UNW_REMOTE_ONLY
   {
     unw_context_t uc;
+    unw_cursor_t c;
 
     unw_getcontext (&uc);
     unw_init_local (&c, &uc);
     unw_init_remote (&c, unw_local_addr_space, &uc);
+
+    return unw_step (&c);
   }
-  return unw_step (&c);
 #else
   return 0;
 #endif
