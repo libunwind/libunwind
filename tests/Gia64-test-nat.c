@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
+   Copyright (C) 2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -23,10 +23,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/* This file tests corner-cases of unwinding across multiple stacks.
-   In particular, it verifies that the extreme case with a frame of 96
-   stacked registers that are all backed up by separate stacks works
-   as expected.  */
+/* This file tests corner-cases of NaT-bit handling.  */
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -50,8 +47,14 @@ typedef unw_word_t *check_func_t (unw_cursor_t *c, unsigned long *vals);
 extern save_func_t save_static_to_stacked;
 static check_func_t check_static_to_stacked;
 
-extern save_func_t save_static_to_fpreg;
-static check_func_t check_static_to_fpreg;
+extern save_func_t save_static_to_fr;
+static check_func_t check_static_to_fr;
+
+extern save_func_t save_static_to_br;
+static check_func_t check_static_to_br;
+
+extern save_func_t save_static_to_mem;
+static check_func_t check_static_to_mem;
 
 static int verbose;
 static int nerrors;
@@ -69,7 +72,9 @@ static struct
 all_funcs[] =
   {
     //    { save_static_to_stacked,	check_static_to_stacked },
-    { save_static_to_fpreg,	check_static_to_fpreg }
+    //    { save_static_to_fr,	check_static_to_fr }
+    //    { save_static_to_br,	check_static_to_br }
+    { save_static_to_mem,	check_static_to_mem }
   };
 
 static unw_word_t *
@@ -119,7 +124,7 @@ check_static_to_stacked (unw_cursor_t *c, unw_word_t *vals)
 }
 
 static unw_word_t *
-check_static_to_fpreg (unw_cursor_t *c, unw_word_t *vals)
+check_static_to_fr (unw_cursor_t *c, unw_word_t *vals)
 {
   unw_word_t r4;
   unw_word_t nat4;
@@ -151,6 +156,85 @@ check_static_to_fpreg (unw_cursor_t *c, unw_word_t *vals)
 	panic ("%s: r4 a NaT!\n", __FUNCTION__);
       if (r4 != vals[0])
 	panic ("%s: r4=%lx instead of %lx!\n", __FUNCTION__, r4, vals[0]);
+    }
+  return vals;
+}
+
+static unw_word_t *
+check_static_to_br (unw_cursor_t *c, unw_word_t *vals)
+{
+  unw_word_t r4, nat4, pr;
+  int ret;
+
+  if (verbose)
+    printf ("  %s()\n", __FUNCTION__);
+
+  if ((ret = unw_get_reg (c, UNW_IA64_PR, &pr)) < 0)
+    panic ("%s: failed to read register pr, error=%d", __FUNCTION__, ret);
+
+  if (!(pr & 1))
+    /* r4 contained a NaT, so the routine didn't do anything.  */
+    return vals;
+
+  vals -= 1;
+
+  if ((ret = unw_get_reg (c, UNW_IA64_GR + 4, &r4)) < 0)
+    panic ("%s: failed to read register r4, error=%d", __FUNCTION__, ret);
+
+  if ((ret = unw_get_reg (c, UNW_IA64_NAT + 4, &nat4)) < 0)
+    panic ("%s: failed to read register nat4, error=%d", __FUNCTION__, ret);
+
+  if (verbose)
+    printf ("    r4 = %c%016lx (expected %c%016lx)\n",
+	    nat4 ? '*' : ' ', r4, (vals[0] & 1) ? '*' : ' ', vals[0]);
+
+  if (vals[0] & 1)
+    {
+      if (!nat4)
+	panic ("%s: r4 not a NaT!\n", __FUNCTION__);
+    }
+  else
+    {
+      if (nat4)
+	panic ("%s: r4 a NaT!\n", __FUNCTION__);
+      if (r4 != vals[0])
+	panic ("%s: r4=%lx instead of %lx!\n", __FUNCTION__, r4, vals[0]);
+    }
+  return vals;
+}
+
+static unw_word_t *
+check_static_to_mem (unw_cursor_t *c, unw_word_t *vals)
+{
+  unw_word_t r5, nat5;
+  int ret;
+
+  if (verbose)
+    printf ("  %s()\n", __FUNCTION__);
+
+  vals -= 1;
+
+  if ((ret = unw_get_reg (c, UNW_IA64_GR + 5, &r5)) < 0)
+    panic ("%s: failed to read register r5, error=%d", __FUNCTION__, ret);
+
+  if ((ret = unw_get_reg (c, UNW_IA64_NAT + 5, &nat5)) < 0)
+    panic ("%s: failed to read register nat5, error=%d", __FUNCTION__, ret);
+
+  if (verbose)
+    printf ("    r5 = %c%016lx (expected %c%016lx)\n",
+	    nat5 ? '*' : ' ', r5, (vals[0] & 1) ? '*' : ' ', vals[0]);
+
+  if (vals[0] & 1)
+    {
+      if (!nat5)
+	panic ("%s: r5 not a NaT!\n", __FUNCTION__);
+    }
+  else
+    {
+      if (nat5)
+	panic ("%s: r5 a NaT!\n", __FUNCTION__);
+      if (r5 != vals[0])
+	panic ("%s: r5=%lx instead of %lx!\n", __FUNCTION__, r5, vals[0]);
     }
   return vals;
 }
