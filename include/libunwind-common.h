@@ -126,11 +126,10 @@ typedef struct unw_proc_info
     unw_word_t handler;		/* optional personality routine */
     unw_word_t gp;		/* global-pointer value for this procedure */
     unw_word_t flags;		/* misc. flags */
-    const char *proc_name;	/* optional name of procedure */
 
     int format;			/* unwind-info format (arch-specific) */
+    int unwind_info_size;	/* size of the informat (if applicable) */
     void *unwind_info;		/* unwind-info (arch-specific) */
-    size_t unwind_info_size;	/* size of the informat (if applicable) */
   }
 unw_proc_info_t;
 
@@ -142,9 +141,26 @@ typedef struct unw_accessors
     /* Look up the unwind info associated with instruction-pointer IP.
        On success, the routine fills in the PROC_INFO structure.  */
     int (*find_proc_info) (unw_addr_space_t as, unw_word_t ip,
-			   unw_proc_info_t *proc_info, void *arg);
+			   unw_proc_info_t *proc_info,
+			   int need_unwind_info,
+			   void *arg);
 
-    /* Access aligned word at address ADDR.  */
+    /* Release any resources (e.g., memory) that were allocated for
+       the unwind info returned in by a previous call to
+       find_proc_info() with NEED_UNWIND_INFO set to 1.  */
+    void (*put_unwind_info) (unw_addr_space_t as, unw_proc_info_t *proc_info,
+			     void *arg);
+
+    /* Return the list-head of the dynamically registered unwind
+       info.  */
+    int (*get_dyn_info_list_addr) (unw_addr_space_t as,
+				   unw_word_t *dyn_info_list_addr,
+				   void *arg);
+
+    /* Access aligned word at address ADDR.  The value is returned
+       according to the endianness of the host (e.g., if the host is
+       little-endian and the target is big-endian, access_mem() needs
+       to byte-swap the value before returning it).  */
     int (*access_mem) (unw_addr_space_t as, unw_word_t addr,
 		       unw_word_t *val, int write, void *arg);
 
@@ -187,7 +203,8 @@ unw_save_loc_t;
 
 extern unw_addr_space_t UNW_OBJ(local_addr_space);
 
-extern unw_addr_space_t UNW_OBJ(create_addr_space) (unw_accessors_t *a);
+extern unw_addr_space_t UNW_OBJ(create_addr_space) (unw_accessors_t *a,
+						    int byte_order);
 extern unw_accessors_t *UNW_OBJ(get_accessors) (unw_addr_space_t as);
 extern void UNW_OBJ(destroy_addr_space) (unw_addr_space_t as);
 extern int UNW_OBJ(init_local) (unw_cursor_t *c, ucontext_t *u);
@@ -203,16 +220,24 @@ extern int UNW_OBJ(set_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t val);
 extern int UNW_OBJ(get_save_loc) (unw_cursor_t *c, int regnum,
 				  unw_save_loc_t *loc);
 extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
+extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len);
 extern const char *UNW_ARCH_OBJ(regname) (int regnum);
-extern int UNW_OBJ(find_dynamic_proc_info) (unw_addr_space_t as, unw_word_t ip,
-					    unw_proc_info_t *pi, void *arg);
+extern void UNW_OBJ(flush_cache)(unw_addr_space_t as,
+				 unw_word_t lo, unw_word_t hi);
+extern int UNW_OBJ(set_caching_policy)(unw_addr_space_t as,
+				       unw_caching_policy_t policy);
 
 #define unw_local_addr_space		UNW_OBJ(local_addr_space)
 
 /* Create a new address space (in addition to the default
-   local_addr_space).
+   local_addr_space).  BYTE_ORDER can be 0 to select the default
+   byte-order or one of the byte-order values defined by <endian.h>
+   (e.g., __LITLE_ENDIAN or __BIG_ENDIAN).  The default byte-order is
+   either implied by the target architecture (e.g., x86 is always
+   little-endian) or is select based on the byte-order of the host.
+
    This routine is NOT signal-safe.  */
-#define unw_create_addr_space(a)	UNW_OBJ(create_addr_space)(a)
+#define unw_create_addr_space(a,b)	UNW_OBJ(create_addr_space)(a,b)
 
 /* Retrieve a pointer to the accessors structure associated with
    address space AS.
@@ -274,6 +299,14 @@ extern int UNW_OBJ(find_dynamic_proc_info) (unw_addr_space_t as, unw_word_t ip,
    This routine is signal-safe.  */
 #define unw_is_signal_frame(c)	UNW_OBJ(is_signal_frame)(c)
 
+/* Return the name of the procedure that created the frame identified
+   by the cursor.  The returned string is ASCII NUL terminated. If the
+   string buffer is too small to store the entire name, the first
+   portion of the string that can fit is stored in the buffer (along
+   with a terminating NUL character) and -UNW_ENOMEM is returned.  If
+   no name can be determined, -UNW_ENOINFO is returned.  */
+#define unw_get_proc_name(c,s,l)	UNW_OBJ(get_proc_name)(c, s, l)
+
 /* Returns the canonical register name of register R.  R must be in
    the range from 0 to UNW_REG_LAST.  Like all other unwind routines,
    this one is re-entrant (i.e., the returned string must be a string
@@ -301,9 +334,3 @@ extern int UNW_OBJ(find_dynamic_proc_info) (unw_addr_space_t as, unw_word_t ip,
    to dlclose()).
    This routine is signal-safe.  */
 #define unw_flush_cache(as,lo,hi)	UNW_OBJ(flush_cache)(as, lo, hi)
-
-/* Locate the procedure info for instruction pointer IP, assuming
-   the procedure was registered dynamically (at runtime).
-   This routine is signal-safe.  */
-#define unw_find_dynamic_proc_info(as,ip,pi,arg)			\
-		UNW_OBJ(find_dynamic_proc_info)(as, ip, pi, arg)
