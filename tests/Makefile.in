@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) test-varargs.c
+SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) test-varargs.c
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -52,7 +52,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = check-namespace.sh
-am__EXEEXT_1 = test-proc-info$(EXEEXT) test-static-link$(EXEEXT)
+am__EXEEXT_1 = test-init-remote$(EXEEXT) test-proc-info$(EXEEXT) \
+	test-static-link$(EXEEXT)
 @REMOTE_ONLY_FALSE@am__EXEEXT_2 = Gtest-exc$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Ltest-exc$(EXEEXT) Gtest-init$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Ltest-init$(EXEEXT) \
@@ -197,6 +198,10 @@ test_flush_cache_SOURCES = test-flush-cache.c
 test_flush_cache_OBJECTS = test-flush-cache.$(OBJEXT)
 test_flush_cache_LDADD = $(LDADD)
 test_flush_cache_DEPENDENCIES = $(am__DEPENDENCIES_1)
+test_init_remote_SOURCES = test-init-remote.c
+test_init_remote_OBJECTS = test-init-remote.$(OBJEXT)
+test_init_remote_LDADD = $(LDADD)
+test_init_remote_DEPENDENCIES = $(am__DEPENDENCIES_1)
 test_mem_SOURCES = test-mem.c
 test_mem_OBJECTS = test-mem.$(OBJEXT)
 test_mem_LDADD = $(LDADD)
@@ -252,8 +257,8 @@ SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) \
 	Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c \
 	forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c \
-	test-async-sig.c test-flush-cache.c test-mem.c \
-	test-proc-info.c test-ptrace.c test-setjmp.c \
+	test-async-sig.c test-flush-cache.c test-init-remote.c \
+	test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c \
 	$(test_static_link_SOURCES) test-varargs.c
 DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	$(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) \
@@ -264,8 +269,8 @@ DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) \
 	Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c \
 	forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c \
-	test-async-sig.c test-flush-cache.c test-mem.c \
-	test-proc-info.c test-ptrace.c test-setjmp.c \
+	test-async-sig.c test-flush-cache.c test-init-remote.c \
+	test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c \
 	$(test_static_link_SOURCES) test-varargs.c
 ETAGS = etags
 CTAGS = ctags
@@ -396,7 +401,7 @@ EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper		\
 		run-check-namespace check-namespace.sh.in
 
 noinst_PROGRAMS_common = 
-check_PROGRAMS_common = test-proc-info test-static-link
+check_PROGRAMS_common = test-init-remote test-proc-info test-static-link
 check_SCRIPTS_common = run-check-namespace
 @REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = run-ptrace-mapper
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
@@ -578,6 +583,9 @@ test-async-sig$(EXEEXT): $(test_async_sig_OBJECTS) $(test_async_sig_DEPENDENCIES
 test-flush-cache$(EXEEXT): $(test_flush_cache_OBJECTS) $(test_flush_cache_DEPENDENCIES) 
 	@rm -f test-flush-cache$(EXEEXT)
 	$(LINK) $(test_flush_cache_LDFLAGS) $(test_flush_cache_OBJECTS) $(test_flush_cache_LDADD) $(LIBS)
+test-init-remote$(EXEEXT): $(test_init_remote_OBJECTS) $(test_init_remote_DEPENDENCIES) 
+	@rm -f test-init-remote$(EXEEXT)
+	$(LINK) $(test_init_remote_LDFLAGS) $(test_init_remote_OBJECTS) $(test_init_remote_LDADD) $(LIBS)
 test-mem$(EXEEXT): $(test_mem_OBJECTS) $(test_mem_DEPENDENCIES) 
 	@rm -f test-mem$(EXEEXT)
 	$(LINK) $(test_mem_LDFLAGS) $(test_mem_OBJECTS) $(test_mem_LDADD) $(LIBS)
@@ -630,6 +638,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-async-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-flush-cache.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init-remote.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-mem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-proc-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ptrace.Po@am__quote@
