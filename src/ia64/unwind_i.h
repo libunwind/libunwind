@@ -370,7 +370,6 @@ struct ia64_labeled_state
 #define ia64_free_state_record		UNW_OBJ(free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(find_save_locs)
 #define ia64_per_thread_cache		UNW_OBJ(per_thread_cache)
-#define ia64_script_cache_init		UNW_OBJ(script_cache_init)
 #define ia64_access_reg			UNW_OBJ(access_reg)
 #define ia64_access_fpreg		UNW_OBJ(access_fpreg)
 #define ia64_scratch_loc		UNW_OBJ(scratch_loc)
@@ -392,7 +391,6 @@ extern int ia64_create_state_record (struct cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
 extern int ia64_find_save_locs (struct cursor *c);
-extern void ia64_script_cache_init (struct ia64_script_cache *cache);
 extern void ia64_local_addr_space_init (void);
 extern void ia64_init (void);
 extern int ia64_access_reg (struct cursor *c, unw_regnum_t reg,
