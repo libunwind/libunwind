@@ -61,7 +61,8 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
      and we know that getcontext() doesn't switch the register-backing
      store.  */
   sol = (uc->uc_mcontext.sc_ar_pfs >> 7) & 0x7f;
-  uc->uc_mcontext.sc_rbs_base = ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp, -sol);
+  uc->uc_mcontext.sc_rbs_base = ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
+						    -sol);
 
   c->as = unw_local_addr_space;
   c->as_arg = uc;
