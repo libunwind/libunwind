@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 AC_INIT(src/backtrace.c)
 AC_CONFIG_AUX_DIR(aux)
 AC_CANONICAL_SYSTEM
-AM_INIT_AUTOMAKE(libunwind, 0.9)
+AM_INIT_AUTOMAKE(libunwind, 0.91)
 AM_MAINTAINER_MODE
 AM_CONFIG_HEADER(include/config.h)
 
@@ -17,17 +17,21 @@ dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h ia64intrin.h)
+AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h execinfo.h ia64intrin.h \
+		 unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
+AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
+
+AC_CHECK_TYPE(sighandler_t)
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
-AC_CHECK_FUNCS(getunwind)
+AC_CHECK_FUNCS(dl_iterate_phdr dlmodinfo getunwind ttrace)
 
 get_arch() {
  case "$1" in
