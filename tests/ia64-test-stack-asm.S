@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 	.common stackmem, NSTACKS*STACK_SIZE, 16
 
+	.global do_unwind_tests
+
 	.text
 
 #define SAVED_SP_OFF		 0
@@ -83,12 +85,12 @@ stack_it:
 
 	// for even iterations, allocate a local variable:
 	tbit.nz p6, p0 = r8, 0
-(p6)	br.cond.sptk.few 1f
+(p6)	br.cond.sptk.few .skip
 	;;
 	alloc r2 = ar.pfs, 0, 1, 0, 0
 	mov loc0 = r8
 	;;
-1:	cmp.ne p6, p7 = 0, r8
+.skip:	cmp.ne p6, p7 = 0, r8
 	;;
 {	.mbb
 (p6)	adds r8 = -1, r8
