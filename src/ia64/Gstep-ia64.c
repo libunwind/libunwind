@@ -60,6 +60,31 @@ linux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
 }
 
 static inline int
+linux_interrupt (struct cursor *c, unw_word_t *num_regsp)
+{
+#if defined(UNW_LOCAL_ONLY)
+  /* Perhaps libunwind will some day become the Linux kernel unwinder.
+     Until such time, linux_interrupt() is needed only for non-local
+     unwinding.  */
+  return -UNW_EINVAL;
+#else
+  unw_word_t sc_addr, num_regs;
+
+  sc_addr = c->sigcontext_addr = c->sp + 0x10;
+
+  if ((c->pr & (1UL << LINUX_PT_P_NONSYS)) != 0)
+    num_regs = c->cfm & 0x7f;
+  else
+    num_regs = 0;
+
+  /* do what can't be described by unwind directives: */
+  c->loc[IA64_REG_PFS] = IA64_LOC_ADDR (sc_addr + LINUX_PT_PFS_OFF, 0);
+  *num_regsp = num_regs;		/* size of frame */
+  return 0;
+#endif
+}
+
+static inline int
 hpux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
 {
 #if defined(UNW_LOCAL_ONLY) && !defined(__hpux)
@@ -221,11 +246,18 @@ update_frame_state (struct cursor *c)
   num_regs = 0;
   if (unlikely (c->abi_marker))
     {
+      c->last_abi_marker = c->abi_marker;
       switch (c->abi_marker)
 	{
 	case ABI_MARKER_LINUX_SIGTRAMP:
 	  c->as->abi = ABI_LINUX;
 	  if ((ret = linux_sigtramp (c, &num_regs)) < 0)
+	    return ret;
+	  break;
+
+	case ABI_MARKER_LINUX_INTERRUPT:
+	  c->as->abi = ABI_LINUX;
+	  if ((ret = linux_interrupt (c, &num_regs)) < 0)
 	    return ret;
 	  break;
 
