@@ -63,6 +63,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef __GNUC__
 # define UNUSED		__attribute__((unused))
 # define NORETURN	__attribute__((noreturn))
+# define ALIAS(name)	__attribute__((alias (#name)))
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
 #  define ALWAYS_INLINE	__attribute__((always_inline))
 #  define HIDDEN	__attribute__((visibility ("hidden")))
@@ -83,6 +84,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define ALWAYS_INLINE
 # define UNUSED
 # define NORETURN
+# define ALIAS(name)
 # define HIDDEN
 # define PROTECTED
 # define likely(x)	(x)
