@@ -331,7 +331,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 
     case IA64_WHERE_FR:
       if (rval <= 5)
-	val = IA64_REG_F2 + (rval - 1);
+	val = IA64_REG_F2 + (rval - 2);
       else if (rval >= 16 && rval <= 31)
 	val = IA64_REG_F16 + (rval - 16);
       else
