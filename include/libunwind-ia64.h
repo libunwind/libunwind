@@ -29,6 +29,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <inttypes.h>
 #include <ucontext.h>
 
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
 #ifdef ia64
   /* This works around a bug in Intel's ECC v7.0 which defines "ia64"
      as "1".  */
@@ -160,5 +164,9 @@ extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
 /* This is a helper routine to obtain the kernel-unwind info.  It is
    signal-safe.  */
 extern int _Uia64_get_kernel_table (unw_dyn_info_t *di);
+
+#if defined(__cplusplus) || defined(c_plusplus)
+}
+#endif
 
 #endif /* LIBUNWIND_H */

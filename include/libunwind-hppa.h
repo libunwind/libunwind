@@ -26,6 +26,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef LIBUNWIND_H
 #define LIBUNWIND_H
 
+#if defined(__cplusplus) || defined(c_plusplus)
+extern "C" {
+#endif
+
 #include <inttypes.h>
 #include <ucontext.h>
 
@@ -82,5 +86,9 @@ typedef ucontext_t unw_tdep_context_t;
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_HPPA_FR) < 128)
 
 #include "libunwind-common.h"
+
+#if defined(__cplusplus) || defined(c_plusplus)
+}
+#endif
 
 #endif /* LIBUNWIND_H */
