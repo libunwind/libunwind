@@ -16,6 +16,8 @@ This file is part of libunwind.  */
 
 #include "unwind_i.h"
 
+extern unw_addr_space_t _ULia64_local_addr_space;
+
 struct ia64_table_entry
   {
     uint64_t start_offset;
@@ -52,8 +54,6 @@ is_local_addr_space (unw_addr_space_t as)
 #ifdef UNW_REMOTE_ONLY
   return 0;
 #else
-  extern unw_addr_space_t _ULia64_local_addr_space;
-
   return (as == _Uia64_local_addr_space
 # ifndef UNW_GENERIC_ONLY
 	  || as == _ULia64_local_addr_space
@@ -405,11 +405,12 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
       dip = &kernel_table;
     }
 #elif defined(HAVE_DLMODINFO)
+# define UNWIND_TBL_32BIT	0x8000000000000000
   struct load_module_desc lmd;
   unw_dyn_info_t di, *dip = &di;
   struct unwind_header
     {
-      uint64_t unknown1;
+      uint64_t header_version;
       uint64_t start_offset;
       uint64_t end_offset;
     }
@@ -421,10 +422,26 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   di.format = UNW_INFO_FORMAT_TABLE;
   di.start_ip = lmd.text_base;
   di.end_ip = lmd.text_base + lmd.text_size;
+  di.gp = lmd.linkage_ptr;
   di.u.ti.name_ptr = 0;	/* no obvious table-name available */
   di.u.ti.segbase = lmd.text_base;
 
   uhdr = (struct unwind_header *) lmd.unwind_base;
+
+  if ((uhdr->header_version & ~UNWIND_TBL_32BIT) != 1
+      && (uhdr->header_version & ~UNWIND_TBL_32BIT) != 2)
+    {
+      debug (1, "%s: encountered unknown unwind header version %ld\n",
+ 	     __FUNCTION__, (long) (uhdr->header_version & ~UNWIND_TBL_32BIT));
+      return -UNW_EBADVERSION;
+    }
+  if (uhdr->header_version & UNWIND_TBL_32BIT)
+    {
+      debug (1, "%s: 32-bit unwind tables are not supported yet\n",
+ 	     __FUNCTION__);
+      return -UNW_EINVAL;
+    }
+
   di.u.ti.table_data = (unw_word_t *) (di.u.ti.segbase + uhdr->start_offset);
   di.u.ti.table_len = ((uhdr->end_offset - uhdr->start_offset)
 		       / sizeof (unw_word_t));
