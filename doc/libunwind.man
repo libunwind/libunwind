@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:18:01 PST 2003
+.\" Manual page created with latex2man on Tue Dec  9 23:06:05 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND" "3" "09 December 2003" "Programming Library " "Programming Library "
 .SH NAME
 libunwind
 \-\- a (mostly) platform\-independent unwind API 
@@ -145,32 +145,32 @@ some sort of error has occurred.
 .PP
 While it is not possible to directly move the unwind cursor in the 
 ``down\&'' direction (towards newer stack frames), this effect can be 
-achieved by making copyies of an unwind cursor. For example, a 
-program that sometimes has to move ``down\&'' by one stack frame could 
-maintain two cursor variables: ``curr\&''
+achieved by making copies of an unwind cursor. For example, a program 
+that sometimes has to move ``down\&'' by one stack frame could maintain 
+two cursor variables: ``curr\&''
 and ``prev\&''\&.
-The 
-former would be used as the current cursor and prev
-would be 
-maintained as the ``previous frame\&'' cursor by copying the contents of 
-curr
+The former 
+would be used as the current cursor and prev
+would be maintained 
+as the ``previous frame\&'' cursor by copying the contents of curr
 to prev
 right before calling unw_step().
-With this approach, the program could move one step ``down\&'' simply by 
-copying back prev
+With this 
+approach, the program could move one step ``down\&'' simply by copying 
+back prev
 to curr
-whenever that is necessary. In 
-the mosts extreme case, a program could maintain a separate cursor for 
-each call frame and that way it could move up and down the call frame 
-chain at will. 
+whenever that is necessary. In the most 
+extreme case, a program could maintain a separate cursor for each call 
+frame and that way it could move up and down the callframe\-chain at 
+will. 
 .PP
 Given an unwind cursor, it is possible to read and write the CPU 
-registers that were preserved for the current stack frame identified 
-by the cursor. Libunwind
-provides several routines for this 
-purpose: unw_get_reg()
-reads an integer (general) register, 
-unw_get_fpreg()
+registers that were preserved for the current stack frame (as 
+identified by the cursor). Libunwind
+provides several routines 
+for this purpose: unw_get_reg()
+reads an integer (general) 
+register, unw_get_fpreg()
 reads a floating\-point register, 
 unw_set_reg()
 writes an integer register, and 
@@ -217,7 +217,7 @@ select this optimized version, simply define the macro
 UNW_LOCAL_ONLY
 before including the headerfile 
 <libunwind.h>\&.
-If is perfectly OK for a single program to 
+It is perfectly OK for a single program to 
 employ both local\-only and generic unwinding. That is, whether or not 
 UNW_LOCAL_ONLY
 is defined is a choice that each source\-file 
@@ -225,12 +225,16 @@ is defined is a choice that each source\-file
 of UNW_LOCAL_ONLY,
 you\&'ll always link the same library into 
 the program (normally \fB\-l\fPunwind).
+Furthermore, the 
+portion of libunwind
+that manages unwind\-info for dynamically 
+generated code is not affected by the setting of 
+UNW_LOCAL_ONLY\&.
 .PP
 If we put all of the above together, here is how we could use 
 libunwind
-write function show_backtrace()
-which prints 
-a classic stack trace: 
+to write a function ``show_backtrace()\&''
+which prints a classic stack trace: 
 .PP
 .Vb
 #define UNW_LOCAL_ONLY
@@ -245,7 +249,7 @@ void show_backtrace (void) {
   while (unw_step(&cursor) > 0) {
     unw_get_reg(&cursor, UNW_REG_IP, &ip);
     unw_get_reg(&cursor, UNW_REG_SP, &sp);
-    printf ("ip = 0, sp = 0\\n", (long) ip, (long) sp);
+    printf ("ip = %lx, sp = %lx\\n", (long) ip, (long) sp);
   }
 }
 .Ve
@@ -263,7 +267,7 @@ used by debuggers and instruction\-set simulators, for example.
 .PP
 Before you can unwind a remote process, you need to create a new 
 address\-space object for that process. This is achieved with the 
-unw_create_addr_space
+unw_create_addr_space()
 routine. The routine takes two 
 arguments: a pointer to a set of \fIaccessor\fP
 routines and an 
@@ -282,13 +286,13 @@ except that it takes an address\-space
 object and an opaque pointer as arguments. The routine uses these 
 arguments to fetch the initial machine state. Libunwind
 never 
-uses the opaque pointer on its own, but instead justs passes it on to 
+uses the opaque pointer on its own, but instead just passes it on to 
 the accessor (callback) routines. Typically, this pointer is used to 
 select, e.g., the thread within a process that is to be unwound. 
 .PP
 Once a cursor has been initialized with unw_init_remote(),
 unwinding works exactly like in the local case. That is, you can use 
-unw_step
+unw_step()
 to move ``up\&'' in the call\-chain, read and write 
 registers, or resume execution at a particular stack frame by calling 
 unw_resume\&.
@@ -314,7 +318,7 @@ unwinding. If they differ, we call it
 unwinding. 
 .PP
 The principle behind supporting native, cross\-platform, and 
-multi\-platform unwinding are very simple: for native unwinding, a 
+multi\-platform unwinding is very simple: for native unwinding, a 
 program includes <libunwind.h>
 and uses the linker switch 
 \fB\-l\fPunwind\&.
@@ -375,7 +379,7 @@ routines are guaranteed to be signal\-safe.
 Libunwind
 provides the routines _U_dyn_register()
 and 
-_U_dyn_cancel
+_U_dyn_cancel()
 to register/cancel the information required to 
 unwind through code that has been generated at runtime (e.g., by a 
 just\-in\-time (JIT) compiler). It is important to register the 
@@ -391,6 +395,10 @@ guaranteed to execute in ``constant time\&'' (O(1)) and the
 data\-structure encapsulating the dynamic unwind info has been designed 
 to facilitate sharing, such that similar procedures can share much of 
 the underlying information. 
+.PP
+For more information on the libunwind
+support for dynamically 
+generated code, see libunwind\-dynamic(3)\&.
 .PP
 .SH CACHING OF UNWIND INFO
 
@@ -432,7 +440,7 @@ platform) unwinding.
 .TP
 libunwind\-PLAT\&.h
  Headerfile to include when 
-unwind target runs on platform PLAT\&.
+the unwind target runs on platform PLAT\&.
 For example, to unwind 
 an IA\-64 program, the header file libunwind\-ia64.h
 should be 
@@ -454,6 +462,7 @@ multiple platforms.
 .SH SEE ALSO
 
 .PP
+libunwind\-dynamic(3),
 libunwind\-ia64(3),
 libunwind\-ptrace(3),
 libunwind\-setjmp(3),
@@ -475,7 +484,9 @@ unw_resume(3),
 unw_set_caching_policy(3),
 unw_set_fpreg(3),
 unw_set_reg(3),
-unw_step(3)
+unw_step(3),
+_U_dyn_register(3),
+_U_dyn_cancel(3)
 .PP
 .SH AUTHOR
 
