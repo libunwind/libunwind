@@ -36,6 +36,15 @@ called "__dummy" in the declaration of "struct ia64_fpreg".  Without
 that member, variables of type unw_context_t won't be aligned
 properly.
 
+* Building on HP-UX
+
+For the time being, libunwind must be built with GCC on HP-UX.
+Unfortunately, gcc-3.0 ships with a bad version of sys/types.h.
+The workaround for this is:
+
+    $ mkdir $top_dir/include/sys
+    $ cp /usr/include/sys/types.h $top_dir/include/sys
+
 * Regression Testing
 
 After building the library, you can run a set of regression tests with:
