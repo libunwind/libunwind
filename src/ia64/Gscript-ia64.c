@@ -481,6 +481,10 @@ ia64_find_save_locs (struct cursor *c)
   sigset_t saved_sigmask;
   int ret = 0;
 
+  ret = ia64_fetch_proc_info (c, c->ip, 1);
+  if (ret < 0)
+    return ret;
+
   cache = get_script_cache (c->as);
 
   if (likely (global_cache))
