@@ -25,7 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define SIG_SETMASK	2
 
-	.globl _UI_siglongjmp_cont
+	.global _UI_siglongjmp_cont
+	.global sigprocmask
 
 	.align 32
 	.proc siglongjmp_continuation
@@ -36,11 +37,11 @@ _UI_siglongjmp_cont:		// non-function label for {sig,}longjmp.c
 	.body
 	nop 0
 	nop 0
-	br.call.sptk.many b6 = 1f
+	br.call.sptk.many b6 = .next
 	;;
 	.prologue
 	.save ar.pfs, r33
-1:	alloc loc1 = ar.pfs, 0, 3, 3, 0
+.next:	alloc loc1 = ar.pfs, 0, 3, 3, 0
 	/*
 	 * Note: we can use the scratch stack are because the caller
 	 * of sigsetjmp() by definition is not a leaf-procedure.
