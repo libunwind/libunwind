@@ -117,7 +117,7 @@ libunwind_setjmp_la_SOURCES_local_x86 = setjmp.c sigsetjmp.c	\
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	$(libunwind_la_SOURCES_os)					      \
 	backtrace.c							      \
-	dyn-extract.c dyn-remote.c					      \
+	Gdyn-extract.c Gdyn-remote.c Ldyn-extract.c Ldyn-remote.c	      \
 	mi-init.c							      \
 	mempool.c							      \
 	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
@@ -145,6 +145,15 @@ libunwind_la_SOURCES_local = \
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
+
+dwarf_sources = \
+	dwarf/dwarf-eh.h						\
+	dwarf/global-dwarf.c						\
+	dwarf/Gexpr-dwarf.c dwarf/Gfde-dwarf.c dwarf/Gparser-dwarf.c	\
+	dwarf/Gpe-dwarf.c dwarf/Gstep-dwarf.c				\
+	dwarf/Lexpr-dwarf.c dwarf/Lfde-dwarf.c dwarf/Lparser-dwarf.c	\
+	dwarf/Lpe-dwarf.c dwarf/Lstep-dwarf.c
+
 
 
 #
@@ -203,8 +212,11 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 									\
 	elf32.c elf32.h							\
 									\
+	$(dwarf_sources)						\
+	dwarf/Gfind_proc_info-lsb.c dwarf/Lfind_proc_info-lsb.c		\
+									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
-	x86/tables-x86.c x86/set_caching_policy-x86.c			\
+	x86/set_caching_policy-x86.c					\
 	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
 									\
 	x86/Gcreate_addr_space-x86.c					\
@@ -263,7 +275,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I.
+AM_CPPFLAGS = -I$(top_srcdir)/include/$(arch) -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 
 EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h		\
@@ -306,11 +318,12 @@ am__objects_5 = os-linux.lo
 @OS_HPUX_TRUE@am__objects_6 = $(am__objects_4)
 @OS_LINUX_TRUE@am__objects_6 = $(am__objects_5)
 am__objects_7 = $(am__objects_3) $(am__objects_6) backtrace.lo \
-	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
-	Gfind_dynamic_proc_info.lo Gget_proc_name.lo \
-	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
-	Lget_proc_name.lo Lput_dynamic_unwind_info.lo \
-	Gget_proc_info_by_ip.lo Lget_proc_info_by_ip.lo
+	Gdyn-extract.lo Gdyn-remote.lo Ldyn-extract.lo Ldyn-remote.lo \
+	mi-init.lo mempool.lo Gfind_dynamic_proc_info.lo \
+	Gget_proc_name.lo Gput_dynamic_unwind_info.lo \
+	Lfind_dynamic_proc_info.lo Lget_proc_name.lo \
+	Lput_dynamic_unwind_info.lo Gget_proc_info_by_ip.lo \
+	Lget_proc_info_by_ip.lo
 am__objects_8 = $(am__objects_7) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
@@ -362,8 +375,12 @@ am__objects_16 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
 @ARCH_IA64_TRUE@	$(am__objects_17)
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 libunwind_x86_la_LIBADD =
-am__objects_18 = $(am__objects_7) elf32.lo flush_cache-x86.lo \
-	get_accessors-x86.lo global-x86.lo tables-x86.lo \
+am__objects_18 = global-dwarf.lo Gexpr-dwarf.lo Gfde-dwarf.lo \
+	Gparser-dwarf.lo Gpe-dwarf.lo Gstep-dwarf.lo Lexpr-dwarf.lo \
+	Lfde-dwarf.lo Lparser-dwarf.lo Lpe-dwarf.lo Lstep-dwarf.lo
+am__objects_19 = $(am__objects_7) elf32.lo $(am__objects_18) \
+	Gfind_proc_info-lsb.lo Lfind_proc_info-lsb.lo \
+	flush_cache-x86.lo get_accessors-x86.lo global-x86.lo \
 	set_caching_policy-x86.lo regname-x86.lo \
 	Gcreate_addr_space-x86.lo Gget_reg-x86.lo Gget_proc_name-x86.lo \
 	Ginit-x86.lo Ginit_local-x86.lo Ginit_remote-x86.lo \
@@ -374,7 +391,7 @@ am__objects_18 = $(am__objects_7) elf32.lo flush_cache-x86.lo \
 	Lis_signal_frame-x86.lo Lget_proc_info-x86.lo Lregs-x86.lo \
 	Lresume-x86.lo Lset_reg-x86.lo Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_18)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_19)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64$(EXEEXT) \
 @ARCH_IA64_TRUE@	mk_Lcursor_i-ia64$(EXEEXT)
@@ -404,7 +421,12 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Gcreate_addr_space-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gcreate_addr_space-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gdestroy_addr_space-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gdyn-extract.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gdyn-remote.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gexpr-dwarf.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gfde-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gfind_dynamic_proc_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gfind_proc_info-lsb.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-ia64.Plo \
@@ -428,7 +450,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_remote-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gparser-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gparser-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gpe-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gput_dynamic_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Grbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-hppa.Plo \
@@ -440,13 +464,19 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_reg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_reg-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gstep-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lcreate_addr_space-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lcreate_addr_space-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ldestroy_addr_space-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Ldyn-extract.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Ldyn-remote.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lexpr-dwarf.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lfde-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lfind_dynamic_proc_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lfind_proc_info-lsb.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-ia64.Plo \
@@ -470,7 +500,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Linit_remote-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lis_signal_frame-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lis_signal_frame-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lparser-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lparser-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lpe-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lput_dynamic_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lrbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lregs-hppa.Plo \
@@ -482,6 +514,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_reg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_reg-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lstep-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lstep-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lstep-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lstep-x86.Plo \
@@ -516,9 +549,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetIP.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/backtrace.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/dyn-extract.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/dyn-remote.Plo ./$(DEPDIR)/elf32.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo ./$(DEPDIR)/elf32.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/elf64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/flush_cache-ia64.Plo \
@@ -526,6 +557,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/global-dwarf.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/longjmp.Plo \
@@ -540,8 +572,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/setjmp.Plo ./$(DEPDIR)/siglongjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sigsetjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-hppa.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/tables-ia64.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/tables-x86.Plo
+@AMDEP_TRUE@	./$(DEPDIR)/tables-ia64.Plo
 CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
 LTCCASCOMPILE = $(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) \
 	$(CCASFLAGS)
@@ -673,10 +704,22 @@ sigsetjmp-ia64.lo: ia64/sigsetjmp-ia64.S
 siglongjmp-ia64.lo: ia64/siglongjmp-ia64.S
 libunwind-setjmp.la: $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_setjmp_la_LDFLAGS) $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_LIBADD) $(LIBS)
+global-dwarf.lo: dwarf/global-dwarf.c
+Gexpr-dwarf.lo: dwarf/Gexpr-dwarf.c
+Gfde-dwarf.lo: dwarf/Gfde-dwarf.c
+Gparser-dwarf.lo: dwarf/Gparser-dwarf.c
+Gpe-dwarf.lo: dwarf/Gpe-dwarf.c
+Gstep-dwarf.lo: dwarf/Gstep-dwarf.c
+Lexpr-dwarf.lo: dwarf/Lexpr-dwarf.c
+Lfde-dwarf.lo: dwarf/Lfde-dwarf.c
+Lparser-dwarf.lo: dwarf/Lparser-dwarf.c
+Lpe-dwarf.lo: dwarf/Lpe-dwarf.c
+Lstep-dwarf.lo: dwarf/Lstep-dwarf.c
+Gfind_proc_info-lsb.lo: dwarf/Gfind_proc_info-lsb.c
+Lfind_proc_info-lsb.lo: dwarf/Lfind_proc_info-lsb.c
 flush_cache-x86.lo: x86/flush_cache-x86.c
 get_accessors-x86.lo: x86/get_accessors-x86.c
 global-x86.lo: x86/global-x86.c
-tables-x86.lo: x86/tables-x86.c
 set_caching_policy-x86.lo: x86/set_caching_policy-x86.c
 regname-x86.lo: x86/regname-x86.c
 Gcreate_addr_space-x86.lo: x86/Gcreate_addr_space-x86.c
@@ -730,7 +773,12 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gcreate_addr_space-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gcreate_addr_space-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdestroy_addr_space-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdyn-extract.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdyn-remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gexpr-dwarf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfde-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfind_dynamic_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfind_proc_info-lsb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-ia64.Plo@am__quote@
@@ -754,7 +802,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_remote-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gparser-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gparser-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gpe-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gput_dynamic_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Grbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-hppa.Plo@am__quote@
@@ -766,13 +816,19 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_reg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_reg-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lcreate_addr_space-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lcreate_addr_space-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ldestroy_addr_space-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ldyn-extract.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ldyn-remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lexpr-dwarf.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lfde-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lfind_dynamic_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lfind_proc_info-lsb.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-ia64.Plo@am__quote@
@@ -796,7 +852,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit_remote-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lis_signal_frame-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lis_signal_frame-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lparser-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lparser-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lpe-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lput_dynamic_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lrbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lregs-hppa.Plo@am__quote@
@@ -808,6 +866,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_reg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lset_reg-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-x86.Plo@am__quote@
@@ -842,9 +901,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetIP.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-extract.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-register.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-remote.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf32.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/elf64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/flush_cache-hppa.Plo@am__quote@
@@ -853,6 +910,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-dwarf.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-x86.Plo@am__quote@
@@ -872,7 +930,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigsetjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-ia64.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-x86.Plo@am__quote@
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
@@ -2092,6 +2149,240 @@ Lstep-ia64.lo: ia64/Lstep-ia64.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-ia64.lo `test -f 'ia64/Lstep-ia64.c' || echo '$(srcdir)/'`ia64/Lstep-ia64.c
 
+global-dwarf.o: dwarf/global-dwarf.c
+@AMDEP_TRUE@	source='dwarf/global-dwarf.c' object='global-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/global-dwarf.Po' tmpdepfile='$(DEPDIR)/global-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-dwarf.o `test -f 'dwarf/global-dwarf.c' || echo '$(srcdir)/'`dwarf/global-dwarf.c
+
+global-dwarf.obj: dwarf/global-dwarf.c
+@AMDEP_TRUE@	source='dwarf/global-dwarf.c' object='global-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/global-dwarf.Po' tmpdepfile='$(DEPDIR)/global-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-dwarf.obj `cygpath -w dwarf/global-dwarf.c`
+
+global-dwarf.lo: dwarf/global-dwarf.c
+@AMDEP_TRUE@	source='dwarf/global-dwarf.c' object='global-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/global-dwarf.Plo' tmpdepfile='$(DEPDIR)/global-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-dwarf.lo `test -f 'dwarf/global-dwarf.c' || echo '$(srcdir)/'`dwarf/global-dwarf.c
+
+Gexpr-dwarf.o: dwarf/Gexpr-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gexpr-dwarf.c' object='Gexpr-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gexpr-dwarf.Po' tmpdepfile='$(DEPDIR)/Gexpr-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gexpr-dwarf.o `test -f 'dwarf/Gexpr-dwarf.c' || echo '$(srcdir)/'`dwarf/Gexpr-dwarf.c
+
+Gexpr-dwarf.obj: dwarf/Gexpr-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gexpr-dwarf.c' object='Gexpr-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gexpr-dwarf.Po' tmpdepfile='$(DEPDIR)/Gexpr-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gexpr-dwarf.obj `cygpath -w dwarf/Gexpr-dwarf.c`
+
+Gexpr-dwarf.lo: dwarf/Gexpr-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gexpr-dwarf.c' object='Gexpr-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gexpr-dwarf.Plo' tmpdepfile='$(DEPDIR)/Gexpr-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gexpr-dwarf.lo `test -f 'dwarf/Gexpr-dwarf.c' || echo '$(srcdir)/'`dwarf/Gexpr-dwarf.c
+
+Gfde-dwarf.o: dwarf/Gfde-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gfde-dwarf.c' object='Gfde-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfde-dwarf.Po' tmpdepfile='$(DEPDIR)/Gfde-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfde-dwarf.o `test -f 'dwarf/Gfde-dwarf.c' || echo '$(srcdir)/'`dwarf/Gfde-dwarf.c
+
+Gfde-dwarf.obj: dwarf/Gfde-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gfde-dwarf.c' object='Gfde-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfde-dwarf.Po' tmpdepfile='$(DEPDIR)/Gfde-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfde-dwarf.obj `cygpath -w dwarf/Gfde-dwarf.c`
+
+Gfde-dwarf.lo: dwarf/Gfde-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gfde-dwarf.c' object='Gfde-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfde-dwarf.Plo' tmpdepfile='$(DEPDIR)/Gfde-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfde-dwarf.lo `test -f 'dwarf/Gfde-dwarf.c' || echo '$(srcdir)/'`dwarf/Gfde-dwarf.c
+
+Gparser-dwarf.o: dwarf/Gparser-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gparser-dwarf.c' object='Gparser-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gparser-dwarf.Po' tmpdepfile='$(DEPDIR)/Gparser-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gparser-dwarf.o `test -f 'dwarf/Gparser-dwarf.c' || echo '$(srcdir)/'`dwarf/Gparser-dwarf.c
+
+Gparser-dwarf.obj: dwarf/Gparser-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gparser-dwarf.c' object='Gparser-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gparser-dwarf.Po' tmpdepfile='$(DEPDIR)/Gparser-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gparser-dwarf.obj `cygpath -w dwarf/Gparser-dwarf.c`
+
+Gparser-dwarf.lo: dwarf/Gparser-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gparser-dwarf.c' object='Gparser-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gparser-dwarf.Plo' tmpdepfile='$(DEPDIR)/Gparser-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gparser-dwarf.lo `test -f 'dwarf/Gparser-dwarf.c' || echo '$(srcdir)/'`dwarf/Gparser-dwarf.c
+
+Gpe-dwarf.o: dwarf/Gpe-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gpe-dwarf.c' object='Gpe-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gpe-dwarf.Po' tmpdepfile='$(DEPDIR)/Gpe-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gpe-dwarf.o `test -f 'dwarf/Gpe-dwarf.c' || echo '$(srcdir)/'`dwarf/Gpe-dwarf.c
+
+Gpe-dwarf.obj: dwarf/Gpe-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gpe-dwarf.c' object='Gpe-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gpe-dwarf.Po' tmpdepfile='$(DEPDIR)/Gpe-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gpe-dwarf.obj `cygpath -w dwarf/Gpe-dwarf.c`
+
+Gpe-dwarf.lo: dwarf/Gpe-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gpe-dwarf.c' object='Gpe-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gpe-dwarf.Plo' tmpdepfile='$(DEPDIR)/Gpe-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gpe-dwarf.lo `test -f 'dwarf/Gpe-dwarf.c' || echo '$(srcdir)/'`dwarf/Gpe-dwarf.c
+
+Gstep-dwarf.o: dwarf/Gstep-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gstep-dwarf.c' object='Gstep-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-dwarf.Po' tmpdepfile='$(DEPDIR)/Gstep-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-dwarf.o `test -f 'dwarf/Gstep-dwarf.c' || echo '$(srcdir)/'`dwarf/Gstep-dwarf.c
+
+Gstep-dwarf.obj: dwarf/Gstep-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gstep-dwarf.c' object='Gstep-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-dwarf.Po' tmpdepfile='$(DEPDIR)/Gstep-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-dwarf.obj `cygpath -w dwarf/Gstep-dwarf.c`
+
+Gstep-dwarf.lo: dwarf/Gstep-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Gstep-dwarf.c' object='Gstep-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-dwarf.Plo' tmpdepfile='$(DEPDIR)/Gstep-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-dwarf.lo `test -f 'dwarf/Gstep-dwarf.c' || echo '$(srcdir)/'`dwarf/Gstep-dwarf.c
+
+Lexpr-dwarf.o: dwarf/Lexpr-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lexpr-dwarf.c' object='Lexpr-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lexpr-dwarf.Po' tmpdepfile='$(DEPDIR)/Lexpr-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lexpr-dwarf.o `test -f 'dwarf/Lexpr-dwarf.c' || echo '$(srcdir)/'`dwarf/Lexpr-dwarf.c
+
+Lexpr-dwarf.obj: dwarf/Lexpr-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lexpr-dwarf.c' object='Lexpr-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lexpr-dwarf.Po' tmpdepfile='$(DEPDIR)/Lexpr-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lexpr-dwarf.obj `cygpath -w dwarf/Lexpr-dwarf.c`
+
+Lexpr-dwarf.lo: dwarf/Lexpr-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lexpr-dwarf.c' object='Lexpr-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lexpr-dwarf.Plo' tmpdepfile='$(DEPDIR)/Lexpr-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lexpr-dwarf.lo `test -f 'dwarf/Lexpr-dwarf.c' || echo '$(srcdir)/'`dwarf/Lexpr-dwarf.c
+
+Lfde-dwarf.o: dwarf/Lfde-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lfde-dwarf.c' object='Lfde-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lfde-dwarf.Po' tmpdepfile='$(DEPDIR)/Lfde-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lfde-dwarf.o `test -f 'dwarf/Lfde-dwarf.c' || echo '$(srcdir)/'`dwarf/Lfde-dwarf.c
+
+Lfde-dwarf.obj: dwarf/Lfde-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lfde-dwarf.c' object='Lfde-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lfde-dwarf.Po' tmpdepfile='$(DEPDIR)/Lfde-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lfde-dwarf.obj `cygpath -w dwarf/Lfde-dwarf.c`
+
+Lfde-dwarf.lo: dwarf/Lfde-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lfde-dwarf.c' object='Lfde-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lfde-dwarf.Plo' tmpdepfile='$(DEPDIR)/Lfde-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lfde-dwarf.lo `test -f 'dwarf/Lfde-dwarf.c' || echo '$(srcdir)/'`dwarf/Lfde-dwarf.c
+
+Lparser-dwarf.o: dwarf/Lparser-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lparser-dwarf.c' object='Lparser-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lparser-dwarf.Po' tmpdepfile='$(DEPDIR)/Lparser-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lparser-dwarf.o `test -f 'dwarf/Lparser-dwarf.c' || echo '$(srcdir)/'`dwarf/Lparser-dwarf.c
+
+Lparser-dwarf.obj: dwarf/Lparser-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lparser-dwarf.c' object='Lparser-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lparser-dwarf.Po' tmpdepfile='$(DEPDIR)/Lparser-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lparser-dwarf.obj `cygpath -w dwarf/Lparser-dwarf.c`
+
+Lparser-dwarf.lo: dwarf/Lparser-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lparser-dwarf.c' object='Lparser-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lparser-dwarf.Plo' tmpdepfile='$(DEPDIR)/Lparser-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lparser-dwarf.lo `test -f 'dwarf/Lparser-dwarf.c' || echo '$(srcdir)/'`dwarf/Lparser-dwarf.c
+
+Lpe-dwarf.o: dwarf/Lpe-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lpe-dwarf.c' object='Lpe-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lpe-dwarf.Po' tmpdepfile='$(DEPDIR)/Lpe-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lpe-dwarf.o `test -f 'dwarf/Lpe-dwarf.c' || echo '$(srcdir)/'`dwarf/Lpe-dwarf.c
+
+Lpe-dwarf.obj: dwarf/Lpe-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lpe-dwarf.c' object='Lpe-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lpe-dwarf.Po' tmpdepfile='$(DEPDIR)/Lpe-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lpe-dwarf.obj `cygpath -w dwarf/Lpe-dwarf.c`
+
+Lpe-dwarf.lo: dwarf/Lpe-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lpe-dwarf.c' object='Lpe-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lpe-dwarf.Plo' tmpdepfile='$(DEPDIR)/Lpe-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lpe-dwarf.lo `test -f 'dwarf/Lpe-dwarf.c' || echo '$(srcdir)/'`dwarf/Lpe-dwarf.c
+
+Lstep-dwarf.o: dwarf/Lstep-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lstep-dwarf.c' object='Lstep-dwarf.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-dwarf.Po' tmpdepfile='$(DEPDIR)/Lstep-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-dwarf.o `test -f 'dwarf/Lstep-dwarf.c' || echo '$(srcdir)/'`dwarf/Lstep-dwarf.c
+
+Lstep-dwarf.obj: dwarf/Lstep-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lstep-dwarf.c' object='Lstep-dwarf.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-dwarf.Po' tmpdepfile='$(DEPDIR)/Lstep-dwarf.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-dwarf.obj `cygpath -w dwarf/Lstep-dwarf.c`
+
+Lstep-dwarf.lo: dwarf/Lstep-dwarf.c
+@AMDEP_TRUE@	source='dwarf/Lstep-dwarf.c' object='Lstep-dwarf.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-dwarf.Plo' tmpdepfile='$(DEPDIR)/Lstep-dwarf.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-dwarf.lo `test -f 'dwarf/Lstep-dwarf.c' || echo '$(srcdir)/'`dwarf/Lstep-dwarf.c
+
+Gfind_proc_info-lsb.o: dwarf/Gfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Gfind_proc_info-lsb.c' object='Gfind_proc_info-lsb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Gfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfind_proc_info-lsb.o `test -f 'dwarf/Gfind_proc_info-lsb.c' || echo '$(srcdir)/'`dwarf/Gfind_proc_info-lsb.c
+
+Gfind_proc_info-lsb.obj: dwarf/Gfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Gfind_proc_info-lsb.c' object='Gfind_proc_info-lsb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Gfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfind_proc_info-lsb.obj `cygpath -w dwarf/Gfind_proc_info-lsb.c`
+
+Gfind_proc_info-lsb.lo: dwarf/Gfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Gfind_proc_info-lsb.c' object='Gfind_proc_info-lsb.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gfind_proc_info-lsb.Plo' tmpdepfile='$(DEPDIR)/Gfind_proc_info-lsb.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gfind_proc_info-lsb.lo `test -f 'dwarf/Gfind_proc_info-lsb.c' || echo '$(srcdir)/'`dwarf/Gfind_proc_info-lsb.c
+
+Lfind_proc_info-lsb.o: dwarf/Lfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Lfind_proc_info-lsb.c' object='Lfind_proc_info-lsb.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Lfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lfind_proc_info-lsb.o `test -f 'dwarf/Lfind_proc_info-lsb.c' || echo '$(srcdir)/'`dwarf/Lfind_proc_info-lsb.c
+
+Lfind_proc_info-lsb.obj: dwarf/Lfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Lfind_proc_info-lsb.c' object='Lfind_proc_info-lsb.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lfind_proc_info-lsb.Po' tmpdepfile='$(DEPDIR)/Lfind_proc_info-lsb.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lfind_proc_info-lsb.obj `cygpath -w dwarf/Lfind_proc_info-lsb.c`
+
+Lfind_proc_info-lsb.lo: dwarf/Lfind_proc_info-lsb.c
+@AMDEP_TRUE@	source='dwarf/Lfind_proc_info-lsb.c' object='Lfind_proc_info-lsb.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lfind_proc_info-lsb.Plo' tmpdepfile='$(DEPDIR)/Lfind_proc_info-lsb.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lfind_proc_info-lsb.lo `test -f 'dwarf/Lfind_proc_info-lsb.c' || echo '$(srcdir)/'`dwarf/Lfind_proc_info-lsb.c
+
 flush_cache-x86.o: x86/flush_cache-x86.c
 @AMDEP_TRUE@	source='x86/flush_cache-x86.c' object='flush_cache-x86.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/flush_cache-x86.Po' tmpdepfile='$(DEPDIR)/flush_cache-x86.TPo' @AMDEPBACKSLASH@
@@ -2145,24 +2436,6 @@ global-x86.lo: x86/global-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/global-x86.Plo' tmpdepfile='$(DEPDIR)/global-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-x86.lo `test -f 'x86/global-x86.c' || echo '$(srcdir)/'`x86/global-x86.c
-
-tables-x86.o: x86/tables-x86.c
-@AMDEP_TRUE@	source='x86/tables-x86.c' object='tables-x86.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-x86.Po' tmpdepfile='$(DEPDIR)/tables-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-x86.o `test -f 'x86/tables-x86.c' || echo '$(srcdir)/'`x86/tables-x86.c
-
-tables-x86.obj: x86/tables-x86.c
-@AMDEP_TRUE@	source='x86/tables-x86.c' object='tables-x86.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-x86.Po' tmpdepfile='$(DEPDIR)/tables-x86.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-x86.obj `cygpath -w x86/tables-x86.c`
-
-tables-x86.lo: x86/tables-x86.c
-@AMDEP_TRUE@	source='x86/tables-x86.c' object='tables-x86.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/tables-x86.Plo' tmpdepfile='$(DEPDIR)/tables-x86.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-x86.lo `test -f 'x86/tables-x86.c' || echo '$(srcdir)/'`x86/tables-x86.c
 
 set_caching_policy-x86.o: x86/set_caching_policy-x86.c
 @AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.o' libtool=no @AMDEPBACKSLASH@
@@ -2720,7 +2993,7 @@ top_distdir = ..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/hppa $(distdir)/ia64 $(distdir)/x86
+	$(mkinstalldirs) $(distdir)/dwarf $(distdir)/hppa $(distdir)/ia64 $(distdir)/x86
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
