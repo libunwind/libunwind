@@ -1,6 +1,6 @@
 -*- mode: Outline -*-
 
-This is version 0.95 of the unwind library.  At the moment, only the
+This is version 0.96 of the unwind library.  At the moment, only the
 IA-64 Linux (IPF Linux) platform is fully supported.  Some very basic
 support for x86 and HP-UX/IPF exists also.  However, the x86 support
 is based purely on the frame-chain and does not use unwind
