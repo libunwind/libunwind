@@ -1,0 +1,74 @@
+'\" t
+.\" Manual page created with latex2man on Wed Mar 19 17:20:43 PST 2003
+.\" NOTE: This file is generated, DO NOT EDIT.
+.de Vb
+.ft CW
+.nf
+..
+.de Ve
+.ft R
+
+.fi
+..
+.TH "UNW\\_GETCONTEXT" "3" "19 March 2003" "Programming Library " "Programming Library "
+.SH NAME
+
+.PP
+unw_getcontext \-\- get initial machine\-state 
+.PP
+.SH SYNOPSIS
+
+.PP
+#include <libunwind.h>
+.br
+.PP
+int
+unw_getcontext(unw_context_t *ucp);
+.br
+.PP
+.SH DESCRIPTION
+
+.PP
+The unw_getcontext()
+routine initializes the context structure 
+pointed to by ucp
+with the machine\-state of the call\-site. The 
+exact set of registers stored by unw_getcontext()
+is 
+platform\-specific, but, in general, at least all preserved 
+(``callee\-saved\&'') and all frame\-related registers, such as the 
+stack\-pointer, will be stored. 
+.PP
+.SH RETURN VALUE
+
+.PP
+On successful completion, unw_getcontext()
+returns 0. 
+Otherwise, a value of \-1 is returned. 
+.PP
+.SH THREAD AND SIGNAL SAFETY
+
+.PP
+unw_getcontext()
+is thread\-safe as well as safe to use 
+from a signal handler. 
+.PP
+.SH SEE ALSO
+
+.PP
+libunwind(3),
+unw_init_local(3)
+.PP
+.SH AUTHOR
+
+.PP
+David Mosberger\-Tang
+.br 
+Hewlett\-Packard Labs
+.br 
+Palo\-Alto, CA 94304
+.br 
+Email: \fBdavidm@hpl.hp.com\fP
+.br
+WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+.\" NOTE: This file is generated, DO NOT EDIT.

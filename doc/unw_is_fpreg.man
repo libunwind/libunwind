@@ -1,0 +1,75 @@
+'\" t
+.\" Manual page created with latex2man on Wed Mar 19 23:43:08 PST 2003
+.\" NOTE: This file is generated, DO NOT EDIT.
+.de Vb
+.ft CW
+.nf
+..
+.de Ve
+.ft R
+
+.fi
+..
+.TH "UNW\\_IS\\_FPREG" "3" "19 March 2003" "Programming Library " "Programming Library "
+.SH NAME
+
+.PP
+unw_is_fpreg \-\- check if a register is a floating\-point register 
+.PP
+.SH SYNOPSIS
+
+.PP
+#include <libunwind.h>
+.br
+.PP
+int
+unw_is_fpreg(unw_regnum_t
+reg);
+.br
+.PP
+.SH DESCRIPTION
+
+.PP
+The unw_is_fpreg()
+routine checks whether register number 
+reg
+is a floating\-point register. 
+.PP
+.SH RETURN VALUE
+
+.PP
+The unw_is_fpreg()
+routine returns a non\-zero value if 
+reg
+is a floating\-point register. Otherwise, it returns a value 
+of 0. 
+.PP
+.SH THREAD AND SIGNAL SAFETY
+
+.PP
+unw_is_fpreg()
+is thread\-safe as well as safe to use 
+from a signal handler. 
+.PP
+.SH SEE ALSO
+
+.PP
+libunwind(3),
+unw_get_reg(3),
+unw_set_reg(3),
+unw_get_fpreg(3),
+unw_set_fpreg(3)
+.PP
+.SH AUTHOR
+
+.PP
+David Mosberger\-Tang
+.br 
+Hewlett\-Packard Labs
+.br 
+Palo\-Alto, CA 94304
+.br 
+Email: \fBdavidm@hpl.hp.com\fP
+.br
+WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+.\" NOTE: This file is generated, DO NOT EDIT.
