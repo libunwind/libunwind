@@ -80,7 +80,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	    }
 	  else if (reg >= 32)
 	    {
-	      reg = rotate_gr (c, reg - 32);
+	      reg = rotate_gr (c, reg);
 	      ret = ia64_get_stacked (c, reg, NULL, &loc);
 	      if (ret < 0)
 		return ret;
