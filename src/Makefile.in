@@ -183,14 +183,20 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
 	x86/tables-x86.c						\
-	x86/init.h x86/unwind_i.h					\
+	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
 									\
+	x86/Gcreate_addr_space-x86.c					\
 	x86/Gget_reg-x86.c x86/Gget_proc_name-x86.c x86/Ginit-x86.c	\
-	x86/Ginit_local-x86.c x86/Gget_proc_info-x86.c x86/Gregs-x86.c	\
+	x86/Ginit_local-x86.c x86/Ginit_remote-x86.c			\
+	x86/Gis_signal_frame-x86.c					\
+	x86/Gget_proc_info-x86.c x86/Gregs-x86.c			\
 	x86/Gresume-x86.c x86/Gset_reg-x86.c x86/Gstep-x86.c		\
 									\
+	x86/Lcreate_addr_space-x86.c					\
 	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
-	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
+	x86/Linit_local-x86.c x86/Linit_remote-x86.c			\
+	x86/Lis_signal_frame-x86.c					\
+	x86/Lget_proc_info-x86.c x86/Lregs-x86.c			\
 	x86/Lresume-x86.c x86/Lset_reg-x86.c x86/Lstep-x86.c
 
 
@@ -324,13 +330,15 @@ am__objects_16 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 libunwind_x86_la_LIBADD =
 am__objects_18 = $(am__objects_7) elf32.lo flush_cache-x86.lo \
-	get_accessors-x86.lo global-x86.lo tables-x86.lo \
-	Gget_reg-x86.lo Gget_proc_name-x86.lo Ginit-x86.lo \
-	Ginit_local-x86.lo Gget_proc_info-x86.lo Gregs-x86.lo \
-	Gresume-x86.lo Gset_reg-x86.lo Gstep-x86.lo Lget_reg-x86.lo \
-	Lget_proc_name-x86.lo Linit-x86.lo Linit_local-x86.lo \
-	Lget_proc_info-x86.lo Lregs-x86.lo Lresume-x86.lo \
-	Lset_reg-x86.lo Lstep-x86.lo
+	get_accessors-x86.lo global-x86.lo tables-x86.lo regname-x86.lo \
+	Gcreate_addr_space-x86.lo Gget_reg-x86.lo Gget_proc_name-x86.lo \
+	Ginit-x86.lo Ginit_local-x86.lo Ginit_remote-x86.lo \
+	Gis_signal_frame-x86.lo Gget_proc_info-x86.lo Gregs-x86.lo \
+	Gresume-x86.lo Gset_reg-x86.lo Gstep-x86.lo \
+	Lcreate_addr_space-x86.lo Lget_reg-x86.lo Lget_proc_name-x86.lo \
+	Linit-x86.lo Linit_local-x86.lo Linit_remote-x86.lo \
+	Lis_signal_frame-x86.lo Lget_proc_info-x86.lo Lregs-x86.lo \
+	Lresume-x86.lo Lset_reg-x86.lo Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_18)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
@@ -352,6 +360,7 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Gcreate_addr_space-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gcreate_addr_space-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gdestroy_addr_space-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gfind_dynamic_proc_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_fpreg-ia64.Plo \
@@ -373,7 +382,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_local-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_local-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ginit_remote-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Ginit_remote-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gparser-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gput_dynamic_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-hppa.Plo \
@@ -389,6 +400,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lcreate_addr_space-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lcreate_addr_space-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Ldestroy_addr_space-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lfind_dynamic_proc_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_fpreg-ia64.Plo \
@@ -410,7 +422,9 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Linit_local-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Linit_local-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Linit_remote-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Linit_remote-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lis_signal_frame-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lis_signal_frame-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lparser-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lput_dynamic_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lregs-hppa.Plo \
@@ -457,6 +471,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/os-hpux.Plo ./$(DEPDIR)/os-linux.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/rbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/regname-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/setjmp.Plo ./$(DEPDIR)/siglongjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sigsetjmp.Plo \
@@ -596,19 +611,26 @@ flush_cache-x86.lo: x86/flush_cache-x86.c
 get_accessors-x86.lo: x86/get_accessors-x86.c
 global-x86.lo: x86/global-x86.c
 tables-x86.lo: x86/tables-x86.c
+regname-x86.lo: x86/regname-x86.c
+Gcreate_addr_space-x86.lo: x86/Gcreate_addr_space-x86.c
 Gget_reg-x86.lo: x86/Gget_reg-x86.c
 Gget_proc_name-x86.lo: x86/Gget_proc_name-x86.c
 Ginit-x86.lo: x86/Ginit-x86.c
 Ginit_local-x86.lo: x86/Ginit_local-x86.c
+Ginit_remote-x86.lo: x86/Ginit_remote-x86.c
+Gis_signal_frame-x86.lo: x86/Gis_signal_frame-x86.c
 Gget_proc_info-x86.lo: x86/Gget_proc_info-x86.c
 Gregs-x86.lo: x86/Gregs-x86.c
 Gresume-x86.lo: x86/Gresume-x86.c
 Gset_reg-x86.lo: x86/Gset_reg-x86.c
 Gstep-x86.lo: x86/Gstep-x86.c
+Lcreate_addr_space-x86.lo: x86/Lcreate_addr_space-x86.c
 Lget_reg-x86.lo: x86/Lget_reg-x86.c
 Lget_proc_name-x86.lo: x86/Lget_proc_name-x86.c
 Linit-x86.lo: x86/Linit-x86.c
 Linit_local-x86.lo: x86/Linit_local-x86.c
+Linit_remote-x86.lo: x86/Linit_remote-x86.c
+Lis_signal_frame-x86.lo: x86/Lis_signal_frame-x86.c
 Lget_proc_info-x86.lo: x86/Lget_proc_info-x86.c
 Lregs-x86.lo: x86/Lregs-x86.c
 Lresume-x86.lo: x86/Lresume-x86.c
@@ -635,6 +657,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gcreate_addr_space-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gcreate_addr_space-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gdestroy_addr_space-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gfind_dynamic_proc_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_fpreg-ia64.Plo@am__quote@
@@ -656,7 +679,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_local-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_local-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_remote-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ginit_remote-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gparser-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gput_dynamic_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-hppa.Plo@am__quote@
@@ -672,6 +697,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lcreate_addr_space-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lcreate_addr_space-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ldestroy_addr_space-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lfind_dynamic_proc_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_fpreg-ia64.Plo@am__quote@
@@ -693,7 +719,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit_local-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit_local-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit_remote-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Linit_remote-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lis_signal_frame-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lis_signal_frame-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lparser-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lput_dynamic_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lregs-hppa.Plo@am__quote@
@@ -744,6 +772,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/setjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siglongjmp.Plo@am__quote@
@@ -2015,6 +2044,42 @@ tables-x86.lo: x86/tables-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-x86.lo `test -f 'x86/tables-x86.c' || echo '$(srcdir)/'`x86/tables-x86.c
 
+regname-x86.o: x86/regname-x86.c
+@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Po' tmpdepfile='$(DEPDIR)/regname-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.o `test -f 'x86/regname-x86.c' || echo '$(srcdir)/'`x86/regname-x86.c
+
+regname-x86.obj: x86/regname-x86.c
+@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Po' tmpdepfile='$(DEPDIR)/regname-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.obj `cygpath -w x86/regname-x86.c`
+
+regname-x86.lo: x86/regname-x86.c
+@AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/regname-x86.Plo' tmpdepfile='$(DEPDIR)/regname-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regname-x86.lo `test -f 'x86/regname-x86.c' || echo '$(srcdir)/'`x86/regname-x86.c
+
+Gcreate_addr_space-x86.o: x86/Gcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Gcreate_addr_space-x86.c' object='Gcreate_addr_space-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space-x86.Po' tmpdepfile='$(DEPDIR)/Gcreate_addr_space-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space-x86.o `test -f 'x86/Gcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Gcreate_addr_space-x86.c
+
+Gcreate_addr_space-x86.obj: x86/Gcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Gcreate_addr_space-x86.c' object='Gcreate_addr_space-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space-x86.Po' tmpdepfile='$(DEPDIR)/Gcreate_addr_space-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space-x86.obj `cygpath -w x86/Gcreate_addr_space-x86.c`
+
+Gcreate_addr_space-x86.lo: x86/Gcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Gcreate_addr_space-x86.c' object='Gcreate_addr_space-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space-x86.Plo' tmpdepfile='$(DEPDIR)/Gcreate_addr_space-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space-x86.lo `test -f 'x86/Gcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Gcreate_addr_space-x86.c
+
 Gget_reg-x86.o: x86/Gget_reg-x86.c
 @AMDEP_TRUE@	source='x86/Gget_reg-x86.c' object='Gget_reg-x86.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gget_reg-x86.TPo' @AMDEPBACKSLASH@
@@ -2086,6 +2151,42 @@ Ginit_local-x86.lo: x86/Ginit_local-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local-x86.Plo' tmpdepfile='$(DEPDIR)/Ginit_local-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local-x86.lo `test -f 'x86/Ginit_local-x86.c' || echo '$(srcdir)/'`x86/Ginit_local-x86.c
+
+Ginit_remote-x86.o: x86/Ginit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_remote-x86.c' object='Ginit_remote-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote-x86.Po' tmpdepfile='$(DEPDIR)/Ginit_remote-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote-x86.o `test -f 'x86/Ginit_remote-x86.c' || echo '$(srcdir)/'`x86/Ginit_remote-x86.c
+
+Ginit_remote-x86.obj: x86/Ginit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_remote-x86.c' object='Ginit_remote-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote-x86.Po' tmpdepfile='$(DEPDIR)/Ginit_remote-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote-x86.obj `cygpath -w x86/Ginit_remote-x86.c`
+
+Ginit_remote-x86.lo: x86/Ginit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Ginit_remote-x86.c' object='Ginit_remote-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote-x86.Plo' tmpdepfile='$(DEPDIR)/Ginit_remote-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote-x86.lo `test -f 'x86/Ginit_remote-x86.c' || echo '$(srcdir)/'`x86/Ginit_remote-x86.c
+
+Gis_signal_frame-x86.o: x86/Gis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Gis_signal_frame-x86.c' object='Gis_signal_frame-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame-x86.Po' tmpdepfile='$(DEPDIR)/Gis_signal_frame-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame-x86.o `test -f 'x86/Gis_signal_frame-x86.c' || echo '$(srcdir)/'`x86/Gis_signal_frame-x86.c
+
+Gis_signal_frame-x86.obj: x86/Gis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Gis_signal_frame-x86.c' object='Gis_signal_frame-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame-x86.Po' tmpdepfile='$(DEPDIR)/Gis_signal_frame-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame-x86.obj `cygpath -w x86/Gis_signal_frame-x86.c`
+
+Gis_signal_frame-x86.lo: x86/Gis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Gis_signal_frame-x86.c' object='Gis_signal_frame-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame-x86.Plo' tmpdepfile='$(DEPDIR)/Gis_signal_frame-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame-x86.lo `test -f 'x86/Gis_signal_frame-x86.c' || echo '$(srcdir)/'`x86/Gis_signal_frame-x86.c
 
 Gget_proc_info-x86.o: x86/Gget_proc_info-x86.c
 @AMDEP_TRUE@	source='x86/Gget_proc_info-x86.c' object='Gget_proc_info-x86.o' libtool=no @AMDEPBACKSLASH@
@@ -2177,6 +2278,24 @@ Gstep-x86.lo: x86/Gstep-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-x86.lo `test -f 'x86/Gstep-x86.c' || echo '$(srcdir)/'`x86/Gstep-x86.c
 
+Lcreate_addr_space-x86.o: x86/Lcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Lcreate_addr_space-x86.c' object='Lcreate_addr_space-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space-x86.Po' tmpdepfile='$(DEPDIR)/Lcreate_addr_space-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space-x86.o `test -f 'x86/Lcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Lcreate_addr_space-x86.c
+
+Lcreate_addr_space-x86.obj: x86/Lcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Lcreate_addr_space-x86.c' object='Lcreate_addr_space-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space-x86.Po' tmpdepfile='$(DEPDIR)/Lcreate_addr_space-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space-x86.obj `cygpath -w x86/Lcreate_addr_space-x86.c`
+
+Lcreate_addr_space-x86.lo: x86/Lcreate_addr_space-x86.c
+@AMDEP_TRUE@	source='x86/Lcreate_addr_space-x86.c' object='Lcreate_addr_space-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space-x86.Plo' tmpdepfile='$(DEPDIR)/Lcreate_addr_space-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space-x86.lo `test -f 'x86/Lcreate_addr_space-x86.c' || echo '$(srcdir)/'`x86/Lcreate_addr_space-x86.c
+
 Lget_reg-x86.o: x86/Lget_reg-x86.c
 @AMDEP_TRUE@	source='x86/Lget_reg-x86.c' object='Lget_reg-x86.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg-x86.Po' tmpdepfile='$(DEPDIR)/Lget_reg-x86.TPo' @AMDEPBACKSLASH@
@@ -2248,6 +2367,42 @@ Linit_local-x86.lo: x86/Linit_local-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local-x86.Plo' tmpdepfile='$(DEPDIR)/Linit_local-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local-x86.lo `test -f 'x86/Linit_local-x86.c' || echo '$(srcdir)/'`x86/Linit_local-x86.c
+
+Linit_remote-x86.o: x86/Linit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Linit_remote-x86.c' object='Linit_remote-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_remote-x86.Po' tmpdepfile='$(DEPDIR)/Linit_remote-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_remote-x86.o `test -f 'x86/Linit_remote-x86.c' || echo '$(srcdir)/'`x86/Linit_remote-x86.c
+
+Linit_remote-x86.obj: x86/Linit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Linit_remote-x86.c' object='Linit_remote-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_remote-x86.Po' tmpdepfile='$(DEPDIR)/Linit_remote-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_remote-x86.obj `cygpath -w x86/Linit_remote-x86.c`
+
+Linit_remote-x86.lo: x86/Linit_remote-x86.c
+@AMDEP_TRUE@	source='x86/Linit_remote-x86.c' object='Linit_remote-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_remote-x86.Plo' tmpdepfile='$(DEPDIR)/Linit_remote-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_remote-x86.lo `test -f 'x86/Linit_remote-x86.c' || echo '$(srcdir)/'`x86/Linit_remote-x86.c
+
+Lis_signal_frame-x86.o: x86/Lis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Lis_signal_frame-x86.c' object='Lis_signal_frame-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lis_signal_frame-x86.Po' tmpdepfile='$(DEPDIR)/Lis_signal_frame-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lis_signal_frame-x86.o `test -f 'x86/Lis_signal_frame-x86.c' || echo '$(srcdir)/'`x86/Lis_signal_frame-x86.c
+
+Lis_signal_frame-x86.obj: x86/Lis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Lis_signal_frame-x86.c' object='Lis_signal_frame-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lis_signal_frame-x86.Po' tmpdepfile='$(DEPDIR)/Lis_signal_frame-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lis_signal_frame-x86.obj `cygpath -w x86/Lis_signal_frame-x86.c`
+
+Lis_signal_frame-x86.lo: x86/Lis_signal_frame-x86.c
+@AMDEP_TRUE@	source='x86/Lis_signal_frame-x86.c' object='Lis_signal_frame-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lis_signal_frame-x86.Plo' tmpdepfile='$(DEPDIR)/Lis_signal_frame-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lis_signal_frame-x86.lo `test -f 'x86/Lis_signal_frame-x86.c' || echo '$(srcdir)/'`x86/Lis_signal_frame-x86.c
 
 Lget_proc_info-x86.o: x86/Lget_proc_info-x86.c
 @AMDEP_TRUE@	source='x86/Lget_proc_info-x86.c' object='Lget_proc_info-x86.o' libtool=no @AMDEPBACKSLASH@
