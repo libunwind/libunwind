@@ -71,6 +71,12 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   else
     switch (reg)
       {
+      case UNW_IA64_GR + 0:
+	if (write)
+	  return -UNW_EBADREG;
+	*val = 0;
+	return 0;
+
       case UNW_REG_IP:
 	{
 	  unsigned long ip, psr;
