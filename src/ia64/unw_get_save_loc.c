@@ -17,9 +17,6 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
       /* frame registers */
     case UNW_IA64_BSP:
     case UNW_REG_SP:
-    case UNW_REG_PROC_START:
-    case UNW_REG_HANDLER:
-    case UNW_REG_LSDA:
     default:
       break;
 
