@@ -27,7 +27,7 @@ AC_C_INLINE
 AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 
-AC_CHECK_TYPE(sighandler_t)
+AC_CHECK_TYPES([sighandler_t])
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
