@@ -15,11 +15,12 @@ AM_PROG_LIBTOOL
 AM_PROG_AS
 
 dnl Checks for libraries.
+AC_CHECK_LIB(uca, __uc_get_grs)
 
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h execinfo.h ia64intrin.h \
-		 unistd.h)
+		 sys/uc_access.h unistd.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -50,6 +51,7 @@ AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
 AM_CONDITIONAL(ARCH_HPPA, test x$target_arch = xhppa)
 AM_CONDITIONAL(ARCH_X86, test x$target_arch = xx86)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
+AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 
 if test x$target_arch != x$build_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
