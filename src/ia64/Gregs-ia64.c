@@ -242,14 +242,6 @@ access_nat (struct cursor *c,
   unw_fpreg_t tmp;
   int ret;
 
-  if (IA64_IS_UC_LOC (reg_loc))
-    {
-      if (write)
-	return ia64_put (c, nat_loc, *valp);
-      else
-	return ia64_get (c, nat_loc, valp);
-    }
-
   if (IA64_IS_FP_LOC (reg_loc))
     {
       /* NaT bit is saved as a NaTVal.  This happens when a general
@@ -293,6 +285,16 @@ access_nat (struct cursor *c,
 	    *valp = (memcmp (&tmp, &unw.nat_val_le, sizeof (tmp)) == 0);
 	}
       return ret;
+    }
+
+  if ((IA64_IS_REG_LOC (nat_loc)
+       && (unsigned) (IA64_GET_REG (nat_loc) - UNW_IA64_NAT) < 128)
+      || IA64_IS_UC_LOC (reg_loc))
+    {
+      if (write)
+	return ia64_put (c, nat_loc, *valp);
+      else
+	return ia64_get (c, nat_loc, valp);
     }
 
   if (IA64_IS_NULL_LOC (nat_loc))
