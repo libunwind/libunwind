@@ -1,4 +1,4 @@
-This is version 0.0 of the unwind library.  At the moment, only the
+This is version 0.2 of the unwind library.  At the moment, only the
 IA-64 Linux (IPF Linux) platform is supported and even that support
 has received only light testing.  Consequently, this release is
 intended primarily to expose the unwind API to more developers and to
@@ -7,25 +7,24 @@ backtracing through gcc-generated code might work reasonably well.
 
 There is virtually no documentation at the moment.  A brief outline of
 the unwind API is in file NOTES.  To get a feel for how things are
-intended to work, you may also want to take a look at include/unwind.h
-and include/unwind-ia64.h.  Finally, the test program in
-src/tests/bt.c shows two ways of how to do a simple backtrace: one
-uses libunwind directly, the other uses a libunwind-based
+intended to work, you may also want to take a look at
+include/libunwind.h and include/libunwind-ia64.h.  Finally, the test
+program in tests/bt.c shows two ways of how to do a simple backtrace:
+one uses libunwind directly, the other uses a libunwind-based
 implementation of the backtrace() function.  The test program in
-src/tests/exc.c shows the basics of how to do exception handling with
-this library.
+tests/exc.c shows the basics of how to do exception handling with this
+library.
 
 The following steps should be used to compile and install this library:
 
-	$ cd src
-	$ make dep
+	$ ./configure
 	$ make
 	$ make install prefix=PREFIX
 
-where PREFIX is the installation prefix.  By default, a prefix of /usr
-is used, such that libunwind.a is installed in /usr/lib and unwind.h
-is installed in /usr/include.  For testing, you may want to use a
-prefix of /usr/local instead.
+where PREFIX is the installation prefix.  By default, a prefix of
+/usr/local is used, such that libunwind.a is installed in
+/usr/local/lib and unwind.h is installed in /usr/local/include.  For
+testing, you may want to use a prefix of /usr/local instead.
 
 Please direct all questions regarding this library to:
 
