@@ -211,7 +211,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 									   \
 	elf64.c elf64.h							   \
 									   \
-	ia64/dyn_info_list-ia64.S					   \
+	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
 									   \
 	ia64/Lcreate_addr_space-ia64.c					   \
 	ia64/Lget_proc_info-ia64.c					   \
@@ -465,9 +465,10 @@ am__objects_20 = $(am__objects_5) global-hppa.lo tables-hppa.lo \
 	Linit_local-hppa.lo Lget_proc_info-hppa.lo Lregs-hppa.lo \
 	Lstep-hppa.lo
 am__objects_21 = $(am__objects_6) $(am__objects_17) elf64.lo \
-	dyn_info_list-ia64.lo Lcreate_addr_space-ia64.lo \
-	Lget_proc_info-ia64.lo Lget_save_loc-ia64.lo Lglobal-ia64.lo \
-	Linit-ia64.lo Linit_local-ia64.lo Linit_remote-ia64.lo \
+	dyn_info_list-ia64.lo getcontext-ia64.lo \
+	Lcreate_addr_space-ia64.lo Lget_proc_info-ia64.lo \
+	Lget_save_loc-ia64.lo Lglobal-ia64.lo Linit-ia64.lo \
+	Linit_local-ia64.lo Linit_remote-ia64.lo \
 	Linstall_cursor-ia64.lo Lis_signal_frame-ia64.lo \
 	Lparser-ia64.lo Lrbs-ia64.lo Lregs-ia64.lo Lresume-ia64.lo \
 	Lscript-ia64.lo Lstep-ia64.lo Ltables-ia64.lo
@@ -879,6 +880,7 @@ Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
 Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
 dyn_info_list-ia64.lo: ia64/dyn_info_list-ia64.S
+getcontext-ia64.lo: ia64/getcontext-ia64.S
 Lcreate_addr_space-ia64.lo: ia64/Lcreate_addr_space-ia64.c
 Lget_proc_info-ia64.lo: ia64/Lget_proc_info-ia64.c
 Lget_save_loc-ia64.lo: ia64/Lget_save_loc-ia64.c
@@ -1147,6 +1149,15 @@ dyn_info_list-ia64.obj: ia64/dyn_info_list-ia64.S
 
 dyn_info_list-ia64.lo: ia64/dyn_info_list-ia64.S
 	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o dyn_info_list-ia64.lo `test -f 'ia64/dyn_info_list-ia64.S' || echo '$(srcdir)/'`ia64/dyn_info_list-ia64.S
+
+getcontext-ia64.o: ia64/getcontext-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o getcontext-ia64.o `test -f 'ia64/getcontext-ia64.S' || echo '$(srcdir)/'`ia64/getcontext-ia64.S
+
+getcontext-ia64.obj: ia64/getcontext-ia64.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o getcontext-ia64.obj `cygpath -w ia64/getcontext-ia64.S`
+
+getcontext-ia64.lo: ia64/getcontext-ia64.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o getcontext-ia64.lo `test -f 'ia64/getcontext-ia64.S' || echo '$(srcdir)/'`ia64/getcontext-ia64.S
 
 Linstall_cursor-ia64.o: ia64/Linstall_cursor-ia64.S
 	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Linstall_cursor-ia64.o `test -f 'ia64/Linstall_cursor-ia64.S' || echo '$(srcdir)/'`ia64/Linstall_cursor-ia64.S
