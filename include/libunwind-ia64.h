@@ -99,8 +99,4 @@ typedef ucontext_t unw_tdep_context_t;
 
 #include "libunwind-common.h"
 
-/* Platforms that support UNW_INFO_FORMAT_TABLE need to define this.  */
-#define unw_sysdep_search_unwind_table(a,b,c,d,e)	\
-	_Uia64_search_unwind_table(a,b,c,d,e)
-
 #endif /* LIBUNWIND_H */
