@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -36,6 +36,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 int nerrors;
 int verbose;
+int print_names = 1;
 
 enum
   {
@@ -70,7 +71,9 @@ do_backtrace (pid_t target_pid)
 	  || (ret = unw_get_reg (&c, UNW_REG_SP, &sp)) < 0)
 	panic ("unw_get_reg/unw_get_proc_name() failed: ret=%d\n", ret);
 
-      unw_get_proc_name (&c, buf, sizeof (buf), NULL);
+      buf[0] = '\0';
+      if (print_names)
+	unw_get_proc_name (&c, buf, sizeof (buf), NULL);
 
       if (verbose)
 	printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
@@ -141,13 +144,19 @@ main (int argc, char **argv)
       {
 	if (strcmp (argv[optind], "-v") == 0)
 	  ++optind, verbose = 1;
-	if (strcmp (argv[optind], "-i") == 0)
+	else if (strcmp (argv[optind], "-i") == 0)
 	  ++optind, trace_mode = INSTRUCTION;	/* backtrace at each insn */
 	else if (strcmp (argv[optind], "-s") == 0)
-	  ++optind, trace_mode = SYSCALL;		/* backtrace at each syscall */
+	  ++optind, trace_mode = SYSCALL;	/* backtrace at each syscall */
 	else if (strcmp (argv[optind], "-t") == 0)
 	  /* Execute until syscall(-1), then backtrace at each insn.  */
 	  ++optind, trace_mode = TRIGGER;
+	else if (strcmp (argv[optind], "-c") == 0)
+	  /* Enable caching of unwind-info.  */
+	  ++optind, unw_set_caching_policy (as, UNW_CACHE_GLOBAL);
+	else if (strcmp (argv[optind], "-n") == 0)
+	  /* Don't look-up and print symbol names.  */
+	  ++optind, print_names = 0;
       }
 
   target_pid = fork ();
@@ -186,7 +195,10 @@ main (int argc, char **argv)
 	      break;
 	    }
 	  else if (WIFSIGNALED (status))
-	    panic ("child terminated by signal %d\n", WTERMSIG (status));
+	    {
+	      panic ("child terminated by signal %d\n", WTERMSIG (status));
+	      break;
+	    }
 	  else
 	    {
 	      pending_sig = WSTOPSIG (status);
