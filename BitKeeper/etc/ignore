@@ -40,3 +40,7 @@ src/ia64/unw_get_fpreg.c~
 src/ia64/unw_get_save_loc.c~
 src/ia64/unw_set_fpreg.c~
 src/Makefile.in~
+doc/Dwarf3-draft7-011029-dif-draft6.pdf
+doc/dwarf-2.0.0.pdf
+src/mempool.c~
+src/mempool.h~
