@@ -127,18 +127,18 @@ struct cursor
        track of the register-backing-store areas across on which the
        current frame may be backed up.  Since there are at most 96
        stacked registers and since we only have to track the current
-       frame and only areas that are not empty, at most 96
-       backing-store areas have to be tracked.  */
-    uint8_t rbs_wridx;	/* write index (see rbs-ia64.c) */
-    uint8_t rbs_curr;	/* index of current rbs-area (contains c->bsp) */
-    uint8_t rbs_nvalid;	/* number of entries that area valid */
+       frame and only areas that are not empty, this puts an upper
+       limit on the # of backing-store areas we have to track.  */
+    uint8_t rbs_curr;		/* index of current rbs-area (contains c->bsp) */
+    uint8_t rbs_left_edge;	/* index of inner-most valid rbs-area */
+    uint8_t rbs_right_edge;	/* index of outer-most valid rbs-area */
     struct rbs_area
       {
 	unw_word_t end;
 	unw_word_t size;
 	unw_word_t rnat_loc;
       }
-    rbs_area[96];
+    rbs_area[96 + 2];	/* 96 stacked regs + 1 extra stack on each side... */
 };
 
 struct ia64_global_unwind_state
