@@ -33,10 +33,10 @@ int
 unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 {
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t loc, reg_loc;
+  ia64_loc_t loc, reg_loc;
   int ret;
 
-  loc = 0;		/* default to "not saved" */
+  loc = IA64_NULL_LOC;		/* default to "not saved" */
 
   switch (reg)
     {
@@ -47,28 +47,28 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
       break;
 
     case UNW_REG_IP:
-      loc = c->ip_loc;
+      loc = c->loc[IA64_REG_IP];
       break;
 
       /* preserved registers: */
     case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
-      loc = (&c->r4_loc)[reg - (UNW_IA64_GR + 4)];
+      loc = c->loc[IA64_REG_R4 + (reg - (UNW_IA64_GR + 4))];
       break;
 
     case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
-      loc = (&c->nat4_loc)[reg - (UNW_IA64_NAT + 4)];
-      reg_loc = (&c->r4_loc)[reg - (UNW_IA64_NAT + 4)];
+      loc = c->loc[IA64_REG_NAT4 + (reg - (UNW_IA64_NAT + 4))];
+      reg_loc = c->loc[IA64_REG_R4 + (reg - (UNW_IA64_NAT + 4))];
       if (IA64_IS_FP_LOC (reg_loc))
 	/* NaT bit saved as a NaTVal.  */
 	loc = reg_loc;
       else if (IA64_IS_MEMSTK_NAT (loc))
-	loc = IA64_GET_LOC (loc) << 3;
+	loc = IA64_LOC_ADDR (IA64_GET_ADDR (loc), 0);
       else
 	{
-	  reg = IA64_GET_LOC (loc);
+	  reg = IA64_GET_REG (loc);
 	  assert (reg >= 0 && reg < 128);
 	  if (!reg)
-	    loc = 0;
+	    loc = IA64_NULL_LOC;
 	  else if (reg >= 4 && reg <= 7)
 	    {
 #ifdef UNW_LOCAL_ONLY
@@ -85,28 +85,26 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	      if (ret < 0)
 		return ret;
 	    }
-	  else if (c->sigcontext_loc)
-	    {
-	      /* NaT bit is saved in a sigcontext.  */
-	      loc = c->sigcontext_loc + SIGCONTEXT_NAT_OFF;
-	    }
+	  else if (c->sigcontext_addr)
+	    /* NaT bit is saved in a sigcontext.  */
+	    loc = IA64_LOC_ADDR (c->sigcontext_addr + LINUX_SC_NAT_OFF, 0);
 	}
       break;
 
-    case UNW_IA64_AR_BSP:	loc = c->bsp_loc; break;
-    case UNW_IA64_AR_BSPSTORE:	loc = c->bspstore_loc; break;
-    case UNW_IA64_AR_PFS:	loc = c->pfs_loc; break;
-    case UNW_IA64_AR_RNAT:	loc = c->rnat_loc; break;
-    case UNW_IA64_AR_UNAT:	loc = c->unat_loc; break;
-    case UNW_IA64_AR_LC:	loc = c->lc_loc; break;
-    case UNW_IA64_AR_FPSR:	loc = c->fpsr_loc; break;
-    case UNW_IA64_BR + 1:	loc = c->b1_loc; break;
-    case UNW_IA64_BR + 2:	loc = c->b2_loc; break;
-    case UNW_IA64_BR + 3:	loc = c->b3_loc; break;
-    case UNW_IA64_BR + 4:	loc = c->b4_loc; break;
-    case UNW_IA64_BR + 5:	loc = c->b5_loc; break;
+    case UNW_IA64_AR_BSP:	loc = c->loc[IA64_REG_BSP]; break;
+    case UNW_IA64_AR_BSPSTORE:	loc = c->loc[IA64_REG_BSPSTORE]; break;
+    case UNW_IA64_AR_PFS:	loc = c->loc[IA64_REG_PFS]; break;
+    case UNW_IA64_AR_RNAT:	loc = c->loc[IA64_REG_RNAT]; break;
+    case UNW_IA64_AR_UNAT:	loc = c->loc[IA64_REG_UNAT]; break;
+    case UNW_IA64_AR_LC:	loc = c->loc[IA64_REG_LC]; break;
+    case UNW_IA64_AR_FPSR:	loc = c->loc[IA64_REG_FPSR]; break;
+    case UNW_IA64_BR + 1:	loc = c->loc[IA64_REG_B1]; break;
+    case UNW_IA64_BR + 2:	loc = c->loc[IA64_REG_B2]; break;
+    case UNW_IA64_BR + 3:	loc = c->loc[IA64_REG_B3]; break;
+    case UNW_IA64_BR + 4:	loc = c->loc[IA64_REG_B4]; break;
+    case UNW_IA64_BR + 5:	loc = c->loc[IA64_REG_B5]; break;
     case UNW_IA64_CFM:		loc = c->cfm_loc; break;
-    case UNW_IA64_PR:		loc = c->pr_loc; break;
+    case UNW_IA64_PR:		loc = c->loc[IA64_REG_PR]; break;
       break;
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
@@ -153,7 +151,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 
   memset (sloc, 0, sizeof (sloc));
 
-  if (!loc)
+  if (!IA64_IS_NULL_LOC (loc))
     {
       sloc->type = UNW_SLT_NONE;
       return 0;
@@ -163,13 +161,13 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
   if (IA64_IS_REG_LOC (loc))
     {
       sloc->type = UNW_SLT_REG;
-      sloc->u.regnum = IA64_GET_LOC (loc);
+      sloc->u.regnum = IA64_GET_REG (loc);
     }
   else
 #endif
     {
       sloc->type = UNW_SLT_MEMORY;
-      sloc->u.addr = loc;
+      sloc->u.addr = IA64_GET_ADDR (loc);
     }
   return 0;
 }
