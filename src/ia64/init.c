@@ -148,10 +148,11 @@ _Uia64_uc_addr (ucontext_t *uc, int reg)
   return uc_addr (uc, reg);
 }
 
-# else /* !UNW_LOCAL_ONLY */
+# endif /* UNW_LOCAL_ONLY */
 
 static int
-access_mem (unw_word_t addr, unw_word_t *val, int write, void *arg)
+access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+	    void *arg)
 {
   if (write)
     {
@@ -167,7 +168,8 @@ access_mem (unw_word_t addr, unw_word_t *val, int write, void *arg)
 }
 
 static int
-access_reg (unw_regnum_t reg, unw_word_t *val, int write, void *arg)
+access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+	    void *arg)
 {
   unw_word_t *addr, mask;
   ucontext_t *uc = arg;
@@ -217,7 +219,8 @@ access_reg (unw_regnum_t reg, unw_word_t *val, int write, void *arg)
 }
 
 static int
-access_fpreg (unw_regnum_t reg, unw_fpreg_t *val, int write, void *arg)
+access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+	      int write, void *arg)
 {
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
@@ -249,7 +252,6 @@ access_fpreg (unw_regnum_t reg, unw_fpreg_t *val, int write, void *arg)
   return -UNW_EBADREG;
 }
 
-# endif /* !UNW_LOCAL_ONLY */
 #endif /* !UNW_REMOTE_ONLY */
 
 void
@@ -281,7 +283,6 @@ ia64_init (void)
   }
 #endif
 
-  mempool_init (&unw.unwind_table_pool, sizeof (struct ia64_unwind_table), 0);
   mempool_init (&unw.state_record_pool, sizeof (struct ia64_state_record), 0);
   mempool_init (&unw.labeled_state_pool,
 		sizeof (struct ia64_labeled_state), 0);
@@ -323,14 +324,12 @@ ia64_init (void)
 #ifndef UNW_REMOTE_ONLY
   memset (&local_addr_space, 0, sizeof (local_addr_space));
   ia64_script_cache_init (&local_addr_space.global_cache);
-# ifndef UNW_LOCAL_ONLY
-  local_addr_space.acc.acquire_unwind_info = _Uia64_glibc_acquire_unwind_info;
-  local_addr_space.acc.release_unwind_info = _Uia64_glibc_release_unwind_info;
+  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
+  local_addr_space.acc.find_proc_info = _Uia64_find_proc_info;
   local_addr_space.acc.access_mem = access_mem;
   local_addr_space.acc.access_reg = access_reg;
   local_addr_space.acc.access_fpreg = access_fpreg;
   local_addr_space.acc.resume = ia64_local_resume;
-# endif
   unw_local_addr_space = &local_addr_space;
 #endif
 }
