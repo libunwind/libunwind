@@ -1,9 +1,11 @@
 # man pages that go into section 3:
-man3_MANS = $(srcdir)/libunwind.man $(srcdir)/libunwind-ia64.man \
-	$(srcdir)/libunwind-ptrace.man
+man3_MANS = $(srcdir)/libunwind.man $(srcdir)/libunwind-ia64.man	\
+	$(srcdir)/libunwind-ptrace.man $(srcdir)/libunwind-setjmp.man	\
+	$(srcdir)/unw_resume.man
 
 EXTRA_DIST = NOTES libunwind.trans				\
 	libunwind.tex libunwind-ia64.tex libunwind-ptrace.tex	\
+	libunwind-setjmp.tex unw_resume.tex			\
 	$(man3_MANS)
 
 L2M	= latex2man
