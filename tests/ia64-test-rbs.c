@@ -4,24 +4,29 @@
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 
-#define panic(args...)					\
-	do { fprintf (stderr, args); ++nerrors; return; } while (0)
+#include "ia64-test-rbs.h"
+
+#define panic(args...)							  \
+	do { fprintf (stderr, args); ++nerrors; return -9999; } while (0)
+
+#define NELEMS(a)	((int) (sizeof (a) / sizeof ((a)[0])))
 
 /* The loadrs field in ar.rsc is 14 bits wide, which limits all ia64
    implementations to at most 2048 physical stacked registers
    (actually, slightly less than that, because loadrs also counts RNaT
-   slots).  Since we can dirty 95 stacked registers per recursion, we
+   slots).  Since we can dirty 93 stacked registers per recursion, we
    need to recurse RECURSION_DEPTH times to ensure all physical
    stacked registers are in use. */
 #define MAX_PHYS_STACKED	2048
-#define RECURSION_DEPTH		((MAX_PHYS_STACKED + 94) / 95)
+#define RECURSION_DEPTH		((MAX_PHYS_STACKED + 92) / 93)
 
-typedef void spill_func_t (long iteration, void (*next_func[])());
+typedef int spill_func_t (long iteration, int (*next_func[])());
 
-extern void loadup (long iteration, int *values, void (*next_func[])());
+extern int loadup (long iteration, int *values, int (*next_func[])());
+extern char resumption_point_label;
 
 #define DCL(n) \
- extern void rbs_spill_##n (long iteration, void (*next_func[])())
+ extern int rbs_spill_##n (long iteration, int (*next_func[])())
 	           DCL(2);  DCL(3);  DCL(4);  DCL(5);  DCL(6);  DCL(7);
   DCL(8);  DCL(9); DCL(10); DCL(11); DCL(12); DCL(13); DCL(14); DCL(15);
  DCL(16); DCL(17); DCL(18); DCL(19); DCL(20); DCL(21); DCL(22); DCL(23);
@@ -52,18 +57,21 @@ spill_func_t *spill_funcs[] =
     SPL(88), SPL(89), SPL(90), SPL(91), SPL(92), SPL(93), SPL(94)
   };
 
-static long nerrors;
-static long unwind_count;
+static int verbose;
+static int nerrors;
+static int unwind_count;
 
-static void
-unwind_and_resume (long iteration, void (*next_func[])())
+static int
+unwind_and_resume (long iteration, int (*next_func[])())
 {
   unw_context_t uc;
   unw_cursor_t c;
+  unw_word_t ip;
   int i, ret;
 
-  printf ("%s: iteration=%ld, next_func=%p\n",
-	  __FUNCTION__, iteration, next_func);
+  if (verbose)
+    printf (" %s: test%ld, next_func=%p\n",
+	    __FUNCTION__, iteration, next_func);
 
   unw_getcontext (&uc);
   if ((ret = unw_init_local (&c, &uc)) < 0)
@@ -73,26 +81,85 @@ unwind_and_resume (long iteration, void (*next_func[])())
     if ((ret = unw_step (&c)) < 0)
       panic ("unw_step (ret=%d)", ret);
 
+  if (unw_get_reg (&c, UNW_REG_IP, &ip) < 0
+      || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) &resumption_point_label) < 0
+      || unw_set_reg (&c, UNW_REG_EH_ARG0, 0)	/* ret val */
+      || unw_set_reg (&c, UNW_REG_EH_ARG1, ip))
+    panic ("failed to redirect to resumption_point\n");
+
+  if (verbose)
+    {
+      unw_word_t bsp;
+      if (unw_get_reg (&c, UNW_IA64_BSP, &bsp) < 0)
+	panic ("unw_get_reg() failed\n");
+      printf ("  bsp=%lx, old ip=%lx, new ip=%p\n", bsp,
+	      ip, &resumption_point_label);
+    }
+
   ret = unw_resume (&c);
   panic ("unw_resume() returned (ret=%d)!!\n", ret);
+  return 0;
+}
+
+static int
+run_check (int test)
+{
+  int nfuncs, nspills, n, ret, i, reg_values[88];
+  spill_func_t *func[NSTACKS + 1];
+
+  /* First, generate a set of 88 random values which loadup() will load
+     into loc2-loc89 (r37-r124).  */
+  for (i = 0; i < NELEMS (reg_values); ++i)
+    {
+      reg_values[i] = random ();
+      /* Generate NaTs with a reasonably probability (1/16th): */
+      if (reg_values[i] < 0x10000000)
+	reg_values[i] = 0;
+    }
+
+  nspills = 0;
+  nfuncs = 0;
+  do
+    {
+      n = random () % NELEMS (spill_funcs);
+      func[nfuncs++] = spill_funcs[n];
+      nspills += 2 + n;
+    }
+  while (nspills < 128);
+  func[nfuncs++] = unwind_and_resume;
+
+  unwind_count = 1 + (random () % (nfuncs + RECURSION_DEPTH));
+
+  if (verbose)
+    printf ("test%d: nfuncs=%d, unwind_count=%d\n",
+	    test, nfuncs, unwind_count);
+
+  ret = loadup (RECURSION_DEPTH, reg_values, func);
+  if (ret < 0)
+    panic ("test%d: load() returned %d\n", test, ret);
+  else if (ret != RECURSION_DEPTH + 1 + nfuncs - unwind_count)
+    panic ("test%d: resumed wrong frame: expected %d, got %d\n",
+	   test, RECURSION_DEPTH + 1 + nfuncs - unwind_count, ret);
+  return 0;
 }
 
 int
 main (int argc, char **argv)
 {
-  spill_func_t *test1[16];
-  int i, reg_values[88];
+  int i;
 
-  for (i = 0; i < (int) (sizeof (reg_values) / sizeof (reg_values[0])); ++i)
-    reg_values[i] = random ();
+  if (argc > 1)
+    verbose = 1;
 
-  test1[0] = SPL (3);
-  test1[1] = SPL (10);
-  test1[2] = SPL (5);
-  test1[3] = SPL (17);
-  test1[4] = unwind_and_resume;
-  unwind_count = 6;
-  loadup (RECURSION_DEPTH, reg_values, test1);
+  for (i = 0; i < 100000; ++i)
+    run_check (i + 1);
 
+  if (nerrors > 0)
+    {
+      fprintf (stderr, "FAILURE: detected %d errors\n", nerrors);
+      exit (-1);
+    }
+  if (verbose)
+    printf ("SUCCESS.\n");
   return 0;
 }
