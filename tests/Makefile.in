@@ -135,7 +135,9 @@ Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
 
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
-ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S
+ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
+Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 
 LDADD = ../src/libunwind-$(arch).la
 
@@ -190,8 +192,8 @@ Gia64_test_stack_OBJECTS = $(am_Gia64_test_stack_OBJECTS)
 Gia64_test_stack_LDADD = $(LDADD)
 Gia64_test_stack_DEPENDENCIES = ../src/libunwind-$(arch).la
 Gia64_test_stack_LDFLAGS =
-Gtest_dyn1_SOURCES = Gtest-dyn1.c
-Gtest_dyn1_OBJECTS = Gtest-dyn1.$(OBJEXT)
+am_Gtest_dyn1_OBJECTS = Gtest-dyn1.$(OBJEXT) flush-cache.$(OBJEXT)
+Gtest_dyn1_OBJECTS = $(am_Gtest_dyn1_OBJECTS)
 Gtest_dyn1_LDADD = $(LDADD)
 Gtest_dyn1_DEPENDENCIES = ../src/libunwind-$(arch).la
 Gtest_dyn1_LDFLAGS =
@@ -217,8 +219,8 @@ Lia64_test_stack_OBJECTS = $(am_Lia64_test_stack_OBJECTS)
 Lia64_test_stack_LDADD = $(LDADD)
 Lia64_test_stack_DEPENDENCIES = ../src/libunwind-$(arch).la
 Lia64_test_stack_LDFLAGS =
-Ltest_dyn1_SOURCES = Ltest-dyn1.c
-Ltest_dyn1_OBJECTS = Ltest-dyn1.$(OBJEXT)
+am_Ltest_dyn1_OBJECTS = Ltest-dyn1.$(OBJEXT) flush-cache.$(OBJEXT)
+Ltest_dyn1_OBJECTS = $(am_Ltest_dyn1_OBJECTS)
 Ltest_dyn1_LDADD = $(LDADD)
 Ltest_dyn1_DEPENDENCIES = ../src/libunwind-$(arch).la
 Ltest_dyn1_LDFLAGS =
@@ -238,7 +240,7 @@ bt_LDADD = $(LDADD)
 bt_DEPENDENCIES = ../src/libunwind-$(arch).la
 bt_LDFLAGS =
 am_ia64_test_dyn1_OBJECTS = ia64-test-dyn1.$(OBJEXT) \
-	ia64-dyn-asm.$(OBJEXT)
+	ia64-dyn-asm.$(OBJEXT) flush-cache.$(OBJEXT)
 ia64_test_dyn1_OBJECTS = $(am_ia64_test_dyn1_OBJECTS)
 ia64_test_dyn1_LDADD = $(LDADD)
 ia64_test_dyn1_DEPENDENCIES = ../src/libunwind-$(arch).la
@@ -300,13 +302,13 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) \
-	Gtest-dyn1.c Gtest-exc.c Gtest-resume-sig.c \
+	$(Gtest_dyn1_SOURCES) Gtest-exc.c Gtest-resume-sig.c \
 	$(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) \
-	Ltest-dyn1.c Ltest-exc.c Ltest-resume-sig.c bt.c \
+	$(Ltest_dyn1_SOURCES) Ltest-exc.c Ltest-resume-sig.c bt.c \
 	$(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c \
 	test-ptrace.c test-setjmp.c test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gtest-dyn1.c Gtest-exc.c Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Ltest-dyn1.c Ltest-exc.c Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c test-ptrace.c test-setjmp.c test-varargs.c
+SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) $(Gtest_dyn1_SOURCES) Gtest-exc.c Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) $(Ltest_dyn1_SOURCES) Ltest-exc.c Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c test-ptrace.c test-setjmp.c test-varargs.c
 
 all: all-am
 

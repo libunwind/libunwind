@@ -94,24 +94,24 @@ arch = @arch@
 install_sh = @install_sh@
 
 # man pages that go into section 3:
-man3_MANS = $(srcdir)/libunwind.man $(srcdir)/libunwind-ia64.man	\
-	$(srcdir)/libunwind-ptrace.man $(srcdir)/libunwind-setjmp.man	\
-	$(srcdir)/unw_flush_cache.man					\
-	$(srcdir)/unw_get_accessors.man					\
-	$(srcdir)/unw_get_proc_info.man $(srcdir)/unw_get_proc_name.man	\
-	$(srcdir)/unw_get_fpreg.man					\
-	$(srcdir)/unw_get_reg.man					\
-	$(srcdir)/unw_getcontext.man					\
-	$(srcdir)/unw_init_local.man $(srcdir)/unw_init_remote.man	\
-	$(srcdir)/unw_is_fpreg.man					\
-	$(srcdir)/unw_is_signal_frame.man				\
-	$(srcdir)/unw_create_addr_space.man				\
-	$(srcdir)/unw_destroy_addr_space.man				\
-	$(srcdir)/unw_regname.man $(srcdir)/unw_resume.man		\
-	$(srcdir)/unw_set_caching_policy.man				\
-	$(srcdir)/unw_set_fpreg.man					\
-	$(srcdir)/unw_set_reg.man					\
-	$(srcdir)/unw_step.man
+man3_MANS = libunwind.man libunwind-ia64.man		\
+	libunwind-ptrace.man libunwind-setjmp.man	\
+	unw_flush_cache.man				\
+	unw_get_accessors.man				\
+	unw_get_proc_info.man unw_get_proc_name.man	\
+	unw_get_fpreg.man				\
+	unw_get_reg.man					\
+	unw_getcontext.man				\
+	unw_init_local.man unw_init_remote.man		\
+	unw_is_fpreg.man				\
+	unw_is_signal_frame.man				\
+	unw_create_addr_space.man			\
+	unw_destroy_addr_space.man			\
+	unw_regname.man unw_resume.man			\
+	unw_set_caching_policy.man			\
+	unw_set_fpreg.man				\
+	unw_set_reg.man					\
+	unw_step.man
 
 
 EXTRA_DIST = NOTES libunwind.trans					\
@@ -220,7 +220,6 @@ top_distdir = ..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/$(srcdir)
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
@@ -322,8 +321,9 @@ uninstall-man: uninstall-man3
 
 
 .tex.man:
-	-bk get -e $@
 	$(L2M_CMD) $< $@
+	-bk get -e $(srcdir)/$@
+	-cp $@ $(srcdir)/$@
 
 html:
 	for n in $(man3_MANS); do					\
