@@ -128,12 +128,13 @@ libunwind_setjmp_la_DEPENDENCIES = libunwind-$(arch).la
 am__libunwind_setjmp_la_SOURCES_DIST = longjmp.c siglongjmp.c setjmp.c \
 	sigsetjmp.c x86_64/siglongjmp.S x86/siglongjmp.S \
 	hppa/siglongjmp.S ia64/setjmp.S ia64/sigsetjmp.S \
-	ia64/siglongjmp.S
+	ia64/longjmp.S ia64/siglongjmp.S
 am__objects_8 = longjmp.lo siglongjmp.lo
 am__objects_9 = setjmp.lo sigsetjmp.lo x86_64/siglongjmp.lo
 am__objects_10 = setjmp.lo sigsetjmp.lo x86/siglongjmp.lo
 am__objects_11 = setjmp.lo sigsetjmp.lo hppa/siglongjmp.lo
-am__objects_12 = ia64/setjmp.lo ia64/sigsetjmp.lo ia64/siglongjmp.lo
+am__objects_12 = ia64/setjmp.lo ia64/sigsetjmp.lo ia64/longjmp.lo \
+	ia64/siglongjmp.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_8) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@	$(am__objects_9)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_8) \
@@ -501,8 +502,8 @@ libunwind_setjmp_la_LDFLAGS = $(COMMON_SO_LDFLAGS)		     \
 
 libunwind_setjmp_la_LIBADD = libunwind-$(arch).la -lc
 libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
-libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp.S ia64/sigsetjmp.S \
-					  ia64/siglongjmp.S
+libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp.S  ia64/sigsetjmp.S  \
+					  ia64/longjmp.S ia64/siglongjmp.S
 
 libunwind_setjmp_la_SOURCES_hppa = setjmp.c sigsetjmp.c	\
 					  hppa/siglongjmp.S
@@ -947,6 +948,7 @@ hppa/siglongjmp.lo: hppa/$(am__dirstamp) \
 	hppa/$(DEPDIR)/$(am__dirstamp)
 ia64/setjmp.lo: ia64/$(am__dirstamp) ia64/$(DEPDIR)/$(am__dirstamp)
 ia64/sigsetjmp.lo: ia64/$(am__dirstamp) ia64/$(DEPDIR)/$(am__dirstamp)
+ia64/longjmp.lo: ia64/$(am__dirstamp) ia64/$(DEPDIR)/$(am__dirstamp)
 ia64/siglongjmp.lo: ia64/$(am__dirstamp) \
 	ia64/$(DEPDIR)/$(am__dirstamp)
 libunwind-setjmp.la: $(libunwind_setjmp_la_OBJECTS) $(libunwind_setjmp_la_DEPENDENCIES) 
@@ -1320,6 +1322,8 @@ mostlyclean-compile:
 	-rm -f ia64/dyn_info_list.lo
 	-rm -f ia64/getcontext.$(OBJEXT)
 	-rm -f ia64/getcontext.lo
+	-rm -f ia64/longjmp.$(OBJEXT)
+	-rm -f ia64/longjmp.lo
 	-rm -f ia64/mk_Gcursor_i.$(OBJEXT)
 	-rm -f ia64/mk_Lcursor_i.$(OBJEXT)
 	-rm -f ia64/regname.$(OBJEXT)
