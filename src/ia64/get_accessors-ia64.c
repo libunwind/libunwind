@@ -29,9 +29,6 @@ unw_accessors_t *
 unw_get_accessors (unw_addr_space_t as)
 {
   if (unw.needs_initialization)
-    {
-      unw.needs_initialization = 0;
-      ia64_init ();
-    }
+    ia64_init ();
   return &as->acc;
 }
