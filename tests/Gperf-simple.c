@@ -24,10 +24,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 
 #include <time.h>
 
 #include <libunwind.h>
+
+#include <sys/resource.h>
 
 #define panic(args...)							  \
 	do { fprintf (stderr, args); exit (-1); } while (0)
@@ -37,9 +40,10 @@ long dummy;
 static long iterations = 10000;
 static int maxlevel = 100;
 
+#define KB	1024
 #define MB	(1024*1024)
 
-static char big[512*MB];
+static char big[64*MB];	/* should be >> max. cache size */
 
 static inline double
 gettime (void)
@@ -124,19 +128,29 @@ sum (void *buf, size_t size)
   char *cp = buf;
   size_t i;
 
-  for (i = 0; i < size; i += 64)
-    s += *cp++;
+  for (i = 0; i < size; i += 8)
+    s += cp[i];
   return s;
 }
 
 static void
 measure_init (void)
 {
-# define N	1000
-# define M	10
+# define N	100
+# define M	10	/* must be at least 2 to get steady-state */
   double stop, start, get_cold, get_warm, init_cold, init_warm, delta;
-  unw_cursor_t cursor[N];
-  unw_context_t uc[N];
+  struct
+    {
+      unw_cursor_t c;
+      char padding[1024];	/* should be > 2 * max. cacheline size */
+    }
+  cursor[N];
+  struct
+    {
+      unw_context_t uc;
+      char padding[1024];	/* should be > 2 * max. cacheline size */
+    }
+  uc[N];
   int i, j;
 
   /* Run each test M times and take the minimum to filter out noise
@@ -146,24 +160,27 @@ measure_init (void)
   get_cold = 1e99;
   for (j = 0; j < M; ++j)
     {
-      dummy += sum (big, sizeof (big));	/* flush the cache */
-
+      dummy += sum (big, sizeof (big));			/* flush the cache */
+      for (i = 0; i < N; ++i)
+	uc[i].padding[511] = i;		/* warm up the TLB */
       start = gettime ();
       for (i = 0; i < N; ++i)
-	unw_getcontext (&uc[i]);
+	unw_getcontext (&uc[i].uc);
       stop = gettime ();
       delta = (stop - start) / N;
       if (delta < get_cold)
 	get_cold = delta;
     }
-  //exit (0);
+
   init_cold = 1e99;
   for (j = 0; j < M; ++j)
     {
       dummy += sum (big, sizeof (big));	/* flush cache */
+      for (i = 0; i < N; ++i)
+	uc[i].padding[511] = i;		/* warm up the TLB */
       start = gettime ();
       for (i = 0; i < N; ++i)
-	unw_init_local (&cursor[i], &uc[i]);
+	unw_init_local (&cursor[i].c, &uc[i].uc);
       stop = gettime ();
       delta = (stop - start) / N;
       if (delta < init_cold)
@@ -175,7 +192,7 @@ measure_init (void)
     {
       start = gettime ();
       for (i = 0; i < N; ++i)
-	unw_getcontext (&uc[0]);
+	unw_getcontext (&uc[0].uc);
       stop = gettime ();
       delta = (stop - start) / N;
       if (delta < get_warm)
@@ -187,7 +204,7 @@ measure_init (void)
     {
       start = gettime ();
       for (i = 0; i < N; ++i)
-	unw_init_local (&cursor[0], &uc[0]);
+	unw_init_local (&cursor[0].c, &uc[0].uc);
       stop = gettime ();
       delta = (stop - start) / N;
       if (delta < init_warm)
@@ -203,6 +220,14 @@ measure_init (void)
 int
 main (int argc, char **argv)
 {
+  struct rlimit rlim;
+
+  rlim.rlim_cur = RLIM_INFINITY;
+  rlim.rlim_max = RLIM_INFINITY;
+  setrlimit (RLIMIT_STACK, &rlim);
+
+  memset (big, 0xaa, sizeof (big));
+
   if (argc > 1)
     {
       maxlevel = atol (argv[1]);
