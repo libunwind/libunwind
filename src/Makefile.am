@@ -25,6 +25,7 @@ libunwind_la_SOURCES_local = 						     \
 	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
 	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
+libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 #
 # Note: As of automake-1.6, there is a stupid limitation which requires
@@ -117,6 +118,10 @@ endif
 
 if OS_LINUX
  libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
+endif
+
+if OS_HPUX
+ libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
 endif
 
 if ARCH_IA64
