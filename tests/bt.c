@@ -145,7 +145,7 @@ sighandler (int signal, void *siginfo, void *context)
   }
 # endif
 #elif UNW_TARGET_X86
-  printf (" @ %lx", uc->uc_mcontext.gregs[REG_EIP]);
+  printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_EIP]);
 #endif
   printf ("\n");
 
