@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Fri Jan 17 15:53:56 PST 2003
+.\" Manual page created with latex2man on Mon Jan 27 22:18:54 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND" "3" "17 January 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND" "3" "27 January 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -451,6 +451,7 @@ multiple platforms.
 .SH SEE ALSO
 
 .PP
+libunwind\-ptrace(3)
 libunwind\-ia64(3)
 .PP
 .SH AUTHOR
