@@ -100,7 +100,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
 install_sh = @install_sh@
-SOVERSION = 1:1:0		# See comments at end of file.
+SOVERSION = 2:0:1		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
 
 libunwind_setjmp_la_SOURCES_local = longjmp.c siglongjmp.c
@@ -121,7 +121,10 @@ libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	mi-init.c							      \
 	mempool.c							      \
 	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
-	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c
+	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c \
+	Gget_proc_info_by_ip.c						      \
+	Lget_proc_info_by_ip.c
+
 
 libunwind_la_SOURCES_local = \
 	_UPT_internal.h							     \
@@ -129,7 +132,16 @@ libunwind_la_SOURCES_local = \
 	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
 	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
+	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c		     \
+									     \
+	_Unwind_Backtrace.c _Unwind_DeleteException.c			     \
+	_Unwind_FindEnclosingFunction.c _Unwind_ForcedUnwind.c		     \
+	_Unwind_GetBSP.c _Unwind_GetCFA.c _Unwind_GetDataRelBase.c	     \
+	_Unwind_GetGR.c _Unwind_GetIP.c _Unwind_GetLanguageSpecificData.c    \
+	_Unwind_GetRegionStart.c _Unwind_GetTextRelBase.c		     \
+	_Unwind_RaiseException.c _Unwind_Resume.c			     \
+	_Unwind_Resume_or_Rethrow.c _Unwind_SetGR.c _Unwind_SetIP.c
+
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
@@ -254,7 +266,7 @@ lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 AM_CPPFLAGS = -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 
-EXTRA_DIST = elfxx.h elfxx.c					\
+EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h		\
 		$(libunwind_la_SOURCES_hppa)			\
 		$(libunwind_la_SOURCES_ia64)			\
 		$(libunwind_la_SOURCES_x86)			\
@@ -278,7 +290,15 @@ am__objects_2 = dyn-cancel.lo dyn-register.lo _UPT_accessors.lo \
 	_UPT_access_fpreg.lo _UPT_access_mem.lo _UPT_access_reg.lo \
 	_UPT_create.lo _UPT_destroy.lo _UPT_find_proc_info.lo \
 	_UPT_get_dyn_info_list_addr.lo _UPT_put_unwind_info.lo \
-	_UPT_get_proc_name.lo _UPT_reg_offset.lo _UPT_resume.lo
+	_UPT_get_proc_name.lo _UPT_reg_offset.lo _UPT_resume.lo \
+	_Unwind_Backtrace.lo _Unwind_DeleteException.lo \
+	_Unwind_FindEnclosingFunction.lo _Unwind_ForcedUnwind.lo \
+	_Unwind_GetBSP.lo _Unwind_GetCFA.lo _Unwind_GetDataRelBase.lo \
+	_Unwind_GetGR.lo _Unwind_GetIP.lo \
+	_Unwind_GetLanguageSpecificData.lo _Unwind_GetRegionStart.lo \
+	_Unwind_GetTextRelBase.lo _Unwind_RaiseException.lo \
+	_Unwind_Resume.lo _Unwind_Resume_or_Rethrow.lo _Unwind_SetGR.lo \
+	_Unwind_SetIP.lo
 @REMOTE_ONLY_TRUE@am__objects_3 = $(am__objects_1)
 @REMOTE_ONLY_FALSE@am__objects_3 = $(am__objects_2)
 am__objects_4 = os-hpux.lo
@@ -289,7 +309,8 @@ am__objects_7 = $(am__objects_3) $(am__objects_6) backtrace.lo \
 	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
 	Gfind_dynamic_proc_info.lo Gget_proc_name.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
-	Lget_proc_name.lo Lput_dynamic_unwind_info.lo
+	Lget_proc_name.lo Lput_dynamic_unwind_info.lo \
+	Gget_proc_info_by_ip.lo Lget_proc_info_by_ip.lo
 am__objects_8 = $(am__objects_7) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
@@ -388,6 +409,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_info_by_ip.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-x86.Plo \
@@ -429,6 +451,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_info_by_ip.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name-x86.Plo \
@@ -474,6 +497,23 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_put_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_reg_offset.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_resume.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_Backtrace.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_DeleteException.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_FindEnclosingFunction.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_ForcedUnwind.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetBSP.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetCFA.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetDataRelBase.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetGR.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetIP.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetLanguageSpecificData.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetRegionStart.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_GetTextRelBase.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_RaiseException.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_Resume.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_Resume_or_Rethrow.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetGR.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetIP.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/backtrace.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-extract.Plo \
@@ -695,6 +735,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_info_by_ip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-x86.Plo@am__quote@
@@ -736,6 +777,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_info_by_ip.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name-x86.Plo@am__quote@
@@ -781,6 +823,23 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_put_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_reg_offset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_resume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_Backtrace.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_DeleteException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_FindEnclosingFunction.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_ForcedUnwind.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetBSP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetCFA.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetDataRelBase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetGR.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetIP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetLanguageSpecificData.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetRegionStart.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_GetTextRelBase.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_RaiseException.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_Resume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_Resume_or_Rethrow.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetGR.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetIP.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-extract.Plo@am__quote@
