@@ -52,7 +52,20 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
       ia64_init ();
     }
 
-#ifndef HAVE_SYS_UC_ACCESS_H
+#ifdef __hpux
+  {
+    int ret;
+
+    c->as = unw_local_addr_space;
+    c->as_arg = uc;
+    if ((ret = common_init (c)) < 0)
+      return ret;
+
+    /* On HP-UX, the context created by getcontext() points to the
+       getcontext() system call stub.  Step over it: */
+    return unw_step (cursor);
+  }
+#else
   /* The bsp value stored by getcontext() points to the *end* of the
      register frame of the initial function.  We correct for this by
      storing the adjusted value in sc_rbs_base, which isn't used by
