@@ -62,6 +62,8 @@ maps_next (struct map_iterator *mi,
 static inline void
 maps_close (struct map_iterator *mi)
 {
+  if (!mi->fp)
+    return;
   fclose (mi->fp);
   mi->fp = NULL;
 }
