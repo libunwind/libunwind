@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define _UPT_internal_h
 
 #include <errno.h>
-#include <libunwind.h>
+#include <libunwind-ptrace.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>

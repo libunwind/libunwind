@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <errno.h>
 #include <fcntl.h>
-#include <libunwind.h>
+#include <libunwind-ptrace.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
