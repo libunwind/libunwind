@@ -695,7 +695,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
     }
   if (uhdr->header_version & UNWIND_TBL_32BIT)
     {
-      Debug (1, "32-bit unwind tables are not supported yet\n";
+      Debug (1, "32-bit unwind tables are not supported yet\n");
       return -UNW_EINVAL;
     }
 
