@@ -133,7 +133,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
     }
 }
 
-#ifndef REMOTE_ONLY
+#ifndef UNW_REMOTE_ONLY
 
 static inline int
 get_rnat (struct cursor *c, struct rbs_area *rbs, unw_word_t bsp,
@@ -275,4 +275,4 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
   return (char *) dst - (char *) dirty_partition;
 }
 
-#endif /* !REMOTE_ONLY */
+#endif /* !UNW_REMOTE_ONLY */
