@@ -102,7 +102,7 @@ unw_step (unw_cursor_t *cursor)
 	  if (ret < 0)
 	    return ret;
 
-	  Debug (13, "[EBP=0x%x] = 0x%xx\n", DWARF_GET_LOC (c->dwarf.loc[EBP]),
+	  Debug (13, "[EBP=0x%x] = 0x%x\n", DWARF_GET_LOC (c->dwarf.loc[EBP]),
 		 c->dwarf.cfa);
 
 	  ebp_loc = DWARF_LOC (c->dwarf.cfa, 0);
