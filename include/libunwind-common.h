@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -164,6 +164,14 @@ typedef struct unw_accessors
 			 unw_fpreg_t *val, int write, void *arg);
 
     int (*resume) (unw_addr_space_t as, unw_cursor_t *c, void *arg);
+
+    /* Optional call back to obtain the name of a (static) procedure.
+       Dynamically generated procedures are handled automatically by
+       libunwind.  This callback is optional and may be set to
+       NULL.  */
+    int (*get_proc_name) (unw_addr_space_t as, unw_word_t addr,
+			  char *buf, size_t buf_len, unw_word_t *offp,
+			  void *arg);
   }
 unw_accessors_t;
 
@@ -349,4 +357,7 @@ extern int _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg,
 			    unw_word_t *val, int write, void *arg);
 extern int _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg,
 			      unw_fpreg_t *val, int write, void *arg);
+extern int _UPT_get_proc_name (unw_addr_space_t as, unw_word_t addr,
+			       char *buf, size_t len, unw_word_t *offp,
+			       void *arg);
 extern unw_accessors_t _UPT_accessors;
