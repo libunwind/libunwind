@@ -101,7 +101,6 @@ main (int argc, char *argv[])
   struct fdesc fdesc;
   template_t funcp;
   void *mem;
-  int ret;
 
   mem = malloc (getpagesize ());
 
@@ -124,23 +123,22 @@ main (int argc, char *argv[])
   _U_dyn_op_alias (&region->op[0], 0, -1, fdesc.code);
   _U_dyn_op_stop (&region->op[1]);
 
+  memset (&di, 0, sizeof (di));
   di.start_ip = (long) mem;
   di.end_ip = (long) mem + 256;
   di.gp = fdesc.gp;
   di.format = UNW_INFO_FORMAT_DYNAMIC;
-  di.u.pi.name = "<copy of template()>";
-  di.u.pi.handler = 0;
-  di.u.pi.flags = 0;
+  di.u.pi.name_ptr = (unw_word_t) "copy_of_template";
   di.u.pi.regions = region;
 
-  ret = _U_dyn_register (&di);
-  if (ret < 0)
-    panic ("call to _U_dyn_register() failed: ret=%d\n", ret);
+  _U_dyn_register (&di);
 
   /* call new function: */
   fdesc.code = (long) mem;
   funcp = get_funcp (fdesc);
 
   (*funcp) (10, funcp, printf, "iteration %c%s\n", strarr);
+
+  _U_dyn_cancel (&di);
   return -1;
 }
