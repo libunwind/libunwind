@@ -24,6 +24,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "offsets.h"
+#include "regs.h"
 #include "rse.h"
 #include "unwind_i.h"
 
@@ -264,7 +265,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 	{
 	  /* register got spilled to a stacked register */
 	  opc = IA64_INSN_MOVE_STACKED;
-	  val = rval - 32;
+	  val = rval;
 	}
       else if (rval >= 4 && rval <= 7)
 	/* register got spilled to a preserved register */
