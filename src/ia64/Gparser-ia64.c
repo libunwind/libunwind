@@ -868,7 +868,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 	      ret = ia64_fetch_proc_info (c, new_ip, 1);
 	      if (ret < 0)
 		return ret;
-	      ia64_free_state_record (&sr);
+	      ia64_free_state_record (sr);
 	      return create_state_record_for (c, sr, new_ip);
 
 	    case UNW_DYN_STOP:
