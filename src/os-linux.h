@@ -72,13 +72,19 @@ maps_init (struct map_iterator *mi, pid_t pid)
   mi->fd = open (path, O_RDONLY);
   mi->offset = 0;
 
-  /* Try to allocate a page-sized buffer.  If that fails, we'll fall
-     back on reading one line at a time.  */
-  mi->buf_size = getpagesize ();
-  cp = mmap (0, mi->buf_size, PROT_READ | PROT_WRITE,
-	     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-  if (cp == MAP_FAILED)
-    cp = NULL;
+  cp = NULL;
+  if (mi->fd >= 0)
+    {
+      /* Try to allocate a page-sized buffer.  If that fails, we'll
+	 fall back on reading one line at a time.  */
+      mi->buf_size = getpagesize ();
+      cp = mmap (0, mi->buf_size, PROT_READ | PROT_WRITE,
+		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+      if (cp == MAP_FAILED)
+	cp = NULL;
+      else
+	cp += mi->buf_size;
+    }
   mi->buf = mi->buf_end = cp;
 }
 
@@ -285,6 +291,11 @@ maps_close (struct map_iterator *mi)
     return;
   close (mi->fd);
   mi->fd = -1;
+  if (mi->buf)
+    {
+      munmap (mi->buf_end - mi->buf_size, mi->buf_size);
+      mi->buf = mi->buf_end = 0;
+    }
 }
 
 #endif /* os_linux_h */
