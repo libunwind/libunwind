@@ -36,6 +36,8 @@ extern "C" {
 #define UNW_TARGET	x86
 #define UNW_TARGET_X86	1
 
+#define _U_TDEP_QP_TRUE	0	/* see libunwind-dynamic.h  */
+
 /* This needs to be big enough to accommodate "struct cursor", while
    leaving some slack for future expansion.  Changing this value will
    require recompiling all users of this library.  Stack allocation is
