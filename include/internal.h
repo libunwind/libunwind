@@ -160,54 +160,38 @@ cmpxchg_ptr (void *addr, void *old, void *new)
 
 extern sigset_t unwi_full_sigmask;
 
-extern int UNWI_OBJ(find_dynamic_proc_info) (unw_addr_space_t as,
-					     unw_word_t ip,
-					     unw_proc_info_t *pi,
-					     int need_unwind_info, void *arg);
-extern int UNWI_OBJ(extract_dynamic_proc_info) (unw_addr_space_t as,
-						unw_word_t ip,
-						unw_proc_info_t *pi,
-						unw_dyn_info_t *di,
-						int need_unwind_info,
-						void *arg);
-extern void UNWI_OBJ(put_dynamic_unwind_info) (unw_addr_space_t as,
-					       unw_proc_info_t *pi, void *arg);
-extern int UNWI_OBJ(dyn_remote_find_proc_info) (unw_addr_space_t as,
-						unw_word_t ip,
-						unw_proc_info_t *pi,
-						int need_unwind_info,
-						void *arg);
-extern void UNWI_OBJ(dyn_remote_put_unwind_info) (unw_addr_space_t as,
-						  unw_proc_info_t *pi,
-						  void *arg);
-extern int UNWI_OBJ(dyn_validate_cache) (unw_addr_space_t as, void *arg);
-extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
-				    char *buf, size_t buf_len,
-				    unw_word_t *offp, void *arg);
+#define unwi_find_dynamic_proc_info	UNWI_OBJ(find_dynamic_proc_info)
+#define unwi_extract_dynamic_proc_info	UNWI_OBJ(extract_dynamic_proc_info)
+#define unwi_put_dynamic_unwind_info	UNWI_OBJ(put_dynamic_unwind_info)
+#define unwi_dyn_remote_find_proc_info	UNWI_OBJ(dyn_remote_find_proc_info)
+#define unwi_dyn_remote_put_unwind_info	UNWI_OBJ(dyn_remote_put_unwind_info)
+#define unwi_dyn_validate_cache		UNWI_OBJ(dyn_validate_cache)
 
-#define unwi_find_dynamic_proc_info(as,ip,pi,n,arg)			\
-	UNWI_OBJ(find_dynamic_proc_info)(as, ip, pi, n, arg)
-
-#define unwi_extract_dynamic_proc_info(as,ip,pi,di,n,arg)		\
-	UNWI_OBJ(extract_dynamic_proc_info)(as, ip, pi, di, n, arg)
-
-#define unwi_put_dynamic_unwind_info(as,pi,arg)				\
-	UNWI_OBJ(put_dynamic_unwind_info)(as, pi, arg)
+extern int unwi_find_dynamic_proc_info (unw_addr_space_t as,
+					unw_word_t ip,
+					unw_proc_info_t *pi,
+					int need_unwind_info, void *arg);
+extern int unwi_extract_dynamic_proc_info (unw_addr_space_t as,
+					   unw_word_t ip,
+					   unw_proc_info_t *pi,
+					   unw_dyn_info_t *di,
+					   int need_unwind_info,
+					   void *arg);
+extern void unwi_put_dynamic_unwind_info (unw_addr_space_t as,
+					  unw_proc_info_t *pi, void *arg);
 
 /* These handle the remote (cross-address-space) case of accessing
    dynamic unwind info. */
 
-#define unwi_dyn_remote_find_proc_info(as,i,p,n,arg)			\
-	UNWI_OBJ(dyn_remote_find_proc_info)(as, i, p, n, arg)
-
-#define unwi_dyn_remote_put_unwind_info(as,p,arg)			\
-	UNWI_OBJ(dyn_remote_put_unwind_info)(as, p, arg)
-
-#define unwi_dyn_validate_cache(as, arg)				\
-	UNWI_OBJ(dyn_validate_cache)(as, arg)
-
-#define unwi_get_proc_name(as,ip,b,s,o,arg)				\
-	UNWI_OBJ(get_proc_name)(as, ip, b, s, o, arg)
+extern int unwi_dyn_remote_find_proc_info (unw_addr_space_t as,
+					   unw_word_t ip,
+					   unw_proc_info_t *pi,
+					   int need_unwind_info,
+					   void *arg);
+extern void unwi_dyn_remote_put_unwind_info (unw_addr_space_t as,
+					     unw_proc_info_t *pi,
+					     void *arg);
+extern int unwi_dyn_validate_cache (unw_addr_space_t as, void *arg);
 
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
@@ -217,10 +201,6 @@ extern pthread_mutex_t _U_dyn_info_list_lock;
 extern long unwi_debug_level;
 
 # include <stdio.h>
-# define debug(level,format...)					\
-do {								\
-  if (unwi_debug_level > level) fprintf (stderr, format);	\
-} while (0)
 # define Debug(level,format...)						\
 do {									\
   if (unwi_debug_level > level)						\
@@ -239,134 +219,14 @@ do {									\
 #  define inline	UNUSED
 # endif
 #else
-# define debug(level,format...)
 # define dprintf(format...)
 #endif
-
-#define WSIZE	(sizeof (unw_word_t))
 
 static inline ALWAYS_INLINE void
 print_error (const char *string)
 {
   write (2, string, strlen (string));
 }
-
-#ifdef UNW_LOCAL_ONLY
-
-static inline int
-fetch8 (unw_addr_space_t as, unw_accessors_t *a,
-	unw_word_t *addr, int8_t *valp, void *arg)
-{
-  *valp = *(int8_t *) *addr;
-  *addr += 1;
-  return 0;
-}
-
-static inline int
-fetch16 (unw_addr_space_t as, unw_accessors_t *a,
-	 unw_word_t *addr, int16_t *valp, void *arg)
-{
-  *valp = *(int16_t *) *addr;
-  *addr += 2;
-  return 0;
-}
-
-static inline int
-fetch32 (unw_addr_space_t as, unw_accessors_t *a,
-	 unw_word_t *addr, int32_t *valp, void *arg)
-{
-  *valp = *(int32_t *) *addr;
-  *addr += 4;
-  return 0;
-}
-
-static inline int
-fetchw (unw_addr_space_t as, unw_accessors_t *a,
-	unw_word_t *addr, unw_word_t *valp, void *arg)
-{
-  *valp = *(unw_word_t *) *addr;
-  *addr += sizeof (unw_word_t);
-  return 0;
-}
-
-#else /* !UNW_LOCAL_ONLY */
-
-static inline int
-fetch8 (unw_addr_space_t as, unw_accessors_t *a,
-	unw_word_t *addr, int8_t *valp, void *arg)
-{
-  unw_word_t val, aligned_addr = *addr & -WSIZE, off = *addr - aligned_addr;
-  int ret;
-
-  *addr += 1;
-
-  ret = (*a->access_mem) (as, aligned_addr, &val, 0, arg);
-
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  val >>= 8*off;
-#else
-  val >>= 8*(WSIZE - 1 - off);
-#endif
-  *valp = val & 0xff;
-  return ret;
-}
-
-static inline int
-fetch16 (unw_addr_space_t as, unw_accessors_t *a,
-	 unw_word_t *addr, int16_t *valp, void *arg)
-{
-  unw_word_t val, aligned_addr = *addr & -WSIZE, off = *addr - aligned_addr;
-  int ret;
-
-  assert ((off & 0x1) == 0);
-
-  *addr += 2;
-
-  ret = (*a->access_mem) (as, aligned_addr, &val, 0, arg);
-
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  val >>= 8*off;
-#else
-  val >>= 8*(WSIZE - 2 - off);
-#endif
-  *valp = val & 0xffff;
-  return ret;
-}
-
-static inline int
-fetch32 (unw_addr_space_t as, unw_accessors_t *a,
-	 unw_word_t *addr, int32_t *valp, void *arg)
-{
-  unw_word_t val, aligned_addr = *addr & -WSIZE, off = *addr - aligned_addr;
-  int ret;
-
-  assert ((off & 0x3) == 0);
-
-  *addr += 4;
-
-  ret = (*a->access_mem) (as, aligned_addr, &val, 0, arg);
-
-#if __BYTE_ORDER == __LITTLE_ENDIAN
-  val >>= 8*off;
-#else
-  val >>= 8*(WSIZE - 4 - off);
-#endif
-  *valp = val & 0xffffffff;
-  return ret;
-}
-
-static inline int
-fetchw (unw_addr_space_t as, unw_accessors_t *a,
-	unw_word_t *addr, unw_word_t *valp, void *arg)
-{
-  int ret;
-
-  ret = (*a->access_mem) (as, *addr, valp, 0, arg);
-  *addr += WSIZE;
-  return ret;
-}
-
-#endif /* !UNW_LOCAL_ONLY */
 
 #define mi_init		UNWI_ARCH_OBJ(mi_init)
 
