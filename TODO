@@ -4,7 +4,6 @@
   implements its own runtime loader).
 - document split local-only/generic libraries and separate libunwind-ptrace.a
   convenience-library
-- implement non-local versions of dwarf_readXX()
 - document new "tdep" member in unw_proc_info_t structure
 - for DWARF 2, use a dummy CIE entry with an augmentation that
   provides the dyn-info-list-address
@@ -19,6 +18,10 @@ Testing:
 
 === taken care of:
 
++ Switch ia64 (and rest over) to using Debug() instead of debug()
++ implement non-local versions of dwarf_readXX()
++ consolidate mostly architecture-independent code such as
+  unw_get_accessors() into shared files
 + caching is pretty fundamentally broken, what should happen is this:
    o On unw_init_local()/unw_init_remote(), libunwind should validate
      that the cached information is still valid and, if not, flush the

@@ -34,8 +34,10 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 #else /* !UNW_LOCAL_ONLY */
   struct cursor *c = (struct cursor *) cursor;
 
-  if (x86_needs_initialization)
-    x86_init ();
+  if (tdep_needs_initialization)
+    tdep_init ();
+
+  Debug (2, "(cursor=%p)\n", c);
 
   c->dwarf.as = as;
   c->dwarf.as_arg = as_arg;

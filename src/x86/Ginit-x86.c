@@ -46,6 +46,10 @@ uc_addr (ucontext_t *uc, int reg)
 
   switch (reg)
     {
+    case UNW_X86_GS:  addr = &uc->uc_mcontext.gregs[REG_GS]; break;
+    case UNW_X86_FS:  addr = &uc->uc_mcontext.gregs[REG_FS]; break;
+    case UNW_X86_ES:  addr = &uc->uc_mcontext.gregs[REG_ES]; break;
+    case UNW_X86_DS:  addr = &uc->uc_mcontext.gregs[REG_DS]; break;
     case UNW_X86_EAX: addr = &uc->uc_mcontext.gregs[REG_EAX]; break;
     case UNW_X86_EBX: addr = &uc->uc_mcontext.gregs[REG_EBX]; break;
     case UNW_X86_ECX: addr = &uc->uc_mcontext.gregs[REG_ECX]; break;
@@ -55,6 +59,10 @@ uc_addr (ucontext_t *uc, int reg)
     case UNW_X86_EBP: addr = &uc->uc_mcontext.gregs[REG_EBP]; break;
     case UNW_X86_EIP: addr = &uc->uc_mcontext.gregs[REG_EIP]; break;
     case UNW_X86_ESP: addr = &uc->uc_mcontext.gregs[REG_ESP]; break;
+    case UNW_X86_TRAPNO:  addr = &uc->uc_mcontext.gregs[REG_TRAPNO]; break;
+    case UNW_X86_CS:  addr = &uc->uc_mcontext.gregs[REG_CS]; break;
+    case UNW_X86_EFLAGS:  addr = &uc->uc_mcontext.gregs[REG_EFL]; break;
+    case UNW_X86_SS:  addr = &uc->uc_mcontext.gregs[REG_SS]; break;
 
     default:
       addr = NULL;
@@ -65,7 +73,7 @@ uc_addr (ucontext_t *uc, int reg)
 # ifdef UNW_LOCAL_ONLY
 
 void *
-_Ux86_uc_addr (ucontext_t *uc, int reg)
+tdep_uc_addr (ucontext_t *uc, int reg)
 {
   return uc_addr (uc, reg);
 }
@@ -117,13 +125,11 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   unw_word_t *addr;
   ucontext_t *uc = arg;
 
-#if 0
-  if (reg >= UNW_IA64_FR && reg < UNW_IA64_FR + 128)
+  if (unw_is_fpreg (reg))
     goto badreg;
-#endif
 
-  addr = uc_addr (uc, reg);
-  if (!addr)
+Debug (16, "reg = %s\n", unw_regname (reg));
+  if (!(addr = uc_addr (uc, reg)))
     goto badreg;
 
   if (write)
@@ -147,31 +153,26 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 	      int write, void *arg)
 {
-#if 1
-  printf ("access_fpreg: screams to get implemented, doesn't it?\n");
-  return 0;
-#else
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
 
-  if (reg < UNW_IA64_FR || reg >= UNW_IA64_FR + 128)
+  if (!unw_is_fpreg (reg))
     goto badreg;
 
-  addr = uc_addr (uc, reg);
-  if (!addr)
+  if (!(addr = uc_addr (uc, reg)))
     goto badreg;
 
   if (write)
     {
-      Debug (12, "%s <- %016lx.%016lx\n",
-	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
+      Debug (12, "%s <- %08lx.%08lx.%08lx\n", unw_regname (reg),
+	     ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
-      Debug (12, "%s -> %016lx.%016lx\n",
-	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
+      Debug (12, "%s -> %08lx.%08lx.%08lx\n", unw_regname (reg),
+	     ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
     }
   return 0;
 
@@ -179,7 +180,6 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   Debug (1, "bad register number %u\n", reg);
   /* attempt to access a non-preserved register */
   return -UNW_EBADREG;
-#endif
 }
 
 static int
@@ -203,6 +203,7 @@ x86_local_addr_space_init (void)
   local_addr_space.acc.access_fpreg = access_fpreg;
   local_addr_space.acc.resume = x86_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
+  unw_flush_cache (&local_addr_space, 0, 0);
 }
 
 #endif /* !UNW_REMOTE_ONLY */

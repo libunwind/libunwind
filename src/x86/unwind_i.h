@@ -48,23 +48,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define TRAPNO	10
 #define ST0	11
 
-#define x86_lock			UNW_ARCH_OBJ(lock)
-#define x86_needs_initialization	UNW_ARCH_OBJ(needs_initialization)
-#define x86_init			UNW_ARCH_OBJ(init)
-#define x86_access_reg			UNW_OBJ(access_reg)
-#define x86_access_fpreg		UNW_OBJ(access_fpreg)
+#define x86_lock			UNW_OBJ(lock)
 #define x86_local_resume		UNW_OBJ(local_resume)
 #define x86_local_addr_space_init	UNW_OBJ(local_addr_space_init)
+#define x86_scratch_loc			UNW_OBJ(scratch_loc)
 
-extern int x86_needs_initialization;
-
-extern void x86_init (void);
-extern int x86_access_reg (struct cursor *c, unw_regnum_t reg,
-			   unw_word_t *valp, int write);
-extern int x86_access_fpreg (struct cursor *c, unw_regnum_t reg,
-			     unw_fpreg_t *valp, int write);
 extern void x86_local_addr_space_init (void);
 extern int x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			     void *arg);
+extern dwarf_loc_t x86_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
 #endif /* unwind_i_h */

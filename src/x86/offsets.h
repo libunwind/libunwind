@@ -2,16 +2,82 @@
 
 /* Define various structure offsets to simplify cross-compilation.  */
 
+/* Offsets for x86 Linux "ucontext_t":  */
+
+#define LINUX_UC_FLAGS_OFF	0x00
+#define LINUX_UC_LINK_OFF	0x04
+#define LINUX_UC_STACK_OFF	0x08
+#define LINUX_UC_MCONTEXT_OFF	0x14
+#define LINUX_UC_SIGMASK_OFF	0x6c
+
 /* The struct sigcontext is located at an offset of 4
    from the stack pointer in the signal frame.         */
 
-#define LINUX_SC_ESP_OFF       0x1c
-#define LINUX_SC_EBP_OFF       0x18
-#define LINUX_SC_EIP_OFF       0x38
+/* Offsets for x86 Linux "struct sigcontext":  */
 
-/* With SA_SIGINFO set, we believe that basically the same
-   layout is used for ucontext_t, except that 20 bytes are added
-   at the beginning. */
-#define LINUX_UC_ESP_OFF       (LINUX_SC_ESP_OFF+20)
-#define LINUX_UC_EBP_OFF       (LINUX_SC_EBP_OFF+20)
-#define LINUX_UC_EIP_OFF       (LINUX_SC_EIP_OFF+20)
+#define LINUX_SC_GS_OFF		0x00
+#define LINUX_SC_GSH_OFF	0x02
+#define LINUX_SC_FS_OFF		0x04
+#define LINUX_SC_FSH_OFF	0x06
+#define LINUX_SC_ES_OFF		0x08
+#define LINUX_SC_ESH_OFF	0x0a
+#define LINUX_SC_DS_OFF		0x0c
+#define LINUX_SC_DSH_OFF	0x0e
+#define LINUX_SC_EDI_OFF	0x10
+#define LINUX_SC_ESI_OFF	0x14
+#define LINUX_SC_EBP_OFF	0x18
+#define LINUX_SC_ESP_OFF	0x1c
+#define LINUX_SC_EBX_OFF	0x20
+#define LINUX_SC_EDX_OFF	0x24
+#define LINUX_SC_ECX_OFF	0x28
+#define LINUX_SC_EAX_OFF	0x2c
+#define LINUX_SC_TRAPNO_OFF	0x30
+#define LINUX_SC_ERR_OFF	0x34
+#define LINUX_SC_EIP_OFF	0x38
+#define LINUX_SC_CS_OFF		0x3c
+#define LINUX_SC_CSH_OFF	0x3e
+#define LINUX_SC_EFLAGS_OFF	0x40
+#define LINUX_SC_ESP_AT_SIGNAL_OFF	0x44
+#define LINUX_SC_SS_OFF		0x48
+#define LINUX_SC_SSH_OFF	0x4a
+#define LINUX_SC_FPSTATE_OFF	0x4c
+#define LINUX_SC_OLDMASK_OFF	0x50
+#define LINUX_SC_CR2_OFF	0x54
+
+/* Offsets for x86 Linux "struct _fpstate":  */
+
+#define LINUX_FPSTATE_CW_OFF		0x000
+#define LINUX_FPSTATE_SW_OFF		0x004
+#define LINUX_FPSTATE_TAG_OFF		0x008
+#define LINUX_FPSTATE_IPOFF_OFF		0x00c
+#define LINUX_FPSTATE_CSSEL_OFF		0x010
+#define LINUX_FPSTATE_DATAOFF_OFF	0x014
+#define LINUX_FPSTATE_DATASEL_OFF	0x018
+#define LINUX_FPSTATE_ST0_OFF		0x01c
+#define LINUX_FPSTATE_ST1_OFF		0x026
+#define LINUX_FPSTATE_ST2_OFF		0x030
+#define LINUX_FPSTATE_ST3_OFF		0x03a
+#define LINUX_FPSTATE_ST4_OFF		0x044
+#define LINUX_FPSTATE_ST5_OFF		0x04e
+#define LINUX_FPSTATE_ST6_OFF		0x058
+#define LINUX_FPSTATE_ST7_OFF		0x062
+#define LINUX_FPSTATE_STATUS_OFF	0x06c
+#define LINUX_FPSTATE_MAGIC_OFF		0x06e
+#define LINUX_FPSTATE_FXSR_ENV_OFF	0x070
+#define LINUX_FPSTATE_MXCSR_OFF		0x088
+#define LINUX_FPSTATE_FXSR_ST0_OFF	0x090
+#define LINUX_FPSTATE_FXSR_ST1_OFF	0x0a0
+#define LINUX_FPSTATE_FXSR_ST2_OFF	0x0b0
+#define LINUX_FPSTATE_FXSR_ST3_OFF	0x0c0
+#define LINUX_FPSTATE_FXSR_ST4_OFF	0x0d0
+#define LINUX_FPSTATE_FXSR_ST5_OFF	0x0e0
+#define LINUX_FPSTATE_FXSR_ST6_OFF	0x0f0
+#define LINUX_FPSTATE_FXSR_ST7_OFF	0x100
+#define LINUX_FPSTATE_XMM0_OFF		0x110
+#define LINUX_FPSTATE_XMM1_OFF		0x120
+#define LINUX_FPSTATE_XMM2_OFF		0x130
+#define LINUX_FPSTATE_XMM3_OFF		0x140
+#define LINUX_FPSTATE_XMM4_OFF		0x150
+#define LINUX_FPSTATE_XMM5_OFF		0x160
+#define LINUX_FPSTATE_XMM6_OFF		0x170
+#define LINUX_FPSTATE_XMM7_OFF		0x180
