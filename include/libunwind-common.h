@@ -28,7 +28,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define UNW_OBJ(fn)	UNW_PASTE(UNW_PREFIX, fn)
 #define UNW_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_U,UNW_TARGET),_), fn)
 
-
 #ifdef UNW_LOCAL_ONLY
 # define UNW_PREFIX	UNW_PASTE(UNW_PASTE(_UL,UNW_TARGET),_)
 #else /* !UNW_LOCAL_ONLY */
@@ -66,6 +65,10 @@ typedef enum
   {
     UNW_REG_IP = UNW_TDEP_IP,		/* (rw) instruction pointer (pc) */
     UNW_REG_SP = UNW_TDEP_SP,		/* (ro) stack pointer */
+    UNW_REG_EH_ARG0 = UNW_TDEP_EH_ARG0,	/* (rw) exception-handling arg 0 */
+    UNW_REG_EH_ARG1 = UNW_TDEP_EH_ARG1,	/* (rw) exception-handling arg 1 */
+    UNW_REG_EH_ARG2 = UNW_TDEP_EH_ARG2,	/* (rw) exception-handling arg 2 */
+    UNW_REG_EH_ARG3 = UNW_TDEP_EH_ARG3,	/* (rw) exception-handling arg 3 */
     UNW_REG_LAST = UNW_TDEP_LAST_REG
   }
 unw_frame_regnum_t;
@@ -99,17 +102,7 @@ typedef unw_tdep_context_t unw_context_t;
    to think of unw_getcontext() as being identical to getcontext(). */
 #define unw_getcontext(uc)	unw_tdep_getcontext(uc)
 
-/* We will assume that "long double" is sufficiently large and aligned
-   to hold the contents of a floating-point register.  Note that the
-   fp register format is not usually the same format as a "long
-   double".  Instead, the content of unw_fpreg_t should be manipulated
-   only through the "raw.bits" member. */
-typedef union
-  {
-    struct { unw_word_t bits[1]; } raw;
-    long double dummy;	/* dummy to force 16-byte alignment */
-  }
-unw_fpreg_t;
+typedef unw_tdep_fpreg_t unw_fpreg_t;
 
 typedef struct unw_addr_space *unw_addr_space_t;
 
@@ -224,7 +217,8 @@ extern int UNW_OBJ(set_fpreg) (unw_cursor_t *c, int regnum, unw_fpreg_t val);
 extern int UNW_OBJ(get_save_loc) (unw_cursor_t *c, int regnum,
 				  unw_save_loc_t *loc);
 extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
-extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len);
+extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len,
+				   unw_word_t *offsetp);
 
 #define unw_local_addr_space		UNW_OBJ(local_addr_space)
 
@@ -303,8 +297,9 @@ extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len);
    string buffer is too small to store the entire name, the first
    portion of the string that can fit is stored in the buffer (along
    with a terminating NUL character) and -UNW_ENOMEM is returned.  If
-   no name can be determined, -UNW_ENOINFO is returned.  */
-#define unw_get_proc_name(c,s,l)	UNW_OBJ(get_proc_name)(c, s, l)
+   no name can be determined, -UNW_ENOINFO is returned.
+   This routine is NOT signal-safe.  */
+#define unw_get_proc_name(c,s,l,o)	UNW_OBJ(get_proc_name)(c, s, l, o)
 
 /* Returns the canonical register name of register R.  R must be in
    the range from 0 to UNW_REG_LAST.  Like all other unwind routines,
