@@ -1,7 +1,12 @@
 #!/bin/sh
-for gname in G*.c G*.cxx; do
+for gname in `ls G*.c G*.cxx 2>/dev/null`; do
 	lname="L$(expr $gname : '.\(.*\)')"
 	bk edit $lname >/dev/null 2>&1
-	echo -e "#ifndef UNW_REMOTE_ONLY\n#define UNW_LOCAL_ONLY\n\
-#include \"$gname\"\n#endif" > $lname
+	echo -e "\
+#define UNW_LOCAL_ONLY\n\
+#include <libunwind.h>\n\
+#if defined(UNW_LOCAL_ONLY) && !defined(UNW_REMOTE_ONLY)\n\
+#include \"$gname\"\n\
+#endif" > $lname
+	echo created $lname
 done
