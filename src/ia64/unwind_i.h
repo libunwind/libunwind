@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "config.h"
 #include "internal.h"
+#include "rse.h"
 
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
 
@@ -309,6 +310,9 @@ struct ia64_labeled_state
 #define ia64_local_resume		UNW_OBJ(local_resume)
 #define ia64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
 #define ia64_init			UNW_ARCH_OBJ(init)
+#define rbs_record_switch		UNW_ARCH_OBJ(rbs_record_switch)
+#define rbs_underflow			UNW_ARCH_OBJ(rbs_underflow)
+#define rbs_find_reg			UNW_ARCH_OBJ(rbs_find_reg)
 
 extern int ia64_make_proc_info (struct cursor *c);
 extern int ia64_create_state_record (struct cursor *c,
@@ -324,10 +328,35 @@ extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 extern unw_word_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
 extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
-				    long r17, long r18)
+				    long r17, long r18, long do_sigreturn)
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
+extern int rbs_record_switch (struct cursor *c, unw_word_t saved_bsp,
+			      unw_word_t saved_bspstore,
+			      unw_word_t saved_rnat_loc);
+extern void rbs_underflow (struct cursor *c);
+extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
+			     unw_word_t *locp, unw_word_t *rnat_locp);
+
+static inline int
+ia64_get_stacked (struct cursor *c, unw_word_t regs_to_skip,
+		  unw_word_t *locp, unw_word_t *rnat_locp)
+{
+  struct rbs_area *rbs = c->rbs_area + c->rbs_curr;
+  unw_word_t loc;
+  int ret = 0;
+
+  assert (regs_to_skip < 96);
+
+  *locp = loc = ia64_rse_skip_regs (c->bsp, regs_to_skip);
+  if (rnat_locp)
+    *rnat_locp = ia64_rse_rnat_addr (loc);
+
+  if (unlikely (rbs->end - loc >= rbs->size))
+    ret = rbs_find_stacked (c, regs_to_skip, locp, rnat_locp);
+  return ret;
+}
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
