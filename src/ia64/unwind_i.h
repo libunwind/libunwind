@@ -31,6 +31,8 @@ License.  */
 
 #include <libunwind-ia64.h>
 
+#include "mempool.h"
+
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
 
 #define IA64_UNW_VER(x)			((x) >> 48)
@@ -330,7 +332,7 @@ enum ia64_where
 
     IA64_WHERE_SPILL_HOME, /* register is saved in its spill home */
     IA64_WHERE_GR_SAVE	/* register is saved in next general register */
-};
+  };
 
 #define IA64_WHEN_NEVER	0x7fffffff
 
@@ -343,10 +345,11 @@ struct ia64_reg_info
 
 struct ia64_labeled_state;	/* opaque structure */
 
-struct ia64_reg_state {
-  struct ia64_reg_state *next;	/* next (outer) element on state stack */
-  struct ia64_reg_info reg[IA64_NUM_PREGS];	/* register save locations */
-};
+struct ia64_reg_state
+  {
+    struct ia64_reg_state *next;    /* next (outer) element on state stack */
+    struct ia64_reg_info reg[IA64_NUM_PREGS];	/* register save locations */
+  };
 
 struct ia64_state_record
   {
@@ -372,7 +375,14 @@ struct ia64_state_record
 
     struct ia64_labeled_state *labeled_states;
     struct ia64_reg_state curr;
-};
+  };
+
+struct ia64_labeled_state
+  {
+    struct ia64_labeled_state *next;	/* next label (or NULL) */
+    unsigned long label;			/* label for this state */
+    struct ia64_reg_state saved_state;
+  };
 
 struct ia64_global_unwind_state
   {
@@ -394,6 +404,10 @@ struct ia64_global_unwind_state
 
     unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
     unw_fpreg_t nat_val_be, int_val_le, int_val_be;
+
+    struct mempool unwind_table_pool;
+    struct mempool state_record_pool;
+    struct mempool labeled_state_pool;
 
 #ifdef IA64_UNW_SCRIPT_CACHE
     unsigned short lru_head;	/* index of lead-recently used script */
