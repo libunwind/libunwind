@@ -23,11 +23,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "unwind_i.h"
+
 #ifdef HAVE_IA64INTRIN_H
 # include <ia64intrin.h>
 #endif
-
-#include "unwind_i.h"
 
 void
 unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
