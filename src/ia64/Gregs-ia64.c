@@ -32,20 +32,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static inline ia64_loc_t
-linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
+linux_scratch_loc (struct cursor *c, unw_regnum_t reg, uint8_t *nat_bitnr)
 {
 #if !defined(UNW_LOCAL_ONLY) || defined(__linux)
   unw_word_t addr = c->sigcontext_addr, flags, tmp_addr;
   int i;
 
-  switch (c->last_abi_marker)
+  if (c->last_abi_marker == ABI_MARKER_LINUX_SIGTRAMP
+      || c->last_abi_marker == ABI_MARKER_OLD_LINUX_SIGTRAMP)
     {
-    case ABI_MARKER_OLD_LINUX_SIGTRAMP:
-    case ABI_MARKER_LINUX_SIGTRAMP:
       switch (reg)
 	{
 	case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
 	case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
+	  /* Linux sigcontext contains the NaT bit of scratch register
+	     N in bit position N of the sc_nat member. */
+	  *nat_bitnr = (reg - UNW_IA64_NAT);
 	  addr += LINUX_SC_NAT_OFF;
 	  break;
 
@@ -91,82 +93,98 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 	  return IA64_REG_LOC (c, reg);
 	}
       return IA64_LOC_ADDR (addr, 0);
+    }
+  else
+    {
+      int is_nat = 0;
 
-    case ABI_MARKER_LINUX_INTERRUPT:
-      switch (reg)
+      if ((unsigned) (reg - UNW_IA64_NAT) < 128)
 	{
-	case UNW_IA64_BR + 6 ... UNW_IA64_BR + 7:
-	  addr += LINUX_PT_B6_OFF + 8 * (reg - (UNW_IA64_BR + 6));
-	  break;
+	  is_nat = 1;
+	  reg -= (UNW_IA64_NAT - UNW_IA64_GR);
+	}
+      if (c->last_abi_marker == ABI_MARKER_LINUX_INTERRUPT)
+	{
+	  switch (reg)
+	    {
+	    case UNW_IA64_BR + 6 ... UNW_IA64_BR + 7:
+	      addr += LINUX_PT_B6_OFF + 8 * (reg - (UNW_IA64_BR + 6));
+	      break;
 
-	case UNW_IA64_AR_CSD: addr += LINUX_PT_CSD_OFF; break;
-	case UNW_IA64_AR_SSD: addr += LINUX_PT_SSD_OFF; break;
+	    case UNW_IA64_AR_CSD: addr += LINUX_PT_CSD_OFF; break;
+	    case UNW_IA64_AR_SSD: addr += LINUX_PT_SSD_OFF; break;
 
-	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
-	  addr += LINUX_PT_R8_OFF + 8 * (reg - (UNW_IA64_GR + 8));
-	  break;
+	    case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
+	      addr += LINUX_PT_R8_OFF + 8 * (reg - (UNW_IA64_GR + 8));
+	      break;
 
-	case UNW_IA64_AR_RSC: addr += LINUX_PT_RSC_OFF; break;
-	case UNW_IA64_BR + 0: addr += LINUX_PT_B0_OFF; break;
-	case UNW_IA64_GR + 1: addr += LINUX_PT_R1_OFF; break;
-	case UNW_IA64_GR + 2: addr += LINUX_PT_R2_OFF; break;
-	case UNW_IA64_GR + 3: addr += LINUX_PT_R3_OFF; break;
+	    case UNW_IA64_AR_RSC: addr += LINUX_PT_RSC_OFF; break;
+	    case UNW_IA64_BR + 0: addr += LINUX_PT_B0_OFF; break;
+	    case UNW_IA64_GR + 1: addr += LINUX_PT_R1_OFF; break;
+	    case UNW_IA64_GR + 2: addr += LINUX_PT_R2_OFF; break;
+	    case UNW_IA64_GR + 3: addr += LINUX_PT_R3_OFF; break;
 
-	case UNW_IA64_GR + 16 ... UNW_IA64_GR + 31:
-	  addr += LINUX_PT_R16_OFF + 8 * (reg - (UNW_IA64_GR + 16));
-	  break;
+	    case UNW_IA64_GR + 16 ... UNW_IA64_GR + 31:
+	      addr += LINUX_PT_R16_OFF + 8 * (reg - (UNW_IA64_GR + 16));
+	      break;
 
-	case UNW_IA64_AR_CCV: addr += LINUX_PT_CCV_OFF; break;
+	    case UNW_IA64_AR_CCV: addr += LINUX_PT_CCV_OFF; break;
 
-	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 11:
-	  addr += LINUX_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
-	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+	    case UNW_IA64_FR + 6 ... UNW_IA64_FR + 11:
+	      addr += LINUX_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
+	      return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
 
-	default:
-	  return IA64_REG_LOC (c, reg);
+	    default:
+	      return IA64_REG_LOC (c, reg);
+	    }
+	}
+      else if (c->last_abi_marker == ABI_MARKER_OLD_LINUX_INTERRUPT)
+	{
+	  switch (reg)
+	    {
+	    case UNW_IA64_GR +  1 ... UNW_IA64_GR + 3:
+	      addr += LINUX_OLD_PT_R1_OFF + 8 * (reg - (UNW_IA64_GR + 1));
+	      break;
+
+	    case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
+	      addr += LINUX_OLD_PT_R8_OFF + 8 * (reg - (UNW_IA64_GR + 8));
+	      break;
+
+	    case UNW_IA64_GR + 16 ... UNW_IA64_GR + 31:
+	      addr += LINUX_OLD_PT_R16_OFF + 8 * (reg - (UNW_IA64_GR + 16));
+	      break;
+
+	    case UNW_IA64_FR + 6 ... UNW_IA64_FR + 9:
+	      addr += LINUX_OLD_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
+	      return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+
+	    case UNW_IA64_BR + 0: addr += LINUX_OLD_PT_B0_OFF; break;
+	    case UNW_IA64_BR + 6: addr += LINUX_OLD_PT_B6_OFF; break;
+	    case UNW_IA64_BR + 7: addr += LINUX_OLD_PT_B7_OFF; break;
+
+	    case UNW_IA64_AR_RSC: addr += LINUX_OLD_PT_RSC_OFF; break;
+	    case UNW_IA64_AR_CCV: addr += LINUX_OLD_PT_CCV_OFF; break;
+
+	    default:
+	      return IA64_REG_LOC (c, reg);
+	    }
+	}
+      if (is_nat)
+	{
+	  /* For Linux pt-regs structure, bit number is determined by
+	     the UNaT slot number (as determined by st8.spill) and the
+	     bits are saved wherever the (primary) UNaT was saved.  */
+	  *nat_bitnr = ia64_unat_slot_num (addr);
+	  return c->loc[IA64_REG_PRI_UNAT_MEM];
 	}
       return IA64_LOC_ADDR (addr, 0);
-
-    case ABI_MARKER_OLD_LINUX_INTERRUPT:
-      switch (reg)
-	{
-	case UNW_IA64_GR +  1 ... UNW_IA64_GR + 3:
-	  addr += LINUX_OLD_PT_R1_OFF + 8 * (reg - (UNW_IA64_GR + 1));
-	  break;
-
-	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
-	  addr += LINUX_OLD_PT_R8_OFF + 8 * (reg - (UNW_IA64_GR + 8));
-	  break;
-
-	case UNW_IA64_GR + 16 ... UNW_IA64_GR + 31:
-	  addr += LINUX_OLD_PT_R16_OFF + 8 * (reg - (UNW_IA64_GR + 16));
-	  break;
-
-	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 9:
-	  addr += LINUX_OLD_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
-	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
-
-	case UNW_IA64_BR + 0: addr += LINUX_OLD_PT_B0_OFF; break;
-	case UNW_IA64_BR + 6: addr += LINUX_OLD_PT_B6_OFF; break;
-	case UNW_IA64_BR + 7: addr += LINUX_OLD_PT_B7_OFF; break;
-
-	case UNW_IA64_AR_RSC: addr += LINUX_OLD_PT_RSC_OFF; break;
-	case UNW_IA64_AR_CCV: addr += LINUX_OLD_PT_CCV_OFF; break;
-
-	default:
-	  return IA64_REG_LOC (c, reg);
-	}
-      return IA64_LOC_ADDR (addr, 0);
-
-    default:
-      break;
     }
 #endif
   return IA64_NULL_LOC;
 }
 
 static inline ia64_loc_t
-hpux_scratch_loc (struct cursor *c, unw_regnum_t reg)
+hpux_scratch_loc (struct cursor *c, unw_regnum_t reg, uint8_t *nat_bitnr)
 {
 #if !defined(UNW_LOCAL_ONLY) || defined(__hpux)
   return IA64_LOC_UC_REG (reg, c->sigcontext_addr);
@@ -176,20 +194,17 @@ hpux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 }
 
 HIDDEN ia64_loc_t
-ia64_scratch_loc (struct cursor *c, unw_regnum_t reg)
+ia64_scratch_loc (struct cursor *c, unw_regnum_t reg, uint8_t *nat_bitnr)
 {
   if (c->sigcontext_addr)
-    switch (c->as->abi)
-      {
-      case ABI_LINUX:
-	return linux_scratch_loc (c, reg);
-
-      case ABI_HPUX:
-	return hpux_scratch_loc (c, reg);
-
-      default:
+    {
+      if (c->as->abi == ABI_LINUX)
+	return linux_scratch_loc (c, reg, nat_bitnr);
+      else if (c->as->abi ==  ABI_HPUX)
+	return hpux_scratch_loc (c, reg, nat_bitnr);
+      else
 	return IA64_NULL_LOC;
-      }
+    }
   else
     return IA64_REG_LOC (c, reg);
 }
@@ -219,20 +234,20 @@ update_nat (struct cursor *c, ia64_loc_t nat_loc, unw_word_t mask,
 }
 
 static int
-access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
+access_nat (struct cursor *c,
+	    ia64_loc_t nat_loc, ia64_loc_t reg_loc, uint8_t nat_bitnr,
 	    unw_word_t *valp, int write)
 {
   unw_word_t mask = 0;
-  ia64_loc_t nat_loc;
   unw_fpreg_t tmp;
-  int ret, reg;
+  int ret;
 
   if (IA64_IS_UC_LOC (reg_loc))
     {
       if (write)
-	return ia64_put (c, loc, *valp);
+	return ia64_put (c, nat_loc, *valp);
       else
-	return ia64_get (c, loc, valp);
+	return ia64_get (c, nat_loc, valp);
     }
 
   if (IA64_IS_FP_LOC (reg_loc))
@@ -280,89 +295,24 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
       return ret;
     }
 
-  if (IA64_IS_MEMSTK_NAT (loc))
+  if (IA64_IS_NULL_LOC (nat_loc))
     {
-      nat_loc = loc;
-      if (IA64_IS_NULL_LOC (nat_loc))
-	/* There was no primary UNaT, implying that the NaT bits are
-	   still in ar.unat.  This can happen for leaf-routines.  */
-	nat_loc = c->loc[IA64_REG_UNAT];
-      assert (!IA64_IS_REG_LOC (reg_loc));
-      mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (reg_loc));
-    }
-  else
-    {
-      reg = IA64_GET_REG (loc);
-      assert (reg >= 0 && reg < 128);
-      if (!reg)
+      /* NaT bit is not saved. This happens if a general register is
+	 saved to a branch register.  Since the NaT bit gets lost, we
+	 need to drop it here, too.  Note that if the NaT bit had been
+	 set when the save occurred, it would have caused a NaT
+	 consumption fault.  */
+      if (write)
 	{
-	  /* NaT bit is not saved. This happens if a general register
-	     is saved to a branch register.  Since the NaT bit gets
-	     lost, we need to drop it here, too.  Note that if the NaT
-	     bit had been set when the save occurred, it would have
-	     caused a NaT consumption fault.  */
-	  if (write)
-	    {
-	      if (*valp)
-		return -UNW_EBADREG;	/* can't set NaT bit */
-	    }
-	  else
-	    *valp = 0;
-	  return 0;
-	}
-
-      if (reg >= 4 && reg <= 7)
-	{
-	  /* NaT bit is saved in a NaT register.  This happens when
-	     one general register is saved to another general
-	     register.  */
-#ifdef UNW_LOCAL_ONLY
-	  ucontext_t *uc = c->as_arg;
-	  mask = ((unw_word_t) 1) << reg;
-	  nat_loc = IA64_LOC_ADDR ((unw_word_t) &uc->uc_mcontext.sc_nat, 0);
-#else
-	  if (write)
-	    ret = ia64_put (c, IA64_REG_LOC (c, UNW_IA64_NAT + reg), *valp);
-	  else
-	    ret = ia64_get (c, IA64_REG_LOC (c, UNW_IA64_NAT + reg), valp);
-	  return ret;
-#endif
-	}
-      else if (reg >= 32)
-	{
-	  struct rbs_area *rbs;
-	  unw_word_t reg_addr = IA64_GET_ADDR (reg_loc);
-
-	  /* NaT bit is saved in a stacked register.  */
-	  assert (!IA64_IS_REG_LOC (reg_loc));
-
-	  rbs = rbs_find (c, reg_addr);
-	  if (!rbs)
-	    return -UNW_EBADREG;
-	  nat_loc = rbs_get_rnat_loc (rbs, reg_addr);
-	  mask = (unw_word_t) 1 << ia64_rse_slot_num (reg_addr);
+	  if (*valp)
+	    return -UNW_EBADREG;	/* can't set NaT bit */
 	}
       else
-	{
-	  /* NaT bit is saved in a scratch register.  */
-#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
-	  if (c->last_abi_marker == ABI_MARKER_LINUX_SIGTRAMP
-	      || c->last_abi_marker == ABI_MARKER_OLD_LINUX_SIGTRAMP)
-	    {
-	      nat_loc = IA64_LOC_ADDR (c->sigcontext_addr + LINUX_SC_NAT_OFF,
-				       0);
-	      mask = (unw_word_t) 1 << reg;
-	    }
-	  else
-#endif
-	    {
-	      if (write)
-		return ia64_put (c, loc, *valp);
-	      else
-		return ia64_get (c, loc, valp);
-	    }
-	}
+	*valp = 0;
+      return 0;
     }
+
+  mask = (unw_word_t) 1 << nat_bitnr;
   return update_nat (c, nat_loc, mask, valp, write);
 }
 
@@ -373,6 +323,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
   ia64_loc_t loc, reg_loc, nat_loc;
   unw_word_t nat, mask, pr;
   int ret, readonly = 0;
+  uint8_t nat_bitnr;
 
   switch (reg)
     {
@@ -409,7 +360,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
       loc = c->loc[IA64_REG_NAT4 + (reg - (UNW_IA64_NAT + 4))];
       reg_loc = c->loc[IA64_REG_R4 + (reg - (UNW_IA64_NAT + 4))];
-      return access_nat (c, loc, reg_loc, valp, write);
+      nat_bitnr = c->nat_bitnr[reg - (UNW_IA64_NAT + 4)];
+      return access_nat (c, loc, reg_loc, nat_bitnr, valp, write);
 
     case UNW_IA64_AR_BSP:	loc = c->loc[IA64_REG_BSP]; break;
     case UNW_IA64_AR_BSPSTORE:	loc = c->loc[IA64_REG_BSPSTORE]; break;
@@ -506,13 +458,14 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
     case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
-      loc = ia64_scratch_loc (c, reg);
-      if (c->sigcontext_addr)
+      loc = ia64_scratch_loc (c, reg, &nat_bitnr);
+      if (!(IA64_IS_REG_LOC (loc) || IA64_IS_UC_LOC (loc)
+	    || IA64_IS_FP_LOC (loc)))
 	{
-	  mask = (unw_word_t) 1 << (reg - UNW_IA64_NAT);
+	  /* We're dealing with a NaT bit stored in memory.  */
+	  mask = (unw_word_t) 1 << nat_bitnr;
 
-	  ret = ia64_get (c, loc, &nat);
-	  if (ret < 0)
+	  if ((ret = ia64_get (c, loc, &nat)) < 0)
 	    return ret;
 
 	  if (write)
@@ -543,7 +496,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	  return 0;
 	}
       else
-	loc = ia64_scratch_loc (c, reg);
+	loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
     case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
@@ -556,7 +509,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_AR_CSD:
     case UNW_IA64_AR_SSD:
     case UNW_IA64_AR_CCV:
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
     default:
@@ -607,12 +560,12 @@ tdep_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
       break;
 
     case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
     case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
       reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
-      loc = ia64_scratch_loc (c, reg);
+      loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
     default:
