@@ -183,7 +183,6 @@ extern void UNWI_OBJ(put_dynamic_unwind_info) (unw_addr_space_t as,
 extern int UNWI_OBJ(dyn_remote_find_proc_info) (unw_addr_space_t as,
 						unw_word_t ip,
 						unw_proc_info_t *pi,
-						unw_word_t *generation,
 						int need_unwind_info,
 						void *arg);
 extern void UNWI_OBJ(dyn_remote_put_unwind_info) (unw_addr_space_t as,
@@ -205,8 +204,8 @@ extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
 /* These handle the remote (cross-address-space) case of accessing
    dynamic unwind info. */
 
-#define unwi_dyn_remote_find_proc_info(as,i,p,g,n,arg)			\
-	UNWI_OBJ(dyn_remote_find_proc_info)(as, i, p, g, n, arg)
+#define unwi_dyn_remote_find_proc_info(as,i,p,n,arg)			\
+	UNWI_OBJ(dyn_remote_find_proc_info)(as, i, p, n, arg)
 
 #define unwi_dyn_remote_put_unwind_info(as,p,arg)			\
 	UNWI_OBJ(dyn_remote_put_unwind_info)(as, p, arg)
