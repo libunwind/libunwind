@@ -155,8 +155,8 @@ typedef ucontext_t unw_tdep_context_t;
    by glibc...  */
 #define unw_tdep_getcontext(uc)		(getcontext (uc), 0)
 
-/* XXX fixme: */
-#define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_X86_FR) < 128)
+#define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
+extern int unw_tdep_is_fpreg (int);
 
 #include "libunwind-dynamic.h"
 
