@@ -46,8 +46,8 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t sol;
 
-  if (unw.needs_initialization)
-    ia64_init ();
+  if (tdep_needs_initialization)
+    tdep_init ();
 
 #ifdef __hpux
   {

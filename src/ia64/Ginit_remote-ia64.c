@@ -35,8 +35,8 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 #else /* !UNW_LOCAL_ONLY */
   struct cursor *c = (struct cursor *) cursor;
 
-  if (unw.needs_initialization)
-    ia64_init ();
+  if (tdep_needs_initialization)
+    tdep_init ();
 
   c->as = as;
   c->as_arg = as_arg;
