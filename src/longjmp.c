@@ -33,6 +33,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #if UNW_TARGET_IA64
 # include "ia64/rse.h"
+  /* chosen for compatibility with libc; NPTL peeks at SP and BSP: */
+# define JB_SP	0
+# define JB_RP	8
+# define JB_BSP	17
+#else
+# define JB_SP	0
+# define JB_RP	1
 #endif
 
 void
@@ -52,7 +59,7 @@ _longjmp (jmp_buf env, int val)
     {
       if (unw_get_reg (&c, UNW_REG_SP, &sp) < 0)
 	abort ();
-      if (sp != wp[0])
+      if (sp != wp[JB_SP])
 	continue;
 
 #if UNW_TARGET_IA64
@@ -67,7 +74,7 @@ _longjmp (jmp_buf env, int val)
 	sol = (pfs >> 7) & 0x7f;
 	bsp = ia64_rse_skip_regs (bsp, sol);
 
-	if (bsp != wp[2])
+	if (bsp != wp[JB_BSP])
 	  continue;
       }
 #endif
@@ -79,7 +86,7 @@ _longjmp (jmp_buf env, int val)
 
       if (UNW_NUM_EH_REGS >= 4)
 	{
-	  if (unw_set_reg (&c, UNW_REG_EH + 0, wp[1]) < 0
+	  if (unw_set_reg (&c, UNW_REG_EH + 0, wp[JB_RP]) < 0
 	      || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
 	      || unw_set_reg (&c, UNW_REG_EH + 2,
 			      ((unw_word_t *) &current_mask)[0]) < 0
