@@ -30,50 +30,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "rse.h"
 #include "unwind_i.h"
 
-HIDDEN unw_word_t
+HIDDEN ia64_loc_t
 ia64_scratch_loc (struct cursor *c, unw_regnum_t reg)
 {
-  unw_word_t loc = c->sigcontext_loc;
+  unw_word_t sc_addr = c->sigcontext_addr;
 
-  if (loc)
+  if (sc_addr)
     {
       switch (reg)
 	{
 	case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
 	case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
-	  loc += SIGCONTEXT_NAT_OFF;
+	  sc_addr += LINUX_SC_NAT_OFF;
 	  break;
 
 	case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
 	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 31:
-	  loc += SIGCONTEXT_GR_OFF + 8*reg;
+	  sc_addr += LINUX_SC_GR_OFF + 8*reg;
 	  break;
 
 	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
-	  loc += SIGCONTEXT_FR_OFF + 16*(reg - UNW_IA64_FR);
-	  break;
+	  sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
+	  return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
 
 	case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-	  loc += SIGCONTEXT_FR_OFF + 16*(reg - UNW_IA64_FR);
-	  break;
+	  sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
+	  return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
 
-	case UNW_IA64_BR + 0: loc += SIGCONTEXT_BR_OFF + 0; break;
-	case UNW_IA64_BR + 6: loc += SIGCONTEXT_BR_OFF + 6*8; break;
-	case UNW_IA64_BR + 7: loc += SIGCONTEXT_BR_OFF + 7*8; break;
-	case UNW_IA64_AR_RSC: loc += SIGCONTEXT_AR_RSC_OFF; break;
-	case UNW_IA64_AR_CSD: loc += SIGCONTEXT_AR_CSD_OFF; break;
-	case UNW_IA64_AR_26:  loc += SIGCONTEXT_AR_26_OFF; break;
-	case UNW_IA64_AR_CCV: loc += SIGCONTEXT_AR_CCV; break;
+	case UNW_IA64_BR + 0: sc_addr += LINUX_SC_BR_OFF + 0; break;
+	case UNW_IA64_BR + 6: sc_addr += LINUX_SC_BR_OFF + 6*8; break;
+	case UNW_IA64_BR + 7: sc_addr += LINUX_SC_BR_OFF + 7*8; break;
+	case UNW_IA64_AR_RSC: sc_addr += LINUX_SC_AR_RSC_OFF; break;
+	case UNW_IA64_AR_CSD: sc_addr += LINUX_SC_AR_CSD_OFF; break;
+	case UNW_IA64_AR_26:  sc_addr += LINUX_SC_AR_26_OFF; break;
+	case UNW_IA64_AR_CCV: sc_addr += LINUX_SC_AR_CCV; break;
 	}
-
-      return loc;
+      return IA64_LOC_ADDR (sc_addr, 0);
     }
   else
     return IA64_REG_LOC (c, reg);
 }
 
 static inline int
-update_nat (struct cursor *c, unw_word_t nat_loc, unw_word_t mask,
+update_nat (struct cursor *c, ia64_loc_t nat_loc, unw_word_t mask,
 	    unw_word_t *valp, int write)
 {
   unw_word_t nat_word;
@@ -97,10 +96,11 @@ update_nat (struct cursor *c, unw_word_t nat_loc, unw_word_t mask,
 }
 
 static int
-access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
+access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
 	    unw_word_t *valp, int write)
 {
-  unw_word_t nat_loc = -8, mask = 0, sc_addr;
+  unw_word_t mask = 0, sc_addr;
+  ia64_loc_t nat_loc;
   unw_fpreg_t tmp;
   int ret, reg;
 
@@ -151,12 +151,13 @@ access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
 
   if (IA64_IS_MEMSTK_NAT (loc))
     {
-      nat_loc = IA64_GET_LOC (loc) << 3;
-      mask = (unw_word_t) 1 << ia64_rse_slot_num (reg_loc);
+      nat_loc = IA64_LOC_ADDR (IA64_GET_ADDR (loc), 0);
+      assert (!IA64_IS_REG_LOC (reg_loc));
+      mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (reg_loc));
     }
   else
     {
-      reg = IA64_GET_LOC (loc);
+      reg = IA64_GET_REG (loc);
       assert (reg >= 0 && reg < 128);
       if (!reg)
 	{
@@ -183,7 +184,7 @@ access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
 #ifdef UNW_LOCAL_ONLY
 	  ucontext_t *uc = c->as_arg;
 	  mask = ((unw_word_t) 1) << reg;
-	  nat_loc = (unw_word_t) &uc->uc_mcontext.sc_nat;
+	  nat_loc = IA64_LOC_ADDR ((unw_word_t) &uc->uc_mcontext.sc_nat, 0);
 #else
 	  if (write)
 	    ret = ia64_put (c, IA64_REG_LOC (c, UNW_IA64_NAT + reg), *valp);
@@ -199,15 +200,16 @@ access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
 	  ret = ia64_get_stacked (c, reg, &reg_loc, &nat_loc);
 	  if (ret < 0)
 	    return ret;
-	  mask = (unw_word_t) 1 << ia64_rse_slot_num (reg_loc);
+	  assert (!IA64_IS_REG_LOC (reg_loc));
+	  mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (reg_loc));
 	}
       else
 	{
 	  /* NaT bit is saved in a scratch register.  */
-	  sc_addr = c->sigcontext_loc;
+	  sc_addr = c->sigcontext_addr;
 	  if (sc_addr)
 	    {
-	      nat_loc = sc_addr + SIGCONTEXT_NAT_OFF;
+	      nat_loc = IA64_LOC_ADDR (sc_addr + LINUX_SC_NAT_OFF, 0);
 	      mask = (unw_word_t) 1 << reg;
 	    }
 	  else
@@ -226,7 +228,8 @@ HIDDEN int
 ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
-  unw_word_t loc = -8, reg_loc, nat, nat_loc, mask, pr;
+  ia64_loc_t loc, reg_loc, nat_loc;
+  unw_word_t nat, mask, pr;
   int ret, readonly = 0;
 
   switch (reg)
@@ -252,32 +255,32 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	  if (c->pi_valid && (*valp < c->pi.start_ip || *valp >= c->pi.end_ip))
 	    c->pi_valid = 0;	/* new IP outside of current proc */
 	}
-      loc = c->ip_loc;
+      loc = c->loc[IA64_REG_IP];
       break;
 
       /* preserved registers: */
 
     case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
-      loc = (&c->r4_loc)[reg - (UNW_IA64_GR + 4)];
+      loc = c->loc[IA64_REG_R4 + (reg - (UNW_IA64_GR + 4))];
       break;
 
     case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
-      loc = (&c->nat4_loc)[reg - (UNW_IA64_NAT + 4)];
-      reg_loc = (&c->r4_loc)[reg - (UNW_IA64_NAT + 4)];
+      loc = c->loc[IA64_REG_NAT4 + (reg - (UNW_IA64_NAT + 4))];
+      reg_loc = c->loc[IA64_REG_R4 + (reg - (UNW_IA64_NAT + 4))];
       return access_nat (c, loc, reg_loc, valp, write);
 
-    case UNW_IA64_AR_BSP:	loc = c->bsp_loc; break;
-    case UNW_IA64_AR_BSPSTORE:	loc = c->bspstore_loc; break;
-    case UNW_IA64_AR_PFS:	loc = c->pfs_loc; break;
-    case UNW_IA64_AR_RNAT:	loc = c->rnat_loc; break;
-    case UNW_IA64_AR_UNAT:	loc = c->unat_loc; break;
-    case UNW_IA64_AR_LC:	loc = c->lc_loc; break;
-    case UNW_IA64_AR_FPSR:	loc = c->fpsr_loc; break;
-    case UNW_IA64_BR + 1:	loc = c->b1_loc; break;
-    case UNW_IA64_BR + 2:	loc = c->b2_loc; break;
-    case UNW_IA64_BR + 3:	loc = c->b3_loc; break;
-    case UNW_IA64_BR + 4:	loc = c->b4_loc; break;
-    case UNW_IA64_BR + 5:	loc = c->b5_loc; break;
+    case UNW_IA64_AR_BSP:	loc = c->loc[IA64_REG_BSP]; break;
+    case UNW_IA64_AR_BSPSTORE:	loc = c->loc[IA64_REG_BSPSTORE]; break;
+    case UNW_IA64_AR_PFS:	loc = c->loc[IA64_REG_PFS]; break;
+    case UNW_IA64_AR_RNAT:	loc = c->loc[IA64_REG_RNAT]; break;
+    case UNW_IA64_AR_UNAT:	loc = c->loc[IA64_REG_UNAT]; break;
+    case UNW_IA64_AR_LC:	loc = c->loc[IA64_REG_LC]; break;
+    case UNW_IA64_AR_FPSR:	loc = c->loc[IA64_REG_FPSR]; break;
+    case UNW_IA64_BR + 1:	loc = c->loc[IA64_REG_B1]; break;
+    case UNW_IA64_BR + 2:	loc = c->loc[IA64_REG_B2]; break;
+    case UNW_IA64_BR + 3:	loc = c->loc[IA64_REG_B3]; break;
+    case UNW_IA64_BR + 4:	loc = c->loc[IA64_REG_B4]; break;
+    case UNW_IA64_BR + 5:	loc = c->loc[IA64_REG_B5]; break;
 
     case UNW_IA64_CFM:
       if (write)
@@ -290,11 +293,11 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	{
 	  c->pr = *valp;		/* update the predicate cache */
 	  pr = pr_ltop (c, *valp);
-	  return ia64_put (c, c->pr_loc, pr);
+	  return ia64_put (c, c->loc[IA64_REG_PR], pr);
 	}
       else
 	{
-	  ret = ia64_get (c, c->pr_loc, &pr);
+	  ret = ia64_get (c, c->loc[IA64_REG_PR], &pr);
 	  if (ret < 0)
 	    return ret;
 	  *valp = pr_ptol (c, pr);
@@ -317,7 +320,8 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       ret = ia64_get_stacked (c, reg, &loc, &nat_loc);
       if (ret < 0)
 	return ret;
-      mask = (unw_word_t) 1 << ia64_rse_slot_num (loc);
+      assert (!IA64_IS_REG_LOC (loc));
+      mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (loc));
       return update_nat (c, nat_loc, mask, valp, write);
 
     case UNW_IA64_AR_EC:
@@ -361,7 +365,7 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
     case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
       loc = ia64_scratch_loc (c, reg);
-      if (c->sigcontext_loc)
+      if (c->sigcontext_addr)
 	{
 	  mask = (unw_word_t) 1 << (reg - UNW_IA64_NAT);
 
@@ -432,7 +436,8 @@ HIDDEN int
 ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
 		   int write)
 {
-  unw_word_t loc = -8, flags, tmp_loc;
+  unw_word_t flags, tmp_addr, sc_addr;
+  ia64_loc_t loc;
   int ret, i;
 
   switch (reg)
@@ -453,12 +458,12 @@ ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
 	*valp = unw.f1_le;
       return 0;
 
-    case UNW_IA64_FR + 2: loc = c->f2_loc; break;
-    case UNW_IA64_FR + 3: loc = c->f3_loc; break;
-    case UNW_IA64_FR + 4: loc = c->f4_loc; break;
-    case UNW_IA64_FR + 5: loc = c->f5_loc; break;
+    case UNW_IA64_FR + 2: loc = c->loc[IA64_REG_F2]; break;
+    case UNW_IA64_FR + 3: loc = c->loc[IA64_REG_F3]; break;
+    case UNW_IA64_FR + 4: loc = c->loc[IA64_REG_F4]; break;
+    case UNW_IA64_FR + 5: loc = c->loc[IA64_REG_F5]; break;
     case UNW_IA64_FR + 16 ... UNW_IA64_FR + 31:
-      loc = c->fr_loc[reg - (UNW_IA64_FR + 16)];
+      loc = c->loc[IA64_REG_F16 + (reg - (UNW_IA64_FR + 16))];
       break;
 
     case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
@@ -466,10 +471,11 @@ ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
       break;
 
     case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-      loc = c->sigcontext_loc;
-      if (loc)
+      sc_addr = c->sigcontext_addr;
+      if (sc_addr)
 	{
-	  ret = ia64_get (c, loc + SIGCONTEXT_FLAGS_OFF, &flags);
+	  ret = ia64_get (c, IA64_LOC_ADDR (sc_addr + LINUX_SC_FLAGS_OFF, 0),
+			  &flags);
 	  if (ret < 0)
 	    return ret;
 
@@ -478,15 +484,17 @@ ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
 	      if (write)
 		{
 		  /* initialize fph partition: */
-		  tmp_loc = loc + SIGCONTEXT_FR_OFF + 32*16;
-		  for (i = 32; i < 128; ++i, tmp_loc += 16)
+		  tmp_addr = sc_addr + LINUX_SC_FR_OFF + 32*16;
+		  for (i = 32; i < 128; ++i, tmp_addr += 16)
 		    {
-		      ret = ia64_putfp (c, tmp_loc, unw.f0);
+		      ret = ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0),
+					unw.f0);
 		      if (ret < 0)
 			return ret;
 		    }
 		  /* mark fph partition as valid: */
-		  ret = ia64_put (c, loc + SIGCONTEXT_FLAGS_OFF,
+		  ret = ia64_put (c, IA64_LOC_ADDR (sc_addr
+						    + LINUX_SC_FLAGS_OFF, 0),
 				  flags | IA64_SC_FLAG_FPH_VALID);
 		  if (ret < 0)
 		    return ret;
@@ -501,6 +509,10 @@ ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
       reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
       loc = ia64_scratch_loc (c, reg);
       break;
+
+    default:
+      dprintf ("%s: bad register number %d\n", __FUNCTION__, reg);
+      return -UNW_EBADREG;
     }
 
   if (write)
