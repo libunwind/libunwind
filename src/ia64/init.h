@@ -68,11 +68,15 @@ common_init (struct cursor *c)
   for (i = 16; i <= 31; ++i)
     c->fr_loc[i - 16] = IA64_FPREG_LOC (c, UNW_IA64_FR + i);
 
-  ret = ia64_get (c, c->pr_loc, &c->pr);
+  ret = ia64_get (c, c->ip_loc, &c->ip);
   if (ret < 0)
     return ret;
 
-  ret = ia64_get (c, c->ip_loc, &c->ip);
+  ret = ia64_get (c, c->cfm_loc, &c->cfm);
+  if (ret < 0)
+    return ret;
+
+  ret = ia64_get (c, c->pr_loc, &c->pr);
   if (ret < 0)
     return ret;
 
