@@ -37,8 +37,8 @@ static int create_state_record_for (struct cursor *c,
 
 typedef unsigned long unw_word;
 
-#define alloc_reg_state()	(mempool_alloc (&unw.state_record_pool))
-#define free_reg_state(rs)	(mempool_free (&unw.state_record_pool, rs))
+#define alloc_reg_state()	(mempool_alloc (&unw.reg_state_pool))
+#define free_reg_state(rs)	(mempool_free (&unw.reg_state_pool, rs))
 #define alloc_labeled_state()	(mempool_alloc (&unw.labeled_state_pool))
 #define free_labeled_state(s)	(mempool_free (&unw.labeled_state_pool, s))
 
