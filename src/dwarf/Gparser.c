@@ -42,7 +42,7 @@ read_regnum (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 
   if (*valp >= DWARF_NUM_PRESERVED_REGS)
     {
-      Debug (1, "Invalid register number %u\n", *valp);
+      Debug (1, "Invalid register number %u\n", (unsigned int) *valp);
       return -UNW_EBADREG;
     }
   return 0;
@@ -137,7 +137,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if (regnum >= DWARF_NUM_PRESERVED_REGS)
 	    {
 	      Debug (1, "Invalid register number %u in DW_cfa_OFFSET\n",
-		     regnum);
+		     (unsigned int) regnum);
 	      ret = -UNW_EBADREG;
 	      goto fail;
 	    }
@@ -171,7 +171,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if (regnum >= DWARF_NUM_PRESERVED_REGS)
 	    {
 	      Debug (1, "Invalid register number %u in DW_CFA_restore\n",
-		     regnum);
+		     (unsigned int) regnum);
 	      ret = -UNW_EINVAL;
 	      goto fail;
 	    }
@@ -185,7 +185,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if (regnum >= DWARF_NUM_PRESERVED_REGS)
 	    {
 	      Debug (1, "Invalid register number %u in "
-		     "DW_CFA_restore_extended\n", regnum);
+		     "DW_CFA_restore_extended\n", (unsigned int) regnum);
 	      ret = -UNW_EINVAL;
 	      goto fail;
 	    }
@@ -513,6 +513,8 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   arg = c->as_arg;
   a = unw_get_accessors (as);
 
+  c->cfa_is_sp = 0;
+
   /* Evaluate the CFA first, because it may be referred to be other
      expressions.  */
 
@@ -520,10 +522,21 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
     {
       /* CFA is equal to [reg] + offset: */
 
-      regnum = dwarf_to_unw_regnum (rs->reg[DWARF_CFA_REG_COLUMN].val);
-      if ((ret = unw_get_reg ((unw_cursor_t *) c, regnum, &cfa)) < 0)
-	return ret;
-
+      /* As a special-case, if the stack-pointer is the CFA and the
+	 stack-pointer wasn't saved, popping the CFA implicitly pops
+	 the stack-pointer as well.  */
+      if ((rs->reg[DWARF_CFA_REG_COLUMN].val == UNW_TDEP_SP)
+	  && (rs->reg[UNW_TDEP_SP].where == DWARF_WHERE_SAME))
+	{
+	  cfa = c->cfa;
+	  c->cfa_is_sp = 1;
+	}
+      else
+	{
+	  regnum = dwarf_to_unw_regnum (rs->reg[DWARF_CFA_REG_COLUMN].val);
+	  if ((ret = unw_get_reg ((unw_cursor_t *) c, regnum, &cfa)) < 0)
+	    return ret;
+	}
       cfa += rs->reg[DWARF_CFA_OFF_COLUMN].val;
     }
   else
