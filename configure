@@ -4218,7 +4218,8 @@ fi
 echo "$as_me:$LINENO: result: $libc_cv_gcc___thread" >&5
 echo "${ECHO_T}$libc_cv_gcc___thread" >&6
   if test "$libc_cv_gcc___thread" = yes; then
-    cat >>confdefs.h <<\_ACEOF
+
+cat >>confdefs.h <<\_ACEOF
 #define HAVE___THREAD 1
 _ACEOF
 
