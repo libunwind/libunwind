@@ -152,10 +152,6 @@ struct ia64_global_unwind_state
        they're saved).  */
     const unsigned char save_order[8];
 
-    /* Maps a preserved register index (preg_index) to corresponding
-       ucontext_t offset.  */
-    unsigned short uc_off[sizeof(unw_cursor_t) / 8];
-
     /* Index into unw_cursor_t for preserved register i */
     unsigned short preg_index[IA64_NUM_PREGS];
 
