@@ -91,28 +91,28 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	{
 	case DW_CFA_advance_loc:
 	  curr_ip += operand * dfi->code_align;
-	  Debug (16, "CFA_advance_loc to 0x%lx\n", (long) curr_ip);
+	  Debug (15, "CFA_advance_loc to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_advance_loc1:
 	  if ((ret = dwarf_readu8 (as, a, addr, &u8, arg)) < 0)
 	    goto fail;
 	  curr_ip += u8 * dfi->code_align;
-	  Debug (16, "CFA_advance_loc1 to 0x%lx\n", (long) curr_ip);
+	  Debug (15, "CFA_advance_loc1 to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_advance_loc2:
 	  if ((ret = dwarf_readu16 (as, a, addr, &u16, arg)) < 0)
 	    goto fail;
 	  curr_ip += u16 * dfi->code_align;
-	  Debug (16, "CFA_advance_loc2 to 0x%lx\n", (long) curr_ip);
+	  Debug (15, "CFA_advance_loc2 to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_advance_loc4:
 	  if ((ret = dwarf_readu32 (as, a, addr, &u32, arg)) < 0)
 	    goto fail;
 	  curr_ip += u32 * dfi->code_align;
-	  Debug (16, "CFA_advance_loc4 to 0x%lx\n", (long) curr_ip);
+	  Debug (15, "CFA_advance_loc4 to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_MIPS_advance_loc8:
@@ -123,7 +123,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	    if ((ret = dwarf_readu64 (as, a, addr, &u64, arg)) < 0)
 	      goto fail;
 	    curr_ip += u64 * dfi->code_align;
-	    Debug (16, "CFA_MIPS_advance_loc8\n");
+	    Debug (15, "CFA_MIPS_advance_loc8\n");
 	    break;
 	  }
 #else
@@ -144,7 +144,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dfi->data_align);
-	  Debug (16, "CFA_offset r%lu at cfa+0x%lx\n",
+	  Debug (15, "CFA_offset r%lu at cfa+0x%lx\n",
 		 (long) regnum, (long) (val * dfi->data_align));
 	  break;
 
@@ -153,7 +153,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	      || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dfi->data_align);
-	  Debug (16, "CFA_offset_extended r%lu at cf+0x%lx\n",
+	  Debug (15, "CFA_offset_extended r%lu at cf+0x%lx\n",
 		 (long) regnum, (long) (val * dfi->data_align));
 	  break;
 
@@ -162,7 +162,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	      || ((ret = dwarf_read_sleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dfi->data_align);
-	  Debug (16, "CFA_offset_extended_sf r%lu at cf+0x%lx\n",
+	  Debug (15, "CFA_offset_extended_sf r%lu at cf+0x%lx\n",
 		 (long) regnum, (long) (val * dfi->data_align));
 	  break;
 
@@ -176,7 +176,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	      goto fail;
 	    }
 	  sr->rs_current.reg[regnum] = sr->rs_initial.reg[regnum];
-	  Debug (16, "CFA_restore r%lu\n", (long) regnum);
+	  Debug (15, "CFA_restore r%lu\n", (long) regnum);
 	  break;
 
 	case DW_CFA_restore_extended:
@@ -190,7 +190,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	      goto fail;
 	    }
 	  sr->rs_current.reg[regnum] = sr->rs_initial.reg[regnum];
-	  Debug (16, "CFA_restore_extended r%lu\n", (long) regnum);
+	  Debug (15, "CFA_restore_extended r%lu\n", (long) regnum);
 	  break;
 
 	case DW_CFA_nop:
@@ -202,21 +202,21 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 						 &c->pi, &curr_ip,
 						 arg)) < 0)
 	    goto fail;
-	  Debug (16, "CFA_set_loc to 0x%lx\n", (long) curr_ip);
+	  Debug (15, "CFA_set_loc to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_undefined:
 	  if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_UNDEF, 0);
-	  Debug (16, "CFA_undefined r%lu\n", (long) regnum);
+	  Debug (15, "CFA_undefined r%lu\n", (long) regnum);
 	  break;
 
 	case DW_CFA_same_value:
 	  if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_SAME, 0);
-	  Debug (16, "CFA_same_value r%lu\n", (long) regnum);
+	  Debug (15, "CFA_same_value r%lu\n", (long) regnum);
 	  break;
 
 	case DW_CFA_register:
@@ -224,7 +224,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	      || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_REG, val);
-	  Debug (16, "CFA_register r%lu to r%lu\n", (long) regnum, (long) val);
+	  Debug (15, "CFA_register r%lu to r%lu\n", (long) regnum, (long) val);
 	  break;
 
 	case DW_CFA_remember_state:
@@ -239,7 +239,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  memcpy (new_rs->reg, sr->rs_current.reg, sizeof (new_rs->reg));
 	  new_rs->next = rs_stack;
 	  rs_stack = new_rs;
-	  Debug (16, "CFA_remember_state\n");
+	  Debug (15, "CFA_remember_state\n");
 	  break;
 
 	case DW_CFA_restore_state:
@@ -253,7 +253,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  old_rs = rs_stack;
 	  rs_stack = rs_stack->next;
 	  free_reg_state (old_rs);
-	  Debug (16, "CFA_restore_state\n");
+	  Debug (15, "CFA_restore_state\n");
 	  break;
 
 	case DW_CFA_def_cfa:
@@ -262,7 +262,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0, val);	/* NOT factored! */
-	  Debug (16, "CFA_def_cfa r%lu+0x%lx\n", (long) regnum, (long) val);
+	  Debug (15, "CFA_def_cfa r%lu+0x%lx\n", (long) regnum, (long) val);
 	  break;
 
 	case DW_CFA_def_cfa_sf:
@@ -272,7 +272,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0,
 		   val * dfi->data_align);		/* factored! */
-	  Debug (16, "CFA_def_cfa_sf r%lu+0x%lx\n",
+	  Debug (15, "CFA_def_cfa_sf r%lu+0x%lx\n",
 		 (long) regnum, (long) (val * dfi->data_align));
 	  break;
 
@@ -280,14 +280,14 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
-	  Debug (16, "CFA_def_cfa_register r%lu\n", (long) regnum);
+	  Debug (15, "CFA_def_cfa_register r%lu\n", (long) regnum);
 	  break;
 
 	case DW_CFA_def_cfa_offset:
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0, val);	/* NOT factored! */
-	  Debug (16, "CFA_def_cfa_offsets 0x%lx\n", (long) val);
+	  Debug (15, "CFA_def_cfa_offsets 0x%lx\n", (long) val);
 	  break;
 
 	case DW_CFA_def_cfa_offset_sf:
@@ -295,7 +295,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0,
 		   val * dfi->data_align);	/* factored! */
-	  Debug (16, "CFA_def_cfa_offsets_sf 0x%lx\n",
+	  Debug (15, "CFA_def_cfa_offsets_sf 0x%lx\n",
 		 (long) (val * dfi->data_align));
 	  break;
 
@@ -306,7 +306,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &len, arg)) < 0)
 	    goto fail;
 
-	  Debug (16, "CFA_def_cfa_expr @ 0x%lx [%lu bytes]\n",
+	  Debug (15, "CFA_def_cfa_expr @ 0x%lx [%lu bytes]\n",
 		 (long) *addr, (long) len);
 	  *addr += len;
 	  break;
@@ -321,7 +321,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &len, arg)) < 0)
 	    goto fail;
 
-	  Debug (16, "CFA_expression r%lu @ 0x%lx [%lu bytes]\n",
+	  Debug (15, "CFA_expression r%lu @ 0x%lx [%lu bytes]\n",
 		 (long) regnum, (long) addr, (long) len);
 	  *addr += len;
 	  break;
@@ -330,7 +330,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
 	  sr->args_size = val;
-	  Debug (16, "CFA_GNU_args_size %lu\n", (long) val);
+	  Debug (15, "CFA_GNU_args_size %lu\n", (long) val);
 	  break;
 
 	case DW_CFA_GNU_negative_offset_extended:
@@ -341,7 +341,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	      || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
 	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, -(val * dfi->data_align));
-	  Debug (16, "CFA_GNU_negative_offsets_extended cfa+0x%lx\n",
+	  Debug (15, "CFA_GNU_negative_offsets_extended cfa+0x%lx\n",
 		 (long) -(val * dfi->data_align));
 	  break;
 
@@ -352,7 +352,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  for (regnum = 16; regnum < 32; ++regnum)
 	    set_reg (sr, regnum, DWARF_WHERE_CFAREL,
 		     (regnum - 16) * sizeof (unw_word_t));
-	  Debug (16, "CFA_GNU_window_save\n");
+	  Debug (15, "CFA_GNU_window_save\n");
 	  break;
 #else
 	  /* FALL THROUGH */

@@ -130,6 +130,6 @@ dwarf_step (struct dwarf_cursor *c)
   if ((ret = update_frame_state (c)) < 0)
     return ret;
 
-  Debug (16, "done\n");
+  Debug (15, "done\n");
   return (c->ip == 0) ? 0 : 1;
 }
