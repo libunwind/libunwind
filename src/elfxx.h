@@ -43,7 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 
 static inline int
-elf_map_image (struct elf_image *ei, char *path)
+elf_map_image (struct elf_image *ei, const char *path)
 {
   struct stat stat;
   int fd;
