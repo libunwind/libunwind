@@ -134,7 +134,7 @@ decode_abreg (unsigned char abreg, int memory)
     case 0x62:
       return memory ? IA64_REG_PRI_UNAT_MEM : IA64_REG_PRI_UNAT_GR;
     case 0x63:
-      return IA64_REG_RP;
+      return IA64_REG_IP;
     case 0x64:
       return IA64_REG_BSP;
     case 0x65:
@@ -318,12 +318,7 @@ static inline void
 desc_abi (unsigned char abi, unsigned char context,
 	  struct ia64_state_record *sr)
 {
-  if ((abi == 0 && context == 's')	/* Linux signal trampoline */
-      || (abi == 1 && context == 1))	/* HP-UX signal trampoline */
-    sr->is_signal_frame = 1;
-  else
-    dprintf ("libunwind: ignoring unwabi(abi=0x%x,context=0x%x)\n",
-	     abi, context);
+  sr->abi_marker = (abi << 8) | context;
 }
 
 static inline void
@@ -645,7 +640,7 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
 #define UNW_REG_PR		IA64_REG_PR
 #define UNW_REG_RNAT		IA64_REG_RNAT
 #define UNW_REG_PSP		IA64_REG_PSP
-#define UNW_REG_RP		IA64_REG_RP
+#define UNW_REG_RP		IA64_REG_IP
 #define UNW_REG_UNAT		IA64_REG_UNAT
 
 /* Region headers.  */
@@ -715,7 +710,7 @@ lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
     case UNW_IA64_AR_PFS:		preg = IA64_REG_PFS; break;
     case UNW_IA64_AR_RNAT:		preg = IA64_REG_RNAT; break;
     case UNW_IA64_AR_UNAT:		preg = IA64_REG_UNAT; break;
-    case UNW_IA64_BR + 0:		preg = IA64_REG_RP; break;
+    case UNW_IA64_BR + 0:		preg = IA64_REG_IP; break;
     case UNW_IA64_PR:			preg = IA64_REG_PR; break;
     case UNW_IA64_SP:			preg = IA64_REG_PSP; break;
 
@@ -946,9 +941,9 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
          saved regs), rp in b0, pfs in ar.pfs.  */
       debug (1, "unwind.parser: no unwind info for ip=0x%lx (gp=%lx)\n",
 	     (long) ip, (long) c->pi.gp);
-      sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
-      sr->curr.reg[IA64_REG_RP].when = -1;
-      sr->curr.reg[IA64_REG_RP].val = 0;
+      sr->curr.reg[IA64_REG_IP].where = IA64_WHERE_BR;
+      sr->curr.reg[IA64_REG_IP].when = -1;
+      sr->curr.reg[IA64_REG_IP].val = 0;
       goto out;
     }
 
@@ -989,11 +984,11 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
 
   /* If RP did't get saved, generate entry for the return link
      register.  */
-  if (sr->curr.reg[IA64_REG_RP].when >= sr->when_target)
+  if (sr->curr.reg[IA64_REG_IP].when >= sr->when_target)
     {
-      sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
-      sr->curr.reg[IA64_REG_RP].when = -1;
-      sr->curr.reg[IA64_REG_RP].val = sr->return_link_reg;
+      sr->curr.reg[IA64_REG_IP].where = IA64_WHERE_BR;
+      sr->curr.reg[IA64_REG_IP].when = -1;
+      sr->curr.reg[IA64_REG_IP].val = sr->return_link_reg;
     }
 
   if (sr->when_target > sr->curr.reg[IA64_REG_BSP].when
