@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:18:02 PST 2003
+.\" Manual page created with latex2man on Tue Mar 30 23:28:13 PST 2004
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_GET\\_PROC\\_NAME" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_GET\\_PROC\\_NAME" "3" "30 March 2004" "Programming Library " "Programming Library "
 .SH NAME
 unw_get_proc_name
 \-\- get name of current procedure 
@@ -78,9 +78,10 @@ returned.
 
 .PP
 unw_get_proc_name()
-is thread\-safe but \fInot\fP
-safe to 
-use from a signal handler. 
+is thread\-safe. If cursor cp
+is 
+in the local address\-space, this routine is also safe to use from a 
+signal handler. 
 .PP
 .SH ERRORS
 

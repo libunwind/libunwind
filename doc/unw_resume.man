@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:18:03 PST 2003
+.\" Manual page created with latex2man on Tue Mar 30 23:28:14 PST 2004
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_RESUME" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_RESUME" "3" "30 March 2004" "Programming Library " "Programming Library "
 .SH NAME
 unw_resume
 \-\- resume execution in a particular stack frame 
@@ -101,8 +101,10 @@ negative value of one of the errors below is returned.
 
 .PP
 unw_resume()
-is thread\-safe as well as safe to use from a 
-signal handler. 
+is thread\-safe. If cursor cp
+is in the 
+local address\-space, this routine is also safe to use from a signal 
+handler. 
 .PP
 .SH ERRORS
 
