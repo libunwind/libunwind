@@ -3,13 +3,16 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST = run-ia64-test-dyn1
 
 noinst_PROGRAMS_common =
-check_PROGRAMS_common = test-proc-info
+check_PROGRAMS_common = test-proc-info test-static-link
 check_SCRIPTS_common =
 
 if REMOTE_ONLY
  check_SCRIPTS_cdep =
  check_PROGRAMS_cdep =
  noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
+
+perf:
+
 else
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
@@ -23,7 +26,16 @@ endif
 			Gtest-resume-sig Ltest-resume-sig		  \
 			Gtest-dyn1 Ltest-dyn1				  \
 			test-flush-cache test-mem test-setjmp test-ptrace
- noinst_PROGRAMS_cdep = bt test-varargs Gperf-simple Lperf-simple
+ noinst_PROGRAMS_cdep = bt forker test-varargs Gperf-simple Lperf-simple
+
+perf: perf-startup Gperf-simple Lperf-simple
+	@echo "########## Basic performance of generic libunwind:"
+	@./Gperf-simple
+	@echo "########## Basic performance of local-only libunwind:"
+	@./Lperf-simple
+	@echo "########## Startup overhead:"
+	@$(srcdir)/perf-startup @arch@
+
 endif
 
 check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
@@ -48,6 +60,8 @@ Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
+test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
+test_static_link_LDFLAGS = -all-static
 
 LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
