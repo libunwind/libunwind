@@ -25,24 +25,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
-#if defined(UNW_TARGET_IA64)
-# define TARGET_ELF64
-#elif defined(UNW_TARGET_X86)
-# define TARGET_ELF32
-#else
-# warning Do not know object-file format of target arch.  Please implement.
-#endif
-
 int
 _UPT_get_proc_name (unw_addr_space_t as, unw_word_t ip,
 		    char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
   struct UPT_info *ui = arg;
 
-#if defined(TARGET_ELF64)
+#if ELF_CLASS == ELFCLASS64
   return _Uelf64_get_proc_name (ui->pid, ip, buf, buf_len, offp);
-#elif defined(TARGET_ELF32)
+#elif ELF_CLASS == ELFCLASS32
   return _Uelf32_get_proc_name (ui->pid, ip, buf, buf_len, offp);
-#endif
+#else
   return -UNW_ENOINFO;
+#endif
 }
