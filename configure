@@ -305,7 +305,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE RANLIB ac_ct_RANLIB LN_S LIBTOOL CPP EGREP LIBOBJS CCAS CCASFLAGS REMOTE_ONLY_TRUE REMOTE_ONLY_FALSE ARCH_IA64_TRUE ARCH_IA64_FALSE ARCH_X86_TRUE ARCH_X86_FALSE arch ARCH LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE RANLIB ac_ct_RANLIB LN_S LIBTOOL CPP EGREP LIBOBJS CCAS CCASFLAGS REMOTE_ONLY_TRUE REMOTE_ONLY_FALSE ARCH_IA64_TRUE ARCH_IA64_FALSE ARCH_HPPA_TRUE ARCH_HPPA_FALSE ARCH_X86_TRUE ARCH_X86_FALSE arch ARCH LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1582,7 +1582,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libunwind
- VERSION=0.2-pre2
+ VERSION=0.2-pre3
 
 
 cat >>confdefs.h <<_ACEOF
@@ -4227,6 +4227,7 @@ done
 get_arch() {
  case "$1" in
   i?86) echo x86;;
+  hppa*) echo hppa;;
   *) echo $1;;
  esac
 }
@@ -4252,6 +4253,16 @@ if test x$target_arch == xia64; then
 else
   ARCH_IA64_TRUE='#'
   ARCH_IA64_FALSE=
+fi
+
+
+
+if test x$target_arch == xhppa; then
+  ARCH_HPPA_TRUE=
+  ARCH_HPPA_FALSE='#'
+else
+  ARCH_HPPA_TRUE='#'
+  ARCH_HPPA_FALSE=
 fi
 
 
@@ -4445,6 +4456,13 @@ if test -z "${ARCH_IA64_TRUE}" && test -z "${ARCH_IA64_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"ARCH_IA64\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"ARCH_IA64\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${ARCH_HPPA_TRUE}" && test -z "${ARCH_HPPA_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ARCH_HPPA\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"ARCH_HPPA\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -5031,6 +5049,8 @@ s,@REMOTE_ONLY_TRUE@,$REMOTE_ONLY_TRUE,;t t
 s,@REMOTE_ONLY_FALSE@,$REMOTE_ONLY_FALSE,;t t
 s,@ARCH_IA64_TRUE@,$ARCH_IA64_TRUE,;t t
 s,@ARCH_IA64_FALSE@,$ARCH_IA64_FALSE,;t t
+s,@ARCH_HPPA_TRUE@,$ARCH_HPPA_TRUE,;t t
+s,@ARCH_HPPA_FALSE@,$ARCH_HPPA_FALSE,;t t
 s,@ARCH_X86_TRUE@,$ARCH_X86_TRUE,;t t
 s,@ARCH_X86_FALSE@,$ARCH_X86_FALSE,;t t
 s,@arch@,$arch,;t t
