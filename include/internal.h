@@ -90,8 +90,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #if UNW_DEBUG
 # include <stdio.h>
-# define debug(level,format...)	\
-    do { if (tdep_debug_level > level) fprintf (stderr, format); } while (0)
+# define debug(level,format...)					\
+do {								\
+  if (tdep_debug_level > level) fprintf (stderr, format);	\
+} while (0)
+# define Debug(level,format...)						\
+do {									\
+  if (tdep_debug_level > level)						\
+    {									\
+      int _n = level;							\
+      if (_n > 16)							\
+	_n = 16;							\
+      fprintf (stderr, "%*c>%s: ", _n, ' ', __FUNCTION__);		\
+      fprintf (stderr, format);						\
+    }									\
+} while (0)
 # define dprintf(format...) \
     fprintf (stderr, format)
 # ifdef __GNUC__
@@ -152,23 +165,23 @@ extern int UNWI_OBJ(find_dynamic_proc_info) (unw_addr_space_t as,
 					     unw_word_t ip,
 					     unw_proc_info_t *pi,
 					     int need_unwind_info, void *arg);
-extern int UNWI_ARCH_OBJ(extract_dynamic_proc_info) (unw_addr_space_t as,
-						     unw_word_t ip,
-						     unw_proc_info_t *pi,
-						     unw_dyn_info_t *di,
-						     int need_unwind_info,
-						     void *arg);
+extern int UNWI_OBJ(extract_dynamic_proc_info) (unw_addr_space_t as,
+						unw_word_t ip,
+						unw_proc_info_t *pi,
+						unw_dyn_info_t *di,
+						int need_unwind_info,
+						void *arg);
 extern void UNWI_OBJ(put_dynamic_unwind_info) (unw_addr_space_t as,
 					       unw_proc_info_t *pi, void *arg);
-extern int UNWI_ARCH_OBJ(dyn_remote_find_proc_info) (unw_addr_space_t as,
-						     unw_word_t ip,
-						     unw_proc_info_t *pi,
-						     unw_word_t *generation,
-						     int need_unwind_info,
-						     void *arg);
-extern void UNWI_ARCH_OBJ(dyn_remote_put_unwind_info) (unw_addr_space_t as,
-						       unw_proc_info_t *pi,
-						       void *arg);
+extern int UNWI_OBJ(dyn_remote_find_proc_info) (unw_addr_space_t as,
+						unw_word_t ip,
+						unw_proc_info_t *pi,
+						unw_word_t *generation,
+						int need_unwind_info,
+						void *arg);
+extern void UNWI_OBJ(dyn_remote_put_unwind_info) (unw_addr_space_t as,
+						  unw_proc_info_t *pi,
+						  void *arg);
 extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
 				    char *buf, size_t buf_len,
 				    unw_word_t *offp, void *arg);
@@ -177,7 +190,7 @@ extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
 	UNWI_OBJ(find_dynamic_proc_info)(as, ip, pi, n, arg)
 
 #define unwi_extract_dynamic_proc_info(as,ip,pi,di,n,arg)		\
-	UNWI_ARCH_OBJ(extract_dynamic_proc_info)(as, ip, pi, di, n, arg)
+	UNWI_OBJ(extract_dynamic_proc_info)(as, ip, pi, di, n, arg)
 
 #define unwi_put_dynamic_unwind_info(as,pi,arg)				\
 	UNWI_OBJ(put_dynamic_unwind_info)(as, pi, arg)
@@ -186,10 +199,10 @@ extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
    dynamic unwind info. */
 
 #define unwi_dyn_remote_find_proc_info(as,i,p,g,n,arg)			\
-	UNWI_ARCH_OBJ(dyn_remote_find_proc_info)(as, i, p, g, n, arg)
+	UNWI_OBJ(dyn_remote_find_proc_info)(as, i, p, g, n, arg)
 
 #define unwi_dyn_remote_put_unwind_info(as,p,arg)			\
-	UNWI_ARCH_OBJ(dyn_remote_put_unwind_info)(as, p, arg)
+	UNWI_OBJ(dyn_remote_put_unwind_info)(as, p, arg)
 
 #define unwi_get_proc_name(as,ip,b,s,o,arg)				\
 	UNWI_OBJ(get_proc_name)(as, ip, b, s, o, arg)
