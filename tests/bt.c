@@ -43,7 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #if UNW_TARGET_X86
-# define STACK_SIZE	(2*SIGSTKSZ)	/* On x86, SIGSTKSZ is too small */
+# define STACK_SIZE	(128*1024)	/* On x86, SIGSTKSZ is too small */
 #else
 # define STACK_SIZE	SIGSTKSZ
 #endif
