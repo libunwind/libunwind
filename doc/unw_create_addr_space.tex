@@ -96,7 +96,9 @@ released via the \Func{put\_unwind\_info} call-back (see below).
 
 On successful completion, the \Func{find\_proc\_info}() call-back must
 return zero.  Otherwise, the negative value of one of the
-\Type{unw\_error\_t} error-codes may be returned.
+\Type{unw\_error\_t} error-codes may be returned.  In particular, this
+call-back may return -\Const{UNW\_ESTOPUNWIND} to signal the end of
+the frame-chain.
 
 \subsection{put\_unwind\_info}
 
