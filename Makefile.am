@@ -14,7 +14,8 @@ endif # ARCH_X86
 endif # ARCH_HPPA
 endif # ARCH_IA64
 
-include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
+include_HEADERS_common = $(include_HEADERS_tdep)		\
+	include/libunwind-common.h.in				\
 	include/libunwind-dynamic.h include/libunwind-ptrace.h
 
 if REMOTE_ONLY
