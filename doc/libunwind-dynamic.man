@@ -1,0 +1,161 @@
+'\" t
+.\" Manual page created with latex2man on Tue Dec  9 23:06:06 PST 2003
+.\" NOTE: This file is generated, DO NOT EDIT.
+.de Vb
+.ft CW
+.nf
+..
+.de Ve
+.ft R
+
+.fi
+..
+.TH "LIBUNWIND\-DYNAMIC" "3" "09 December 2003" "Programming Library " "Programming Library "
+.SH NAME
+libunwind\-dynamic
+\-\- libunwind\-support for runtime\-generated code 
+.PP
+.SH INTRODUCTION
+
+.PP
+For libunwind
+to do its work, it needs to be able to 
+reconstruct the \fIframe state\fP
+of each frame in a call\-chain. The 
+frame state consists of some frame registers (such as the 
+instruction\-pointer and the stack\-pointer) and the locations at which 
+the current values of every callee\-saved (``preserved\&'') resides. 
+.PP
+The purpose of the dynamic unwind\-info is therefore to provide 
+libunwind
+the minimal information it needs about each 
+dynamically generated procedure such that it can reconstruct the 
+procedure\&'s frame state. 
+.PP
+For the purpose of the following discussion, a \fIprocedure\fP
+is any 
+contiguous piece of code. Normally, each procedure directly 
+corresponds to a function in the source\-language but this is not 
+strictly required. For example, a runtime code\-generator could 
+translate a given function into two separate (discontiguous) 
+procedures: one for frequently\-executed (hot) code and one for 
+rarely\-executed (cold) code. Similarly, simple source\-language 
+functions (usually leaf functions) may get translated into code for 
+which the default unwind\-conventions apply and for such code, no 
+dynamic unwind info needs to be registered. 
+.PP
+Within a procedure, the code can be thought of as being divided into a 
+sequence of \fIregions\fP\&.
+Each region logically consists of an 
+optional \fIprologue\fP,
+a \fIbody\fP,
+and an optional 
+\fIepilogue\fP\&.
+If present, the prologue sets up the frame state for 
+the body, which does the actual work of the procedure. For example, 
+the prologue may need to allocate a stack\-frame and save some 
+callee\-saved registers before the body can start executing. 
+Correspondingly, the epilogue, if present, restores the previous frame 
+state and thereby undoes the effect of the prologue. Regions are 
+nested in the sense that the frame state at the end of a region serves 
+as the entry\-state of the next region. At the end of several nested 
+regions, there may be a single epilogue which undoes the effect of all 
+the prologues in the nested regions. 
+.PP
+Even though logically we think of the prologue, body, and epilogue as 
+separate entities, optimizing code\-generators will generally 
+interleave instructions from all three entities to achieve higher 
+performance. In fact, as far as the dynamic unwind\-info is concerned, 
+there is no distinction at all between prologue and body. Similarly, 
+the exact set of instructions that make up an epilogue is also 
+irrelevant. The only point in the epilogue that needs to be described 
+explicitly is the point at which the stack\-pointer gets restored. The 
+reason this point needs to be described is that once the stack\-pointer 
+is restored, all values saved in the deallocated portion of the stack 
+become invalid. All other locations that store the values of 
+callee\-saved register are assumed to remain valid throughout the end 
+of the region. 
+.PP
+Within a region, each instruction that affects the frame state in some 
+fashion needs to be described with an operation descriptor. For this 
+purpose, each instruction in the region is assigned a unique index. 
+Exactly how this index is derived depends on the architecture. For 
+example, on RISC and EPIC\-style architecture, instructions have a 
+fixed size so it\&'s possible to simply number the instructions. In 
+contrast, most CISC use variable\-length instruction encodings, so it 
+is usually necessary to use a byte\-offset as the index. Given the 
+instruction index, the operation descriptor specifies the effect of 
+the instruction in an abstract manner. For example, it might express 
+that the instruction stores calle\-saved register r1
+at offset 16 
+in the stack frame. 
+.PP
+.SH PROCEDURES
+
+.PP
+unw_dyn_info_t 
+unw_dyn_proc_info_t 
+unw_dyn_table_info_t 
+unw_dyn_remote_table_info_t 
+.PP
+.SH REGIONS
+
+.PP
+unw_dyn_region_info_t: 
+\- insn_count can be negative to indicate that the region is 
+at the end of the procedure; in such a case, the negated 
+insn_count value specifies the length of the final region 
+in number of instructions. There must be at most one region 
+with a negative insn_count and only the last region in a 
+procedure\&'s region list may be negative. Furthermore, both 
+di\->start_ip and di\->end_ip must be valid. 
+.PP
+.SH OPERATIONS
+
+.PP
+unw_dyn_operation_t 
+unw_dyn_op_t 
+_U_QP_TRUE 
+.PP
+unw_dyn_info_format_t 
+.PP
+\- instructions don\&'t have to be sorted in increasing order of ``when\&'' 
+values: In general, if you can generate the sorted order easily 
+(e.g., without an explicit sorting step), I\&'d recommend doing so 
+because in that case, should some version of libunwind ever require 
+sorted order, libunwind can verify in O(N) that the list is sorted 
+already. In the particular case of the ia64\-version of libunwind, a 
+sorted order won\&'t help, since it always scans the instructions up 
+to UNW_DYN_STOP. 
+.PP
+_U_dyn_region_info_size(opcount); 
+_U_dyn_op_save_reg(); 
+_U_dyn_op_spill_fp_rel(); 
+_U_dyn_op_spill_sp_rel(); 
+_U_dyn_op_add(); 
+_U_dyn_op_pop_frames(); 
+_U_dyn_op_label_state(); 
+_U_dyn_op_copy_state(); 
+_U_dyn_op_alias(); 
+_U_dyn_op_stop(); 
+.PP
+.SH SEE ALSO
+
+.PP
+libunwind(3),
+_U_dyn_register(3),
+_U_dyn_cancel(3)
+.PP
+.SH AUTHOR
+
+.PP
+David Mosberger\-Tang
+.br 
+Hewlett\-Packard Labs
+.br 
+Palo\-Alto, CA 94304
+.br 
+Email: \fBdavidm@hpl.hp.com\fP
+.br
+WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+.\" NOTE: This file is generated, DO NOT EDIT.
