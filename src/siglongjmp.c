@@ -31,6 +31,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <signal.h>
 #include <stdlib.h>
 
+#include "tdep.h"
+#include "jmpbuf.h"
+
 #if UNW_TARGET_IA64
 # include "ia64/rse.h"
 #endif
@@ -38,12 +41,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 void
 siglongjmp (sigjmp_buf env, int val)
 {
-  unw_word_t *mp, *wp = (unw_word_t *) env;
+  unw_word_t *wp = (unw_word_t *) env;
   extern int _UI_siglongjmp_cont;
-  sigset_t current_mask;
+  extern int _UI_longjmp_cont;
   unw_context_t uc;
   unw_cursor_t c;
   unw_word_t sp;
+  int *cont;
 
   if (unw_getcontext (&uc) < 0 || unw_init_local (&c, &uc) < 0)
     abort ();
@@ -52,7 +56,7 @@ siglongjmp (sigjmp_buf env, int val)
     {
       if (unw_get_reg (&c, UNW_REG_SP, &sp) < 0)
 	abort ();
-      if (sp != wp[0])
+      if (sp != wp[JB_SP])
 	continue;
 
 #if UNW_TARGET_IA64
@@ -67,39 +71,62 @@ siglongjmp (sigjmp_buf env, int val)
 	sol = (pfs >> 7) & 0x7f;
 	bsp = ia64_rse_skip_regs (bsp, sol);
 
-	if (bsp != wp[4])
+	if (bsp != wp[JB_BSP])
 	  continue;
       }
 #endif
 
       /* found the right frame: */
 
-      if (wp[2])
-	mp = wp + 3;
+      assert (UNW_NUM_EH_REGS >= 4 && _NSIG <= 16 * sizeof (unw_word_t));
+
+      /* default to continuation without sigprocmask() */
+      cont = &_UI_longjmp_cont;
+
+#if UNW_TARGET_IA64
+      /* On ia64 we cannot call sigprocmask() at _UI_siglongjmp_cont()
+	 because the signal may have switched stacks and the old
+	 stack's register-backing store may have overflown, leaving us
+	 no space to allocate the stacked registers needed to call
+	 sigprocmask().  Fortunately, we can just let unw_resume()
+	 (via sigreturn) take care of restoring the signal-mask.
+	 That's faster anyhow.
+
+         XXX We probably should do the analogous on all architectures.  */
+      if (((struct cursor *) &c)->sigcontext_addr)
+	{
+	  /* let unw_resume() install the desired signal mask */
+	  struct cursor *cp = (struct cursor *) &c;
+	  struct sigcontext *sc = (struct sigcontext *) cp->sigcontext_addr;
+	  sigset_t current_mask;
+	  void *mp;
+
+	  if (wp[JB_MASK_SAVED])
+	    mp = &wp[JB_MASK];
+	  else
+	    {
+	      if (sigprocmask (SIG_BLOCK, NULL, &current_mask) < 0)
+		abort ();
+	      mp = &current_mask;
+	    }
+	  memcpy (&sc->sc_mask, mp, sizeof (sc->sc_mask));
+	}
       else
-	{
-	  /* sigmask wasn't saved; get it now so we can leave it unchanged.  */
-	  if (sigprocmask (SIG_BLOCK, NULL, &current_mask) < 0)
-	    abort ();
-	  mp = (unw_word_t *) &current_mask;
-	}
+#endif
+	if (wp[JB_MASK_SAVED])
+	  {
+	    /* sigmask was saved */
+	    if (unw_set_reg (&c, UNW_REG_EH + 2, wp[JB_MASK]) < 0
+		|| (_NSIG > 8 * sizeof (unw_word_t)
+		    && unw_set_reg (&c, UNW_REG_EH + 3, wp[JB_MASK + 1]) < 0))
+	      abort ();
+	    cont = &_UI_siglongjmp_cont;
+	  }
 
-      assert (UNW_NUM_EH_REGS >= 4);
-
-      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[1]) < 0
+      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[JB_RP]) < 0
 	  || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
-	  || unw_set_reg (&c, UNW_REG_EH + 2, mp[0]) < 0
-	  || unw_set_reg (&c, UNW_REG_IP,
-			  (unw_word_t) &_UI_siglongjmp_cont))
+	  || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) cont))
 	abort ();
-
-      if (_NSIG > 8 * sizeof (unw_word_t))
-	{
-	  if (_NSIG > 16 * sizeof (unw_word_t))
-	    abort ();
-	  if (unw_set_reg (&c, UNW_REG_EH + 3, mp[1]) < 0)
-	    abort ();
-	}
 
       unw_resume (&c);
 
