@@ -34,14 +34,15 @@ typedef unsigned char unw_hash_index_t;
 enum ia64_script_insn_opcode
   {
     IA64_INSN_SET,		/* s[dst] = val */
-    IA64_INSN_ADD,		/* s[dst] += val */
+    IA64_INSN_SET_REG,		/* s[dst] = REG(val) */
     IA64_INSN_ADD_PSP,		/* s[dst] = (s.psp + val) */
     IA64_INSN_ADD_SP,		/* s[dst] = (s.sp + val) */
     IA64_INSN_MOVE,		/* s[dst] = s[val] */
     IA64_INSN_MOVE_STACKED,	/* s[dst] = ia64_rse_skip(*s.bsp_loc, val) */
     IA64_INSN_MOVE_SCRATCH,	/* s[dst] = scratch reg "val" */
     IA64_INSN_SETNAT_MEMSTK,	/* s[dst].nat.type = s.pri_unat_loc | MEMSTK */
-    IA64_INSN_LOAD		/* s[dst] = *s[val] */
+    IA64_INSN_INC_PSP,		/* psp += val */
+    IA64_INSN_LOAD_PSP		/* psp = *psp_loc */
   };
 
 struct ia64_script_insn
@@ -67,6 +68,7 @@ struct ia64_script
     unsigned short coll_chain;	/* used for hash collisions */
     unsigned short hint;	/* hint for next script to try (or -1) */
     unsigned short count;	/* number of instructions in script */
+    unsigned short abi_marker;
     struct ia64_script_insn insn[IA64_MAX_SCRIPT_LEN];
   };
 
