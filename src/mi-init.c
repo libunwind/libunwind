@@ -37,18 +37,17 @@ HIDDEN void
 mi_init (void)
 {
   extern void unw_cursor_t_is_too_small (void);
-
 #if UNW_DEBUG
-    const char *str = getenv ("UNW_DEBUG_LEVEL");
+  const char *str = getenv ("UNW_DEBUG_LEVEL");
 
-    if (str)
-      tdep_debug_level = atoi (str);
+  if (str)
+    tdep_debug_level = atoi (str);
 
-    if (tdep_debug_level > 0)
-      {
-	setbuf (stdout, NULL);
- 	setbuf (stderr, NULL);
-      }
+  if (tdep_debug_level > 0)
+    {
+      setbuf (stdout, NULL);
+      setbuf (stderr, NULL);
+    }
 #endif
 
   if (sizeof (struct cursor) > sizeof (unw_cursor_t))
