@@ -1,0 +1,74 @@
+\documentclass{article}
+\usepackage[fancyhdr,pdf]{latex2man}
+
+\input{common.tex}
+
+\begin{document}
+
+\begin{Name}{3}{unw\_resume}{David Mosberger-Tang}{Programming Library}{unw\_resume}
+
+  unw\_resume -- resume execution in a particular stack frame
+\end{Name}
+
+\section{Synopsis}
+
+\File{\#include $<$libunwind.h$>$}\\
+
+\Type{int} \Func{unw\_resume}(\Type{unw\_cursor\_t~*}\Var{cursor});\\
+
+\section{Description}
+
+The \Func{unw\_resume}() routine resumes execution at the stack frame
+identified by \Var{cursor}.  Normally, this is accomplished by
+restoring the ``preserved'' (callee-saved) machine state.  However, if
+execution in any of the stack frames younger (more deeply nested) than
+the one identified by \Var{cursor} was interrupted by a signal, then
+\Func{unw\_resume}() will restore the entire machine state, including
+the ``preserved'' and ``scratch'' (caller-saved) registers, as well as
+the signal mask.
+
+Most platforms reserve some registers to pass arguments to exception
+handlers (e.g., IA-64 uses \texttt{r15}-\texttt{r18} for this
+purpose).  These registers are normally treated like ``scratch''
+registers.  However, if \Prog{libunwind} is used to define an
+exception argument register, e.g., by calling \Func{unw\_set\_reg}(),
+then \Func{unw\_resume}() will always install the new value as the
+contents of that register.  In other words, the exception handling
+arguments are installed even in cases where normally only the
+``preserved'' registers are restored.
+
+\section{Return Value}
+
+For local unwinding, \Func{unw\_resume}() does not return on success.
+For remote unwinding, it returns 0 on success.  On failure, the
+negative value of one of the errors below is returned.
+
+\section{Errors}
+
+\begin{Description}
+\item[\Const{UNW\_EUNSPEC}] An unspecified error occurred.
+\item[\Const{UNW\_EBADREG}] A register needed by \Func{unw\_resume}() wasn't
+  accessible.
+\item[\Const{UNW\_EINVALIDIP}] The instruction pointer identified by
+  \Var{cursor} is not valid.
+\item[\Const{UNW\_BADFRAME}] The stack frame identified by
+  \Var{cursor} is not valid.
+\end{Description}
+
+\section{See Also}
+
+\SeeAlso{libunwind(3)},
+\SeeAlso{unw\_set\_reg(3)},
+sigprocmask(2)
+
+\section{Author}
+
+\noindent
+David Mosberger-Tang\\
+Hewlett-Packard Labs\\
+Palo-Alto, CA 94304\\
+Email: \Email{davidm@hpl.hp.com}\\
+WWW: \URL{http://www.hpl.hp.com/research/linux/libunwind/}.
+\LatexManEnd
+
+\end{document}

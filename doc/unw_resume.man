@@ -1,0 +1,107 @@
+'\" t
+.\" Manual page created with latex2man on Sat Feb  8 01:21:05 PST 2003
+.\" NOTE: This file is generated, DO NOT EDIT.
+.de Vb
+.ft CW
+.nf
+..
+.de Ve
+.ft R
+
+.fi
+..
+.TH "UNW\\_RESUME" "3" "08 February 2003" "Programming Library " "Programming Library "
+.SH NAME
+
+.PP
+unw_resume \-\- resume execution in a particular stack frame 
+.PP
+.SH SYNOPSIS
+
+.PP
+#include <libunwind.h>
+.br
+.PP
+int
+unw_resume(unw_cursor_t *cursor);
+.br
+.PP
+.SH DESCRIPTION
+
+.PP
+The unw_resume()
+routine resumes execution at the stack frame 
+identified by cursor\&.
+Normally, this is accomplished by 
+restoring the ``preserved\&'' (callee\-saved) machine state. However, if 
+execution in any of the stack frames younger (more deeply nested) than 
+the one identified by cursor
+was interrupted by a signal, then 
+unw_resume()
+will restore the entire machine state, including 
+the ``preserved\&'' and ``scratch\&'' (caller\-saved) registers, as well as 
+the signal mask. 
+.PP
+Most platforms reserve some registers to pass arguments to exception 
+handlers (e.g., IA\-64 uses r15\-r18
+for this 
+purpose). These registers are normally treated like ``scratch\&'' 
+registers. However, if libunwind
+is used to define an 
+exception argument register, e.g., by calling unw_set_reg(),
+then unw_resume()
+will always install the new value as the 
+contents of that register. In other words, the exception handling 
+arguments are installed even in cases where normally only the 
+``preserved\&'' registers are restored. 
+.PP
+.SH RETURN VALUE
+
+.PP
+For local unwinding, unw_resume()
+does not return on success. 
+For remote unwinding, it returns 0 on success. On failure, the 
+negative value of one of the errors below is returned. 
+.PP
+.SH ERRORS
+
+.PP
+.TP
+UNW_EUNSPEC
+ An unspecified error occurred. 
+.TP
+UNW_EBADREG
+ A register needed by unw_resume()
+wasn\&'t 
+accessible. 
+.TP
+UNW_EINVALIDIP
+ The instruction pointer identified by 
+cursor
+is not valid. 
+.TP
+UNW_BADFRAME
+ The stack frame identified by 
+cursor
+is not valid. 
+.PP
+.SH SEE ALSO
+
+.PP
+libunwind(3),
+unw_set_reg(3),
+sigprocmask(2) 
+.PP
+.SH AUTHOR
+
+.PP
+David Mosberger\-Tang
+.br 
+Hewlett\-Packard Labs
+.br 
+Palo\-Alto, CA 94304
+.br 
+Email: \fBdavidm@hpl.hp.com\fP
+.br
+WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+.\" NOTE: This file is generated, DO NOT EDIT.
