@@ -46,19 +46,20 @@ rbs_spill_##n:								     \
 	alloc r18 = ar.pfs, 2, (n)-2, 2, 0;/* read ar.pfs */		     \
 	/* first, calculate address of new stack: */			     \
 	addl r2 = @ltoff(stackmem), gp;					     \
-	shladd r8 = in0, 3, in1;	/* r8 = &next_func[iteration] */     \
+	add r8 = 1, in0;						     \
 	;;								     \
 	ld8 r2 = [r2];			/* r2 = &stackmem */		     \
-	ld8 r8 = [r8];			/* r8 = next_func[iteration] */	     \
 	shl r3 = in0, STACK_SIZE_SHIFT;					     \
+	shladd r8 = r8, 3, in1;		/* r8 = &next_func[iteration+1] */   \
+	;;								     \
+	ld8 r8 = [r8];			/* r8 = next_func[iteration+1] */    \
+	add r2 = r2, r3;		/* r2 = stackmem[iteration] */	     \
 	;;								     \
 	ld8 r9 = [r8], 8;;		/* r9 = target's entry-point */	     \
 	ld8 gp = [r8];			/* r22 = target's gp */		     \
-	add r2 = r2, r3;		/* r2 = stackmem[iteration] */	     \
-	;;								     \
-	mov b6 = r9;							     \
 	addl r3 = STACK_SIZE-FRAME_SIZE, r2; /* r3 = &stackframe */	     \
 	;;								     \
+	mov b6 = r9;							     \
 	st8 [r3] = sp;							     \
 	.vframesp SAVED_SP_OFF+16;					     \
 	adds sp = -16, r3;		/* switch the memory stack */	     \
