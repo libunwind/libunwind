@@ -33,8 +33,8 @@ libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
 					  -version-info $(SETJMP_SO_VERSION)
 libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la -lc
 libunwind_setjmp_la_SOURCES_common	= longjmp.c siglongjmp.c
-libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S ia64/sigsetjmp.S \
-					  ia64/siglongjmp.S
+libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S  ia64/sigsetjmp.S  \
+					  ia64/longjmp.S ia64/siglongjmp.S
 libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c	\
 					  hppa/siglongjmp.S
 libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c x86/siglongjmp.S
