@@ -100,25 +100,7 @@ struct ia64_global_unwind_state unw =
 	 _U_dyn_info_list, but that wouldn't work because the
 	 unwind-info is generally mapped read-only.  */
 
-unw_dyn_info_list_t _U_dyn_info_list;
-
-/* Now create a special unwind-table entry which makes it easy for an
-   unwinder to locate the dynamic registration list.  The special
-   entry covers address range [0-0) and is therefore guaranteed to
-   be the first in the unwind-table.  */
-asm (
-"	.hidden _U_dyn_info_list\n"
-"	.section \".IA_64.unwind_info\", \"a\"\n"
-".info:	data8 (1<<48) | 1\n"	/* v1, length==1 (8-byte word) */
-"	data8 0\n"		/* 8 empty .prologue directives (nops) */
-"	data8 0\n"		/* personality routine (ignored) */
-"	string \"dyn-list\"\n"	/* lsda */
-"	data8 @gprel(_U_dyn_info_list)\n"
-"	.previous\n"
-
-"	.section \".IA_64.unwind\", \"a\"\n"
-"	data8 0, 0, @segrel(.info)\n"
-"	.previous\n");
+HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
 
 #endif
 
