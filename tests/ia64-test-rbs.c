@@ -70,7 +70,7 @@ unwind_and_resume (long iteration, int (*next_func[])())
   int i, ret;
 
   if (verbose)
-    printf (" %s: test%ld, next_func=%p\n",
+    printf (" %s(iteration=%ld, next_func=%p)\n",
 	    __FUNCTION__, iteration, next_func);
 
   unw_getcontext (&uc);
@@ -128,7 +128,7 @@ run_check (int test)
   while (nspills < 128);
   func[nfuncs++] = unwind_and_resume;
 
-  unwind_count = 1 + (random () % (nfuncs + RECURSION_DEPTH));
+  unwind_count = 1 + (random () % (nfuncs + RECURSION_DEPTH - 1));
 
   if (verbose)
     printf ("test%d: nfuncs=%d, unwind_count=%d\n",
@@ -137,9 +137,9 @@ run_check (int test)
   ret = loadup (RECURSION_DEPTH, reg_values, func);
   if (ret < 0)
     panic ("test%d: load() returned %d\n", test, ret);
-  else if (ret != RECURSION_DEPTH + 1 + nfuncs - unwind_count)
+  else if (ret != RECURSION_DEPTH + nfuncs - unwind_count)
     panic ("test%d: resumed wrong frame: expected %d, got %d\n",
-	   test, RECURSION_DEPTH + 1 + nfuncs - unwind_count, ret);
+	   test, RECURSION_DEPTH + nfuncs - unwind_count, ret);
   return 0;
 }
 
