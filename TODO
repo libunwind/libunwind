@@ -1,3 +1,32 @@
+- implement non-local versions of dwarf_readXX()
+- document new "tdep" member in unw_proc_info_t structure
+- for DWARF 2, use a dummy CIE entry with an augmentation that
+  provides the dyn-info-list-address
+
+- caching is pretty fundamentally broken, what should happen is this:
+
+   o On unw_init_local()/unw_init_remote(), libunwind should validate
+     that the cached information is still valid and, if not, flush the
+     cache on its own.  Rational: once unw_init_local() has been
+     called, it is clear that the unwind info for the calling thread
+     cannot change (otherwise the program would be buggy anyhow) and
+     hence it is sufficient to validate the cache at this point.
+     Similarly, once unw_init_remote() has been called, the target
+     address space must have been stopped, because the unwinding would
+     otherwise be unreliable anyhow.
+
+   o glibc currently lacks a feature for dl_iterate_phdr() to support
+     safe caching; I proposed on 12/16/2003 that glibc maintain two
+     atomic counters which get inremented whenever something is added
+     to/removed from the dl_iterate_phdr-list.  Once we have such counters,
+     we can use them in libunwind to implement an efficient version of a
+     cache-validation routine.
+
+   Once this has been fixed, update the libunwind man page accordingly.
+   Effectively, what this means is that unw_flush_cache() doesn't have
+   to be called by applications except for extraordinary circumstances
+   (e.g., if application implements its own runtime loader).
+
 Testing:
 	- ensure that saving r4-r7 in a stacked register properly preserves
 	  the NaT bit, even in the face of register-rotation
