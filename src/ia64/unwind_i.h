@@ -84,7 +84,10 @@ static inline int
 ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 {
   if (!loc)
-    return -1;
+    {
+      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      return -1;
+    }
   *val = *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc);
   return 0;
 }
@@ -93,7 +96,10 @@ static inline int
 ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 {
   if (!loc)
-    return -1;
+    {
+      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      return -1;
+    }
   *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc) = val;
   return 0;
 }
@@ -102,7 +108,10 @@ static inline int
 ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 {
   if (!loc)
-    return -1;
+    {
+      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      return -1;
+    }
   *val = *(unw_word_t *) IA64_MASK_LOC_TYPE(loc);
   return 0;
 }
@@ -111,7 +120,10 @@ static inline int
 ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 {
   if (!loc)
-    return -1;
+    {
+      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      return -1;
+    }
   *(unw_word_t *) IA64_MASK_LOC_TYPE(loc) = (val);
   return 0;
 }
@@ -320,6 +332,7 @@ extern int ia64_create_state_record (struct cursor *c,
 extern int ia64_free_state_record (struct ia64_state_record *sr);
 extern int ia64_find_save_locs (struct cursor *c);
 extern void ia64_script_cache_init (struct ia64_script_cache *cache);
+extern void ia64_local_addr_space_init (void);
 extern void ia64_init (void);
 extern int ia64_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
