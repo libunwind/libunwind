@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.align 32
 	.proc siglongjmp_continuation
 siglongjmp_continuation:
-_UI_siglongjmp_cont:		// non-function label for {sig,}longjmp.c
+_UI_siglongjmp_cont:		// non-function label for siglongjmp.c
 	.prologue
 	.save rp, r15
 	.body
