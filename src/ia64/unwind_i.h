@@ -518,7 +518,11 @@ extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg,
 
 extern NORETURN void ia64_install_cursor (struct cursor *c,
 					  unw_word_t pri_unat,
-					  unw_word_t *extra);
+					  unw_word_t *extra,
+					  unw_word_t bspstore,
+					  unw_word_t dirty_size,
+					  unw_word_t *dirty_partition,
+					  unw_word_t dirty_rnat);
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
 extern int rbs_switch (struct cursor *c,
@@ -526,7 +530,10 @@ extern int rbs_switch (struct cursor *c,
 		       ia64_loc_t saved_rnat_loc);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 			     ia64_loc_t *locp, ia64_loc_t *rnat_locp);
-extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs);
+extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
+				unw_word_t *dirty_partition,
+				unw_word_t *dirty_rnat,
+				unw_word_t *bspstore);
 
 /* Warning: ia64_strloc() is for debugging only and it is NOT re-entrant! */
 extern const char *ia64_strloc (ia64_loc_t loc);
