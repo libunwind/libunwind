@@ -1,11 +1,9 @@
-AM_CPPFLAGS = -I$(top_srcdir)/include
-
-lib_LTLIBRARIES = libunwind.la
-
+if REMOTE_ONLY
+else
 libunwind_la_SOURCES_common = backtrace.c
+endif
 
-if ARCH_IA64
-libunwind_la_SOURCES = $(libunwind_la_SOURCES_common)			   \
+libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 	ia64/init.h ia64/offsets.h ia64/rse.h ia64/script.h		   \
 	ia64/ucontext_i.h ia64/unwind_i.h ia64/unwind_decoder.h		   \
 									   \
@@ -20,11 +18,30 @@ libunwind_la_SOURCES = $(libunwind_la_SOURCES_common)			   \
 	ia64/Lunw_get_reg.c ia64/Lunw_get_fpreg.c ia64/Lunw_get_save_loc.c \
 	ia64/Lunw_resume.c ia64/Lunw_set_reg.c ia64/Lunw_set_fpreg.c	   \
 	ia64/Lunw_init_local.c ia64/Lunw_init_remote.c ia64/Lunw_step.c
+
+if ARCH_IA64
+libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
 else
-if ARCH_x86
-libunwind_la_SOURCES = $(libunwind_la_SOURCES_common)
+if ARCH_IA32
+libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia32)
 endif
 endif
+
+if REMOTE_ONLY
+if ARCH_IA64
+ lib_LTLIBRARIES = libunwind-ia64.la
+ libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES)
+else
+if ARCH_IA32
+ lib_LTLIBRARIES = libunwind-ia32.la
+ libunwind_ia32_la_SOURCES = $(libunwind_la_SOURCES)
+endif
+endif
+else
+ lib_LTLIBRARIES = libunwind.la
+endif
+
+AM_CPPFLAGS = -I$(top_srcdir)/include
 
 libunwind_la_LDFLAGS = -version-info 0:0:0
 
