@@ -10,9 +10,13 @@
 #ifndef RSE_H
 #define RSE_H
 
-#include <stdint.h>
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
 
-static __inline__ uint64_t
+#include <inttypes.h>
+
+static inline uint64_t
 ia64_rse_slot_num (uint64_t addr)
 {
 	return (addr >> 3) & 0x3f;
@@ -21,7 +25,7 @@ ia64_rse_slot_num (uint64_t addr)
 /*
  * Return TRUE if ADDR is the address of an RNAT slot.
  */
-static __inline__ uint64_t
+static inline uint64_t
 ia64_rse_is_rnat_slot (uint64_t addr)
 {
 	return ia64_rse_slot_num (addr) == 0x3f;
@@ -31,7 +35,7 @@ ia64_rse_is_rnat_slot (uint64_t addr)
  * Returns the address of the RNAT slot that covers the slot at
  * address SLOT_ADDR.
  */
-static __inline__ uint64_t
+static inline uint64_t
 ia64_rse_rnat_addr (uint64_t slot_addr)
 {
 	return slot_addr | (0x3f << 3);
@@ -42,7 +46,7 @@ ia64_rse_rnat_addr (uint64_t slot_addr)
  * BSPSTORE and ending at BSP.  This isn't simply (BSP-BSPSTORE)/8
  * because every 64th slot stores ar.rnat.
  */
-static __inline__ uint64_t
+static inline uint64_t
 ia64_rse_num_regs (uint64_t bspstore, uint64_t bsp)
 {
 	uint64_t slots = (bsp - bspstore) >> 3;
@@ -54,7 +58,7 @@ ia64_rse_num_regs (uint64_t bspstore, uint64_t bsp)
  * The inverse of the above: given bspstore and the number of
  * registers, calculate ar.bsp.
  */
-static __inline__ uint64_t
+static inline uint64_t
 ia64_rse_skip_regs (uint64_t addr, long num_regs)
 {
 	long delta = ia64_rse_slot_num(addr) + num_regs;
