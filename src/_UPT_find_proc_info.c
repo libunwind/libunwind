@@ -130,11 +130,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	  break;
 	}
     }
-  if (!ptxt || !punw
-      /* Verify that the segment that contains the IP also contains
-	 the static unwind table.  If not, we are dealing with
-	 runtime-generated code, for which we have no info here.  */
-      || (punw->p_vaddr - ptxt->p_vaddr) >= ptxt->p_memsz)
+  if (!ptxt || !punw)
     return NULL;
 
   ui->di_cache.start_ip = segbase;
