@@ -40,6 +40,12 @@ mi_init (void)
 
     if (str)
       tdep_debug_level = atoi (str);
+
+    if (tdep_debug_level > 0)
+      {
+	setbuf (stdout, NULL);
+ 	setbuf (stderr, NULL);
+      }
 #endif
 
   if (sizeof (struct cursor) > sizeof (unw_cursor_t))
