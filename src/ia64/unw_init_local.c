@@ -46,7 +46,6 @@ uc_addr (ucontext_t *uc, int reg)
   switch (reg)
     {
     case UNW_IA64_IP:		addr = &uc->uc_mcontext.sc_br[0]; break;
-    case UNW_IA64_SP:		addr = &uc->uc_mcontext.sc_gr[12]; break;
     case UNW_IA64_CFM:		addr = &uc->uc_mcontext.sc_ar_pfs; break;
     case UNW_IA64_AR_RNAT:	addr = &uc->uc_mcontext.sc_ar_rnat; break;
     case UNW_IA64_AR_UNAT:	addr = &uc->uc_mcontext.sc_ar_unat; break;
@@ -57,6 +56,7 @@ uc_addr (ucontext_t *uc, int reg)
     case UNW_IA64_AR_BSPSTORE:	addr = &uc->uc_mcontext.sc_rbs_base; break;
 
     case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
+    case UNW_IA64_GR + 12:
       addr = &uc->uc_mcontext.sc_gr[reg - UNW_IA64_GR];
       break;
 
@@ -78,7 +78,7 @@ uc_addr (ucontext_t *uc, int reg)
 #ifdef UNW_LOCAL_ONLY
 
 void *
-_U_ia64_uc_addr (ucontext_t *uc, int reg)
+_Uia64_uc_addr (ucontext_t *uc, int reg)
 {
   return uc_addr (uc, reg);
 }
@@ -124,11 +124,9 @@ access_reg (unw_regnum_t reg, unw_word_t *val, int write, void *arg)
 	*val = (uc->uc_mcontext.sc_nat & mask) != 0;
 
       if (write)
-	debug (100, "%s: %s <- %lx\n", __FUNCTION__, _U_ia64_regname (reg),
-	       *val);
+	debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
       else
-	debug (100, "%s: %s -> %lx\n", __FUNCTION__, _U_ia64_regname (reg),
-	       *val);
+	debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
       return 0;
     }
 
@@ -139,14 +137,12 @@ access_reg (unw_regnum_t reg, unw_word_t *val, int write, void *arg)
   if (write)
     {
       *(unw_word_t *) addr = *val;
-      debug (100, "%s: %s <- %lx\n",
-	     __FUNCTION__, _U_ia64_regname (reg), *val);
+      debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      debug (100, "%s: %s -> %lx\n",
-	     __FUNCTION__, _U_ia64_regname (reg), *val);
+      debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
     }
   return 0;
 
@@ -171,14 +167,14 @@ access_fpreg (unw_regnum_t reg, unw_fpreg_t *val, int write, void *arg)
   if (write)
     {
       debug (100, "%s: %s <- %016lx.%016lx\n", __FUNCTION__,
-	     _U_ia64_regname (reg), val->raw.bits[1], val->raw.bits[0]);
+	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
       debug (100, "%s: %s -> %016lx.%016lx\n", __FUNCTION__,
-	     _U_ia64_regname (reg), val->raw.bits[1], val->raw.bits[0]);
+	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
     }
   return 0;
 
@@ -296,8 +292,8 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->uc = uc;
 #else /* !UNW_LOCAL_ONLY */
   c->acc.arg = uc;
-  c->acc.acquire_unwind_info = _U_ia64_glibc_acquire_unwind_info;
-  c->acc.release_unwind_info = _U_ia64_glibc_release_unwind_info;
+  c->acc.acquire_unwind_info = _Uia64_glibc_acquire_unwind_info;
+  c->acc.release_unwind_info = _Uia64_glibc_release_unwind_info;
   c->acc.access_mem = access_mem;
   c->acc.access_reg = access_reg;
   c->acc.access_fpreg = access_fpreg;
