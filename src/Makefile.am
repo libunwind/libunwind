@@ -24,32 +24,35 @@ libunwind_setjmp_la_SOURCES_common	= longjmp.c siglongjmp.c
 libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp-ia64.S		\
 					  ia64/sigsetjmp-ia64.S		\
 					  ia64/siglongjmp-ia64.S
-libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c hppa/siglongjmp-hppa.S
-libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c x86/siglongjmp-x86.S
+libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c		\
+					  hppa/siglongjmp-hppa.S
+libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c	\
+					  x86/siglongjmp-x86.S
 
 ### libunwind:
 
-# List of arch-independent files needed by both local-only and generic libraries:
+# List of arch-independent files needed by both local-only and generic
+# libraries:
 libunwind_la_SOURCES_common =			\
 	$(libunwind_la_SOURCES_os)		\
 	mi-init.c mempool.c
 
 # List of arch-independent files needed by generic library (libunwind-$ARCH):
-libunwind_la_SOURCES_generic =							\
-	Gdyn-extract.c Gdyn-remote.c Gfind_dynamic_proc_info.c			\
+libunwind_la_SOURCES_generic =						   \
+	Gdyn-extract.c Gdyn-remote.c Gfind_dynamic_proc_info.c		   \
 	Gget_proc_info_by_ip.c Gget_proc_name.c Gput_dynamic_unwind_info.c
 
 # List of arch-independent files needed by local-only library (libunwind):
-libunwind_la_SOURCES_local =							\
-	dyn-cancel.c dyn-info-list.c dyn-register.c				\
-	Ldyn-extract.c Lfind_dynamic_proc_info.c				\
-	Lget_proc_info_by_ip.c Lget_proc_name.c Lput_dynamic_unwind_info.c	\
-	_Unwind_Backtrace.c _Unwind_DeleteException.c				\
-	_Unwind_FindEnclosingFunction.c _Unwind_ForcedUnwind.c			\
-	_Unwind_GetBSP.c _Unwind_GetCFA.c _Unwind_GetDataRelBase.c		\
-	_Unwind_GetGR.c _Unwind_GetIP.c _Unwind_GetLanguageSpecificData.c	\
-	_Unwind_GetRegionStart.c _Unwind_GetTextRelBase.c			\
-	_Unwind_RaiseException.c _Unwind_Resume.c				\
+libunwind_la_SOURCES_local =						   \
+	dyn-cancel.c dyn-info-list.c dyn-register.c			   \
+	Ldyn-extract.c Lfind_dynamic_proc_info.c			   \
+	Lget_proc_info_by_ip.c Lget_proc_name.c Lput_dynamic_unwind_info.c \
+	_Unwind_Backtrace.c _Unwind_DeleteException.c			   \
+	_Unwind_FindEnclosingFunction.c _Unwind_ForcedUnwind.c		   \
+	_Unwind_GetBSP.c _Unwind_GetCFA.c _Unwind_GetDataRelBase.c	   \
+	_Unwind_GetGR.c _Unwind_GetIP.c _Unwind_GetLanguageSpecificData.c  \
+	_Unwind_GetRegionStart.c _Unwind_GetTextRelBase.c		   \
+	_Unwind_RaiseException.c _Unwind_Resume.c			   \
 	_Unwind_Resume_or_Rethrow.c _Unwind_SetGR.c _Unwind_SetIP.c
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
@@ -71,44 +74,44 @@ dwarf_sources =								\
 #
 
 # The list of files that go both into libunwind and libunwind-ia64:
-libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	      \
-	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
+libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	\
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		\
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h
 
 # The list of files that go into libunwind:
-libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)			\
-	$(libunwind_la_SOURCES_local)						\
-										\
-	elf64.c elf64.h								\
-										\
-	ia64/flush_cache-ia64.c							\
-	ia64/regname-ia64.c							\
-	ia64/dyn_info_list-ia64.S						\
-										\
-	ia64/Lcreate_addr_space-ia64.c ia64/Ldestroy_addr_space-ia64.c		\
-	ia64/Lget_accessors-ia64.c ia64/Lget_fpreg-ia64.c			\
-	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c			\
-	ia64/Lget_reg-ia64.c ia64/Lget_save_loc-ia64.c ia64/Lglobal-ia64.c	\
-	ia64/Linit-ia64.c ia64/Linit_local-ia64.c ia64/Linit_remote-ia64.c	\
-	ia64/Linstall_cursor.S ia64/Lis_signal_frame-ia64.c ia64/Lparser-ia64.c	\
-	ia64/Lrbs-ia64.c ia64/Lregs-ia64.c ia64/Lresume-ia64.c			\
-	ia64/Lscript-ia64.c ia64/Lset_caching_policy-ia64.c			\
-	ia64/Lset_fpreg-ia64.c ia64/Lset_reg-ia64.c ia64/Lstep-ia64.c		\
-	ia64/Ltables-ia64.c
+libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
+	$(libunwind_la_SOURCES_local)					   \
+									   \
+	elf64.c elf64.h							   \
+									   \
+	ia64/flush_cache-ia64.c						   \
+	ia64/regname-ia64.c						   \
+	ia64/dyn_info_list-ia64.S					   \
+									   \
+	ia64/Lcreate_addr_space-ia64.c ia64/Ldestroy_addr_space-ia64.c	   \
+	ia64/Lget_accessors-ia64.c ia64/Lget_fpreg-ia64.c		   \
+	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c		   \
+	ia64/Lget_reg-ia64.c ia64/Lget_save_loc-ia64.c ia64/Lglobal-ia64.c \
+	ia64/Linit-ia64.c ia64/Linit_local-ia64.c ia64/Linit_remote-ia64.c \
+	ia64/Linstall_cursor.S ia64/Lis_signal_frame-ia64.c		   \
+	ia64/Lparser-ia64.c ia64/Lrbs-ia64.c ia64/Lregs-ia64.c		   \
+	ia64/Lresume-ia64.c ia64/Lscript-ia64.c				   \
+	ia64/Lset_caching_policy-ia64.c ia64/Lset_fpreg-ia64.c		   \
+	ia64/Lset_reg-ia64.c ia64/Lstep-ia64.c ia64/Ltables-ia64.c
 
 # The list of files that go into libunwind-ia64:
-libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		\
-	$(libunwind_la_SOURCES_generic)						\
-	ia64/Gcreate_addr_space-ia64.c ia64/Gdestroy_addr_space-ia64.c		\
-	ia64/Gget_accessors-ia64.c ia64/Gget_fpreg-ia64.c			\
-	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c			\
-	ia64/Gget_reg-ia64.c ia64/Gget_save_loc-ia64.c ia64/Gglobal-ia64.c	\
-	ia64/Ginit-ia64.c ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c	\
-	ia64/Ginstall_cursor.S ia64/Gis_signal_frame-ia64.c ia64/Gparser-ia64.c	\
-	ia64/Grbs-ia64.c ia64/Gregs-ia64.c ia64/Gresume-ia64.c			\
-	ia64/Gscript-ia64.c ia64/Gset_caching_policy-ia64.c			\
-	ia64/Gset_fpreg-ia64.c ia64/Gset_reg-ia64.c ia64/Gstep-ia64.c		\
-	ia64/Gtables-ia64.c
+libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	   \
+	$(libunwind_la_SOURCES_generic)					   \
+	ia64/Gcreate_addr_space-ia64.c ia64/Gdestroy_addr_space-ia64.c	   \
+	ia64/Gget_accessors-ia64.c ia64/Gget_fpreg-ia64.c		   \
+	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c		   \
+	ia64/Gget_reg-ia64.c ia64/Gget_save_loc-ia64.c ia64/Gglobal-ia64.c \
+	ia64/Ginit-ia64.c ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c \
+	ia64/Ginstall_cursor.S ia64/Gis_signal_frame-ia64.c		   \
+	ia64/Gparser-ia64.c ia64/Grbs-ia64.c ia64/Gregs-ia64.c		   \
+	ia64/Gresume-ia64.c ia64/Gscript-ia64.c				   \
+	ia64/Gset_caching_policy-ia64.c ia64/Gset_fpreg-ia64.c		   \
+	ia64/Gset_reg-ia64.c ia64/Gstep-ia64.c ia64/Gtables-ia64.c
 
 libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
 	hppa/flush_cache-hppa.c hppa/get_accessors-hppa.c		\
@@ -124,7 +127,7 @@ libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
 	hppa/Lget_proc_info-hppa.c hppa/Lregs-hppa.c hppa/Lstep-hppa.c
 
 # The list of files that go both into libunwind and libunwind-x86:
-libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
+libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
 	x86/offsets.h
 
 # The list of files that go into libunwind:
