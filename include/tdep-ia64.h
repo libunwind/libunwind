@@ -179,9 +179,21 @@ struct ia64_global_unwind_state
        they're saved).  */
     const unsigned char save_order[8];
 
-    unw_word_t r0;
-    unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
-    unw_fpreg_t nat_val_be, int_val_le, int_val_be;
+    /*
+     * uc_addr() may return pointers to these variables.  We need to
+     * make sure they don't get written via ia64_put() or
+     * ia64_putfp().  To make it possible to test for these variables
+     * quickly, we collect them in a single sub-structure.
+     */
+    struct
+      {
+	unw_word_t  r0;			/* r0 is byte-order neutral */
+	unw_fpreg_t f0;			/* f0 is byte-order neutral */
+	unw_fpreg_t f1_le, f1_be;	/* f1 is byte-order dependent */
+      }
+    read_only;
+    unw_fpreg_t nat_val_le, nat_val_be;
+    unw_fpreg_t int_val_le, int_val_be;
 
     struct mempool reg_state_pool;
     struct mempool labeled_state_pool;
