@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
+   Copyright (C) 2003-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -50,6 +50,8 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
       if (ui->ei.image)
 	{
 	  munmap (ui->ei.image, ui->ei.size);
+	  ui->ei.image = NULL;
+	  ui->ei.size = 0;
 	  /* invalidate the cache: */
 	  ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
 	}
