@@ -31,5 +31,6 @@ unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
 {
   struct cursor *c = (struct cursor *) cursor;
 
-  return unwi_get_proc_name (c->as, c->eip, buf, buf_len, offp, c->as_arg);
+  return unwi_get_proc_name (c->dwarf.as, c->dwarf.ip, buf, buf_len,
+			     offp, c->dwarf.as_arg);
 }

@@ -45,7 +45,7 @@ extern "C" {
    want to err on making it rather too big than too small.  */
 #define UNW_TDEP_CURSOR_LEN	127
 
-typedef uint32_t unw_tdep_word_t;
+typedef uint32_t unw_word_t;
 
 typedef long double unw_tdep_fpreg_t;
 
@@ -54,26 +54,91 @@ typedef enum
     /* Note: general registers are expected to start with index 0.
        This convention facilitates architecture-independent
        implementation of the C++ exception handling ABI.  See
-       _Unwind_SetGR() and _Unwind_GetGR() for details.  */
-    UNW_X86_EAX,
-    UNW_X86_EBX,
-    UNW_X86_ECX,
-    UNW_X86_EDX,
-    UNW_X86_ESI,
-    UNW_X86_EDI,
-    UNW_X86_EBP,
-    UNW_X86_EIP,
-    UNW_X86_ESP,
+       _Unwind_SetGR() and _Unwind_GetGR() for details.
 
-    UNW_TDEP_LAST_REG = UNW_X86_ESP,
+       The described register usage convention is based on "System V
+       Application Binary Interface, Intel386 Architecture Processor
+       Supplement, Fourth Edition" at
+
+         http://www.linuxbase.org/spec/refspecs/elf/abi386-4.pdf
+
+       It would have been nice to use the same register numbering as
+       DWARF, but that doesn't work because the libunwind requires
+       that the exception argument registers be consecutive, which the
+       wouldn't be with the DWARF numbering.  */
+    UNW_X86_EAX,	/* scratch (exception argument 1) */
+    UNW_X86_EDX,	/* scratch (exception argument 2) */
+    UNW_X86_ECX,	/* preserved */
+    UNW_X86_EBX,	/* preserved */
+    UNW_X86_ESI,	/* preserved */
+    UNW_X86_EDI,	/* preserved */
+    UNW_X86_EBP,	/* (optional) frame-register */
+    UNW_X86_ESP,	/* (optional) frame-register */
+    UNW_X86_EIP,	/* frame-register */
+    UNW_X86_EFLAGS,	/* scratch (except for "direction", which is fixed */
+    UNW_X86_TRAPNO,	/* scratch */
+
+    /* MMX/stacked-fp registers */
+    UNW_X86_ST0,	/* fp return value */
+    UNW_X86_ST1,	/* scratch */
+    UNW_X86_ST2,	/* scratch */
+    UNW_X86_ST3,	/* scratch */
+    UNW_X86_ST4,	/* scratch */
+    UNW_X86_ST5,	/* scratch */
+    UNW_X86_ST6,	/* scratch */
+    UNW_X86_ST7,	/* scratch */
+
+    UNW_X86_FCW,	/* scratch */
+    UNW_X86_FSW,	/* scratch */
+    UNW_X86_FTW,	/* scratch */
+    UNW_X86_FOP,	/* scratch */
+    UNW_X86_FCS,	/* scratch */
+    UNW_X86_FIP,	/* scratch */
+    UNW_X86_FEA,	/* scratch */
+    UNW_X86_FDS,	/* scratch */
+
+    /* SSE registers */
+    UNW_X86_XMM0_lo,	/* scratch */
+    UNW_X86_XMM0_hi,	/* scratch */
+    UNW_X86_XMM1_lo,	/* scratch */
+    UNW_X86_XMM1_hi,	/* scratch */
+    UNW_X86_XMM2_lo,	/* scratch */
+    UNW_X86_XMM2_hi,	/* scratch */
+    UNW_X86_XMM3_lo,	/* scratch */
+    UNW_X86_XMM3_hi,	/* scratch */
+    UNW_X86_XMM4_lo,	/* scratch */
+    UNW_X86_XMM4_hi,	/* scratch */
+    UNW_X86_XMM5_lo,	/* scratch */
+    UNW_X86_XMM5_hi,	/* scratch */
+    UNW_X86_XMM6_lo,	/* scratch */
+    UNW_X86_XMM6_hi,	/* scratch */
+    UNW_X86_XMM7_lo,	/* scratch */
+    UNW_X86_XMM7_hi,	/* scratch */
+
+    UNW_X86_MXCSR,	/* scratch */
+
+    /* segment registers */
+    UNW_X86_GS,		/* special */
+    UNW_X86_FS,		/* special */
+    UNW_X86_ES,		/* special */
+    UNW_X86_DS,		/* special */
+    UNW_X86_SS,		/* special */
+    UNW_X86_CS,		/* special */
+    UNW_X86_TSS,	/* special */
+    UNW_X86_LDT,	/* special */
+
+    /* frame info (read-only) */
+    UNW_X86_CFA,
+
+    UNW_TDEP_LAST_REG = UNW_X86_LDT,
 
     UNW_TDEP_IP = UNW_X86_EIP,
-    UNW_TDEP_SP = UNW_X86_ESP,
+    UNW_TDEP_SP = UNW_X86_CFA,
     UNW_TDEP_EH = UNW_X86_EAX
   }
 x86_regnum_t;
 
-#define UNW_TDEP_NUM_EH_REGS	2	/* eax and ebx are exception args */
+#define UNW_TDEP_NUM_EH_REGS	2	/* eax and edx are exception args */
 
 typedef struct unw_tdep_save_loc
   {
@@ -92,6 +157,14 @@ typedef ucontext_t unw_tdep_context_t;
 
 /* XXX fixme: */
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_X86_FR) < 128)
+
+#include "libunwind-dynamic.h"
+
+typedef struct
+  {
+    unw_dyn_dwarf_fde_info_t dwarf_info;
+  }
+unw_tdep_proc_info_t;
 
 #include "libunwind-common.h"
 

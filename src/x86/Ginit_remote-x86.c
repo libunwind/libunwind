@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -35,13 +35,10 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
   struct cursor *c = (struct cursor *) cursor;
 
   if (x86_needs_initialization)
-    {
-      x86_needs_initialization = 0;
-      x86_init ();
-    }
+    x86_init ();
 
-  c->as = as;
-  c->as_arg = as_arg;
+  c->dwarf.as = as;
+  c->dwarf.as_arg = as_arg;
   return common_init (c);
 #endif /* !UNW_LOCAL_ONLY */
 }

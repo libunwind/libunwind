@@ -26,161 +26,100 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-static inline int
-update_frame_state (struct cursor *c)
-{
-#if 0
-  unw_word_t prev_ip, prev_sp, prev_bsp, ip, pr, num_regs, cfm;
-  int ret;
-
-  prev_ip = c->ip;
-  prev_sp = c->sp;
-  prev_bsp = c->bsp;
-
-  c->cfm_loc = c->pfs_loc;
-
-  num_regs = 0;
-  if (c->is_signal_frame)
-    {
-      ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &c->sigcontext_loc);
-      debug (100, "%s: sigcontext_loc=%lx (ret=%d)\n",
-	     __FUNCTION__, c->sigcontext_loc, ret);
-      if (ret < 0)
-	return ret;
-
-      if (c->ip_loc == c->sigcontext_loc + SIGCONTEXT_BR_OFF + 0*8)
-	{
-	  /* Earlier kernels (before 2.4.19 and 2.5.10) had buggy
-	     unwind info for sigtramp.  Fix it up here.  */
-	  c->ip_loc  = (c->sigcontext_loc + SIGCONTEXT_IP_OFF);
-	  c->cfm_loc = (c->sigcontext_loc + SIGCONTEXT_CFM_OFF);
-	}
-
-      /* do what can't be described by unwind directives: */
-      c->pfs_loc = (c->sigcontext_loc + SIGCONTEXT_AR_PFS_OFF);
-
-      ret = ia64_get (c, c->cfm_loc, &cfm);
-      if (ret < 0)
-	return ret;
-
-      num_regs = cfm & 0x7f;		/* size of frame */
-    }
-  else
-    {
-      ret = ia64_get (c, c->cfm_loc, &cfm);
-      if (ret < 0)
-	return ret;
-      num_regs = (cfm >> 7) & 0x7f;	/* size of locals */
-    }
-  c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
-
-  /* update the IP cache: */
-  ret = ia64_get (c, c->ip_loc, &ip);
-  if (ret < 0)
-    return ret;
-  c->ip = ip;
-
-  if ((ip & 0xc) != 0)
-    {
-      /* don't let obviously bad addresses pollute the cache */
-      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
-      return -UNW_EINVALIDIP;
-    }
-  if (ip == 0)
-    /* end of frame-chain reached */
-    return 0;
-
-  pr = c->pr;
-  c->sp = c->psp;
-  c->is_signal_frame = 0;
-
-  if (c->ip == prev_ip && c->sp == prev_sp && c->bsp == prev_bsp)
-    {
-      dprintf ("%s: ip, sp, and bsp unchanged; stopping here (ip=0x%lx)\n",
-	       __FUNCTION__, (long) ip);
-      return -UNW_EBADFRAME;
-    }
-
-  /* as we unwind, the saved ar.unat becomes the primary unat: */
-  c->pri_unat_loc = c->unat_loc;
-
-  /* restore the predicates: */
-  ret = ia64_get (c, c->pr_loc, &c->pr);
-  if (ret < 0)
-    return ret;
-
-  c->pi_valid = 0;
-#endif
-  return 0;
-}
-
-
 int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  int ret;
+  int ret, i;
 
-  if (unw_is_signal_frame(cursor))
+  /* Try DWARF-based unwinding... */
+  ret = dwarf_step (&c->dwarf);
+
+  if (unlikely (ret < 0))
     {
-      /* c->esp points at the arguments to the handler.  Without
-	 SA_SIGINFO, the arguments consist of a signal number followed
-	 by a struct sigcontext.  With SA_SIGINFO, the arguments
-	 consist a signal number, a siginfo *, and a ucontext *. */
-      unw_word_t siginfo_ptr_addr = c->esp + 4;
-      unw_word_t sigcontext_ptr_addr = c->esp + 8;
-      unw_word_t siginfo_ptr, sigcontext_ptr;
-      struct x86_loc esp_loc, siginfo_ptr_loc, sigcontext_ptr_loc;
+      /* DWARF failed, let's see if we can follow the frame-chain
+	 or skip over the signal trampoline.  */
+      struct dwarf_loc ebp_loc, eip_loc;
 
-      siginfo_ptr_loc = X86_LOC (siginfo_ptr_addr, 0);
-      sigcontext_ptr_loc = X86_LOC (sigcontext_ptr_addr, 0);
-      ret = (x86_get (c, siginfo_ptr_loc, &siginfo_ptr)
-	     | x86_get (c, sigcontext_ptr_loc, &sigcontext_ptr));
-      if (ret < 0)
-	return 0;
-      if (siginfo_ptr < c->esp || siginfo_ptr > c->esp + 256
-	  || sigcontext_ptr < c->esp || sigcontext_ptr > c->esp + 256)
-        {
-	  /* Not plausible for SA_SIGINFO signal */
-          unw_word_t sigcontext_addr = c->esp + 4;
-          esp_loc = X86_LOC (sigcontext_addr + LINUX_SC_ESP_OFF, 0);
-          c->ebp_loc = X86_LOC (sigcontext_addr + LINUX_SC_EBP_OFF, 0);
-          c->eip_loc = X86_LOC (sigcontext_addr + LINUX_SC_EIP_OFF, 0);
-        }
+      Debug (14, "dwarf_step() failed (ret=%d), trying frame-chain\n",
+	     ret);
+
+      if (unw_is_signal_frame(cursor))
+	{
+	  /* XXX This code is Linux-specific! */
+
+	  /* c->esp points at the arguments to the handler.  Without
+	     SA_SIGINFO, the arguments consist of a signal number
+	     followed by a struct sigcontext.  With SA_SIGINFO, the
+	     arguments consist a signal number, a siginfo *, and a
+	     ucontext *. */
+	  unw_word_t siginfo_ptr_addr = c->dwarf.cfa + 4;
+	  unw_word_t sigcontext_ptr_addr = c->dwarf.cfa + 8;
+	  unw_word_t siginfo_ptr, sigcontext_ptr;
+	  struct dwarf_loc esp_loc, siginfo_ptr_loc, sigcontext_ptr_loc;
+
+	  siginfo_ptr_loc = DWARF_LOC (siginfo_ptr_addr, 0);
+	  sigcontext_ptr_loc = DWARF_LOC (sigcontext_ptr_addr, 0);
+	  ret = (dwarf_get (&c->dwarf, siginfo_ptr_loc, &siginfo_ptr)
+		 | dwarf_get (&c->dwarf, sigcontext_ptr_loc, &sigcontext_ptr));
+	  if (ret < 0)
+	    return 0;
+	  if (siginfo_ptr < c->dwarf.cfa
+	      || siginfo_ptr > c->dwarf.cfa + 256
+	      || sigcontext_ptr < c->dwarf.cfa
+	      || sigcontext_ptr > c->dwarf.cfa + 256)
+	    {
+	      /* Not plausible for SA_SIGINFO signal */
+	      unw_word_t sigcontext_addr = c->dwarf.cfa + 4;
+	      esp_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_ESP_OFF, 0);
+	      ebp_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_EBP_OFF, 0);
+	      eip_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_EIP_OFF, 0);
+	    }
+	  else
+	    {
+	      /* If SA_SIGINFO were not specified, we actually read
+		 various segment pointers instead.  We believe that at
+		 least fs and _fsh are always zero for linux, so it is
+		 not just unlikely, but impossible that we would end
+		 up here. */
+	      esp_loc = DWARF_LOC (sigcontext_ptr + LINUX_UC_ESP_OFF, 0);
+	      ebp_loc = DWARF_LOC (sigcontext_ptr + LINUX_UC_EBP_OFF, 0);
+	      eip_loc = DWARF_LOC (sigcontext_ptr + LINUX_UC_EIP_OFF, 0);
+	    }
+	  ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
+	  if (ret < 0)
+	    return 0;
+	}
       else
 	{
-	  /* If SA_SIGINFO were not specified, we actually read
-	     various segment pointers instead.  We believe that at
-	     least fs and _fsh are always zero for linux, so it is not
-	     just unlikely, but impossible that we would end up
-	     here. */
-	  esp_loc = X86_LOC (sigcontext_ptr + LINUX_UC_ESP_OFF, 0);
-          c->ebp_loc = X86_LOC (sigcontext_ptr + LINUX_UC_EBP_OFF, 0);
-          c->eip_loc = X86_LOC (sigcontext_ptr + LINUX_UC_EIP_OFF, 0);
+	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[EBP], &c->dwarf.cfa);
+	  if (ret < 0)
+	    return ret;
+
+	  Debug (14, "[EBP=0x%lx] = 0x%lx\n",
+		 (long) DWARF_GET_LOC (c->dwarf.loc[EBP]),
+		 (long) c->dwarf.cfa);
+
+	  ebp_loc = DWARF_LOC (c->dwarf.cfa, 0);
+	  eip_loc = DWARF_LOC (c->dwarf.cfa + 4, 0);
+	  c->dwarf.cfa += 8;
 	}
-      ret = x86_get (c, esp_loc, &c->esp);
-      if (ret < 0)
-       return 0;
-    }
-  else
-    {
-      ret = x86_get (c, c->ebp_loc, &c->esp);
-      if (ret < 0)
-        return ret;
+      /* Mark all registers unsaved, since we don't know where they
+	 are saved (if at all), except for the EBP and EIP.  */
+      for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+	c->dwarf.loc[i] = DWARF_NULL_LOC;
+      c->dwarf.loc[EBP] = ebp_loc;
+      c->dwarf.loc[EIP] = eip_loc;
+      c->dwarf.ret_addr_column = EIP;
 
-      c->ebp_loc = X86_LOC (c->esp, 0);
-      c->eip_loc = X86_LOC (c->esp + 4, 0);
-      c->esp += 8;
+      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[EBP]))
+	{
+	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[EIP], &c->dwarf.ip);
+	  if (ret < 0)
+	    return ret;
+	}
+      else
+	c->dwarf.ip = 0;
     }
-
-  if (X86_GET_LOC (c->ebp_loc))
-    {
-      ret = x86_get (c, c->eip_loc, &c->eip);
-      if (ret < 0)
-	return ret;
-    }
-  else
-    c->eip = 0;
-
-  return (c->eip == 0) ? 0 : 1;
+  return (c->dwarf.ip == 0) ? 0 : 1;
 }

@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -33,19 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #include "elf32.h"
-
-enum x86_pregnum
-  {
-    X86_NUM_PREGS
-  };
-
-struct x86_loc
-  {
-    unw_word_t val;
-#ifndef UNW_LOCAL_ONLY
-    unw_word_t type;		/* see X86_LOC_TYPE_* macros.  */
-#endif
-  };
+#include "dwarf.h"
 
 struct unw_addr_space
   {
@@ -58,24 +46,118 @@ struct unw_addr_space
 
 struct cursor
   {
-    unw_addr_space_t as;
-    void *as_arg;
-
-    /* IP & SP cache: */
-    unw_word_t eip;
-    unw_word_t esp;
-
-    struct x86_loc eip_loc;
-    struct x86_loc ebp_loc;
+    struct dwarf_cursor dwarf;		/* must be first */
   };
+
+#define DWARF_GET_LOC(l)	((l).val)
+
+#ifdef UNW_LOCAL_ONLY
+# define DWARF_NULL_LOC		DWARF_LOC (0, 0)
+# define DWARF_IS_NULL_LOC(l)	(DWARF_GET_LOC (l) == 0)
+# define DWARF_LOC(r, t)	((dwarf_loc_t) { .val = (r) })
+# define DWARF_REG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
+				 tdep_uc_addr((c)->as_arg, (r)), 0))
+# define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
+# define DWARF_FPREG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
+				 tdep_uc_addr((c)->as_arg, (r)), 0))
+
+static inline int
+dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
+{
+  if (!DWARF_GET_LOC (loc))
+    return -1;
+  *val = *(unw_fpreg_t *) DWARF_GET_LOC (loc);
+  return 0;
+}
+
+static inline int
+dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
+{
+  if (!DWARF_GET_LOC (loc))
+    return -1;
+  *(unw_fpreg_t *) DWARF_GET_LOC (loc) = *val;
+  return 0;
+}
+
+static inline int
+dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
+{
+  if (!DWARF_GET_LOC (loc))
+    return -1;
+  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
+  return 0;
+}
+
+static inline int
+dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+{
+  if (!DWARF_GET_LOC (loc))
+    return -1;
+  *(unw_word_t *) DWARF_GET_LOC (loc) = val;
+  return 0;
+}
+
+#else /* !UNW_LOCAL_ONLY */
+# define DWARF_LOC_TYPE_FP	(1 << 0)
+# define DWARF_LOC_TYPE_REG	(1 << 1)
+# define DWARF_NULL_LOC		DWARF_LOC (0, 0)
+# define DWARF_IS_NULL_LOC(l)						\
+		({ dwarf_loc_t _l = (l); _l.val == 0 && _l.type == 0; })
+# define DWARF_LOC(r, t)	((dwarf_loc_t) { .val = (r), .type = (t) })
+# define DWARF_IS_REG_LOC(l)	(((l).type & DWARF_LOC_TYPE_REG) != 0)
+# define DWARF_IS_FP_LOC(l)	(((l).type & DWARF_LOC_TYPE_FP) != 0)
+# define DWARF_REG_LOC(c,r)	DWARF_LOC((r), DWARF_LOC_TYPE_REG)
+# define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
+# define DWARF_FPREG_LOC(c,r)	DWARF_LOC((r), (DWARF_LOC_TYPE_REG	\
+						| DWARF_LOC_TYPE_FP))
+
+static inline int
+dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
+{
+  abort ();
+}
+
+static inline int
+dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
+{
+  abort ();
+}
+
+static inline int
+dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
+{
+  if (DWARF_IS_FP_LOC (loc))
+    abort ();
+
+  if (DWARF_IS_REG_LOC (loc))
+    return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
+				     0, c->as_arg);
+  else
+    return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val,
+				     0, c->as_arg);
+}
+
+static inline int
+dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
+{
+  if (DWARF_IS_FP_LOC (loc))
+    abort ();
+
+  if (DWARF_IS_REG_LOC (loc))
+    return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), &val,
+				     1, c->as_arg);
+  else
+    return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val,
+				     1, c->as_arg);
+}
+
+#endif /* !UNW_LOCAL_ONLY */
 
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
-#define tdep_search_unwind_table(a,b,c,d,e,f)			\
-		UNW_ARCH_OBJ(search_unwind_table) (a,b,c,d,e,f)
-#define tdep_find_proc_info(as,ip,pi,n,a)			\
-		UNW_ARCH_OBJ(find_proc_info) (as,ip,pi,n,a)
-#define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a,b,c)
+#define tdep_search_unwind_table	dwarf_search_unwind_table
+#define tdep_find_proc_info		dwarf_find_proc_info
+#define tdep_put_unwind_info		dwarf_put_unwind_info
 #define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
 #define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
 								     d, e)
@@ -84,9 +166,6 @@ struct cursor
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);
-extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
-				unw_proc_info_t *pi, int need_unwind_info,
-				void *arg);
 extern void tdep_put_unwind_info (unw_addr_space_t as,
 				  unw_proc_info_t *pi, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);

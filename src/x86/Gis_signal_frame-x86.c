@@ -30,9 +30,15 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 {
 #ifdef __linux__
   struct cursor *c = (struct cursor *) cursor;
-  unw_accessors_t *a = unw_get_accessors (c->as);
-  unw_word_t w0, w1;
+  unw_word_t w0, w1, ip;
+  unw_addr_space_t as;
+  unw_accessors_t *a;
+  void *arg;
   int ret;
+
+  as = c->dwarf.as;
+  a = unw_get_accessors (as);
+  arg = c->dwarf.as_arg;
 
   /* Check if EIP points at sigreturn() sequence.  On Linux, this is:
 
@@ -50,11 +56,14 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 
      if SA_SIGINFO is specified.
   */
-  if ((ret = (*a->access_mem) (c->as, c->eip, &w0, 0, c->as_arg)) < 0
-      || (ret = (*a->access_mem) (c->as, c->eip + 4, &w1, 0, c->as_arg)) < 0)
+  ip = c->dwarf.ip;
+  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0)
     return ret;
-  return (w0 == 0x0077b858 && w1 == 0x80cd0000)
-	  || (w0 == 0x0000adb8 && w1 == 0x9080cd00);
+  ret = ((w0 == 0x0077b858 && w1 == 0x80cd0000)
+	 || (w0 == 0x0000adb8 && w1 == 0x9080cd00));
+  Debug (16, "returning %d\n", ret);
+  return ret;
 #else
   printf ("%s: implement me\n", __FUNCTION__);
 #endif

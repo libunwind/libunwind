@@ -34,103 +34,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "internal.h"
 #include "tdep.h"
 
-#define X86_GET_LOC(l)		((l).val)
+/* DWARF column numbers: */
+#define EAX	0
+#define ECX	1
+#define EDX	2
+#define EBX	3
+#define ESP	4
+#define EBP	5
+#define ESI	6
+#define EDI	7
+#define EIP	8
+#define EFLAGS	9
+#define TRAPNO	10
+#define ST0	11
 
-#ifdef UNW_LOCAL_ONLY
-# define X86_LOC(r, t)		((struct x86_loc) { .val = (r) })
-# define X86_REG_LOC(c,r)	(X86_LOC((unw_word_t)			     \
-					 tdep_uc_addr((c)->as_arg, (r)), 0))
-# define X86_FPREG_FLOC(c,r)	(X86_LOC((unw_word_t)			     \
-					 tdep_uc_addr((c)->as_arg, (r)), 0))
-
-static inline int
-x86_getfp (struct cursor *c, struct x86_loc loc, unw_fpreg_t *val)
-{
-  if (!X86_GET_LOC (loc))
-    return -1;
-  *val = *(unw_fpreg_t *) X86_GET_LOC (loc);
-  return 0;
-}
-
-static inline int
-x86_putfp (struct cursor *c, struct x86_loc loc, unw_fpreg_t *val)
-{
-  if (!X86_GET_LOC (loc))
-    return -1;
-  *(unw_fpreg_t *) X86_GET_LOC (loc) = *val;
-  return 0;
-}
-
-static inline int
-x86_get (struct cursor *c, struct x86_loc loc, unw_word_t *val)
-{
-  if (!X86_GET_LOC (loc))
-    return -1;
-  *val = *(unw_word_t *) X86_GET_LOC (loc);
-  return 0;
-}
-
-static inline int
-x86_put (struct cursor *c, struct x86_loc loc, unw_word_t val)
-{
-  if (!X86_GET_LOC (loc))
-    return -1;
-  *(unw_word_t *) X86_GET_LOC (loc) = val;
-  return 0;
-}
-
-#else /* !UNW_LOCAL_ONLY */
-# define X86_LOC_TYPE_FP	(1 << 0)
-# define X86_LOC_TYPE_REG	(1 << 1)
-# define X86_LOC(r, t)		((struct x86_loc) { .val = (r), .type = (t) })
-# define X86_IS_REG_LOC(l)	(((l).type & X86_LOC_TYPE_REG) != 0)
-# define X86_IS_FP_LOC(l)	(((l).type & X86_LOC_TYPE_FP) != 0)
-# define X86_REG_LOC(c,r)	X86_LOC((r), X86_LOC_TYPE_REG)
-# define X86_FPREG_LOC(c,r)	X86_LOC((r), (X86_LOC_TYPE_REG		\
-					     | X86_LOC_TYPE_FP))
-
-static inline int
-x86_getfp (struct cursor *c, struct x86_loc loc, unw_fpreg_t *val)
-{
-  abort ();
-}
-
-static inline int
-x86_putfp (struct cursor *c, struct x86_loc loc, unw_fpreg_t val)
-{
-  abort ();
-}
-
-static inline int
-x86_get (struct cursor *c, struct x86_loc loc, unw_word_t *val)
-{
-  if (X86_IS_FP_LOC (loc))
-    abort ();
-
-  if (X86_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg)(c->as, X86_GET_LOC (loc), val, 0,
-				    c->as_arg);
-  else
-    return (*c->as->acc.access_mem)(c->as, X86_GET_LOC (loc), val, 0,
-				    c->as_arg);
-}
-
-static inline int
-x86_put (struct cursor *c, struct x86_loc loc, unw_word_t val)
-{
-  if (X86_IS_FP_LOC (loc))
-    abort ();
-
-  if (X86_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg)(c->as, X86_GET_LOC (loc), &val, 1,
-				    c->as_arg);
-  else
-    return (*c->as->acc.access_mem)(c->as, X86_GET_LOC (loc), &val, 1,
-				    c->as_arg);
-}
-
-#endif /* !UNW_LOCAL_ONLY */
-
+#define x86_lock			UNW_ARCH_OBJ(lock)
 #define x86_needs_initialization	UNW_ARCH_OBJ(needs_initialization)
 #define x86_init			UNW_ARCH_OBJ(init)
 #define x86_access_reg			UNW_OBJ(access_reg)
