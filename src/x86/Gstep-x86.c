@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -121,15 +121,12 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret;
 
-
   if (unw_is_signal_frame(cursor))
     {
-      /* Without SA_SIGINFO,                             */
-      /* c -> esp points at the arguments to the handler. */
-      /* This consists of a signal number followed by a          */
-      /* struct sigcontext.                              */
-      /* With SA_SIGINFO, the arguments consists of the          */
-      /* signal number, a siginfo *, and a ucontext * .          */
+      /* c->esp points at the arguments to the handler.  Without
+	 SA_SIGINFO, the arguments consist of a signal number followed
+	 by a struct sigcontext.  With SA_SIGINFO, the arguments
+	 consist a signal number, a siginfo *, and a ucontext *. */
       unw_word_t siginfo_ptr_addr = c->esp + 4;
       unw_word_t sigcontext_ptr_addr = c->esp + 8;
       unw_word_t siginfo_ptr, sigcontext_ptr;
@@ -138,29 +135,29 @@ unw_step (unw_cursor_t *cursor)
       siginfo_ptr_loc = X86_LOC (siginfo_ptr_addr, 0);
       sigcontext_ptr_loc = X86_LOC (sigcontext_ptr_addr, 0);
       ret = (x86_get (c, siginfo_ptr_loc, &siginfo_ptr)
-            | x86_get (c, sigcontext_ptr_loc, &sigcontext_ptr));
+	     | x86_get (c, sigcontext_ptr_loc, &sigcontext_ptr));
       if (ret < 0)
-       return 0;
-      if (siginfo_ptr < c -> esp || siginfo_ptr > c -> esp + 256
-         || sigcontext_ptr < c -> esp || sigcontext_ptr > c -> esp + 256)
+	return 0;
+      if (siginfo_ptr < c->esp || siginfo_ptr > c->esp + 256
+	  || sigcontext_ptr < c->esp || sigcontext_ptr > c->esp + 256)
         {
-         /* Not plausible for SA_SIGINFO signal */
+	  /* Not plausible for SA_SIGINFO signal */
           unw_word_t sigcontext_addr = c->esp + 4;
           esp_loc = X86_LOC (sigcontext_addr + LINUX_SC_ESP_OFF, 0);
           c->ebp_loc = X86_LOC (sigcontext_addr + LINUX_SC_EBP_OFF, 0);
           c->eip_loc = X86_LOC (sigcontext_addr + LINUX_SC_EIP_OFF, 0);
         }
       else
-       {
-         /* If SA_SIGINFO were not specified, we actually read         */
-         /* various segment pointers instead.  We believe that at      */
-         /* least fs and _fsh are always zero for linux, so it is      */
-         /* is not just unlikely, but impossible that we would end up  */
-         /* here.                                                      */
-         esp_loc = X86_LOC (sigcontext_ptr + LINUX_UC_ESP_OFF, 0);
+	{
+	  /* If SA_SIGINFO were not specified, we actually read
+	     various segment pointers instead.  We believe that at
+	     least fs and _fsh are always zero for linux, so it is not
+	     just unlikely, but impossible that we would end up
+	     here. */
+	  esp_loc = X86_LOC (sigcontext_ptr + LINUX_UC_ESP_OFF, 0);
           c->ebp_loc = X86_LOC (sigcontext_ptr + LINUX_UC_EBP_OFF, 0);
           c->eip_loc = X86_LOC (sigcontext_ptr + LINUX_UC_EIP_OFF, 0);
-       }
+	}
       ret = x86_get (c, esp_loc, &c->esp);
       if (ret < 0)
        return 0;
