@@ -193,14 +193,8 @@ extern void _U_dyn_cancel (unw_dyn_info_t *);
 
 /* Convenience routines.  */
 
-#define _U_dyn_op(_t, _q, _w, _r, _v)		\
-	((unw_dyn_op_t) {			\
-	  .tag	= (_t),				\
-	  .qp	= (_q),				\
-	  .when	= (_w),				\
-	  .reg	= (_r),				\
-	  .val	= (_v)				\
-	})
+#define _U_dyn_op(_tag, _qp, _when, _reg, _val)				\
+	((unw_dyn_op_t) { (_tag), (_qp), (_reg), (_when), (_val) })
 
 #define _U_dyn_op_save_reg(op, qp, when, reg, dst)			\
 	(*(op) = _U_dyn_op (UNW_DYN_SAVE_REG, (qp), (when), (reg), (dst)))
