@@ -73,5 +73,3 @@ test_setjmp_LDADD = ../src/libunwind-setjmp.la
 test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
 Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
-Lperf_simple_LDADD = $(LIBUNWIND) -lrt
-Gperf_simple_LDADD = $(LIBUNWIND) -lrt
