@@ -116,11 +116,11 @@ check_SCRIPTS_common = run-check-namespace
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
 @REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = run-ptrace-mapper
 @REMOTE_ONLY_TRUE@check_PROGRAMS_cdep = 
-@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-init Ltest-init	 \
-@REMOTE_ONLY_FALSE@			Gtest-concurrent Ltest-concurrent		 \
-@REMOTE_ONLY_FALSE@			Gtest-resume-sig Ltest-resume-sig		 \
-@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1				 \
-@REMOTE_ONLY_FALSE@			test-async-sig test-flush-cache test-mem	 \
+@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-init Ltest-init	\
+@REMOTE_ONLY_FALSE@			Gtest-concurrent Ltest-concurrent		\
+@REMOTE_ONLY_FALSE@			Gtest-resume-sig Ltest-resume-sig		\
+@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1				\
+@REMOTE_ONLY_FALSE@			test-async-sig test-flush-cache test-mem	\
 @REMOTE_ONLY_FALSE@			test-setjmp test-ptrace
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
@@ -128,9 +128,10 @@ check_SCRIPTS_common = run-check-namespace
 
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_SCRIPTS_arch = run-ia64-test-dyn1
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS_arch = Gia64-test-stack Lia64-test-stack	\
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-nat Lia64-test-nat		\
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-rbs Lia64-test-rbs
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS_arch = Gia64-test-stack Lia64-test-stack		\
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-nat Lia64-test-nat			\
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-rbs Lia64-test-rbs			\
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-readonly Lia64-test-readonly
 
 
 check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
@@ -146,6 +147,8 @@ noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 
 
+Lia64_test_readonly_SOURCES = Lia64-test-readonly.c ia64-test-readonly-asm.S
+Gia64_test_readonly_SOURCES = Gia64-test-readonly.c ia64-test-readonly-asm.S
 Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S \
 				ia64-test-stack.h
 
@@ -224,7 +227,9 @@ CONFIG_CLEAN_FILES = check-namespace.sh
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-nat$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-nat$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-rbs$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-rbs$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-rbs$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-readonly$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-readonly$(EXEEXT)
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	forker$(EXEEXT) \
@@ -255,6 +260,12 @@ Gia64_test_rbs_OBJECTS = $(am_Gia64_test_rbs_OBJECTS)
 Gia64_test_rbs_LDADD = $(LDADD)
 Gia64_test_rbs_DEPENDENCIES = ../src/libunwind-$(arch).la
 Gia64_test_rbs_LDFLAGS =
+am_Gia64_test_readonly_OBJECTS = Gia64-test-readonly.$(OBJEXT) \
+	ia64-test-readonly-asm.$(OBJEXT)
+Gia64_test_readonly_OBJECTS = $(am_Gia64_test_readonly_OBJECTS)
+Gia64_test_readonly_LDADD = $(LDADD)
+Gia64_test_readonly_DEPENDENCIES = ../src/libunwind-$(arch).la
+Gia64_test_readonly_LDFLAGS =
 am_Gia64_test_stack_OBJECTS = Gia64-test-stack.$(OBJEXT) \
 	ia64-test-stack-asm.$(OBJEXT)
 Gia64_test_stack_OBJECTS = $(am_Gia64_test_stack_OBJECTS)
@@ -302,6 +313,12 @@ Lia64_test_rbs_OBJECTS = $(am_Lia64_test_rbs_OBJECTS)
 Lia64_test_rbs_LDADD = $(LDADD)
 Lia64_test_rbs_DEPENDENCIES = ../src/libunwind-$(arch).la
 Lia64_test_rbs_LDFLAGS =
+am_Lia64_test_readonly_OBJECTS = Lia64-test-readonly.$(OBJEXT) \
+	ia64-test-readonly-asm.$(OBJEXT)
+Lia64_test_readonly_OBJECTS = $(am_Lia64_test_readonly_OBJECTS)
+Lia64_test_readonly_LDADD = $(LDADD)
+Lia64_test_readonly_DEPENDENCIES = ../src/libunwind-$(arch).la
+Lia64_test_readonly_LDFLAGS =
 am_Lia64_test_stack_OBJECTS = Lia64-test-stack.$(OBJEXT) \
 	ia64-test-stack-asm.$(OBJEXT)
 Lia64_test_stack_OBJECTS = $(am_Lia64_test_stack_OBJECTS)
@@ -410,6 +427,7 @@ depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Gia64-test-nat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gia64-test-rbs.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/Gia64-test-readonly.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gia64-test-stack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gperf-simple.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gtest-concurrent.Po \
@@ -418,6 +436,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gtest-resume-sig.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-nat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-rbs.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-readonly.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-stack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Lperf-simple.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Ltest-concurrent.Po \
@@ -456,10 +475,11 @@ CXXLINK = $(LIBTOOL) --mode=link $(CXXLD) $(AM_CXXFLAGS) $(CXXFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CXXFLAGS = @CXXFLAGS@
 DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
-	$(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c \
-	$(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) \
-	Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) \
-	$(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) \
+	$(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) \
+	Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) \
+	Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c \
+	$(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) \
+	$(Lia64_test_readonly_SOURCES) $(Lia64_test_stack_SOURCES) \
 	Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) \
 	Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c \
 	forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c \
@@ -467,7 +487,7 @@ DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) \
 	test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in check-namespace.sh.in
-SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) test-varargs.c
+SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) test-varargs.c
 
 all: all-am
 
@@ -500,6 +520,9 @@ Gia64-test-nat$(EXEEXT): $(Gia64_test_nat_OBJECTS) $(Gia64_test_nat_DEPENDENCIES
 Gia64-test-rbs$(EXEEXT): $(Gia64_test_rbs_OBJECTS) $(Gia64_test_rbs_DEPENDENCIES) 
 	@rm -f Gia64-test-rbs$(EXEEXT)
 	$(LINK) $(Gia64_test_rbs_LDFLAGS) $(Gia64_test_rbs_OBJECTS) $(Gia64_test_rbs_LDADD) $(LIBS)
+Gia64-test-readonly$(EXEEXT): $(Gia64_test_readonly_OBJECTS) $(Gia64_test_readonly_DEPENDENCIES) 
+	@rm -f Gia64-test-readonly$(EXEEXT)
+	$(LINK) $(Gia64_test_readonly_LDFLAGS) $(Gia64_test_readonly_OBJECTS) $(Gia64_test_readonly_LDADD) $(LIBS)
 Gia64-test-stack$(EXEEXT): $(Gia64_test_stack_OBJECTS) $(Gia64_test_stack_DEPENDENCIES) 
 	@rm -f Gia64-test-stack$(EXEEXT)
 	$(LINK) $(Gia64_test_stack_LDFLAGS) $(Gia64_test_stack_OBJECTS) $(Gia64_test_stack_LDADD) $(LIBS)
@@ -527,6 +550,9 @@ Lia64-test-nat$(EXEEXT): $(Lia64_test_nat_OBJECTS) $(Lia64_test_nat_DEPENDENCIES
 Lia64-test-rbs$(EXEEXT): $(Lia64_test_rbs_OBJECTS) $(Lia64_test_rbs_DEPENDENCIES) 
 	@rm -f Lia64-test-rbs$(EXEEXT)
 	$(LINK) $(Lia64_test_rbs_LDFLAGS) $(Lia64_test_rbs_OBJECTS) $(Lia64_test_rbs_LDADD) $(LIBS)
+Lia64-test-readonly$(EXEEXT): $(Lia64_test_readonly_OBJECTS) $(Lia64_test_readonly_DEPENDENCIES) 
+	@rm -f Lia64-test-readonly$(EXEEXT)
+	$(LINK) $(Lia64_test_readonly_LDFLAGS) $(Lia64_test_readonly_OBJECTS) $(Lia64_test_readonly_LDADD) $(LIBS)
 Lia64-test-stack$(EXEEXT): $(Lia64_test_stack_OBJECTS) $(Lia64_test_stack_DEPENDENCIES) 
 	@rm -f Lia64-test-stack$(EXEEXT)
 	$(LINK) $(Lia64_test_stack_LDFLAGS) $(Lia64_test_stack_OBJECTS) $(Lia64_test_stack_LDADD) $(LIBS)
@@ -596,6 +622,7 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gia64-test-nat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gia64-test-rbs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gia64-test-readonly.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gia64-test-stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gperf-simple.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtest-concurrent.Po@am__quote@
@@ -605,6 +632,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gtest-resume-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lia64-test-nat.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lia64-test-rbs.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lia64-test-readonly.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lia64-test-stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lperf-simple.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-concurrent.Po@am__quote@
