@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Fri Feb 21 13:48:29 PST 2003
+.\" Manual page created with latex2man on Wed Mar  5 10:18:45 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_RESUME" "3" "21 February 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_RESUME" "3" "05 March 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -45,7 +45,11 @@ machine state normally involves restoring the ``preserved\&''
 frames younger (more deeply nested) than the one identified by 
 cursor
 was interrupted by a signal, then unw_resume()
-will restore all registers as well as the signal mask. 
+will restore all registers as well as the signal mask. Attempting to 
+call unw_resume()
+on a cursor which identifies the stack frame 
+of another thread results in undefined behavior (e.g., the program may 
+crash). 
 .PP
 For remote unwinding, unw_resume()
 installs the machine state 
