@@ -76,7 +76,8 @@ dwarf_sources =								\
 # The list of files that go both into libunwind and libunwind-ia64:
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	\
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		\
-	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		\
+	ia64/debug_level-ia64.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
