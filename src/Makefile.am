@@ -78,6 +78,8 @@ libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
 	hppa/Lget_proc_info-hppa.c hppa/Lregs-hppa.c hppa/Lstep-hppa.c
 
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
+	x86/offsets.h							\
+									\
 	elf32.c elf32.h							\
 									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
