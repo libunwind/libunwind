@@ -184,7 +184,7 @@ extern void _U_dyn_cancel (unw_dyn_info_t *di);
 	(*(op) = _U_dyn_op (UNW_DYN_ADD, (qp), (when), (reg), (value)))
 
 #define _U_dyn_op_pop_frames(op, qp, when, num_frames)			\
-	(*(op) = _U_dyn_op (UNW_DYN_POP_frames, (qp), (when), 0, (num_frames)))
+	(*(op) = _U_dyn_op (UNW_DYN_POP_FRAMES, (qp), (when), 0, (num_frames)))
 
 #define _U_dyn_op_label_state(op, qp, when, label)			\
 	(*(op) = _U_dyn_op (UNW_DYN_LABEL_STATE, (qp), (when), 0, (label)))
