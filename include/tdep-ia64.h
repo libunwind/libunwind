@@ -142,8 +142,8 @@ struct cursor
     uint16_t last_abi_marker;	/* last abi_marker encountered so far */
     uint8_t eh_valid_mask;
 
-    int pi_valid : 1;		/* is proc_info valid? */
-    int pi_is_dynamic : 1;	/* proc_info found via dynamic proc info? */
+    unsigned int pi_valid :1;		/* is proc_info valid? */
+    unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
     unw_proc_info_t pi;		/* info about current procedure */
 
     /* In case of stack-discontiguities, such as those introduced by
