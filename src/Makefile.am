@@ -103,7 +103,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 									   \
 	ia64/dyn_info_list-ia64.S					   \
 									   \
-	ia64/Lcreate_addr_space-ia64					   \
+	ia64/Lcreate_addr_space-ia64.c					   \
 	ia64/Lget_proc_info-ia64.c					   \
 	ia64/Lget_save_loc-ia64.c					   \
 	ia64/Lglobal-ia64.c						   \
