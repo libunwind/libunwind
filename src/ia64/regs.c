@@ -181,8 +181,9 @@ access_nat (struct ia64_cursor *c, unw_word_t loc, unw_word_t reg_loc,
 	     general register is saved to another general
 	     register.  */
 #ifdef UNW_LOCAL_ONLY
+	  ucontext_t *uc = c->as_arg;
 	  mask = ((unw_word_t) 1) << reg;
-	  nat_loc = (unw_word_t) &c->uc->uc_mcontext.sc_nat;
+	  nat_loc = (unw_word_t) &uc->uc_mcontext.sc_nat;
 #else
 	  if (write)
 	    ret = ia64_put (c, IA64_REG_LOC (c, UNW_IA64_NAT + reg), *valp);
