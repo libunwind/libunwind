@@ -39,14 +39,14 @@ if OS_LINUX
  libunwind_la_SOURCES_os = os-linux.h os-linux.c
 endif
 
-libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
-	$(libunwind_la_SOURCES_os)				\
-	backtrace.c get_proc_name.c				\
-	dyn-extract.c dyn-remote.c				\
-	mi-init.c						\
-	mempool.c						\
-	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
-	Lfind_dynamic_proc_info.c Lput_dynamic_unwind_info.c
+libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
+	$(libunwind_la_SOURCES_os)					      \
+	backtrace.c							      \
+	dyn-extract.c dyn-remote.c					      \
+	mi-init.c							      \
+	mempool.c							      \
+	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
+	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c
 
 #
 # Note: As of automake-1.6, there is a stupid limitation which requires
