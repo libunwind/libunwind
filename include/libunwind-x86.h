@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
+   Copyright (C) 2002-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -155,9 +155,6 @@ typedef ucontext_t unw_tdep_context_t;
    by glibc...  */
 #define unw_tdep_getcontext(uc)		(getcontext (uc), 0)
 
-#define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
-extern int unw_tdep_is_fpreg (int);
-
 #include "libunwind-dynamic.h"
 
 typedef struct
@@ -167,6 +164,9 @@ typedef struct
 unw_tdep_proc_info_t;
 
 #include "libunwind-common.h"
+
+#define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
+extern int unw_tdep_is_fpreg (int);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
