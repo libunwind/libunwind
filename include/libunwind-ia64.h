@@ -67,8 +67,8 @@ typedef enum
      UNW_IA64_AR_BSP = UNW_IA64_AR + 17,
      UNW_IA64_AR_BSPSTORE = UNW_IA64_AR + 18,
      UNW_IA64_AR_RNAT = UNW_IA64_AR + 19,
-     UNW_IA64_AR_25 = UNW_IA64_AR + 25,	/* reserved (scratch) */
-     UNW_IA64_AR_26 = UNW_IA64_AR + 26,	/* reserved (scratch) */
+     UNW_IA64_AR_CSD = UNW_IA64_AR + 25,
+     UNW_IA64_AR_26 = UNW_IA64_AR + 26,
      UNW_IA64_AR_CCV = UNW_IA64_AR + 32,
      UNW_IA64_AR_UNAT = UNW_IA64_AR + 36,
      UNW_IA64_AR_FPSR = UNW_IA64_AR + 40,
@@ -114,12 +114,26 @@ typedef ucontext_t unw_tdep_context_t;
 
 #include "libunwind-common.h"
 
+/* This is a helper routine to search an ia64 unwind table.  If the
+   address-space argument AS points to something other than the local
+   address-space, the memory for the unwind-info will be allocated
+   with malloc(), and should be free()d during the put_unwind_info()
+   callback.  This routine is signal-safe for the local-address-space
+   case ONLY.  */
+extern int _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
+				       unw_dyn_info_t *di, unw_proc_info_t *pi,
+				       int need_unwind_info, void *arg);
+
 /* This is a helper routine which the get_dyn_info_list_addr()
    callback can use to locate the special dynamic-info list entry in
    an IA-64 unwind table.  If the entry exists in the table, the
    list-address is returned.  In all other cases, 0 is returned.  */
-unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
-				 void *table, size_t table_size,
-				 unw_word_t segbase, void *arg);
+extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
+					void *table, size_t table_size,
+					unw_word_t segbase, void *arg);
+
+/* This is a helper routine to obtain the kernel-unwind info.  It is
+   signal-safe.  */
+extern int _Uia64_get_kernel_table (unw_dyn_info_t *di);
 
 #endif /* LIBUNWIND_H */
