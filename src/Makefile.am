@@ -23,12 +23,16 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 	ia64/unw_regname.c						   \
 									   \
 	ia64/init.c ia64/parser.c ia64/regs.c ia64/script.c		   \
+	ia64/unw_create_addr_space.c ia64/unw_destroy_addr_space.c	   \
+	ia64/unw_set_caching_policy.c ia64/unw_flush_cache.c		   \
 	ia64/unw_get_reg.c ia64/unw_get_fpreg.c ia64/unw_get_save_loc.c	   \
 	ia64/unw_is_signal_frame.c					   \
 	ia64/unw_resume.c ia64/unw_set_reg.c ia64/unw_set_fpreg.c	   \
 	ia64/unw_init_local.c ia64/unw_init_remote.c ia64/unw_step.c	   \
 									   \
 	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		   \
+	ia64/Lunw_create_addr_space.c ia64/Lunw_destroy_addr_space.c	   \
+	ia64/Lunw_set_caching_policy.c ia64/Lunw_flush_cache.c		   \
 	ia64/Lunw_get_reg.c ia64/Lunw_get_fpreg.c ia64/Lunw_get_save_loc.c \
 	ia64/Lunw_is_signal_frame.c					   \
 	ia64/Lunw_resume.c ia64/Lunw_set_reg.c ia64/Lunw_set_fpreg.c	   \
