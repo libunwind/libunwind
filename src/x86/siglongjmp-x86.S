@@ -4,4 +4,5 @@
 	.globl _UI_siglongjmp_cont
 
 _UI_siglongjmp_cont:
+#warning fix me
 	ret
