@@ -78,6 +78,7 @@ CCAS = @CCAS@
 CCASFLAGS = @CCASFLAGS@
 DEPDIR = @DEPDIR@
 DLLTOOL = @DLLTOOL@
+ECHO = @ECHO@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
@@ -91,8 +92,9 @@ am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
 install_sh = @install_sh@
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@include_HEADERS_tdep = include/libunwind-x86.h
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@include_HEADERS_tdep = include/libunwind-hppa.h
 @ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
-@ARCH_IA64_FALSE@@ARCH_X86_TRUE@include_HEADERS_tdep = include/libunwind-x86.h
 
 include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
 	include/libunwind-dynamic.h
@@ -104,7 +106,9 @@ include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
 SUBDIRS = src tests doc
 
 EXTRA_DIST = include/internal.h include/mempool.h \
-	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/script.h
+	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/script.h \
+	include/libunwind-hppa.h include/tdep-hppa.h \
+	include/libunwind-x86.h include/tdep-x86.h
 
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
@@ -122,8 +126,8 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 DIST_COMMON = README $(include_HEADERS) ./include/config.h.in AUTHORS \
 	COPYING ChangeLog INSTALL Makefile.am Makefile.in NEWS TODO \
 	acinclude.m4 aclocal.m4 aux/config.guess aux/config.sub \
-	aux/depcomp aux/install-sh aux/ltconfig aux/ltmain.sh \
-	aux/missing aux/mkinstalldirs configure configure.in
+	aux/depcomp aux/install-sh aux/ltmain.sh aux/missing \
+	aux/mkinstalldirs configure configure.in
 DIST_SUBDIRS = $(SUBDIRS)
 all: all-recursive
 
@@ -301,7 +305,7 @@ distcleancheck_listfiles = find . -type f -print
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/./include $(distdir)/aux $(distdir)/include $(distdir)/include/ia64
+	$(mkinstalldirs) $(distdir)/./include $(distdir)/aux $(distdir)/doc $(distdir)/include $(distdir)/include/ia64
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
