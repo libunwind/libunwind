@@ -383,7 +383,7 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_IA64_GR + 15 ... UNW_IA64_GR + 18:
-      if (c->sigcontext_loc)
+      if ((c->pi.flags & IA64_FLAG_SIGTRAMP) != 0)
 	loc = ia64_scratch_loc (c, reg);
       else
 	{
