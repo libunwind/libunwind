@@ -239,28 +239,9 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
       return 0;
 
     case UNW_REG_SP:
-    case UNW_REG_PROC_START:
-    case UNW_REG_HANDLER:
-    case UNW_REG_LSDA:
       if (write)
 	return -UNW_EREADONLYREG;
-      switch (reg)
-	{
-	case UNW_REG_SP:	*valp = c->sp; break;
-	case UNW_REG_PROC_START:*valp = c->pi.proc_start; break;
-	case UNW_REG_LSDA:
-	  *valp = (intptr_t) (c->pi.pers_addr + 1);
-	  break;
-	case UNW_REG_HANDLER:
-	  if (c->pi.flags & IA64_FLAG_HAS_HANDLER)
-	    /* *c->pers_addr is the linkage-table offset of the word
-	       that stores the address of the personality routine's
-	       function descriptor.  */
-	    return ia64_get (c, *c->pi.pers_addr + c->pi.gp, valp);
-	  else
-	    *valp = 0;
-	  break;
-	}
+      *valp = c->sp;
       return 0;
 
     case UNW_REG_IP:
