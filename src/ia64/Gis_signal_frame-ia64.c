@@ -35,6 +35,10 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   /* Crude and slow, but we need to peek ahead into the unwind
      descriptors to find out if the current IP is inside the signal
      trampoline.  */
+  ret = ia64_fetch_proc_info (c, c->ip, 1);
+  if (ret < 0)
+    return ret;
+
   ret = ia64_create_state_record (c, &sr);
   if (ret < 0)
     return ret;
