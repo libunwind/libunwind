@@ -142,7 +142,7 @@ ia64_install_cursor:
 
 	ldf.fill f30 = [r30]		// f30 restored (don't touch no more)
 	ldf.fill f31 = [r31]		// f31 restored (don't touch no more)
-	add r3 = 16, in2
+	add r3 = 8, in2
 	;;
 
 	ld8.fill r4 = [in2], 16		// r4 restored (don't touch no more)
