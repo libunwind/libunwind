@@ -130,7 +130,7 @@ main (int argc, char **argv)
   _U_dyn_op_pop_frames (&r_epi->op[i++],
 			_U_QP_TRUE, /* when=*/ 5, /* num_frames=*/ 1);
   _U_dyn_op_stop (&r_epi->op[i++]);
-  assert (i <= r_epi->op_count);
+  assert ((unsigned) i <= r_epi->op_count);
 
   /* Describe the prologue of func_add3: */
   i = 0;
@@ -146,7 +146,7 @@ main (int argc, char **argv)
 		      /* reg=*/ UNW_IA64_RP, /* dst=*/ UNW_IA64_GR + 3);
   _U_dyn_op_spill_sp_rel (&r_pro->op[i++], _U_QP_TRUE, /* when=*/ 7,
 		      /* reg=*/ UNW_IA64_RP, /* off=*/ 16);
-  assert (i <= r_pro->op_count);
+  assert ((unsigned) i <= r_pro->op_count);
 
   /* Create regions for func_vframe: */
   i = 0;
@@ -157,7 +157,7 @@ main (int argc, char **argv)
   _U_dyn_op_label_state (&r->op[i++], /* label=*/ 100402);
   _U_dyn_op_pop_frames (&r->op[i++], _U_QP_TRUE, /* when=*/ 3, /* frames=*/ 1);
   _U_dyn_op_stop (&r->op[i++]);
-  assert (i <= r->op_count);
+  assert ((unsigned) i <= r->op_count);
 
   i = 0;
   rtmp = r;
@@ -170,7 +170,7 @@ main (int argc, char **argv)
   _U_dyn_op_pop_frames (&r->op[i++], _U_QP_TRUE, /* when=*/ 10,
 			/* num_frames=*/ 1);
   _U_dyn_op_stop (&r->op[i++]);
-  assert (i <= r->op_count);
+  assert ((unsigned) i <= r->op_count);
 
   i = 0;
   rtmp = r;
@@ -186,7 +186,7 @@ main (int argc, char **argv)
 			  /* reg=*/ UNW_IA64_AR_PFS, /* off=*/ 16);
   _U_dyn_op_label_state (&r->op[i++], /* label=*/ 100402);
   _U_dyn_op_stop (&r->op[i++]);
-  assert (i <= r->op_count);
+  assert ((unsigned) i <= r->op_count);
 
   /* Create two functions which can share the region-list:  */
   add3_0 = create_func (&di1, "func_add3/0", func_add3, func_add3_end, r_pro);
