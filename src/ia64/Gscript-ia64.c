@@ -112,15 +112,13 @@ static inline void
 put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
 		  sigset_t *saved_sigmaskp)
 {
-  unw_caching_policy_t caching = as->caching_policy;
-
-  assert (caching != UNW_CACHE_NONE);
+  assert (as->caching_policy != UNW_CACHE_NONE);
 
   debug (200, "%s: unmasking signals/releasing lock\n", __FUNCTION__);
 #ifdef HAVE_ATOMIC_OPS_H
   AO_CLEAR (&cache->busy);
 #else
-  if (likely (caching == UNW_CACHE_GLOBAL))
+  if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
     mutex_unlock (&cache->lock);
   sigprocmask (SIG_SETMASK, saved_sigmaskp, NULL);
 #endif
@@ -467,54 +465,56 @@ run_script (struct ia64_script *script, struct cursor *c)
       val = next_insn.val;
       next_insn = *ip;
 
-      switch (opc)
+      /* This is by far the most common operation: */
+      if (likely (opc == IA64_INSN_MOVE_STACKED))
 	{
-	case IA64_INSN_SET:
-	  loc = IA64_LOC_ADDR (val, 0);
-	  break;
-
-	case IA64_INSN_SET_REG:
-	  loc = IA64_LOC_REG (val, 0);
-	  break;
-
-	case IA64_INSN_ADD_PSP:
-	  loc = IA64_LOC_ADDR (c->psp + val, 0);
-	  break;
-
-	case IA64_INSN_ADD_SP:
-	  loc = IA64_LOC_ADDR (c->sp + val, 0);
-	  break;
-
-	case IA64_INSN_MOVE:
-	  loc = c->loc[val];
-	  break;
-
-	case IA64_INSN_MOVE_SCRATCH:
-	  loc = ia64_scratch_loc (c, val);
-	  break;
-
-	case IA64_INSN_MOVE_STACKED:
 	  val = rotate_gr (c, val);
 	  if ((ret = ia64_get_stacked (c, val, &loc, NULL)) < 0)
 	    return ret;
-	  break;
-
-	case IA64_INSN_SETNAT_MEMSTK:
-	  if ((ret = ia64_get (c, c->loc[IA64_REG_PRI_UNAT_MEM],
-			       &unat_addr)) < 0)
-	    return ret;
-	  loc = IA64_LOC_ADDR (unat_addr, IA64_LOC_TYPE_MEMSTK_NAT);
-	  break;
-
-	case IA64_INSN_INC_PSP:
-	  c->psp += val;
-	  continue;
-
-	case IA64_INSN_LOAD_PSP:
-	  if ((ret = ia64_get (c, c->loc[IA64_REG_PSP], &c->psp)) < 0)
-	    return ret;
-	  continue;
 	}
+      else
+	switch (__builtin_expect(opc, IA64_INSN_MOVE_STACKED))
+	  {
+	  case IA64_INSN_SET:
+	    loc = IA64_LOC_ADDR (val, 0);
+	    break;
+
+	  case IA64_INSN_SET_REG:
+	    loc = IA64_LOC_REG (val, 0);
+	    break;
+
+	  case IA64_INSN_ADD_PSP:
+	    loc = IA64_LOC_ADDR (c->psp + val, 0);
+	    break;
+
+	  case IA64_INSN_ADD_SP:
+	    loc = IA64_LOC_ADDR (c->sp + val, 0);
+	    break;
+
+	  case IA64_INSN_MOVE:
+	    loc = c->loc[val];
+	    break;
+
+	  case IA64_INSN_MOVE_SCRATCH:
+	    loc = ia64_scratch_loc (c, val);
+	    break;
+
+	  case IA64_INSN_SETNAT_MEMSTK:
+	    if ((ret = ia64_get (c, c->loc[IA64_REG_PRI_UNAT_MEM],
+				 &unat_addr)) < 0)
+	      return ret;
+	    loc = IA64_LOC_ADDR (unat_addr, IA64_LOC_TYPE_MEMSTK_NAT);
+	    break;
+
+	  case IA64_INSN_INC_PSP:
+	    c->psp += val;
+	    continue;
+
+	  case IA64_INSN_LOAD_PSP:
+	    if ((ret = ia64_get (c, c->loc[IA64_REG_PSP], &c->psp)) < 0)
+	      return ret;
+	    continue;
+	  }
       c->loc[dst] = loc;
     }
   return 0;
