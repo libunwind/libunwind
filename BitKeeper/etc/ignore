@@ -1,2 +1,15 @@
 BitKeeper/*/*
 PENDING/*
+src/Makefile.bak
+src/ia64/init.o
+src/ia64/offsets.h~
+src/ia64/parser.o
+src/ia64/regs.o
+src/ia64/script.o
+src/ia64/unw_get_reg.o
+src/ia64/unw_init_local.o
+src/ia64/unw_init_remote.o
+src/ia64/unw_resume.o
+src/ia64/unw_set_reg.o
+src/ia64/unw_step.o
+src/libunwind.a
