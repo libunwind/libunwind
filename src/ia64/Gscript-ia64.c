@@ -595,3 +595,17 @@ ia64_find_save_locs (struct cursor *c)
   put_script_cache (c->as, cache, &saved_sigmask);
   return ret;
 }
+
+HIDDEN void
+ia64_validate_cache (unw_addr_space_t as, void *arg)
+{
+#ifndef UNW_REMOTE_ONLY
+  if (ia64_local_validate_cache (as, arg) == 1)
+    return;
+#endif
+
+#ifndef UNW_LOCAL_ONLY
+  /* local info is up-to-date, check dynamic info.  */
+  unwi_dyn_validate_cache (as, arg);
+#endif
+}
