@@ -206,7 +206,8 @@ am__objects_18 = $(am__objects_17) $(am__objects_6) $(am__objects_15) \
 libunwind_x86_64_la_OBJECTS = $(am_libunwind_x86_64_la_OBJECTS)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_libunwind_x86_64_la_rpath = -rpath \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@	$(libdir)
-libunwind_la_DEPENDENCIES =
+am__DEPENDENCIES_1 =
+libunwind_la_DEPENDENCIES = $(am__DEPENDENCIES_1)
 am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
 	dwarf/dwarf-eh.h dwarf/global.c x86_64/init.h \
@@ -391,6 +392,7 @@ INSTALL_SCRIPT = @INSTALL_SCRIPT@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 LDFLAGS = @LDFLAGS@
 LDFLAGS_STATIC_LIBCXA = @LDFLAGS_STATIC_LIBCXA@
+LIBCRTS = @LIBCRTS@
 LIBOBJS = @LIBOBJS@
 LIBS = @LIBS@
 LIBTOOL = @LIBTOOL@
@@ -714,7 +716,7 @@ libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_x86_64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_64_la_LIBADD = libunwind.la -lc
 libunwind_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
-libunwind_la_LIBADD = -lc
+libunwind_la_LIBADD = -lc $(LIBCRTS)
 lib_LIBRARIES = $(LIBRARIES_cdep)
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
 		  $(lib_LTLIBRARIES_cdep_setjmp)
