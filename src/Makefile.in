@@ -16,7 +16,7 @@
 
 
 
-SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(libunwind_la_SOURCES) ia64/mk_Gcursor_i.c ia64/mk_Lcursor_i.c
+SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(libunwind_la_SOURCES) $(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -256,11 +256,15 @@ am__objects_22 = $(am__objects_5) $(am__objects_18) elf64.lo \
 libunwind_la_OBJECTS = $(am_libunwind_la_OBJECTS)
 @REMOTE_ONLY_FALSE@am_libunwind_la_rpath = -rpath $(libdir)
 PROGRAMS = $(noinst_PROGRAMS)
-ia64_mk_Gcursor_i_SOURCES = ia64/mk_Gcursor_i.c
-ia64_mk_Gcursor_i_OBJECTS = ia64/mk_Gcursor_i.$(OBJEXT)
+am__ia64_mk_Gcursor_i_SOURCES_DIST = ia64/mk_Gcursor_i.c
+@ARCH_IA64_TRUE@am_ia64_mk_Gcursor_i_OBJECTS =  \
+@ARCH_IA64_TRUE@	ia64/mk_Gcursor_i.$(OBJEXT)
+ia64_mk_Gcursor_i_OBJECTS = $(am_ia64_mk_Gcursor_i_OBJECTS)
 ia64_mk_Gcursor_i_LDADD = $(LDADD)
-ia64_mk_Lcursor_i_SOURCES = ia64/mk_Lcursor_i.c
-ia64_mk_Lcursor_i_OBJECTS = ia64/mk_Lcursor_i.$(OBJEXT)
+am__ia64_mk_Lcursor_i_SOURCES_DIST = ia64/mk_Lcursor_i.c
+@ARCH_IA64_TRUE@am_ia64_mk_Lcursor_i_OBJECTS =  \
+@ARCH_IA64_TRUE@	ia64/mk_Lcursor_i.$(OBJEXT)
+ia64_mk_Lcursor_i_OBJECTS = $(am_ia64_mk_Lcursor_i_OBJECTS)
 ia64_mk_Lcursor_i_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
@@ -279,14 +283,15 @@ LINK = $(LIBTOOL) --mode=link --tag=CC $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) \
 	$(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) \
 	$(libunwind_x86_la_SOURCES) $(libunwind_la_SOURCES) \
-	ia64/mk_Gcursor_i.c ia64/mk_Lcursor_i.c
+	$(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES)
 DIST_SOURCES = $(libunwind_ptrace_a_SOURCES) \
 	$(libunwind_hppa_la_SOURCES) \
 	$(am__libunwind_ia64_la_SOURCES_DIST) \
 	$(am__libunwind_setjmp_la_SOURCES_DIST) \
 	$(am__libunwind_x86_la_SOURCES_DIST) \
-	$(am__libunwind_la_SOURCES_DIST) ia64/mk_Gcursor_i.c \
-	ia64/mk_Lcursor_i.c
+	$(am__libunwind_la_SOURCES_DIST) \
+	$(am__ia64_mk_Gcursor_i_SOURCES_DIST) \
+	$(am__ia64_mk_Lcursor_i_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -582,8 +587,8 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
 @OS_HPUX_TRUE@libunwind_la_SOURCES_os_local = $(libunwind_la_SOURCES_os_hpux_local)
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os_local = $(libunwind_la_SOURCES_os_linux_local)
-@ARCH_IA64_TRUE@mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i.c
-@ARCH_IA64_TRUE@mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i.c
+@ARCH_IA64_TRUE@ia64_mk_Gcursor_i_SOURCES = ia64/mk_Gcursor_i.c
+@ARCH_IA64_TRUE@ia64_mk_Lcursor_i_SOURCES = ia64/mk_Lcursor_i.c
 @ARCH_IA64_TRUE@BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@lib_LTLIBRARIES_arch = libunwind-x86.la
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@lib_LTLIBRARIES_arch = libunwind-hppa.la
