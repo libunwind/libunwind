@@ -41,9 +41,9 @@ libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c x86/siglongjmp.S
 
 # List of arch-independent files needed by both local-only and generic
 # libraries:
-libunwind_la_SOURCES_common =			\
-	$(libunwind_la_SOURCES_os)		\
-	mi/init.c mi/flush_cache.c mi/mempool.c
+libunwind_la_SOURCES_common =					\
+	$(libunwind_la_SOURCES_os)				\
+	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c
 
 # List of arch-independent files needed by generic library (libunwind-$ARCH):
 libunwind_la_SOURCES_generic =						\
