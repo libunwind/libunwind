@@ -35,49 +35,31 @@ update_frame_state (struct ia64_cursor *c)
   prev_sp = c->sp;
   prev_bsp = c->bsp;
 
-  /* update the IP cache: */
-  ret = ia64_get (c, c->ip_loc, &ip);
-  if (ret < 0)
-    return ret;
-  c->ip = ip;
-
-  if ((ip & 0xf) != 0)
-    {
-      /* don't let obviously bad addresses pollute the cache */
-      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
-      return -UNW_EINVALIDIP;
-    }
-
-  /* restore the cfm: */
   c->cfm_loc = c->pfs_loc;
 
-  /* restore the bsp: */
-  pr = c->pr;
   num_regs = 0;
-  if ((c->pi.flags & IA64_FLAG_SIGTRAMP))
+  if ((c->pi.flags & IA64_FLAG_SIGTRAMP) != 0)
     {
-      unw_word_t sigcontext_addr, sigcontext_flags;
-
-      ret = ia64_get (c, c->sp + 0x10, &sigcontext_addr);
+      ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &c->sigcontext_loc);
       if (ret < 0)
 	return ret;
 
-      ret = ia64_get (c, (sigcontext_addr + SIGCONTEXT_FLAGS_OFF),
-		      &sigcontext_flags);
-      if (ret < 0)
-	return ret;
-
-      if ((sigcontext_flags & IA64_SC_FLAG_IN_SYSCALL_BIT) == 0)
+      if (c->ip_loc == c->sigcontext_loc + SIGCONTEXT_BR_OFF + 0*8)
 	{
-	  unw_word_t cfm;
-
-	  ret = ia64_get (c, c->cfm_loc, &cfm);
-	  if (ret < 0)
-	    return ret;
-
-	  num_regs = cfm & 0x7f;	/* size of frame */
+	  /* Earlier kernels (before 2.4.19 and 2.5.10) had buggy
+	     unwind info for sigtramp.  Fix it up here.  */
+	  c->ip_loc  = (c->sigcontext_loc + SIGCONTEXT_IP_OFF);
+	  c->cfm_loc = (c->sigcontext_loc + SIGCONTEXT_CFM_OFF);
 	}
-      c->pfs_loc = (c->sp + 0x10 + SIGCONTEXT_AR_PFS_OFF);
+
+      /* do what can't be described by unwind directives: */
+      c->pfs_loc = (c->sigcontext_loc + SIGCONTEXT_AR_PFS_OFF);
+
+      ret = ia64_get (c, c->cfm_loc, &cfm);
+      if (ret < 0)
+	return ret;
+
+      num_regs = cfm & 0x7f;		/* size of frame */
     }
   else
     {
@@ -88,7 +70,20 @@ update_frame_state (struct ia64_cursor *c)
     }
   c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
 
-  /* restore the sp: */
+  /* update the IP cache: */
+  ret = ia64_get (c, c->ip_loc, &ip);
+  if (ret < 0)
+    return ret;
+  c->ip = ip;
+
+  if ((ip & 0xc) != 0)
+    {
+      /* don't let obviously bad addresses pollute the cache */
+      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
+      return -UNW_EINVALIDIP;
+    }
+
+  pr = c->pr;
   c->sp = c->psp;
 
   if (c->ip == prev_ip && c->sp == prev_sp && c->bsp == prev_bsp)
