@@ -30,6 +30,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
+/* forward declaration: */
+static int create_state_record_for (struct ia64_cursor *c,
+				    struct ia64_state_record *sr,
+				    unw_word_t ip);
+
 typedef unsigned long unw_word;
 
 #define alloc_reg_state()	(mempool_alloc (&unw.state_record_pool))
@@ -292,13 +297,14 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
 
   if (!body)
     {
-      for (i = 0; i < 4; ++i)
-	{
-	  if (mask & 0x8)
-	    set_reg (sr->curr.reg + unw.save_order[i], IA64_WHERE_GR,
-		     sr->region_start + sr->region_len - 1, grsave++);
-	  mask <<= 1;
-	}
+      if (mask)
+	for (i = 0; i < 4; ++i)
+	  {
+	    if (mask & 0x8)
+	      set_reg (sr->curr.reg + unw.save_order[i], IA64_WHERE_GR,
+		       sr->region_start + sr->region_len - 1, grsave++);
+	    mask <<= 1;
+	  }
       sr->gr_save_loc = grsave;
       sr->any_spills = 0;
       sr->imask = 0;
@@ -689,136 +695,235 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
 #define UNW_DEC_RESTORE(f,t,a,arg)		desc_restore_p(0,t,a,arg)
 
 #include "unwind_decoder.h"
+
+/* parse dynamic unwind info */
 
-static inline const struct ia64_unwind_table_entry *
-lookup (struct ia64_unwind_table *table, unw_word_t rel_ip)
+static struct ia64_reg_info *
+lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
 {
-  const struct ia64_unwind_table_entry *e = 0;
-  unsigned long lo, hi, mid;
+  int preg;
 
-  /* do a binary search for right entry: */
-  for (lo = 0, hi = table->info.length; lo < hi;)
+  switch (regnum)
     {
-      mid = (lo + hi) / 2;
-      e = (struct ia64_unwind_table_entry *) table->info.array + mid;
-      if (rel_ip < e->start_offset)
-	hi = mid;
-      else if (rel_ip >= e->end_offset)
-	lo = mid + 1;
+    case UNW_IA64_AR_BSP:		preg = IA64_REG_BSP; break;
+    case UNW_IA64_AR_BSPSTORE:		preg = IA64_REG_BSPSTORE; break;
+    case UNW_IA64_AR_FPSR:		preg = IA64_REG_FPSR; break;
+    case UNW_IA64_AR_LC:		preg = IA64_REG_LC; break;
+    case UNW_IA64_AR_PFS:		preg = IA64_REG_PFS; break;
+    case UNW_IA64_AR_RNAT:		preg = IA64_REG_RNAT; break;
+    case UNW_IA64_AR_UNAT:		preg = IA64_REG_UNAT; break;
+    case UNW_IA64_BR + 0:		preg = IA64_REG_RP; break;
+    case UNW_IA64_PR:			preg = IA64_REG_PR; break;
+    case UNW_IA64_SP:			preg = IA64_REG_PSP; break;
+
+    case UNW_IA64_NAT:
+      if (memory)
+	preg = IA64_REG_PRI_UNAT_MEM;
       else
-	break;
+	preg = IA64_REG_PRI_UNAT_GR;
+      break;
+
+    case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
+      preg = IA64_REG_R4 + (regnum - (UNW_IA64_GR + 4));
+      break;
+
+    case UNW_IA64_BR + 1 ... UNW_IA64_BR + 5:
+      preg = IA64_REG_B1 + (regnum - UNW_IA64_BR);
+      break;
+
+    case UNW_IA64_FR + 2 ... UNW_IA64_FR + 5:
+      preg = IA64_REG_F2 + (regnum - (UNW_IA64_FR + 2));
+      break;
+
+    case UNW_IA64_FR + 16 ... UNW_IA64_FR + 31:
+      preg = IA64_REG_F16 + (regnum - (UNW_IA64_FR + 16));
+      break;
+
+    default:
+      dprintf ("unwind.%s: invalid register number %d\n",
+	       __FUNCTION__, regnum);
+      return NULL;
     }
-  if (rel_ip < e->start_offset || rel_ip >= e->end_offset)
-    return NULL;
-  return e;
+  return sr->curr.reg + preg;
 }
 
 static int
-get_proc_info (struct ia64_cursor *c)
+parse_dynamic (struct ia64_cursor *c, struct ia64_state_record *sr)
 {
-  const struct ia64_unwind_table_entry *e = 0;
-  struct ia64_unwind_table *table;
-  unw_word_t segbase, len;
-  uint8_t *dp, *desc_end;
-  unw_ia64_table_t info;
-  unw_word_t ip = c->ip;
-  uint64_t hdr;
-  int ret;
+  unw_dyn_info_t *di = c->pi.unwind_info;
+  unw_dyn_proc_info_t *proc = &di->u.pi;
+  unw_dyn_region_info_t *r;
+  struct ia64_reg_info *ri;
+  unw_word_t val, new_ip;
+  enum ia64_where where;
+  unw_dyn_op_t *op;
+  int32_t when;
+  int16_t qp;
+  int memory;
 
-  /* search the unwind tables for IP: */
-
-  for (table = c->as->tables; table; table = table->next)
-    if (ip >= table->info.start && ip < table->info.end)
-      break;
-
-  if (!table)
+  for (r = proc->regions; r; r = r->next)
     {
-      ret = ia64_acquire_unwind_info (c, ip, &info);
-      if (ret < 0)
-	return ret;
+      /* all regions are treated as prologue regions: */
+      desc_prologue (0, r->insn_count, 0, 0, sr);
 
-      segbase = info.segbase;
-      len = info.length;
-
-      table = mempool_alloc (&unw.unwind_table_pool);
-      if (!table)
+      for (op = r->op; 1; ++op)
 	{
-	  dprintf ("%s: out of memory\n", __FUNCTION__);
-	  return -UNW_ENOMEM;
+	  when = op->when;
+	  val = op->val;
+	  qp = op->qp;
+
+	  if (!desc_is_active (qp, when, sr))
+	    continue;
+
+	  switch (op->tag)
+	    {
+	    case UNW_DYN_SAVE_REG:
+	      memory = 0;
+	      if ((unsigned) (val - UNW_IA64_GR) < 128)
+		where = IA64_WHERE_GR;
+	      else if ((unsigned) (val - UNW_IA64_FR) < 128)
+		where = IA64_WHERE_FR;
+	      else if ((unsigned) (val - UNW_IA64_BR) < 8)
+		where = IA64_WHERE_BR;
+	      else
+		{
+		  dprintf ("unwind.%s: can't save to register number %d\n",
+			   __FUNCTION__, (int) op->reg);
+		  return -UNW_EBADREG;
+		}
+	      /* fall through */
+	    update_reg_info:
+	      ri = lookup_preg (op->reg, memory, sr);
+	      if (!ri)
+		return -UNW_EBADREG;
+	      ri->where = where;
+	      ri->when = when;
+	      ri->val = val;
+	      break;
+
+	    case UNW_DYN_SPILL_FP_REL:
+	      memory = 1;
+	      where = IA64_WHERE_PSPREL;
+	      goto update_reg_info;
+
+	    case UNW_DYN_SPILL_SP_REL:
+	      memory = 1;
+	      where = IA64_WHERE_SPREL;
+	      goto update_reg_info;
+
+	    case UNW_DYN_ADD:
+	      if (op->reg == UNW_IA64_SP)
+		{
+		  if (val & 0xf)
+		    {
+		      dprintf ("unwind.%s: frame-size %ld not an integer "
+			       "multiple of 16\n",
+			       __FUNCTION__, (long) op->val);
+		      return -UNW_EINVAL;
+		    }
+		}
+	      else
+		{
+		  dprintf ("unwind.%s: can only ADD to stack-pointer\n",
+			   __FUNCTION__);
+		  return -UNW_EBADREG;
+		}
+	      break;
+
+	    case UNW_DYN_POP_FRAMES:
+	      sr->epilogue_start
+		= sr->region_start + sr->region_len - 1 - op->when;
+	      sr->epilogue_count = op->val;
+	      break;
+
+	    case UNW_DYN_LABEL_STATE:
+	      desc_label_state(op->val, sr);
+	      break;
+
+	    case UNW_DYN_COPY_STATE:
+	      desc_copy_state(op->val, sr);
+	      break;
+
+	    case UNW_DYN_ALIAS:
+	      while (sr->curr.next)
+		pop (sr);
+	      new_ip = op->val + ((sr->when_target / 3) * 16
+				  + (sr->when_target % 3));
+	      return create_state_record_for (c, sr, new_ip);
+
+	    case UNW_DYN_STOP:
+	      goto end_of_ops;
+	    }
 	}
-      table->info = info;
-      /* XXX LOCK { */
-      table->next = c->as->tables;
-      c->as->tables = table;
-      /* XXX LOCK } */
     }
+  while (!sr->done);
 
-  assert (ip >= table->info.start && ip < table->info.end);
-
-  e = lookup (table, ip - table->info.segbase);
-  if (!e)
-    {
-      memset (&c->pi, 0, sizeof (c->pi));
-      return 0;
-    }
-
-  hdr = *(uint64_t *) (table->info.unwind_info_base + e->info_offset);
-  dp = (uint8_t *) (table->info.unwind_info_base + e->info_offset + 8);
-  desc_end = dp + 8 * IA64_UNW_LENGTH (hdr);
-
-  c->pi.flags = 0;
-  c->pi.gp = table->info.gp;
-  c->pi.proc_start = table->info.segbase + e->start_offset;
-  c->pi.pers_addr = (uint64_t *) desc_end;
-  c->pi.desc = dp;
-
-  if (IA64_UNW_VER (hdr) != 1)
-    return -UNW_EBADVERSION;
-
-  if (IA64_UNW_FLAG_EHANDLER (hdr) | IA64_UNW_FLAG_UHANDLER (hdr))
-    c->pi.flags |= IA64_FLAG_HAS_HANDLER;
-
+ end_of_ops:
   return 0;
 }
+
 
-int
-ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
+static int
+get_proc_info (struct ia64_cursor *c, unw_word_t ip)
 {
-  unw_word_t ip = c->ip, predicates = c->pr;
+  int ret;
+
+  /* check dynamic info first --- it overrides everything else */
+  ret = unw_find_dynamic_proc_info (c->as, ip, &c->pi, c->as_arg);
+  if (ret != -UNW_ENOINFO)
+    return ret;
+
+  return ia64_find_proc_info (c, ip);
+}
+
+static int
+create_state_record_for (struct ia64_cursor *c, struct ia64_state_record *sr,
+			 unw_word_t ip)
+{
+  unw_word_t predicates = c->pr;
   struct ia64_reg_info *r;
   uint8_t *dp, *desc_end;
   int ret;
-  STAT(unsigned long start;)
-  STAT(++unw.stat.parse.calls; start = ia64_get_itc ());
 
   /* build state record */
   memset (sr, 0, sizeof (*sr));
   for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
     r->when = IA64_WHEN_NEVER;
   sr->pr_val = predicates;
+  sr->first_region = 1;
 
-  ret = get_proc_info (c);
+  ret = get_proc_info (c, ip);
   if (ret < 0)
     return ret;
 
-  if (!c->pi.desc)
+  if (!c->pi.unwind_info)
     {
       /* No info, return default unwinder (leaf proc, no mem stack, no
          saved regs), rp in b0, pfs in ar.pfs.  */
-      dprintf ("unwind: no unwind info for ip=0x%lx\n", (long) ip);
+      dprintf ("unwind.parser: no unwind info for ip=0x%lx\n", (long) ip);
       sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
       sr->curr.reg[IA64_REG_RP].when = -1;
       sr->curr.reg[IA64_REG_RP].val = 0;
       goto out;
     }
 
-  sr->when_target = (3 * ((ip & ~0xfUL) - c->pi.proc_start)
-		     / 16 + (ip & 0xfUL));
+  sr->when_target = (3 * ((ip & ~0xfUL) - c->pi.start_ip) / 16 + (ip & 0xfUL));
 
-  dp = c->pi.desc;
-  desc_end = (uint8_t *) c->pi.pers_addr;
-  while (!sr->done && dp < desc_end)
-    dp = unw_decode (dp, sr->in_body, sr);
+  c->pi.flags &= ~IA64_FLAG_SIGTRAMP;
+
+  if (c->pi.format == UNW_INFO_FORMAT_TABLE)
+    {
+      dp = c->pi.unwind_info;
+      desc_end = dp + c->pi.unwind_info_size;
+      while (!sr->done && dp < desc_end)
+	dp = unw_decode (dp, sr->in_body, sr);
+    }
+  else
+    {
+      ret = parse_dynamic (c, sr);
+      if (ret < 0)
+	return ret;
+    }
 
   c->pi.flags |= sr->flags;
 
@@ -852,8 +957,8 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
 #if IA64_UNW_DEBUG
   if (unw.debug_level > 0)
     {
-      printf ("unwind: state record for func 0x%lx, t=%u:\n",
-	      (long) c->pi.proc_start, sr->when_target);
+      printf ("unwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
+	      (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
       for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
 	{
 	  if (r->where != IA64_WHERE_NONE || r->when != IA64_WHEN_NEVER)
@@ -893,13 +998,18 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
 }
 
 int
+ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
+{
+  return create_state_record_for(c, sr, c->ip);
+}
+
+int
 ia64_free_state_record (struct ia64_state_record *sr)
 {
   struct ia64_labeled_state *ls, *next;
 
   /* free labeled register states & stack: */
 
-  STAT(parse_start = ia64_get_itc ());
   for (ls = sr->labeled_states; ls; ls = next)
     {
       next = ls->next;
@@ -908,12 +1018,11 @@ ia64_free_state_record (struct ia64_state_record *sr)
     }
   free_state_stack (&sr->curr);
 
-  STAT(unw.stat.script.parse_time += ia64_get_itc () - parse_start);
   return 0;
 }
 
 int
-ia64_get_proc_info (struct ia64_cursor *c)
+ia64_make_proc_info (struct ia64_cursor *c)
 {
   if (c->as->caching_policy != UNW_CACHE_NONE)
     {
@@ -925,5 +1034,6 @@ ia64_get_proc_info (struct ia64_cursor *c)
 	  return 0;
 	}
     }
-  return get_proc_info (c);
+
+  return get_proc_info (c, c->ip);
 }
