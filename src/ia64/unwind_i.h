@@ -279,7 +279,7 @@ struct ia64_state_record
     long spill_offset;		/* psp-relative offset for spill base */
     int region_start;
     int region_len;
-    int epilogue_start;
+    int when_sp_restored;
     int epilogue_count;
     int when_target;
 
