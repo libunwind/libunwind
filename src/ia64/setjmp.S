@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -23,6 +23,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "jmpbuf.h"
+
 	.align 32
 
 	.global _setjmp
@@ -31,15 +33,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 _setjmp:
 	mov r2 = ar.bsp
-	st8 [r32] = r12		// jmp_buf[0] = sp
+	st8 [r32] = r12			// jmp_buf[JB_SP] = sp
 	mov r3 = rp
 
-	adds r16 = 0x40, r32
-	adds r17 = 0x88, r32
+	adds r16 = JB_RP*8, r32
+	adds r17 = JB_BSP*8, r32
 	mov r8 = 0
 	;;
-	st8 [r16] = r3		// jmp_buf[8] = rp
-	st8 [r17] = r2		// jmp_buf[17] = bsp
+	st8 [r16] = r3		// jmp_buf[JB_RP] = rp
+	st8 [r17] = r2		// jmp_buf[JB_BSP] = bsp
 	br.ret.sptk.many rp
 
 	.endp _setjmp
