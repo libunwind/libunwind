@@ -85,8 +85,9 @@ PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 #else /* !HAVE_SYS_UC_ACCESS_H */
 
 static inline void *
-uc_addr (ucontext_t *uc, int reg)
+uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
 {
+  unw_word_t reg_addr;
   void *addr;
 
   switch (reg)
@@ -114,6 +115,13 @@ uc_addr (ucontext_t *uc, int reg)
       addr = &uc->uc_mcontext.sc_gr[reg - UNW_IA64_GR];
       break;
 
+    case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
+    case UNW_IA64_NAT + 12:
+      addr = &uc->uc_mcontext.sc_nat;
+      reg_addr = (unw_word_t) &uc->uc_mcontext.sc_gr[reg - UNW_IA64_NAT];
+      *nat_bitnr = reg - UNW_IA64_NAT;
+      break;
+
     case UNW_IA64_BR + 1 ... UNW_IA64_BR + 5:
       addr = &uc->uc_mcontext.sc_br[reg - UNW_IA64_BR];
       break;
@@ -130,9 +138,9 @@ uc_addr (ucontext_t *uc, int reg)
 }
 
 HIDDEN void *
-tdep_uc_addr (ucontext_t *uc, int reg)
+tdep_uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
 {
-  return uc_addr (uc, reg);
+  return uc_addr (uc, reg, nat_bitnr);
 }
 
 #endif /* !HAVE_SYS_UC_ACCESS_H */
@@ -358,7 +366,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
       return 0;
     }
 
-  addr = uc_addr (uc, reg);
+  addr = uc_addr (uc, reg, NULL);
   if (!addr)
     goto badreg;
 
@@ -389,7 +397,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (reg < UNW_IA64_FR || reg >= UNW_IA64_FR + 128)
     goto badreg;
 
-  addr = uc_addr (uc, reg);
+  addr = uc_addr (uc, reg, NULL);
   if (!addr)
     goto badreg;
 
