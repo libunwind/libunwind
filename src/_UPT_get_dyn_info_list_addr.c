@@ -42,14 +42,6 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
   unw_word_t res;
   int count = 0;
 
-  if (ui->checked_dyn_info_list_addr)
-    {
-      *dil_addr = ui->dyn_info_list_addr;
-      return *dil_addr ? 0 : -UNW_ENOINFO;
-    }
-
-  ui->checked_dyn_info_list_addr = 1;
-
   debug (100, "%s: looking for dyn_info list\n", __FUNCTION__);
 
 #if UNW_TARGET_IA64
@@ -75,7 +67,7 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 	    {
 	      debug (100, "%s: dyn_info_list_addr = 0x%lx\n",
 		     __FUNCTION__, (long) res);
-	      ui->dyn_info_list_addr = *dil_addr = res;
+	      *dil_addr = res;
 	    }
 	}
     }
