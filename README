@@ -113,6 +113,16 @@ programs that are known to work at this time are tests/bt (which
 produces various backtraces) and tests/Gperf-simple, which does some
 simple performance measurements.
 
+* Performance Testing
+
+This distribution includes a few simple performance tests which give
+some idea of the basic cost of various libunwind operations.  After
+building the library, you can run these tests with the following
+commands:
+
+ $ cd tests
+ $ make perf
+
 * Contacting the Developers
 
 Please direct all questions regarding this library to:
