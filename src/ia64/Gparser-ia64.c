@@ -910,10 +910,10 @@ put_unwind_info (struct cursor *c, unw_proc_info_t *pi)
   if (!c->pi_valid)
     return;
 
-  if ((c)->pi_is_dynamic)
+  if (c->pi_is_dynamic)
     unwi_put_dynamic_unwind_info (c->as, pi, c->as_arg);
   else
-    ia64_put_unwind_info(c, pi);
+    ia64_put_unwind_info (c, pi);
 }
 
 static int
@@ -1057,7 +1057,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
 HIDDEN int
 ia64_create_state_record (struct cursor *c, struct ia64_state_record *sr)
 {
-  return create_state_record_for(c, sr, c->ip);
+  return create_state_record_for (c, sr, c->ip);
 }
 
 HIDDEN int
