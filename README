@@ -62,13 +62,18 @@ After building the library, you can run a set of regression tests with:
 
 	$ make check
 
-Unless you have a very recent library and compiler installed, it is
+Unless you have a very recent C library and compiler installed, it is
 currently expected to have the following tests fail:
 
-	Gtest-init		(should work with glibc-2.3.1)
-	Ltest-init		(should work with glibc-2.3.1)
-	test-ptrace		(should work with glibc-2.3.1)
-	run-ia64-test-dyn1	(should work with glibc-2.3.1)
+	Gtest-init		(should pass starting with glibc-2.3.x/gcc-3.4)
+	Ltest-init		(should pass starting with glibc-2.3.x/gcc-3.4)
+	test-ptrace		(should pass starting with glibc-2.3.x/gcc-3.4)
+	run-ia64-test-dyn1	(should pass starting with glibc-2.3.x)
+
+This does not mean that libunwind cannot be used with older compilers
+or C libraries, it just means that for certain corner cases, unwinding
+will fail.  Since they're corner cases, it is not likely for
+applications to trigger them.
 
 * Contacting the Developers
 
