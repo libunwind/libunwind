@@ -554,9 +554,9 @@ desc_is_active (unsigned char qp, unw_word t, struct ia64_state_record *sr)
     return 0;
   if (qp > 0)
     {
-      if ((sr->pr_val & (1UL << qp)) == 0)
+      if ((sr->pr_val & ((unw_word_t) 1 << qp)) == 0)
 	return 0;
-      sr->pr_mask |= (1UL << qp);
+      sr->pr_mask |= ((unw_word_t) 1 << qp);
     }
   return 1;
 }
@@ -946,7 +946,8 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
       goto out;
     }
 
-  sr->when_target = (3 * ((ip & ~0xfUL) - c->pi.start_ip) / 16 + (ip & 0xfUL));
+  sr->when_target = (3 * ((ip & ~(unw_word_t) 0xf) - c->pi.start_ip) / 16
+		     + (ip & 0xf));
 
   if (c->pi.format == UNW_INFO_FORMAT_TABLE)
     {
