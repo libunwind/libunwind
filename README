@@ -20,6 +20,17 @@ where PREFIX is the installation prefix.  By default, a prefix of
 /usr/local/lib and unwind.h is installed in /usr/local/include.  For
 testing, you may want to use a prefix of /usr/local instead.
 
+If, during the build, you're getting an error of the form:
+
+  ../src/.libs/libunwind-ia64.so: undefined reference to `__tls_get_addr'
+
+it indicates that you have a compiler which supports the `__thread'
+keyword, but a runtime system (C library), which does not.  As of
+September 2003, this appears to be a common problem for Debian
+"unstable" systems.  To work around this issue, run "./configure" with
+option "--disable-__thread".
+
+
 * Building with Intel ECC
 
 To build libunwind with the Intel Electron compiler (ECC), it is
