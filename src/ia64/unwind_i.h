@@ -365,6 +365,7 @@ struct ia64_labeled_state
 
 /* Convenience macros: */
 #define ia64_make_proc_info		UNW_OBJ(make_proc_info)
+#define ia64_fetch_proc_info		UNW_OBJ(fetch_proc_info)
 #define ia64_create_state_record	UNW_OBJ(create_state_record)
 #define ia64_free_state_record		UNW_OBJ(free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(find_save_locs)
@@ -383,6 +384,10 @@ struct ia64_labeled_state
 #define ia64_init			UNW_ARCH_OBJ(init)
 
 extern int ia64_make_proc_info (struct cursor *c);
+extern int ia64_fetch_proc_info (struct cursor *c, unw_word_t ip,
+				 int need_unwind_info);
+/* The proc-info must be valid for IP before this routine can be
+   called:  */
 extern int ia64_create_state_record (struct cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
