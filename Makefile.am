@@ -15,7 +15,6 @@ endif # ARCH_HPPA
 endif # ARCH_IA64
 
 include_HEADERS_common = $(include_HEADERS_tdep)		\
-	include/libunwind-common.h.in				\
 	include/libunwind-dynamic.h include/libunwind-ptrace.h
 
 if REMOTE_ONLY
@@ -25,11 +24,14 @@ else
 		    include/unwind.h
 endif
 
+nodist_include_HEADERS = include/libunwind-common.h
+
 SUBDIRS = src tests doc
 
 EXTRA_DIST = include/dwarf.h include/dwarf_i.h				\
 	include/internal.h include/mempool.h				\
 	include/remote.h						\
+	include/libunwind-common.h.in					\
 	include/libunwind-ia64.h include/tdep-ia64.h			\
 	include/ia64/jmpbuf.h include/ia64/rse.h include/ia64/script.h	\
 	include/libunwind-hppa.h include/tdep-hppa.h			\
