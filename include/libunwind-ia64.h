@@ -48,6 +48,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef uint64_t unw_tdep_word_t;
 
+/* On IA-64, we want to access the contents of floating-point
+   registers as a pair of "words", but to ensure 16-byte alignment, we
+   make it a union that contains a "long double".  This will do the
+   Right Thing on all known IA-64 platforms, including HP-UX.  */
+typedef union
+  {
+    struct { unw_tdep_word_t bits[2]; } raw;
+    long double dummy;	/* dummy to force 16-byte alignment */
+  }
+unw_tdep_fpreg_t;
+
 typedef enum
   {
     /* Note: general registers are excepted to start with index 0.
@@ -88,7 +99,11 @@ typedef enum
     UNW_TDEP_LAST_REG = UNW_IA64_SP,
 
     UNW_TDEP_IP = UNW_IA64_IP,
-    UNW_TDEP_SP = UNW_IA64_SP
+    UNW_TDEP_SP = UNW_IA64_SP,
+    UNW_TDEP_EH_ARG0 = UNW_IA64_GR + 15,
+    UNW_TDEP_EH_ARG1 = UNW_IA64_GR + 16,
+    UNW_TDEP_EH_ARG2 = UNW_IA64_GR + 17,
+    UNW_TDEP_EH_ARG3 = UNW_IA64_GR + 18
   }
 ia64_regnum_t;
 
