@@ -18,6 +18,7 @@ GNU General Public License for more details.  */
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <unistd.h>
 #include <libunwind.h>
 
 #define panic(args...)				\
@@ -67,12 +68,9 @@ foo (void)
     printf ("[%d] ip=%p\n", i, buffer[i]);
 }
 
-int
+void
 sighandler (int signal, void *siginfo, struct sigcontext *sc)
 {
-  void *buffer[20];
-  int n;
-
   printf ("sighandler: got signal %d @ %lx\n", signal, sc->sc_ip);
 
   do_backtrace();
@@ -83,7 +81,7 @@ main (int argc, char **argv)
 {
   foo ();
 
-  signal (SIGTERM, sighandler);
+  signal (SIGTERM, (sighandler_t) sighandler);
   kill (getpid (), SIGTERM);
   return 0;
 }
