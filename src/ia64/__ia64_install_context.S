@@ -23,6 +23,8 @@ License.  */
 
 #include "ucontext_i.h"
 
+#ifndef UNW_REMOTE_ONLY
+
 /*  __ia64_install_context (const ucontext_t *ucp,
 			    long r15, long r16, long r17, long r18)
 
@@ -144,3 +146,5 @@ __ia64_install_context:
 	br.ret.sptk rp
 
 	.endp __ia64_install_context
+
+#endif /* !UNW_REMOTE_ONLY */
