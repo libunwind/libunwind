@@ -1,0 +1,70 @@
+\documentclass{article}
+\usepackage[fancyhdr,pdf]{latex2man}
+
+\input{common.tex}
+
+\begin{document}
+
+\begin{Name}{3}{unw\_step}{David Mosberger-Tang}{Programming Library}{unw\_step}unw\_step -- advance to next stack frame
+\end{Name}
+
+\section{Synopsis}
+
+\File{\#include $<$libunwind.h$>$}\\
+
+\Type{int} \Func{unw\_step}(\Type{unw\_cursor\_t~*}\Var{cp});\\
+
+\section{Description}
+
+The \Func{unw\_step}() routine advances the unwind cursor \Var{cp} to
+the next older, less deeply nested stack frame.
+
+\section{Return Value}
+
+On successful completion, \Func{unw\_step}() returns a positive value
+if there are more stack frames in the call-chain, or 0 if the returned
+stack frame is the last frame in the chain.  On error, the negative
+value of one of the error-codes below is returned.
+
+\section{Thread and Signal Safety}
+
+\Func{unw\_step}() is thread-safe as well as safe to use
+from a signal handler.
+
+\section{Errors}
+
+\begin{Description}
+\item[\Const{UNW\_EUNSPEC}] An unspecified error occurred.
+\item[\Const{UNW\_ENOINFO}] \Prog{Libunwind} was unable to locate the
+  unwind-info needed to complete the operation.
+\item[\Const{UNW\_EBADVERSION}] The unwind-info needed to complete the
+  operation has a version or a format that is not understood by
+  \Prog{libunwind}.
+\item[\Const{UNW\_EINVALIDIP}] The instruction-pointer
+  (``program-counter'') of the next stack frame is invalid (e.g., not
+  properly aligned).
+\item[\Const{UNW\_EBADFRAME}] The next stack frame is invalid.
+\item[\Const{UNW\_ESTOPUNWIND}] Returned if a call to
+  \Func{find\_proc\_info}() returned -\Const{UNW\_ESTOPUNWIND}.
+\end{Description}
+In addition, \Func{unw\_step}() may return any error returned by the
+\Func{find\_proc\_info}(), \Func{get\_dyn\_info\_list\_addr}(),
+\Func{access\_mem}(), \Func{access\_reg}(), or \Func{access\_fpreg}()
+call-backs (see \Func{unw\_create\_addr\_space}(3)).
+
+\section{See Also}
+
+\SeeAlso{libunwind(3)},
+\SeeAlso{unw\_create\_addr\_space(3)}
+
+\section{Author}
+
+\noindent
+David Mosberger-Tang\\
+Hewlett-Packard Labs\\
+Palo-Alto, CA 94304\\
+Email: \Email{davidm@hpl.hp.com}\\
+WWW: \URL{http://www.hpl.hp.com/research/linux/libunwind/}.
+\LatexManEnd
+
+\end{document}
