@@ -287,7 +287,7 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
   for (i = 0; i < sr->epilogue_count; ++i)
     pop (sr);
   sr->epilogue_count = 0;
-  sr->epilogue_start = IA64_WHEN_NEVER;
+  sr->when_sp_restored = IA64_WHEN_NEVER;
 
   sr->region_start = region_start;
   sr->region_len = rlen;
@@ -507,7 +507,7 @@ desc_spill_mask (unsigned char *imaskp, struct ia64_state_record *sr)
 static inline void
 desc_epilogue (unw_word t, unw_word ecount, struct ia64_state_record *sr)
 {
-  sr->epilogue_start = sr->region_start + sr->region_len - 1 - t;
+  sr->when_sp_restored = sr->region_start + sr->region_len - 1 - t;
   sr->epilogue_count = ecount + 1;
 }
 
@@ -749,7 +749,7 @@ lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
   return sr->curr.reg + preg;
 }
 
-static int
+static inline int
 parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 {
   unw_dyn_info_t *di = c->pi.unwind_info;
@@ -782,7 +782,10 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
       /* all regions are treated as prologue regions: */
       desc_prologue (0, len, 0, 0, sr);
 
-      for (op = r->op; 1; ++op)
+      if (sr->done)
+	return 0;
+
+      for (op = r->op; op < r->op + r->op_count; ++op)
 	{
 	  when = op->when;
 	  val = op->val;
@@ -790,6 +793,8 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 
 	  if (!desc_is_active (qp, when, sr))
 	    continue;
+
+	  when = sr->region_start + MIN ((int) when, sr->region_len - 1);
 
 	  switch (op->tag)
 	    {
@@ -820,6 +825,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 	    case UNW_DYN_SPILL_FP_REL:
 	      memory = 1;
 	      where = IA64_WHERE_PSPREL;
+	      val = 0x10 - val;
 	      goto update_reg_info;
 
 	    case UNW_DYN_SPILL_SP_REL:
@@ -837,6 +843,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 			       __FUNCTION__, (long) op->val);
 		      return -UNW_EINVAL;
 		    }
+		  desc_mem_stack_f (when, -((int64_t) val / 16), sr);
 		}
 	      else
 		{
@@ -847,17 +854,16 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 	      break;
 
 	    case UNW_DYN_POP_FRAMES:
-	      sr->epilogue_start
-		= sr->region_start + sr->region_len - 1 - op->when;
+	      sr->when_sp_restored = when;
 	      sr->epilogue_count = op->val;
 	      break;
 
 	    case UNW_DYN_LABEL_STATE:
-	      desc_label_state(op->val, sr);
+	      desc_label_state (op->val, sr);
 	      break;
 
 	    case UNW_DYN_COPY_STATE:
-	      desc_copy_state(op->val, sr);
+	      desc_copy_state (op->val, sr);
 	      break;
 
 	    case UNW_DYN_ALIAS:
@@ -871,10 +877,9 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 	      goto end_of_ops;
 	    }
 	}
+    end_of_ops:
+      ;
     }
-  while (!sr->done);
-
- end_of_ops:
   return 0;
 }
 
@@ -928,6 +933,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     r->when = IA64_WHEN_NEVER;
   sr->pr_val = predicates;
   sr->first_region = 1;
+  sr->return_link_reg = 0;
 
   ret = get_proc_info (c, ip, 1);
   if (ret < 0)
@@ -937,8 +943,8 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     {
       /* No info, return default unwinder (leaf proc, no mem stack, no
          saved regs), rp in b0, pfs in ar.pfs.  */
-      dprintf ("unwind.parser: no unwind info for ip=0x%lx (gp=%lx)\n",
-	       (long) ip, (long) c->pi.gp);
+      debug (1, "unwind.parser: no unwind info for ip=0x%lx (gp=%lx)\n",
+	     (long) ip, (long) c->pi.gp);
       sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
       sr->curr.reg[IA64_REG_RP].when = -1;
       sr->curr.reg[IA64_REG_RP].val = 0;
@@ -963,7 +969,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
   if (ret < 0)
     return ret;
 
-  if (sr->when_target > sr->epilogue_start)
+  if (sr->when_target > sr->when_sp_restored)
     {
       /* sp has been restored and all values on the memory stack below
 	 psp also have been restored.  */
@@ -992,13 +998,13 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
   if (sr->when_target > sr->curr.reg[IA64_REG_BSP].when
       && sr->when_target > sr->curr.reg[IA64_REG_BSPSTORE].when
       && sr->when_target > sr->curr.reg[IA64_REG_RNAT].when)
-  {
+    {
       debug (10,
 	     "libunwind: func 0x%lx may switch the register-backing-store\n",
 	     c->pi.start_ip);
       c->pi.flags |= UNW_PI_FLAG_IA64_RBS_SWITCH;
     }
-  out:
+ out:
 #if UNW_DEBUG
   if (unw.debug_level > 0)
     {
