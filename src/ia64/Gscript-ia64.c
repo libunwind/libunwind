@@ -385,22 +385,72 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
     }
 }
 
+/* Sort the registers which got saved in decreasing order of WHEN
+   value.  This is needed to ensure that the save-locations are
+   updated in the proper order.  For example, suppose r4 gets spilled
+   to memory and then r5 gets saved in r4.  In this case, we need to
+   update the save location of r5 before the one of r4.  */
+
+static inline int
+sort_regs (struct ia64_state_record *sr, int regorder[])
+{
+  int r, i, j, max, max_reg, max_when, num_regs = 0;
+
+  assert (IA64_REG_BSP == 3);
+
+  for (r = IA64_REG_BSP; r < IA64_NUM_PREGS; ++r)
+    {
+      if (sr->curr.reg[r].where == IA64_WHERE_NONE
+	  || sr->curr.reg[r].when >= sr->when_target)
+	continue;
+
+      regorder[num_regs++] = r;
+    }
+
+  /* Simple insertion-sort.  Involves about N^2/2 comparisons and N
+     exchanges.  N is often small (say, 2-5) so a fancier sorting
+     algorithm may not be worthwhile.  */
+
+  for (i = max = 0; i < num_regs - 1; ++i)
+    {
+      max_reg = regorder[max];
+      max_when = sr->curr.reg[max_reg].when;
+
+      for (j = i + 1; j < num_regs; ++j)
+	if (sr->curr.reg[regorder[j]].when > max_when)
+	  {
+	    max = j;
+	    max_reg = regorder[j];
+	    max_when = sr->curr.reg[max_reg].when;
+	  }
+      if (i != max)
+	{
+	  regorder[max] = regorder[i];
+	  regorder[i] = max_reg;
+	}
+    }
+  return num_regs;
+}
+
 /* Build an unwind script that unwinds from state OLD_STATE to the
    entrypoint of the function that called OLD_STATE.  */
 
 static inline int
 build_script (struct cursor *c, struct ia64_script *script)
 {
+  int num_regs, i, ret, regorder[IA64_NUM_PREGS - 3];
   struct ia64_state_record sr;
   struct ia64_script_insn insn;
-  int i, ret;
 
   ret = ia64_create_state_record (c, &sr);
   if (ret < 0)
     return ret;
 
-  /* First, set psp if we're dealing with a fixed-size frame;
-     subsequent instructions may depend on this value.  */
+  /* First, compile the update for IA64_REG_PSP.  This is important
+     because later save-locations may depend on it's correct (updated)
+     value.  Fixed-size frames are handled specially and variable-size
+     frames get handled via the normal compile_reg().  */
+
   if (sr.when_target > sr.curr.reg[IA64_REG_PSP].when
       && (sr.curr.reg[IA64_REG_PSP].where == IA64_WHERE_NONE)
       && sr.curr.reg[IA64_REG_PSP].val != 0)
@@ -410,8 +460,11 @@ build_script (struct cursor *c, struct ia64_script *script)
       insn.val = sr.curr.reg[IA64_REG_PSP].val;	/* frame size */
       script_emit (script, insn);
     }
+  else
+    compile_reg (&sr, IA64_REG_PSP, script);
 
-  /* determine where the primary UNaT is: */
+  /* Second, compile the update for the primary UNaT: */
+
   if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_GR].when)
     i = IA64_REG_PRI_UNAT_MEM;
   else if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when)
@@ -421,16 +474,13 @@ build_script (struct cursor *c, struct ia64_script *script)
     i = IA64_REG_PRI_UNAT_MEM;
   else
     i = IA64_REG_PRI_UNAT_GR;
-
   compile_reg (&sr, i, script);
 
-  /* Note: it's important here that IA64_REG_PSP gets compiled first
-     because later save-locations may depend on it's correct (updated)
-     value.  Fixed-size frames are handled speciall (see above), but
-     variable-size frames get handled as part of the normal
-     compile_reg().  */
-  for (i = IA64_REG_PSP; i < IA64_NUM_PREGS; ++i)
-    compile_reg (&sr, i, script);
+  /* Third, compile the other register in decreasing order of WHEN values.  */
+
+  num_regs = sort_regs (&sr, regorder);
+  for (i = 0; i < num_regs; ++i)
+    compile_reg (&sr, regorder[i], script);
 
   script->abi_marker = sr.abi_marker;
   script_finalize (script, c, &sr);
