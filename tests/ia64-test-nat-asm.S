@@ -206,6 +206,171 @@ save_static_to_mem:
 	br.ret.sptk.many rp
 	.endp save_static_to_mem
 
+	/* Spill r6 into memory and save primary ar.unat in a register.  */
+
+	.global save_static_to_mem2
+	.proc save_static_to_mem2
+save_static_to_mem2:
+	.prologue
+	.regstk 2, 5, 2, 0
+	.save ar.pfs, loc0
+	alloc loc0 = ar.pfs, 2, 5, 2, 0
+	.save rp, loc1
+	mov loc1 = rp
+	.save ar.unat, loc2
+	mov loc2 = ar.unat
+
+	.fframe 16
+	.spillpsp r6, 16
+	st8.spill [sp] = r6, -16;;
+	.save @priunat, loc3
+	mov loc3 = ar.unat
+	mov ar.unat = 0			// trash ar.unat
+
+	.body
+
+	LOAD_VAL(r6)
+	CALL_NEXT(loc4)
+
+	mov ar.unat = loc3		// restore primary UNaT
+	.restore sp
+	add sp = 16, sp;;
+	ld8.fill r6 = [sp]		// restore r6
+
+	mov ar.pfs = loc0
+	mov rp = loc1
+	mov ar.unat = loc2		// restore ar.unat
+	br.ret.sptk.many rp
+	.endp save_static_to_mem2
+
+	/* Spill r6 into memory and save primary ar.unat in memory.  */
+
+	.global save_static_to_mem3
+	.proc save_static_to_mem3
+save_static_to_mem3:
+	.prologue
+	.regstk 2, 5, 2, 0
+	.save ar.pfs, loc0
+	alloc loc0 = ar.pfs, 2, 5, 2, 0
+	.save rp, loc1
+	mov loc1 = rp
+	.save ar.unat, loc2
+	mov loc2 = ar.unat
+
+	add r2 = 8, sp
+	.fframe 16
+	.spillpsp r6, 16
+	st8.spill [sp] = r6, -16;;
+	mov r3 = ar.unat;;
+	.savepsp @priunat, 8
+	st8 [r2] = r3
+	mov ar.unat = 0			// trash ar.unat
+
+	.body
+
+	LOAD_VAL(r6)
+	CALL_NEXT(loc4)
+
+	add r2 = 24, sp;;
+	ld8 r3 = [r2];;
+	mov ar.unat = r3		// restore primary UNaT
+	.restore sp
+	add sp = 16, sp;;
+	ld8.fill r6 = [sp]		// restore r6
+
+	mov ar.pfs = loc0
+	mov rp = loc1
+	mov ar.unat = loc2		// restore ar.unat
+	br.ret.sptk.many rp
+	.endp save_static_to_mem3
+
+	/* Spill r6 into memory and save primary ar.unat in register,
+	   then in memory.  */
+
+	.global save_static_to_mem4
+	.proc save_static_to_mem4
+save_static_to_mem4:
+	.prologue
+	.regstk 2, 5, 2, 0
+	.save ar.pfs, loc0
+	alloc loc0 = ar.pfs, 2, 5, 2, 0
+	.save rp, loc1
+	mov loc1 = rp
+	.save ar.unat, loc2
+	mov loc2 = ar.unat
+
+	add r2 = 8, sp
+	.fframe 16
+	.spillpsp r6, 16
+	st8.spill [sp] = r6, -16;;
+	.save @priunat, r3
+	mov r3 = ar.unat;;
+	mov ar.unat = 0			// trash ar.unat
+	.savepsp @priunat, 8
+	st8 [r2] = r3
+	mov r3 = r0			// trash register pri UNaT location
+	.body
+
+	LOAD_VAL(r6)
+	CALL_NEXT(loc4)
+
+	add r2 = 24, sp;;
+	ld8 r3 = [r2];;
+	mov ar.unat = r3		// restore primary UNaT
+	.restore sp
+	add sp = 16, sp;;
+	ld8.fill r6 = [sp]		// restore r6
+
+	mov ar.pfs = loc0
+	mov rp = loc1
+	mov ar.unat = loc2		// restore ar.unat
+	br.ret.sptk.many rp
+	.endp save_static_to_mem4
+
+	/* Spill r6 into memory and save primary ar.unat in register,
+	   then in memory.  */
+
+	.global save_static_to_mem5
+	.proc save_static_to_mem5
+save_static_to_mem5:
+	.prologue
+	.regstk 2, 5, 2, 0
+	.save ar.pfs, loc0
+	alloc loc0 = ar.pfs, 2, 5, 2, 0
+	.save rp, loc1
+	mov loc1 = rp
+	.save ar.unat, loc2
+	mov loc2 = ar.unat
+
+	add r2 = 8, sp
+	.fframe 16
+	.spillpsp r6, 16
+	st8.spill [sp] = r6, -16;;
+	mov r3 = ar.unat;;
+	mov ar.unat = 0			// trash ar.unat
+	.savepsp @priunat, 8
+	st8 [r2] = r3
+	.save @priunat, loc3
+	mov loc3 = r3
+	st8 [r2] = r0			// trash memory pri UNaT location
+	.body
+
+	LOAD_VAL(r6)
+	CALL_NEXT(loc4)
+
+	add r2 = 24, sp;;
+	ld8 r3 = [r2];;
+	mov ar.unat = loc3		// restore primary UNaT
+	.restore sp
+	add sp = 16, sp;;
+	ld8.fill r6 = [sp]		// restore r6
+
+	mov ar.pfs = loc0
+	mov rp = loc1
+	mov ar.unat = loc2		// restore ar.unat
+	br.ret.sptk.many rp
+	.endp save_static_to_mem5
+
 	/* Save r4-r7 to various scratch registers, then trigger
 	   a segfault.  */
 
@@ -225,12 +390,15 @@ save_static_to_scratch:
 	setf.sig f32 = r6		// save r6 in f32 (fph partition)
 	.spillsp r7, 0
 	st8.spill [sp] = r7		// save r7 in the scratch stack space
+	.spillreg f4, f6
+	mov f6 = f4;;
 	.body
 
 	LOAD_VAL(r4)
 	LOAD_VAL(r5)
 	LOAD_VAL(r6)
 	LOAD_VAL(r7)
+	setf.sig f4 = r4
 
 	/* Now force a SIGSEGV.  Make sure the ld8 is at the beginning of a
 	   bundle, so the signal-handler can skip over it simply by
@@ -242,6 +410,7 @@ save_static_to_scratch:
 		nop.i 0 ;;
 	}
 
+	mov f4 = f6
 	mov r4 = r16
 	.pred.rel.mutex p6, p7
 (p6)	getf.sig r5 = f31
