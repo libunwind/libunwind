@@ -25,6 +25,10 @@ License.  */
 #include "rse.h"
 #include "unwind_i.h"
 
+#ifdef HAVE___THREAD
+static __thread struct ia64_script_cache ia64_per_thread_cache;
+#endif
+
 static inline unw_hash_index_t
 hash (unw_word_t ip)
 {
@@ -44,10 +48,38 @@ cache_match (struct ia64_script *script, unw_word_t ip, unw_word_t pr)
   return 0;
 }
 
+static inline void
+flush_script_cache (struct ia64_script_cache *cache)
+{
+  int i;
+
+  for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i)
+    cache->buckets[i].ip = 0;
+
+  cache->generation = unw.cache_generation;
+}
+
+static inline struct ia64_script_cache *
+get_script_cache (void)
+{
+  struct ia64_script_cache *cache = &unw.global_cache;
+
+#ifdef HAVE___THREAD
+  if (unw.caching_policy == UNW_CACHE_PER_THREAD)
+    cache = &ia64_per_thread_cache;
+#endif
+
+  if (unw.cache_generation - cache->generation < 0x80000000)
+    flush_script_cache (cache);
+
+  return cache;
+}
+
 inline struct ia64_script *
 ia64_script_lookup (struct ia64_cursor *c)
 {
-  struct ia64_script *script = unw.cache + c->hint;
+  struct ia64_script_cache *cache = get_script_cache ();
+  struct ia64_script *script = cache->buckets + c->hint;
   unsigned short index;
   unw_word_t ip, pr;
 
@@ -62,23 +94,24 @@ ia64_script_lookup (struct ia64_cursor *c)
       return script;
     }
 
-  index = unw.hash[hash (ip)];
+  index = cache->hash[hash (ip)];
   if (index >= IA64_UNW_CACHE_SIZE)
     return 0;
 
-  script = unw.cache + index;
+  script = cache->buckets + index;
   while (1)
     {
       if (cache_match (script, ip, pr))
 	{
 	  /* update hint; no locking needed: single-word writes are atomic */
 	  STAT(++unw.stat.cache.normal_hits);
-	  c->hint = unw.cache[c->prev_script].hint = script - unw.cache;
+	  c->hint = cache->buckets[c->prev_script].hint =
+	    (script - cache->buckets);
 	  return script;
 	}
       if (script->coll_chain >= IA64_UNW_HASH_SIZE)
 	return 0;
-      script = unw.cache + script->coll_chain;
+      script = cache->buckets + script->coll_chain;
       STAT(++unw.stat.cache.collision_chain_traversals);
     }
 }
@@ -86,7 +119,7 @@ ia64_script_lookup (struct ia64_cursor *c)
 /* On returning, the lock for the SCRIPT is still being held.  */
 
 static inline struct ia64_script *
-script_new (unw_word_t ip)
+script_new (struct ia64_script_cache *cache, unw_word_t ip)
 {
   struct ia64_script *script, *prev, *tmp;
   unw_hash_index_t index;
@@ -96,9 +129,9 @@ script_new (unw_word_t ip)
 
   /* XXX lock hash table */
   {
-    head = unw.lru_head;
-    script = unw.cache + head;
-    unw.lru_head = script->lru_chain;
+    head = cache->lru_head;
+    script = cache->buckets + head;
+    cache->lru_head = script->lru_chain;
   }
   /* XXX unlock hash table */
 
@@ -109,14 +142,14 @@ script_new (unw_word_t ip)
   /* XXX lock unwind data lock */
   {
     /* re-insert script at the tail of the LRU chain: */
-    unw.cache[unw.lru_tail].lru_chain = head;
-    unw.lru_tail = head;
+    cache->buckets[cache->lru_tail].lru_chain = head;
+    cache->lru_tail = head;
 
     /* remove the old script from the hash table (if it's there): */
     if (script->ip)
       {
 	index = hash (script->ip);
-	tmp = unw.cache + unw.hash[index];
+	tmp = cache->buckets + cache->hash[index];
 	prev = 0;
 	while (1)
 	  {
@@ -125,7 +158,7 @@ script_new (unw_word_t ip)
 		if (prev)
 		  prev->coll_chain = tmp->coll_chain;
 		else
-		  unw.hash[index] = tmp->coll_chain;
+		  cache->hash[index] = tmp->coll_chain;
 		break;
 	      }
 	    else
@@ -133,14 +166,14 @@ script_new (unw_word_t ip)
 	    if (tmp->coll_chain >= IA64_UNW_CACHE_SIZE)
 	      /* old script wasn't in the hash-table */
 	      break;
-	    tmp = unw.cache + tmp->coll_chain;
+	    tmp = cache->buckets + tmp->coll_chain;
 	  }
       }
 
     /* enter new script in the hash table */
     index = hash (ip);
-    script->coll_chain = unw.hash[index];
-    unw.hash[index] = script - unw.cache;
+    script->coll_chain = cache->hash[index];
+    cache->hash[index] = script - cache->buckets;
 
     script->ip = ip;		/* set new IP while we're holding the locks */
 
@@ -308,7 +341,8 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
    entrypoint of the function that called OLD_STATE.  */
 
 static inline int
-build_script (struct ia64_cursor *c, struct ia64_script **scriptp)
+build_script (struct ia64_script_cache *cache, struct ia64_cursor *c,
+	      struct ia64_script **scriptp)
 {
   struct ia64_script *script;
   struct ia64_state_record sr;
@@ -318,14 +352,14 @@ build_script (struct ia64_cursor *c, struct ia64_script **scriptp)
   STAT(++unw.stat.script.builds; start = ia64_get_itc ());
   STAT(unw.stat.script.parse_time += ia64_get_itc () - parse_start);
 
-  script = script_new (c->ip);
+  script = script_new (cache, c->ip);
   if (!script)
     {
       dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
       STAT(unw.stat.script.build_time += ia64_get_itc() - start);
       return -UNW_EUNSPEC;
     }
-  unw.cache[c->prev_script].hint = script - unw.cache;
+  cache->buckets[c->prev_script].hint = script - cache->buckets;
 
   ret = ia64_create_state_record (c, &sr);
   if (ret < 0)
@@ -447,12 +481,13 @@ run_script (struct ia64_script *script, struct ia64_cursor *c)
 int
 ia64_find_save_locs (struct ia64_cursor *c)
 {
+  struct ia64_script_cache *cache = get_script_cache ();
   struct ia64_script *script = ia64_script_lookup (c);
   int ret;
 
   if (!script)
     {
-      ret = build_script (c, &script);
+      ret = build_script (cache, c, &script);
       if (ret < 0)
 	{
 	  if (ret != UNW_ESTOPUNWIND)
@@ -462,8 +497,30 @@ ia64_find_save_locs (struct ia64_cursor *c)
 	}
     }
   c->hint = script->hint;
-  c->prev_script = script - unw.cache;
+  c->prev_script = script - cache->buckets;
 
   run_script (script, c);
   return 0;
+}
+
+void
+ia64_script_cache_init (struct ia64_script_cache *cache)
+{
+  int i;
+
+  cache->lru_head = IA64_UNW_CACHE_SIZE - 1;
+  cache->lru_tail = 0;
+
+  for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i)
+    {
+      if (i > 0)
+	cache->buckets[i].lru_chain = (i - 1);
+      cache->buckets[i].coll_chain = -1;
+#if 0
+      /* must be lock-free! */
+      unw.cache[i].lock = RW_LOCK_UNLOCKED;
+#endif
+    }
+  for (i = 0; i<IA64_UNW_HASH_SIZE; ++i)
+    cache->hash[i] = -1;
 }
