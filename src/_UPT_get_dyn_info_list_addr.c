@@ -34,12 +34,14 @@ int
 _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 			     void *arg)
 {
+#if UNW_TARGET_IA64
   unsigned long lo, hi, off;
   struct UPT_info *ui = arg;
   struct map_iterator mi;
   char path[PATH_MAX];
   unw_dyn_info_t *di;
   unw_word_t res;
+#endif
   int count = 0;
 
   debug (100, "%s: looking for dyn_info list\n", __FUNCTION__);
@@ -50,6 +52,13 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
     {
       if (off)
 	continue;
+
+      if (ui->ei.image)
+	{
+	  munmap (ui->ei.image, ui->ei.size);
+	  /* invalidate the cache: */
+	  ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
+	}
 
       if (elf_map_image (&ui->ei, path) < 0)
 	return -UNW_ENOINFO;
