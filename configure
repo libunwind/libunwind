@@ -8422,7 +8422,9 @@ ARCH=`echo $target_arch | tr a-z A-Z`
 
 
 
-                                        ac_config_files="$ac_config_files Makefile src/Makefile tests/Makefile doc/Makefile"
+
+                                                  ac_config_files="$ac_config_files Makefile src/Makefile tests/Makefile doc/Makefile doc/common.tex"
+
 cat >confcache <<\_ACEOF
 # This file is a shell script that caches the results of configure
 # tests run on this system so they can be shared between configure
@@ -8986,6 +8988,7 @@ do
   "src/Makefile" ) CONFIG_FILES="$CONFIG_FILES src/Makefile" ;;
   "tests/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
   "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
+  "doc/common.tex" ) CONFIG_FILES="$CONFIG_FILES doc/common.tex" ;;
   "include/libunwind.h" ) CONFIG_LINKS="$CONFIG_LINKS include/libunwind.h:include/libunwind-$target_arch.h" ;;
   "include/tdep.h" ) CONFIG_LINKS="$CONFIG_LINKS include/tdep.h:include/tdep-$target_arch.h" ;;
   "depfiles" ) CONFIG_COMMANDS="$CONFIG_COMMANDS depfiles" ;;
