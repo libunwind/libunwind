@@ -45,6 +45,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <pthread.h>
 #include <signal.h>
+#include <string.h>
+#include <unistd.h>
 
 #ifdef HAVE_ENDIAN_H
 # include <endian.h>
@@ -60,12 +62,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifdef __GNUC__
 # define UNUSED		__attribute__((unused))
+# define NORETURN	__attribute__((noreturn))
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
 #  define ALWAYS_INLINE	__attribute__((always_inline))
 #  define HIDDEN	__attribute__((visibility ("hidden")))
+#  define PROTECTED	__attribute__((visibility ("protected")))
 # else
 #  define ALWAYS_INLINE
 #  define HIDDEN
+#  define PROTECTED
 # endif
 # if (__GNUC__ >= 3)
 #  define likely(x)	__builtin_expect ((x), 1)
@@ -77,7 +82,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #else
 # define ALWAYS_INLINE
 # define UNUSED
+# define NORETURN
 # define HIDDEN
+# define PROTECTED
 # define likely(x)	(x)
 # define unlikely(x)	(x)
 #endif
@@ -212,6 +219,52 @@ extern pthread_mutex_t _U_dyn_info_list_lock;
 
 #define WSIZE	(sizeof (unw_word_t))
 
+static inline ALWAYS_INLINE void
+print_error (const char *string)
+{
+  write (2, string, strlen (string));
+}
+
+#ifdef UNW_LOCAL_ONLY
+
+static inline int
+fetch8 (unw_addr_space_t as, unw_accessors_t *a,
+	unw_word_t *addr, int8_t *valp, void *arg)
+{
+  *valp = *(int8_t *) *addr;
+  *addr += 1;
+  return 0;
+}
+
+static inline int
+fetch16 (unw_addr_space_t as, unw_accessors_t *a,
+	 unw_word_t *addr, int16_t *valp, void *arg)
+{
+  *valp = *(int16_t *) *addr;
+  *addr += 2;
+  return 0;
+}
+
+static inline int
+fetch32 (unw_addr_space_t as, unw_accessors_t *a,
+	 unw_word_t *addr, int32_t *valp, void *arg)
+{
+  *valp = *(int32_t *) *addr;
+  *addr += 4;
+  return 0;
+}
+
+static inline int
+fetchw (unw_addr_space_t as, unw_accessors_t *a,
+	unw_word_t *addr, unw_word_t *valp, void *arg)
+{
+  *valp = *(unw_word_t *) *addr;
+  *addr += sizeof (unw_word_t);
+  return 0;
+}
+
+#else /* !UNW_LOCAL_ONLY */
+
 static inline int
 fetch8 (unw_addr_space_t as, unw_accessors_t *a,
 	unw_word_t *addr, int8_t *valp, void *arg)
@@ -287,9 +340,12 @@ fetchw (unw_addr_space_t as, unw_accessors_t *a,
   return ret;
 }
 
+#endif /* !UNW_LOCAL_ONLY */
+
 #define mi_init		UNWI_ARCH_OBJ(mi_init)
 
 extern void mi_init (void);	/* machine-independent initializations */
+extern unw_word_t _U_dyn_info_list_addr (void);
 
 /* This is needed/used by ELF targets only.  */
 
