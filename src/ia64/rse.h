@@ -1,39 +1,40 @@
-#ifndef _ASM_IA64_RSE_H
-#define _ASM_IA64_RSE_H
-
 /*
- * Copyright (C) 1998, 1999 Hewlett-Packard Co
- * Copyright (C) 1998, 1999 David Mosberger-Tang <davidm@hpl.hp.com>
+ * Copyright (C) 1998, 1999, 2002 Hewlett-Packard Co
+ *	David Mosberger-Tang <davidm@hpl.hp.com>
  *
  * Register stack engine related helper functions.  This file may be
  * used in applications, so be careful about the name-space and give
  * some consideration to non-GNU C compilers (though __inline__ is
  * fine).
  */
+#ifndef RSE_H
+#define RSE_H
 
-static __inline__ unsigned long
-ia64_rse_slot_num (unsigned long *addr)
+#include <stdint.h>
+
+static __inline__ uint64_t
+ia64_rse_slot_num (uint64_t addr)
 {
-	return (((unsigned long) addr) >> 3) & 0x3f;
+	return (addr >> 3) & 0x3f;
 }
 
 /*
  * Return TRUE if ADDR is the address of an RNAT slot.
  */
-static __inline__ unsigned long
-ia64_rse_is_rnat_slot (unsigned long *addr)
+static __inline__ uint64_t
+ia64_rse_is_rnat_slot (uint64_t addr)
 {
-	return ia64_rse_slot_num(addr) == 0x3f;
+	return ia64_rse_slot_num (addr) == 0x3f;
 }
 
 /*
  * Returns the address of the RNAT slot that covers the slot at
  * address SLOT_ADDR.
  */
-static __inline__ unsigned long *
-ia64_rse_rnat_addr (unsigned long *slot_addr)
+static __inline__ uint64_t
+ia64_rse_rnat_addr (uint64_t slot_addr)
 {
-	return (unsigned long *) ((unsigned long) slot_addr | (0x3f << 3));
+	return slot_addr | (0x3f << 3);
 }
 
 /*
@@ -41,10 +42,10 @@ ia64_rse_rnat_addr (unsigned long *slot_addr)
  * BSPSTORE with a size of DIRTY bytes.  This isn't simply DIRTY
  * divided by eight because the 64th slot is used to store ar.rnat.
  */
-static __inline__ unsigned long
-ia64_rse_num_regs (unsigned long *bspstore, unsigned long *bsp)
+static __inline__ uint64_t
+ia64_rse_num_regs (uint64_t bspstore, uint64_t bsp)
 {
-	unsigned long slots = (bsp - bspstore);
+	uint64_t slots = (bsp - bspstore) >> 3;
 
 	return slots - (ia64_rse_slot_num(bspstore) + slots)/0x40;
 }
@@ -53,14 +54,14 @@ ia64_rse_num_regs (unsigned long *bspstore, unsigned long *bsp)
  * The inverse of the above: given bspstore and the number of
  * registers, calculate ar.bsp.
  */
-static __inline__ unsigned long *
-ia64_rse_skip_regs (unsigned long *addr, long num_regs)
+static __inline__ uint64_t
+ia64_rse_skip_regs (uint64_t addr, long num_regs)
 {
 	long delta = ia64_rse_slot_num(addr) + num_regs;
 
 	if (num_regs < 0)
 		delta -= 0x3e;
-	return addr + num_regs + delta/0x3f;
+	return addr + ((num_regs + delta/0x3f) << 3);
 }
 
-#endif /* _ASM_IA64_RSE_H */
+#endif /* RSE_H */
