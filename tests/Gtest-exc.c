@@ -95,15 +95,23 @@ a (void)
   long stack;
 
 #ifdef __GNUC__
+  void *label;
+
   if (verbose)
     printf ("a: sp=%p bsp=%p\n", &stack, __builtin_ia64_bsp ());
-  b (&&handler);
+#ifdef UNW_TARGET_IA64
+  asm ("movl %0=Label" : "=r"(label));
+#else
+  label = &&handler;
+#endif
+  b (label);
   panic ("FAILURE: unexpected return from func()!\n");
 
 #if UNW_TARGET_IA64
-  asm volatile ("1:");	/* force a new bundle */
+  asm volatile ("Label:");	/* force a new bundle */
+#else
+  handler:
 #endif
- handler:
   if (verbose)
     {
       printf ("exception handler: here we go (sp=%p, bsp=%p)...\n",
