@@ -1,3 +1,28 @@
+/* libunwind - a platform-independent unwind library
+   Copyright (C) 2002-2003 Hewlett-Packard Co
+	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+
+This file is part of libunwind.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
 #include <assert.h>
 #include <stdlib.h>
 #include <string.h>
@@ -7,11 +32,6 @@
 
 #include "libunwind.h"
 #include "mempool.h"
-
-#define SOSLOCK()	/* XXX fix me */
-#define SOSUNLOCK()	/* XXX fix me */
-#define LOCK(p)		/* XXX fix me */
-#define UNLOCK(p)	/* XXX fix me */
 
 #define MAX_ALIGN	(sizeof (long double))
 #define SOS_MEMORY_SIZE	16384
@@ -25,22 +45,39 @@ sos_alloc (size_t size)
 {
   char *mem;
 
+#ifdef HAVE_CMPXCHG
+  char *old_mem;
+
+  size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
+  do
+    {
+      old_mem = sos_memp;
+
+      mem = (char *) (((unsigned long) old_mem + MAX_ALIGN - 1) & -MAX_ALIGN);
+      mem += size;
+      if (mem >= sos_memory + sizeof (sos_memory))
+	abort ();
+    }
+  while (cmpxchg_ptr (&sos_memp, old_mem, mem) != old_mem);
+#else
+  static pthread_mutex_t sos_lock = PTHREAD_MUTEX_INITIALIZER;
+  sigset_t saved_sigmask;
+
   size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
 
-  mem = (char *) (((unsigned long) sos_memp + MAX_ALIGN - 1)
-		  & -MAX_ALIGN);
-  if (mem + size >= sos_memory + sizeof (sos_memory))
-    sos_memp = mem + size;
-
-  if (!mem)
-    abort ();
-
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  mutex_lock(&sos_lock);
+  {
+    mem = (char *) (((unsigned long) sos_memp + MAX_ALIGN - 1) & -MAX_ALIGN);
+    mem += size;
+    if (mem >= sos_memory + sizeof (sos_memory))
+      abort ();
+    sos_memp = mem;
+  }
+  mutex_unlock(&sos_lock);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+#endif
   return mem;
-}
-
-void
-sos_free (void *ptr)
-{
 }
 
 static void *
@@ -106,6 +143,8 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
 
   memset (pool, 0, sizeof (*pool));
 
+  mutex_init (&pool->lock);
+
   /* round object-size up to integer multiple of MAX_ALIGN */
   obj_size = (obj_size + MAX_ALIGN - 1) & -MAX_ALIGN;
 
@@ -126,9 +165,11 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
 void *
 mempool_alloc (struct mempool *pool)
 {
+  sigset_t saved_sigmask;
   struct object *obj;
 
-  LOCK(pool);
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  mutex_lock(&pool->lock);
   {
     if (pool->num_free <= pool->reserve)
       expand (pool);
@@ -139,14 +180,21 @@ mempool_alloc (struct mempool *pool)
     obj = pool->free_list;
     pool->free_list = obj->next;
   }
-  UNLOCK(pool);
+  mutex_unlock(&pool->lock);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
   return obj;
 }
 
 void
 mempool_free (struct mempool *pool, void *object)
 {
-  LOCK(pool);
-  free_object (pool, object);
-  UNLOCK(pool);
+  sigset_t saved_sigmask;
+
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  mutex_lock(&pool->lock);
+  {
+    free_object (pool, object);
+  }
+  mutex_unlock(&pool->lock);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
 }
