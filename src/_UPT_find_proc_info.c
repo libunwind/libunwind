@@ -167,7 +167,7 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
   char path[PATH_MAX];
   unw_dyn_info_t *di;
 
-#if UNW_TARGET_IA64
+#if UNW_TARGET_IA64 && defined(__linux)
   if (!ui->ktab.start_ip && _Uia64_get_kernel_table (&ui->ktab) < 0)
     return NULL;
 
