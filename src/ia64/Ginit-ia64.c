@@ -136,14 +136,21 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 
 #ifdef HAVE_SYS_UC_ACCESS_H
 
+#define SYSCALL_CFM_SAVE_REG	11 /* on a syscall, ar.pfs is saved in r11 */
+#define REASON_SYSCALL		0
+
 static int
 access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 	    void *arg)
 {
   ucontext_t *uc = arg;
   unsigned int nat, mask;
+  unw_word_t cfm, sol; 
   uint64_t value;
+  uint16_t reason;
   int ret;
+
+  __uc_get_reason (uc, &reason);
 
   switch (reg)
     {
@@ -176,10 +183,32 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
       break;
 
     case UNW_IA64_AR  ... UNW_IA64_AR + 127:
-      if (write)
-	ret = __uc_set_ar (uc, (reg - UNW_IA64_AR), *val);
+      if (reg == UNW_IA64_AR_BSP)
+	{
+	  if (reason == REASON_SYSCALL)
+	    ret = __uc_get_grs (uc, SYSCALL_CFM_SAVE_REG, 1, &cfm, &nat);
+	  else
+	    ret = __uc_get_cfm (uc, &cfm);
+	  if (ret)
+	    break;
+	  sol = (cfm >> 7) & 0x7f;
+
+	  if (write)
+	    ret = __uc_set_ar (uc, (reg - UNW_IA64_AR),
+			       ia64_rse_skip_regs (*val, sol));
+	  else
+	    {
+	      ret = __uc_get_ar (uc, (reg - UNW_IA64_AR), val);
+	      *val = ia64_rse_skip_regs (*val, -sol);
+	    }
+	}
       else
-	ret = __uc_get_ar (uc, (reg - UNW_IA64_AR), val);
+	{
+	  if (write)
+	    ret = __uc_set_ar (uc, (reg - UNW_IA64_AR), *val);
+	  else
+	    ret = __uc_get_ar (uc, (reg - UNW_IA64_AR), val);
+	}
       break;
 
     case UNW_IA64_BR  ... UNW_IA64_BR + 7:
@@ -197,17 +226,40 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
       break;
 
     case UNW_IA64_IP:
-      if (write)
-	ret = __uc_set_ip (uc, *val);
+      if (reason == REASON_SYSCALL)
+	{
+	  if (write)
+	    ret = __uc_set_brs (uc, 0, 1, val);
+	  else
+	    ret = __uc_get_brs (uc, 0, 1, val);
+	}
       else
-	ret = __uc_get_ip (uc, val);
+	{
+	  if (write)
+	    ret = __uc_set_ip (uc, *val);
+	  else
+	    ret = __uc_get_ip (uc, val);
+	}
       break;
 
     case UNW_IA64_CFM:
-      if (write)
-	ret = __uc_set_cfm (uc, *val);
+      if (reason == REASON_SYSCALL)
+	{
+	  ret = __uc_get_grs (uc, SYSCALL_CFM_SAVE_REG, 1, &cfm, &nat);
+	  if (write)
+	    {
+	      if (ret)
+		break;
+	      ret = __uc_set_grs (uc, SYSCALL_CFM_SAVE_REG, 1, &cfm, nat);
+	    }
+	}
       else
-	ret = __uc_get_cfm (uc, val);
+	{
+	  if (write)
+	    ret = __uc_set_cfm (uc, *val);
+	  else
+	    ret = __uc_get_cfm (uc, val);
+	}
       break;
 
     case UNW_IA64_FR  ... UNW_IA64_FR + 127:
@@ -219,6 +271,10 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (ret != 0)
     return -UNW_EBADREG;
 
+  if (write)
+    debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
+  else
+    debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
   return 0;
 }
 
