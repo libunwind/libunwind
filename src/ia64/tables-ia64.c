@@ -142,12 +142,17 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   if (IA64_UNW_FLAG_EHANDLER (hdr) || IA64_UNW_FLAG_UHANDLER (hdr))
     {
       /* read the personality routine address (address is gp-relative): */
-      ret = (*a->access_mem) (as, info_end_addr + 8, &handler_offset, 0, arg);
+      ret = (*a->access_mem) (as, info_end_addr, &handler_offset, 0, arg);
       if (ret < 0)
 	return ret;
-      pi->handler = handler_offset + di->gp;
+      debug (50, "%s: handler ptr @ offset=%lx, gp=%lx\n",
+	     __FUNCTION__, handler_offset, di->gp);
+      ret = (*a->access_mem) (as, handler_offset + di->gp, &pi->handler,
+			      0, arg);
+      if (ret < 0)
+	return ret;
     }
-  pi->lsda = info_end_addr + 16;
+  pi->lsda = info_end_addr + 8;
   pi->gp = di->gp;
   pi->format = di->format;
   return 0;
@@ -312,14 +317,15 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   unw_dyn_info_t *di = ptr;
   const Elf64_Phdr *phdr, *p_unwind, *p_dynamic, *p_text;
   long n;
-  Elf64_Addr load_base;
+  Elf64_Addr load_base, segbase = 0;
 
   /* Make sure struct dl_phdr_info is at least as big as we need.  */
   if (size < offsetof (struct dl_phdr_info, dlpi_phnum)
 	     + sizeof (info->dlpi_phnum))
     return -1;
 
-  debug (100, "unwind: checking `%s'\n", info->dlpi_name);
+  debug (100, "unwind: checking `%s' (load_base=%lx)\n",
+	 info->dlpi_name, info->dlpi_addr);
 
   phdr = info->dlpi_phdr;
   load_base = info->dlpi_addr;
@@ -346,6 +352,26 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   if (!p_text || !p_unwind)
     return 0;
 
+  if (likely (p_unwind->p_vaddr >= p_text->p_vaddr
+	      && p_unwind->p_vaddr < p_text->p_vaddr + p_text->p_memsz))
+    /* normal case: unwind table is inside text segment */
+    segbase = p_text->p_vaddr + load_base;
+  else
+    {
+      /* Special case: unwind table is in some other segment; this
+	 happens for the Linux kernel's gate DSO, for example.  */
+      phdr = info->dlpi_phdr;
+      for (n = info->dlpi_phnum; --n >= 0; phdr++)
+	{
+	  if (phdr->p_type == PT_LOAD && p_unwind->p_vaddr >= phdr->p_vaddr
+	      && p_unwind->p_vaddr < phdr->p_vaddr + phdr->p_memsz)
+	    {
+	      segbase = phdr->p_vaddr + load_base;
+	      break;
+	    }
+	}
+    }
+
   if (p_dynamic)
     {
       /* For dynamicly linked executables and shared libraries,
@@ -369,7 +395,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   di->u.ti.name_ptr = (unw_word_t) info->dlpi_name;
   di->u.ti.table_data = (void *) (p_unwind->p_vaddr + load_base);
   di->u.ti.table_len = p_unwind->p_memsz / sizeof (unw_word_t);
-  di->u.ti.segbase = p_text->p_vaddr + load_base;
+  di->u.ti.segbase = segbase;
 
   debug (100, "unwind: found table `%s': segbase=%lx, len=%lu, gp=%lx, "
 	 "table_data=%p\n", (char *) di->u.ti.name_ptr, di->u.ti.segbase,
