@@ -163,8 +163,9 @@ struct cursor
 
 struct ia64_global_unwind_state
   {
-    int needs_initialization;
     pthread_mutex_t lock;		/* global data lock */
+
+    volatile char needs_initialization;
 
     /* Table of registers that prologues can save (and order in which
        they're saved).  */
