@@ -63,7 +63,7 @@ typedef enum
     UNW_IA64_CFM,
 
     /* frame info (read-only): */
-    UNW_IA64_CURRENT_BSP,
+    UNW_IA64_BSP,
     UNW_IA64_IP,
     UNW_IA64_SP,
     UNW_IA64_PROC_START,

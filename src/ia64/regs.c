@@ -328,7 +328,7 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
     {
       /* frame registers: */
 
-    case UNW_IA64_CURRENT_BSP:
+    case UNW_IA64_BSP:
       if (write)
 	return -UNW_EREADONLYREG;
       *valp = c->bsp;

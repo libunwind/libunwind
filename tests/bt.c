@@ -45,7 +45,7 @@ do_backtrace (void)
 	unw_get_reg (&cursor, UNW_REG_PROC_START, &proc_start);
 	unw_get_reg (&cursor, UNW_REG_HANDLER, &handler);
 	unw_get_reg (&cursor, UNW_REG_LSDA, &lsda);
-	unw_get_reg (&cursor, UNW_IA64_CURRENT_BSP, &bsp);
+	unw_get_reg (&cursor, UNW_IA64_BSP, &bsp);
 	printf ("\tproc_start=%016lx handler=%lx lsda=%lx bsp=%lx\n",
 		proc_start, handler, lsda, bsp);
       }
