@@ -10,8 +10,8 @@ if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig
  TESTS_arch = ia64-test-stack
 endif
- TESTS_cdep = test-dyn1 test-ptrace
- noinst_PROGRAMS_cdep = bt exc test-init test-varargs test-dyn1 test-resume-sig
+ TESTS_cdep = test-dyn1 test-exc test-resume-sig test-setjmp test-ptrace
+ noinst_PROGRAMS_cdep = bt test-init test-varargs
 endif
 
 TESTS = $(TESTS_cdep) $(TESTS_arch)
@@ -24,3 +24,5 @@ noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 ia64_test_stack_SOURCES = ia64-test-stack.c ia64-test-stack-asm.S
 
 LDADD = ../src/libunwind-$(arch).la
+
+test_setjmp_LDADD = ../src/libunwind-setjmp.la
