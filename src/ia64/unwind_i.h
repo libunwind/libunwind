@@ -28,6 +28,7 @@ License.  */
 
 #include <memory.h>
 #include <stdint.h>
+
 #include <libunwind.h>
 
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
@@ -355,7 +356,7 @@ struct ia64_state_record
     unsigned int in_body : 1;		/* are we inside prologue or body? */
     unsigned int flags;		/* see IA64_FLAG_* */
 
-    uint8_t *imask;		/* imask of of spill_mask record or NULL */
+    uint8_t *imask;		/* imask of spill_mask record or NULL */
     unw_word_t pr_val;		/* predicate values */
     unw_word_t pr_mask;		/* predicate mask */
 
