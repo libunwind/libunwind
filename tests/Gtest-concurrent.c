@@ -58,7 +58,7 @@ handler (int sig)
     {
       unw_get_reg(&c, UNW_REG_IP, &ip);
       if (verbose)
-	printf ("%p: IP=%lx\n", pthread_self (), (unsigned long) ip);
+	printf ("%lx: IP=%lx\n", (long) pthread_self (), (unsigned long) ip);
     }
   while ((ret = unw_step(&c)) > 0);
 
