@@ -16,6 +16,7 @@ AM_PROG_AS
 
 dnl Checks for libraries.
 AC_CHECK_LIB(uca, __uc_get_grs)
+CHECK_ATOMIC_OPS
 
 dnl Checks for header files.
 AC_HEADER_STDC
