@@ -95,7 +95,6 @@ update_frame_state (struct ia64_cursor *c)
     {
       dprintf ("%s: ip, sp, and bsp unchanged; stopping here (ip=0x%lx)\n",
 	       __FUNCTION__, (long) ip);
-      STAT(unw.stat.api.unwind_time += ia64_get_itc () - start);
       return -UNW_EBADFRAME;
     }
 
