@@ -105,12 +105,12 @@ libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 	ia64/regname-ia64.c
 
 # The list of files that go into libunwind:
+#  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 	$(libunwind_la_SOURCES_local)					   \
 									   \
 	elf64.c elf64.h							   \
 									   \
-	/* blech, needed for Intel C++ 8.0 compatibility */ 		   \
 	mi/_ReadULEB.c mi/_ReadSLEB.c					   \
 									   \
 	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
