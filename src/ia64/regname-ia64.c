@@ -1,3 +1,42 @@
+/* libunwind - a platform-independent unwind library
+   Copyright (C) 2002-2003 Hewlett-Packard Co
+	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+
+This file is part of libunwind.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+/* Logically, we like to think of the stack as a contiguous region of
+memory.  Unfortunately, this logical view doesn't work for the
+register backing store, because the RSE is an asynchronous engine and
+because UNIX/Linux allow for stack-switching via sigaltstack(2).
+Specifically, this means that any given stacked register may or may
+not be backed up by memory in the current stack.  If not, then the
+backing memory may be found in any of the "more inner" (younger)
+stacks.  The routines in this file help manage the discontiguous
+nature of the register backing store.  The routines are completely
+independent of UNIX/Linux, but each stack frame that switches the
+backing store is expected to reserve 4 words for use by libunwind. For
+example, in the Linux sigcontext, sc_fr[0] and sc_fr[1] serve this
+purpose.  */
+
 #include "unwind_i.h"
 
 static const char *regname[] =
@@ -77,7 +116,7 @@ static const char *regname[] =
 const char *
 unw_regname (unw_regnum_t reg)
 {
-  if (reg < sizeof (regname) / sizeof (regname[0]))
+  if (reg < NELEMS (regname))
     return regname[reg];
   else
     return "???";
