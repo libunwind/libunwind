@@ -32,6 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <endian.h>
 #include <libunwind.h>
 
+#include "elf64.h"
 #include "mempool.h"
 
 enum ia64_pregnum
@@ -118,6 +119,7 @@ struct cursor
 
     short hint;
     short prev_script;
+    uint8_t eh_valid_mask;
 
     int pi_valid : 1;		/* is proc_info valid? */
     int pi_is_dynamic : 1;	/* proc_info found via dynamic proc info? */
@@ -131,7 +133,7 @@ struct cursor
        stacked registers and since we only have to track the current
        frame and only areas that are not empty, this puts an upper
        limit on the # of backing-store areas we have to track.  */
-    uint8_t rbs_curr;		/* index of current rbs-area (contains c->bsp) */
+    uint8_t rbs_curr;		/* index of curr. rbs-area (contains c->bsp) */
     uint8_t rbs_left_edge;	/* index of inner-most valid rbs-area */
     uint8_t rbs_right_edge;	/* index of outer-most valid rbs-area */
     struct rbs_area
@@ -175,9 +177,12 @@ struct ia64_global_unwind_state
 #define tdep_search_unwind_table(a,b,c,d,e,f)			\
 		_Uia64_search_unwind_table (a, b, c, d, e, f)
 #define tdep_find_proc_info(as,ip,pi,n,a)			\
-		UNW_ARCH_OBJ(find_proc_info) (as,ip,pi,n,a)
-#define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a,b,c)
-#define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
+		UNW_ARCH_OBJ(find_proc_info) (as, ip, pi, n, a)
+#define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a, b, c)
+#define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc, reg)
+#define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
+								     d, e)
+#define tdep_get_proc_name(a,b,c,d)	_Uelf64_get_proc_name (a, b, c, d)
 #define tdep_debug_level		unw.debug_level
 
 #define unw		UNW_ARCH_OBJ(data)
@@ -188,6 +193,8 @@ extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 extern void tdep_put_unwind_info (unw_addr_space_t as,
 				  unw_proc_info_t *pi, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
+extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
+			       unsigned long *segbase, unsigned long *mapoff);
 
 extern struct ia64_global_unwind_state unw;
 
