@@ -27,7 +27,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #if UNW_TARGET_IA64
 # include <elf.h>
-# include <asm/ptrace_offsets.h>
+# ifdef HAVE_ASM_PTRACE_OFFSETS_H
+#   include <asm/ptrace_offsets.h>
+# endif
 # include "ia64/rse.h"
 #endif
 
@@ -51,9 +53,13 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
       /* The Linux ptrace represents the statc NaT bits as a single word.  */
       mask = ((unw_word_t) 1) << (reg - UNW_IA64_NAT);
       errno = 0;
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
       nat_bits = ptrace (PTRACE_PEEKUSER, pid, PT_NAT_BITS, 0);
       if (errno)
 	return -UNW_EBADREG;
+#endif
 
       if (write)
 	{
@@ -61,10 +67,14 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	    nat_bits |= mask;
 	  else
 	    nat_bits &= ~mask;
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	  errno = 0;
 	  ptrace (PTRACE_POKEUSER, pid, PT_NAT_BITS, nat_bits);
 	  if (errno)
 	    return -UNW_EBADREG;
+#endif
 	}
       goto out;
     }
@@ -82,26 +92,38 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	  unsigned long ip, psr;
 
 	  /* distribute bundle-addr. & slot-number across PT_IIP & PT_IPSR.  */
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	  errno = 0;
 	  psr = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IPSR, 0);
 	  if (errno)
 	    return -UNW_EBADREG;
+#endif
 	  if (write)
 	    {
 	      ip = *val & ~0xfUL;
 	      psr = (psr & ~0x3UL << 41) | (*val & 0x3);
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	      errno = 0;
 	      ptrace (PTRACE_POKEUSER, pid, PT_CR_IIP, ip);
 	      ptrace (PTRACE_POKEUSER, pid, PT_CR_IPSR, psr);
 	      if (errno)
 		return -UNW_EBADREG;
+#endif
 	    }
 	  else
 	    {
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	      errno = 0;
 	      ip = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IIP, 0);
 	      if (errno)
 		return -UNW_EBADREG;
+#endif
 	      *val = ip + ((psr >> 41) & 0x3);
 	    }
 	  goto out;
@@ -116,28 +138,40 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	{
 	  unsigned long sof, cfm, bsp;
 
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	  /* Account for the fact that ptrace() expects bsp to point
 	     _after_ the current register frame.  */
 	  errno = 0;
 	  cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
 	  if (errno)
 	    return -UNW_EBADREG;
+#endif
 	  sof = (cfm & 0x7f);
 
 	  if (write)
 	    {
 	      bsp = ia64_rse_skip_regs (*val, sof);
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	      errno = 0;
 	      ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, bsp);
 	      if (errno)
 		return -UNW_EBADREG;
+#endif
 	    }
 	  else
 	    {
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	      errno = 0;
 	      bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
 	      if (errno)
 		return -UNW_EBADREG;
+#endif
 	      *val = ia64_rse_skip_regs (bsp, -sof);
 	    }
 	  goto out;
@@ -150,9 +184,13 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	  {
 	    unsigned long new_sof, old_sof, cfm, bsp;
 
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	    errno = 0;
 	    bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
 	    cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
+#endif
 	    if (errno)
 	      return -UNW_EBADREG;
 	    old_sof = (cfm & 0x7f);
@@ -160,15 +198,23 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	    if (old_sof != new_sof)
 	      {
 		bsp = ia64_rse_skip_regs (bsp, -old_sof + new_sof);
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 		errno = 0;
 		ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, 0);
 		if (errno)
 		  return -UNW_EBADREG;
+#endif
 	      }
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
 	    errno = 0;
 	    ptrace (PTRACE_POKEUSER, pid, PT_CFM, *val);
 	    if (errno)
 	      return -UNW_EBADREG;
+#endif
 	    goto out;
 	  }
 	break;
@@ -178,6 +224,9 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
     return -UNW_EBADREG;
 
+#ifdef HAVE_TTRACE
+#	warning No support for ttrace() yet.
+#else
   errno = 0;
   if (write)
     ptrace (PTRACE_POKEUSER, pid, _UPT_reg_offset[reg], *val);
@@ -185,6 +234,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
     *val = ptrace (PTRACE_PEEKUSER, pid, _UPT_reg_offset[reg], 0);
   if (errno)
     return -UNW_EBADREG;
+#endif
 
  out:
 #if DEBUG
