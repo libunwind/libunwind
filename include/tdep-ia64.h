@@ -47,8 +47,8 @@ enum ia64_pregnum
     IA64_REG_BSPSTORE,
     IA64_REG_PFS,			/* previous function state */
     IA64_REG_RNAT,
-    /* return pointer: */
-    IA64_REG_RP,
+    /* instruction pointer: */
+    IA64_REG_IP,
 
     /* preserved registers: */
     IA64_REG_R4, IA64_REG_R5, IA64_REG_R6, IA64_REG_R7,
@@ -63,6 +63,20 @@ enum ia64_pregnum
     IA64_NUM_PREGS
   };
 
+#ifdef UNW_LOCAL_ONLY
+
+typedef unw_word_t ia64_loc_t;
+
+#else /* !UNW_LOCAL_ONLY */
+
+typedef struct ia64_loc
+  {
+    unw_word_t w0, w1;
+  }
+ia64_loc_t;
+
+#endif /* !UNW_LOCAL_ONLY */
+
 #include "ia64/script.h"
 
 struct unw_addr_space
@@ -76,6 +90,9 @@ struct unw_addr_space
 
     struct ia64_script_cache global_cache;
    };
+
+#define ABI_MARKER_LINUX_SIGTRAMP	((0 << 8) | 's')
+#define ABI_MARKER_HP_UX_SIGTRAMP	((1 << 8) | 1)
 
 struct cursor
   {
@@ -93,32 +110,17 @@ struct cursor
     unw_word_t bsp;		/* backing store pointer value */
     unw_word_t sp;		/* stack pointer value */
     unw_word_t psp;		/* previous sp value */
-    unw_word_t cfm_loc;		/* cfm save location (or NULL) */
-
-    /* preserved state: */
-    unw_word_t bsp_loc;		/* previous bsp save location */
-    unw_word_t bspstore_loc;
-    unw_word_t pfs_loc;
-    unw_word_t rnat_loc;
-    unw_word_t ip_loc;
-    unw_word_t pri_unat_loc;
-    unw_word_t unat_loc;
-    unw_word_t pr_loc;
-    unw_word_t lc_loc;
-    unw_word_t fpsr_loc;
-    unw_word_t r4_loc, r5_loc, r6_loc, r7_loc;
-    unw_word_t nat4_loc, nat5_loc, nat6_loc, nat7_loc;
-    unw_word_t b1_loc, b2_loc, b3_loc, b4_loc, b5_loc;
-    unw_word_t f2_loc, f3_loc, f4_loc, f5_loc, fr_loc[16];
+    ia64_loc_t cfm_loc;		/* cfm save location (or NULL) */
+    ia64_loc_t loc[IA64_NUM_PREGS];
 
     unw_word_t eh_args[4];	/* exception handler arguments */
-    unw_word_t sigcontext_loc;	/* location of sigcontext or NULL */
-    unw_word_t is_signal_frame;	/* is this a signal trampoline frame? */
-
+    unw_word_t sigcontext_addr;	/* address of sigcontext or 0 */
     unw_word_t sigcontext_off;	/* sigcontext-offset relative to signal sp */
 
     short hint;
     short prev_script;
+
+    uint16_t abi_marker;;
     uint8_t eh_valid_mask;
 
     int pi_valid : 1;		/* is proc_info valid? */
@@ -139,7 +141,7 @@ struct cursor
       {
 	unw_word_t end;
 	unw_word_t size;
-	unw_word_t rnat_loc;
+	ia64_loc_t rnat_loc;
       }
     rbs_area[96 + 2];	/* 96 stacked regs + 1 extra stack on each side... */
 };
@@ -151,9 +153,6 @@ struct ia64_global_unwind_state
     /* Table of registers that prologues can save (and order in which
        they're saved).  */
     const unsigned char save_order[8];
-
-    /* Index into unw_cursor_t for preserved register i */
-    unsigned short preg_index[IA64_NUM_PREGS];
 
     unw_word_t r0;
     unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
