@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -177,8 +177,8 @@ access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
 
       if (reg >= 4 && reg <= 7)
 	{
-	  /* NaT bit is saved in a NaT register.  This happens when a
-	     general register is saved to another general
+	  /* NaT bit is saved in a NaT register.  This happens when
+	     one general register is saved to another general
 	     register.  */
 #ifdef UNW_LOCAL_ONLY
 	  ucontext_t *uc = c->as_arg;
@@ -195,9 +195,10 @@ access_nat (struct cursor *c, unw_word_t loc, unw_word_t reg_loc,
       else if (reg >= 32)
 	{
 	  /* NaT bit is saved in a stacked register.  */
-	  nat_loc = ia64_rse_rnat_addr (reg_loc);	/* XXX looks wrong */
-	  if (nat_loc > c->rbs_top)
-	    nat_loc = c->top_rnat_loc;
+	  reg = rotate_gr (c, reg - 32);
+	  ret = ia64_get_stacked (c, reg, &reg_loc, &nat_loc);
+	  if (ret < 0)
+	    return ret;
 	  mask = (unw_word_t) 1 << ia64_rse_slot_num (reg_loc);
 	}
       else
@@ -292,20 +293,21 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       return 0;
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
-      reg = rotate_gr (c, reg - UNW_IA64_GR) + UNW_IA64_GR;
+      reg = rotate_gr (c, reg - UNW_IA64_GR);
       if (reg < 0)
 	return -UNW_EBADREG;
-      loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_GR + 32));
+      ret = ia64_get_stacked (c, reg, &loc, NULL);
+      if (ret < 0)
+	return ret;
       break;
 
     case UNW_IA64_NAT + 32 ... UNW_IA64_NAT + 127:	/* stacked reg */
-      reg = rotate_gr (c, reg - UNW_IA64_NAT) + UNW_IA64_NAT;
+      reg = rotate_gr (c, reg - UNW_IA64_NAT);
       if (reg < 0)
 	return -UNW_EBADREG;
-      loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_NAT + 32));
-      nat_loc = ia64_rse_rnat_addr (loc);
-      if (nat_loc > c->rbs_top)
-	nat_loc = c->top_rnat_loc;
+      ret = ia64_get_stacked (c, reg, &loc, &nat_loc);
+      if (ret < 0)
+	return 0;
       mask = (unw_word_t) 1 << ia64_rse_slot_num (loc);
       return update_nat (c, nat_loc, mask, valp, write);
 
