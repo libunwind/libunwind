@@ -93,7 +93,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
 install_sh = @install_sh@
-SOVERSION = 1:0:0		# See comments at end of file.
+SOVERSION = 1:1:0		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
 
 libunwind_setjmp_la_SOURCES_local = longjmp.c siglongjmp.c
@@ -139,13 +139,13 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	elf64.c elf64.h							      \
-	ia64/_Uia64_install_cursor.S					      \
 	ia64/global-ia64.c ia64/global-asm-ia64.S			      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
 									      \
-	ia64/Ginit-ia64.c ia64/Gparser-ia64.c ia64/Gregs-ia64.c		      \
+	ia64/Ginit-ia64.c ia64/Ginstall_cursor.S			      \
+	ia64/Gparser-ia64.c ia64/Gregs-ia64.c				      \
 	ia64/Grbs-ia64.c ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c   \
 	ia64/Gdestroy_addr_space-ia64.c					      \
 	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c		      \
@@ -154,7 +154,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/Gresume-ia64.c ia64/Gset_reg-ia64.c ia64/Gset_fpreg-ia64.c	      \
 	ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c ia64/Gstep-ia64.c    \
 									      \
-	ia64/Linit-ia64.c ia64/Lparser-ia64.c ia64/Lregs-ia64.c		      \
+	ia64/Linit-ia64.c ia64/Linstall_cursor.S			      \
+	ia64/Lparser-ia64.c ia64/Lregs-ia64.c				      \
 	ia64/Lrbs-ia64.c ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c   \
 	ia64/Ldestroy_addr_space-ia64.c					      \
 	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c		      \
@@ -216,9 +217,10 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 @OS_HPUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
 
-@ARCH_IA64_TRUE@mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
-@ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64
-@ARCH_IA64_TRUE@BUILT_SOURCES = cursor_i.h
+@ARCH_IA64_TRUE@mk_Gcursor_i_ia64_SOURCES = ia64/mk_Gcursor_i-ia64.c
+@ARCH_IA64_TRUE@mk_Lcursor_i_ia64_SOURCES = ia64/mk_Lcursor_i-ia64.c
+@ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64 mk_Lcursor_i-ia64
+@ARCH_IA64_TRUE@BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@lib_LTLIBRARIES_arch = libunwind-x86.la
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@lib_LTLIBRARIES_arch = libunwind-hppa.la
 @ARCH_IA64_TRUE@lib_LTLIBRARIES_arch = libunwind-ia64.la
@@ -248,6 +250,7 @@ EXTRA_DIST = elfxx.h elfxx.c					\
 		$(libunwind_la_SOURCES_ia64)			\
 		$(libunwind_la_SOURCES_x86)			\
 		$(libunwind_la_SOURCES_os_linux)		\
+		$(libunwind_la_SOURCES_os_hpux)			\
 		$(libunwind_la_SOURCES_local)			\
 		$(libunwind_la_SOURCES_remote)			\
 		$(libunwind_setjmp_la_SOURCES_local)		\
@@ -289,18 +292,18 @@ am__objects_8 = $(am__objects_7) flush_cache-hppa.lo \
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_8)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-am__objects_9 = $(am__objects_7) elf64.lo _Uia64_install_cursor.lo \
-	global-ia64.lo global-asm-ia64.lo tables-ia64.lo \
-	get_accessors-ia64.lo flush_cache-ia64.lo \
-	set_caching_policy-ia64.lo regname-ia64.lo Ginit-ia64.lo \
-	Gparser-ia64.lo Gregs-ia64.lo Grbs-ia64.lo Gscript-ia64.lo \
-	Gcreate_addr_space-ia64.lo Gdestroy_addr_space-ia64.lo \
-	Gget_proc_info-ia64.lo Gget_proc_name-ia64.lo Gget_reg-ia64.lo \
-	Gget_fpreg-ia64.lo Gget_save_loc-ia64.lo \
-	Gis_signal_frame-ia64.lo Gresume-ia64.lo Gset_reg-ia64.lo \
-	Gset_fpreg-ia64.lo Ginit_local-ia64.lo Ginit_remote-ia64.lo \
-	Gstep-ia64.lo Linit-ia64.lo Lparser-ia64.lo Lregs-ia64.lo \
-	Lrbs-ia64.lo Lscript-ia64.lo Lcreate_addr_space-ia64.lo \
+am__objects_9 = $(am__objects_7) elf64.lo global-ia64.lo \
+	global-asm-ia64.lo tables-ia64.lo get_accessors-ia64.lo \
+	flush_cache-ia64.lo set_caching_policy-ia64.lo regname-ia64.lo \
+	Ginit-ia64.lo Ginstall_cursor.lo Gparser-ia64.lo Gregs-ia64.lo \
+	Grbs-ia64.lo Gscript-ia64.lo Gcreate_addr_space-ia64.lo \
+	Gdestroy_addr_space-ia64.lo Gget_proc_info-ia64.lo \
+	Gget_proc_name-ia64.lo Gget_reg-ia64.lo Gget_fpreg-ia64.lo \
+	Gget_save_loc-ia64.lo Gis_signal_frame-ia64.lo Gresume-ia64.lo \
+	Gset_reg-ia64.lo Gset_fpreg-ia64.lo Ginit_local-ia64.lo \
+	Ginit_remote-ia64.lo Gstep-ia64.lo Linit-ia64.lo \
+	Linstall_cursor.lo Lparser-ia64.lo Lregs-ia64.lo Lrbs-ia64.lo \
+	Lscript-ia64.lo Lcreate_addr_space-ia64.lo \
 	Ldestroy_addr_space-ia64.lo Lget_proc_info-ia64.lo \
 	Lget_proc_name-ia64.lo Lget_reg-ia64.lo Lget_fpreg-ia64.lo \
 	Lget_save_loc-ia64.lo Lis_signal_frame-ia64.lo Lresume-ia64.lo \
@@ -342,15 +345,23 @@ am__objects_18 = $(am__objects_7) elf32.lo flush_cache-x86.lo \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_18)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
-@ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64$(EXEEXT)
+@ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64$(EXEEXT) \
+@ARCH_IA64_TRUE@	mk_Lcursor_i-ia64$(EXEEXT)
 @ARCH_IA64_FALSE@noinst_PROGRAMS =
 PROGRAMS = $(noinst_PROGRAMS)
 
-@ARCH_IA64_TRUE@am_mk_cursor_i_ia64_OBJECTS = mk_cursor_i-ia64.$(OBJEXT)
-mk_cursor_i_ia64_OBJECTS = $(am_mk_cursor_i_ia64_OBJECTS)
-mk_cursor_i_ia64_LDADD = $(LDADD)
-mk_cursor_i_ia64_DEPENDENCIES =
-mk_cursor_i_ia64_LDFLAGS =
+@ARCH_IA64_TRUE@am_mk_Gcursor_i_ia64_OBJECTS = \
+@ARCH_IA64_TRUE@	mk_Gcursor_i-ia64.$(OBJEXT)
+mk_Gcursor_i_ia64_OBJECTS = $(am_mk_Gcursor_i_ia64_OBJECTS)
+mk_Gcursor_i_ia64_LDADD = $(LDADD)
+mk_Gcursor_i_ia64_DEPENDENCIES =
+mk_Gcursor_i_ia64_LDFLAGS =
+@ARCH_IA64_TRUE@am_mk_Lcursor_i_ia64_OBJECTS = \
+@ARCH_IA64_TRUE@	mk_Lcursor_i-ia64.$(OBJEXT)
+mk_Lcursor_i_ia64_OBJECTS = $(am_mk_Lcursor_i_ia64_OBJECTS)
+mk_Lcursor_i_ia64_LDADD = $(LDADD)
+mk_Lcursor_i_ia64_DEPENDENCIES =
+mk_Lcursor_i_ia64_LDFLAGS =
 
 DEFS = @DEFS@
 DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
@@ -469,7 +480,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/global-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/longjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mempool.Plo ./$(DEPDIR)/mi-init.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mk_cursor_i-ia64.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/mk_Gcursor_i-ia64.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/mk_Lcursor_i-ia64.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/os-hpux.Plo ./$(DEPDIR)/os-linux.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-x86.Plo \
@@ -492,9 +504,9 @@ LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 CFLAGS = @CFLAGS@
 DIST_SOURCES = $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) \
 	$(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) \
-	$(mk_cursor_i_ia64_SOURCES)
+	$(mk_Gcursor_i_ia64_SOURCES) $(mk_Lcursor_i_ia64_SOURCES)
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(mk_cursor_i_ia64_SOURCES)
+SOURCES = $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(mk_Gcursor_i_ia64_SOURCES) $(mk_Lcursor_i_ia64_SOURCES)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -554,7 +566,6 @@ Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
 libunwind-hppa.la: $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_hppa_la_LDFLAGS) $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_LIBADD) $(LIBS)
-_Uia64_install_cursor.lo: ia64/_Uia64_install_cursor.S
 global-ia64.lo: ia64/global-ia64.c
 global-asm-ia64.lo: ia64/global-asm-ia64.S
 tables-ia64.lo: ia64/tables-ia64.c
@@ -563,6 +574,7 @@ flush_cache-ia64.lo: ia64/flush_cache-ia64.c
 set_caching_policy-ia64.lo: ia64/set_caching_policy-ia64.c
 regname-ia64.lo: ia64/regname-ia64.c
 Ginit-ia64.lo: ia64/Ginit-ia64.c
+Ginstall_cursor.lo: ia64/Ginstall_cursor.S
 Gparser-ia64.lo: ia64/Gparser-ia64.c
 Gregs-ia64.lo: ia64/Gregs-ia64.c
 Grbs-ia64.lo: ia64/Grbs-ia64.c
@@ -582,6 +594,7 @@ Ginit_local-ia64.lo: ia64/Ginit_local-ia64.c
 Ginit_remote-ia64.lo: ia64/Ginit_remote-ia64.c
 Gstep-ia64.lo: ia64/Gstep-ia64.c
 Linit-ia64.lo: ia64/Linit-ia64.c
+Linstall_cursor.lo: ia64/Linstall_cursor.S
 Lparser-ia64.lo: ia64/Lparser-ia64.c
 Lregs-ia64.lo: ia64/Lregs-ia64.c
 Lrbs-ia64.lo: ia64/Lrbs-ia64.c
@@ -647,10 +660,14 @@ clean-noinstPROGRAMS:
 	  echo " rm -f $$p $$f"; \
 	  rm -f $$p $$f ; \
 	done
-mk_cursor_i-ia64.$(OBJEXT): ia64/mk_cursor_i-ia64.c
-mk_cursor_i-ia64$(EXEEXT): $(mk_cursor_i_ia64_OBJECTS) $(mk_cursor_i_ia64_DEPENDENCIES) 
-	@rm -f mk_cursor_i-ia64$(EXEEXT)
-	$(LINK) $(mk_cursor_i_ia64_LDFLAGS) $(mk_cursor_i_ia64_OBJECTS) $(mk_cursor_i_ia64_LDADD) $(LIBS)
+mk_Gcursor_i-ia64.$(OBJEXT): ia64/mk_Gcursor_i-ia64.c
+mk_Gcursor_i-ia64$(EXEEXT): $(mk_Gcursor_i_ia64_OBJECTS) $(mk_Gcursor_i_ia64_DEPENDENCIES) 
+	@rm -f mk_Gcursor_i-ia64$(EXEEXT)
+	$(LINK) $(mk_Gcursor_i_ia64_LDFLAGS) $(mk_Gcursor_i_ia64_OBJECTS) $(mk_Gcursor_i_ia64_LDADD) $(LIBS)
+mk_Lcursor_i-ia64.$(OBJEXT): ia64/mk_Lcursor_i-ia64.c
+mk_Lcursor_i-ia64$(EXEEXT): $(mk_Lcursor_i_ia64_OBJECTS) $(mk_Lcursor_i_ia64_DEPENDENCIES) 
+	@rm -f mk_Lcursor_i-ia64$(EXEEXT)
+	$(LINK) $(mk_Lcursor_i_ia64_LDFLAGS) $(mk_Lcursor_i_ia64_OBJECTS) $(mk_Lcursor_i_ia64_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT) core *.core
@@ -771,7 +788,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/longjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mi-init.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_cursor_i-ia64.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_Gcursor_i-ia64.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_Lcursor_i-ia64.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-hpux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
@@ -796,15 +814,6 @@ distclean-depend:
 .S.lo:
 	$(LTCCASCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
-_Uia64_install_cursor.o: ia64/_Uia64_install_cursor.S
-	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_cursor.o `test -f 'ia64/_Uia64_install_cursor.S' || echo '$(srcdir)/'`ia64/_Uia64_install_cursor.S
-
-_Uia64_install_cursor.obj: ia64/_Uia64_install_cursor.S
-	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_cursor.obj `cygpath -w ia64/_Uia64_install_cursor.S`
-
-_Uia64_install_cursor.lo: ia64/_Uia64_install_cursor.S
-	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_cursor.lo `test -f 'ia64/_Uia64_install_cursor.S' || echo '$(srcdir)/'`ia64/_Uia64_install_cursor.S
-
 global-asm-ia64.o: ia64/global-asm-ia64.S
 	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o global-asm-ia64.o `test -f 'ia64/global-asm-ia64.S' || echo '$(srcdir)/'`ia64/global-asm-ia64.S
 
@@ -813,6 +822,24 @@ global-asm-ia64.obj: ia64/global-asm-ia64.S
 
 global-asm-ia64.lo: ia64/global-asm-ia64.S
 	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o global-asm-ia64.lo `test -f 'ia64/global-asm-ia64.S' || echo '$(srcdir)/'`ia64/global-asm-ia64.S
+
+Ginstall_cursor.o: ia64/Ginstall_cursor.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Ginstall_cursor.o `test -f 'ia64/Ginstall_cursor.S' || echo '$(srcdir)/'`ia64/Ginstall_cursor.S
+
+Ginstall_cursor.obj: ia64/Ginstall_cursor.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Ginstall_cursor.obj `cygpath -w ia64/Ginstall_cursor.S`
+
+Ginstall_cursor.lo: ia64/Ginstall_cursor.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Ginstall_cursor.lo `test -f 'ia64/Ginstall_cursor.S' || echo '$(srcdir)/'`ia64/Ginstall_cursor.S
+
+Linstall_cursor.o: ia64/Linstall_cursor.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Linstall_cursor.o `test -f 'ia64/Linstall_cursor.S' || echo '$(srcdir)/'`ia64/Linstall_cursor.S
+
+Linstall_cursor.obj: ia64/Linstall_cursor.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Linstall_cursor.obj `cygpath -w ia64/Linstall_cursor.S`
+
+Linstall_cursor.lo: ia64/Linstall_cursor.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o Linstall_cursor.lo `test -f 'ia64/Linstall_cursor.S' || echo '$(srcdir)/'`ia64/Linstall_cursor.S
 
 siglongjmp-x86.o: x86/siglongjmp-x86.S
 	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o siglongjmp-x86.o `test -f 'x86/siglongjmp-x86.S' || echo '$(srcdir)/'`x86/siglongjmp-x86.S
@@ -2515,23 +2542,41 @@ Lstep-x86.lo: x86/Lstep-x86.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-x86.lo `test -f 'x86/Lstep-x86.c' || echo '$(srcdir)/'`x86/Lstep-x86.c
 
-mk_cursor_i-ia64.o: ia64/mk_cursor_i-ia64.c
-@AMDEP_TRUE@	source='ia64/mk_cursor_i-ia64.c' object='mk_cursor_i-ia64.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_cursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_cursor_i-ia64.TPo' @AMDEPBACKSLASH@
+mk_Gcursor_i-ia64.o: ia64/mk_Gcursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_Gcursor_i-ia64.c' object='mk_Gcursor_i-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_Gcursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_Gcursor_i-ia64.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_cursor_i-ia64.o `test -f 'ia64/mk_cursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_cursor_i-ia64.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_Gcursor_i-ia64.o `test -f 'ia64/mk_Gcursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_Gcursor_i-ia64.c
 
-mk_cursor_i-ia64.obj: ia64/mk_cursor_i-ia64.c
-@AMDEP_TRUE@	source='ia64/mk_cursor_i-ia64.c' object='mk_cursor_i-ia64.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_cursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_cursor_i-ia64.TPo' @AMDEPBACKSLASH@
+mk_Gcursor_i-ia64.obj: ia64/mk_Gcursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_Gcursor_i-ia64.c' object='mk_Gcursor_i-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_Gcursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_Gcursor_i-ia64.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_cursor_i-ia64.obj `cygpath -w ia64/mk_cursor_i-ia64.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_Gcursor_i-ia64.obj `cygpath -w ia64/mk_Gcursor_i-ia64.c`
 
-mk_cursor_i-ia64.lo: ia64/mk_cursor_i-ia64.c
-@AMDEP_TRUE@	source='ia64/mk_cursor_i-ia64.c' object='mk_cursor_i-ia64.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_cursor_i-ia64.Plo' tmpdepfile='$(DEPDIR)/mk_cursor_i-ia64.TPlo' @AMDEPBACKSLASH@
+mk_Gcursor_i-ia64.lo: ia64/mk_Gcursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_Gcursor_i-ia64.c' object='mk_Gcursor_i-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_Gcursor_i-ia64.Plo' tmpdepfile='$(DEPDIR)/mk_Gcursor_i-ia64.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_cursor_i-ia64.lo `test -f 'ia64/mk_cursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_cursor_i-ia64.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_Gcursor_i-ia64.lo `test -f 'ia64/mk_Gcursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_Gcursor_i-ia64.c
+
+mk_Lcursor_i-ia64.o: ia64/mk_Lcursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_Lcursor_i-ia64.c' object='mk_Lcursor_i-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_Lcursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_Lcursor_i-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_Lcursor_i-ia64.o `test -f 'ia64/mk_Lcursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_Lcursor_i-ia64.c
+
+mk_Lcursor_i-ia64.obj: ia64/mk_Lcursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_Lcursor_i-ia64.c' object='mk_Lcursor_i-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_Lcursor_i-ia64.Po' tmpdepfile='$(DEPDIR)/mk_Lcursor_i-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_Lcursor_i-ia64.obj `cygpath -w ia64/mk_Lcursor_i-ia64.c`
+
+mk_Lcursor_i-ia64.lo: ia64/mk_Lcursor_i-ia64.c
+@AMDEP_TRUE@	source='ia64/mk_Lcursor_i-ia64.c' object='mk_Lcursor_i-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/mk_Lcursor_i-ia64.Plo' tmpdepfile='$(DEPDIR)/mk_Lcursor_i-ia64.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o mk_Lcursor_i-ia64.lo `test -f 'ia64/mk_Lcursor_i-ia64.c' || echo '$(srcdir)/'`ia64/mk_Lcursor_i-ia64.c
 CCDEPMODE = @CCDEPMODE@
 
 mostlyclean-libtool:
@@ -2699,8 +2744,10 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 @REMOTE_ONLY_FALSE@install-exec-hook:
 @REMOTE_ONLY_FALSE@	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind.a
 @REMOTE_ONLY_FALSE@	$(LN_S) -f libunwind-$(arch).so $(DESTDIR)$(libdir)/libunwind.so
-@ARCH_IA64_TRUE@cursor_i.h: mk_cursor_i-ia64
-@ARCH_IA64_TRUE@	./mk_cursor_i-ia64 > $@
+@ARCH_IA64_TRUE@Gcursor_i.h: mk_Gcursor_i-ia64
+@ARCH_IA64_TRUE@	./mk_Gcursor_i-ia64 > $@
+@ARCH_IA64_TRUE@Lcursor_i.h: mk_Lcursor_i-ia64
+@ARCH_IA64_TRUE@	./mk_Lcursor_i-ia64 > $@
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
