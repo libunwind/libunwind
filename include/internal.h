@@ -26,7 +26,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef internal_h
 #define internal_h
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 /* Platform-independent libunwind-internal declarations.  */
+
+#include <sys/types.h>	/* HP-UX needs this before include of pthread.h */
 
 #include <assert.h>
 #include <libunwind.h>
@@ -84,7 +90,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define mutex_lock(l)	(pthread_mutex_lock ? pthread_mutex_lock (l) : 0)
 #define mutex_unlock(l)	(pthread_mutex_unlock ? pthread_mutex_unlock (l) : 0)
 
-#if UNW_TARGET_IA64
+#ifdef HAVE_IA64INTRIN_H
 # define HAVE_CMPXCHG
 # include <ia64intrin.h>
 # define cmpxchg_ptr(_ptr,_o,_n)					\
