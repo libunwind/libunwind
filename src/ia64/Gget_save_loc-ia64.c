@@ -94,6 +94,14 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	}
       break;
 
+    case UNW_IA64_FR + 2: loc = c->loc[IA64_REG_F2]; break;
+    case UNW_IA64_FR + 3: loc = c->loc[IA64_REG_F3]; break;
+    case UNW_IA64_FR + 4: loc = c->loc[IA64_REG_F4]; break;
+    case UNW_IA64_FR + 5: loc = c->loc[IA64_REG_F5]; break;
+    case UNW_IA64_FR + 16 ... UNW_IA64_FR + 31:
+      loc = c->loc[IA64_REG_F16 + (reg - (UNW_IA64_FR + 16))];
+      break;
+
     case UNW_IA64_AR_BSP:	loc = c->loc[IA64_REG_BSP]; break;
     case UNW_IA64_AR_BSPSTORE:	loc = c->loc[IA64_REG_BSPSTORE]; break;
     case UNW_IA64_AR_PFS:	loc = c->loc[IA64_REG_PFS]; break;
@@ -132,6 +140,8 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_GR + 1:				/* global pointer */
     case UNW_IA64_NAT + 0:
     case UNW_IA64_NAT + 1:				/* global pointer */
+    case UNW_IA64_FR + 0:
+    case UNW_IA64_FR + 1:
       break;
 
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
@@ -148,6 +158,15 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_IA64_AR_CSD:
     case UNW_IA64_AR_SSD:
     case UNW_IA64_AR_CCV:
+      loc = ia64_scratch_loc (c, reg);
+      break;
+
+    case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
+      loc = ia64_scratch_loc (c, reg);
+      break;
+
+    case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
+      reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
       loc = ia64_scratch_loc (c, reg);
       break;
     }
