@@ -5,7 +5,10 @@ noinst_PROGRAMS_common =
 if REMOTE_ONLY
  noinst_PROGRAMS = $(noinst_PROGRAMS_common)
 else
- noinst_PROGRAMS = $(noinst_PROGRAMS_common) bt exc
+if ARCH_IA64
+ noinst_PROGRAMS_arch = sig
+endif
+ noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_arch) bt exc
 endif
 
-LDADD = ../src/libunwind.la
+LDADD = ../src/libunwind-$(arch).la
