@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998, 1999, 2002 Hewlett-Packard Co
+ * Copyright (C) 1998, 1999, 2002, 2003 Hewlett-Packard Co
  *	David Mosberger-Tang <davidm@hpl.hp.com>
  *
  * Register stack engine related helper functions.  This file may be
@@ -39,8 +39,8 @@ ia64_rse_rnat_addr (uint64_t slot_addr)
 
 /*
  * Calcuate the number of registers in the dirty partition starting at
- * BSPSTORE with a size of DIRTY bytes.  This isn't simply DIRTY
- * divided by eight because the 64th slot is used to store ar.rnat.
+ * BSPSTORE and ending at BSP.  This isn't simply (BSP-BSPSTORE)/8
+ * because every 64th slot stores ar.rnat.
  */
 static __inline__ uint64_t
 ia64_rse_num_regs (uint64_t bspstore, uint64_t bsp)
