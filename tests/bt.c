@@ -15,6 +15,7 @@ MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 GNU General Public License for more details.  */
 
 #include <execinfo.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <libunwind.h>
@@ -67,8 +68,22 @@ foo (void)
 }
 
 int
+sighandler (int signal, void *siginfo, struct sigcontext *sc)
+{
+  void *buffer[20];
+  int n;
+
+  printf ("sighandler: got signal %d @ %lx\n", signal, sc->sc_ip);
+
+  do_backtrace();
+}
+
+int
 main (int argc, char **argv)
 {
   foo ();
+
+  signal (SIGTERM, sighandler);
+  kill (getpid (), SIGTERM);
   return 0;
 }
