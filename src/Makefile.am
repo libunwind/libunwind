@@ -89,7 +89,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 									\
 	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
 	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
-	x86/Lresume-x86.c x86/Lstep-x86.c
+	x86/Lresume-x86.c x86/Lset_reg-x86.c x86/Lstep-x86.c
 
 if REMOTE_ONLY
 libunwind_la_SOURCES_cdep = $(libunwind_la_SOURCES_remote)
