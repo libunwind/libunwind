@@ -4,6 +4,10 @@
 
 This file is part of libunwind.  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <assert.h>
 #include <stdlib.h>
 
@@ -65,6 +69,10 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   assert (di->format == UNW_INFO_FORMAT_TABLE
 	  && (ip >= di->start_ip && ip < di->end_ip));
 
+  pi->flags = 0;
+  pi->unwind_info = 0;
+  pi->handler = 0;
+
   e = lookup ((struct ia64_table_entry *) di->u.ti.table_data,
 	      di->u.ti.table_len * sizeof (unw_word_t), ip - di->u.ti.segbase);
   if (!e)
@@ -73,7 +81,10 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 	 unwind info => use default conventions (i.e., this is NOT an
 	 error).  */
       memset (pi, 0, sizeof (*pi));
+      pi->start_ip = 0;
+      pi->end_ip = 0;
       pi->gp = di->gp;
+      pi->lsda = 0;
       return 0;
     }
 
@@ -93,7 +104,6 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 
   info_end_addr = info_addr + 8 * IA64_UNW_LENGTH (hdr);
 
-  pi->unwind_info = 0;
   if (need_unwind_info)
     {
       pi->unwind_info_size = 8 * IA64_UNW_LENGTH (hdr);
@@ -122,7 +132,6 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 	}
     }
 
-  pi->handler = 0;
   if (IA64_UNW_FLAG_EHANDLER (hdr) || IA64_UNW_FLAG_UHANDLER (hdr))
     {
       /* read the personality routine address (address is gp-relative): */
@@ -133,7 +142,6 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     }
   pi->lsda = info_end_addr + 16;
   pi->gp = di->gp;
-  pi->flags = 0;
   pi->format = di->format;
   return 0;
 }
@@ -207,6 +215,8 @@ _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
 
 #ifndef UNW_REMOTE_ONLY
 
+#if defined(HAVE_DL_ITERATE_PHDR)
+
 #include <link.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -216,7 +226,7 @@ _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
 # error You need GLIBC 2.2.4 or later on IA-64 Linux
 #endif
 
-#ifdef HAVE_GETUNWIND
+#if defined(HAVE_GETUNWIND)
 
 extern unsigned long getunwind (void *buf, size_t len);
 
@@ -350,10 +360,16 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   return 1;
 }
 
+#elif defined(HAVE_DLMODINFO)
+  /* Support for HP-UX-style dlmodinfo() */
+# include <dlfcn.h>
+#endif
+
 HIDDEN int
 tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 		     unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
+#if defined(HAVE_DL_ITERATE_PHDR)
   unw_dyn_info_t di, *dip = &di;
   int ret;
 
@@ -371,6 +387,23 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 	return -UNW_ENOINFO;
       dip = &kernel_table;
     }
+#elif defined(HAVE_DLMODINFO)
+  struct load_module_desc lmd;
+
+  if (!dlmodinfo (ip, &lmd, sizeof (lmd), NULL, 0, 0))
+    return -UNW_ENOINFO;
+
+  di.format = UNW_INFO_FORMAT_TABLE;
+  di.start_ip = lmd.text_base;
+  di.end_ip = lmd.text_base + lmd.text_size;
+  di.u.ti.name_ptr = 0;	/* no obvious table-name available */
+  di.u.ti.table_data = lmd.unwind_base;
+  di.u.ti.table_len = lmd.unwind_size / sizeof (unw_word_t);
+  di.u.ti.segbase = lmd.text_base;
+  debug (100, "unwind: found table `%s': segbase=%lx, len=%lu, gp=%lx, "
+ 	 "table_data=%p\n", (char *) di.u.ti.name_ptr, di.u.ti.segbase,
+ 	 di.u.ti.table_len, di.gp, di.u.ti.table_data);
+#endif
 
   /* now search the table: */
   return tdep_search_unwind_table (as, ip, dip, pi, need_unwind_info, arg);
