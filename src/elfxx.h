@@ -67,5 +67,6 @@ elf_map_image (struct elf_image *ei, char *path)
 }
 
 extern HIDDEN int elfW (valid_object) (struct elf_image *ei);
-extern HIDDEN int elfW (get_proc_name) (unw_word_t ip, char *buf, size_t len,
+extern HIDDEN int elfW (get_proc_name) (pid_t pid, unw_word_t ip,
+					char *buf, size_t len,
 					unw_word_t *offp);
