@@ -32,6 +32,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <libunwind.h>
 
+#include "elf32.h"
+
 enum x86_pregnum
   {
     X86_NUM_PREGS
