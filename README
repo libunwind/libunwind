@@ -1,10 +1,10 @@
 -*- mode: Outline -*-
 
-This is version 0.96 of the unwind library.  At the moment, only the
-IA-64 Linux (IPF Linux) platform is fully supported.  Some very basic
+This is version 0.97 of the unwind library.  At the moment, only the
+IA-64 Linux (IPF Linux) platform is fully supported.  Some basic
 support for x86 and HP-UX/IPF exists also.  However, the x86 support
-is based purely on the frame-chain and does not use unwind
-information, so its utility is limited.  Similarly, the HP-UX/IPF
+is based mostly on the frame-chain and does not reliably use unwind
+information yet, so its utility is limited.  Similarly, the HP-UX/IPF
 support is incomplete, though it is sufficient to do a basic
 backtrace.  unw_resume() is not supported, however.
 
@@ -21,16 +21,6 @@ where PREFIX is the installation prefix.  By default, a prefix of
 /usr/local is used, such that libunwind.a is installed in
 /usr/local/lib and unwind.h is installed in /usr/local/include.  For
 testing, you may want to use a prefix of /usr/local instead.
-
-If, during the build, you're getting an error of the form:
-
-  ../src/.libs/libunwind-ia64.so: undefined reference to `__tls_get_addr'
-
-it indicates that you have a compiler which supports the `__thread'
-keyword, but a runtime system (C library), which does not.  As of
-September 2003, this appears to be a common problem for Debian
-"unstable" systems.  To work around this issue, run "./configure" with
-option "--disable-__thread".
 
 
 * Building with Intel compiler
@@ -57,7 +47,8 @@ Starting with version 8, the preferred name for the IA-64 Intel
 compiler is "icc" (same name as on x86).  Thus, the configure-line
 should look like this:
 
-	$ ./configure CC=icc CXX=icc CCAS=gcc
+    $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
+		LDFLAGS="-L$PWD/src/.libs"
 
 * Building on HP-UX
 
