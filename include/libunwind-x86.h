@@ -51,7 +51,7 @@ typedef long double unw_tdep_fpreg_t;
 
 typedef enum
   {
-    /* Note: general registers are excepted to start with index 0.
+    /* Note: general registers are expected to start with index 0.
        This convention facilitates architecture-independent
        implementation of the C++ exception handling ABI.  See
        _Unwind_SetGR() and _Unwind_GetGR() for details.  */
