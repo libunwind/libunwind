@@ -94,6 +94,7 @@ a (void)
 {
   long stack;
 
+#ifdef __GNUC__
   if (verbose)
     printf ("a: sp=%p bsp=%p\n", &stack, __builtin_ia64_bsp ());
   b (&&handler);
@@ -112,6 +113,10 @@ a (void)
 	 __builtin_ia64_bsp() gets predicated.  */
       getpid ();
     }
+#else
+  if (verbose)
+    printf ("a: this test only works with GNU C compiler.\n");
+#endif
   return 0;
 }
 
