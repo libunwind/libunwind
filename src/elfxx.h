@@ -33,13 +33,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "internal.h"
 
 #if ELF_CLASS == ELFCLASS32
-# define ELFW(x)	ELF32_##x
-# define ElfW(x)	Elf32_##x
-# define elfW(x)	_Uelf32_##x
+# define ELF_W(x)	ELF32_##x
+# define Elf_W(x)	Elf32_##x
+# define elf_w(x)	_Uelf32_##x
 #else
-# define ELFW(x)	ELF64_##x
-# define ElfW(x)	Elf64_##x
-# define elfW(x)	_Uelf64_##x
+# define ELF_W(x)	ELF64_##x
+# define Elf_W(x)	Elf64_##x
+# define elf_w(x)	_Uelf64_##x
 #endif
 
 static inline int
@@ -67,7 +67,7 @@ elf_map_image (struct elf_image *ei, const char *path)
   return 0;
 }
 
-extern HIDDEN int elfW (valid_object) (struct elf_image *ei);
-extern HIDDEN int elfW (get_proc_name) (pid_t pid, unw_word_t ip,
-					char *buf, size_t len,
-					unw_word_t *offp);
+extern HIDDEN int elf_w (valid_object) (struct elf_image *ei);
+extern HIDDEN int elf_w (get_proc_name) (pid_t pid, unw_word_t ip,
+					 char *buf, size_t len,
+					 unw_word_t *offp);

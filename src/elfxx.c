@@ -32,7 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "tdep.h"
 
 extern HIDDEN int
-elfW (valid_object) (struct elf_image *ei)
+elf_w (valid_object) (struct elf_image *ei)
 {
   if (ei->size <= EI_CLASS)
     return 0;
@@ -43,20 +43,20 @@ elfW (valid_object) (struct elf_image *ei)
 
 
 static int
-elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
-		      ElfW (Addr) load_offset,
-		      char *buf, size_t buf_len, unw_word_t *offp)
+elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
+		       Elf_W (Addr) load_offset,
+		       char *buf, size_t buf_len, unw_word_t *offp)
 {
   size_t syment_size;
-  ElfW (Ehdr) *ehdr = ei->image;
-  ElfW (Sym) *sym, *symtab, *symtab_end;
-  ElfW (Off) soff, str_soff;
-  ElfW (Shdr) *shdr, *str_shdr;
-  ElfW (Addr) val, min_dist = ~(ElfW (Addr))0;
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Sym) *sym, *symtab, *symtab_end;
+  Elf_W (Off) soff, str_soff;
+  Elf_W (Shdr) *shdr, *str_shdr;
+  Elf_W (Addr) val, min_dist = ~(Elf_W (Addr))0;
   int i, ret = 0;
   char *strtab;
 
-  if (!elfW (valid_object) (ei))
+  if (!elf_w (valid_object) (ei))
     return -UNW_ENOINFO;
 
   soff = ehdr->e_shoff;
@@ -69,7 +69,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
       return -UNW_ENOINFO;
     }
 
-  shdr = (ElfW (Shdr) *) ((char *) ei->image + soff);
+  shdr = (Elf_W (Shdr) *) ((char *) ei->image + soff);
 
   for (i = 0; i < ehdr->e_shnum; ++i)
     {
@@ -77,8 +77,8 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	{
 	case SHT_SYMTAB:
 	case SHT_DYNSYM:
-	  symtab = (ElfW (Sym) *) ((char *) ei->image + shdr->sh_offset);
-	  symtab_end = (ElfW (Sym) *) ((char *) symtab + shdr->sh_size);
+	  symtab = (Elf_W (Sym) *) ((char *) ei->image + shdr->sh_offset);
+	  symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
 	  syment_size = shdr->sh_entsize;
 
 	  str_soff = soff + (shdr->sh_link * ehdr->e_shentsize);
@@ -90,7 +90,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		     (unsigned long) ei->size);
 	      break;
 	    }
-	  str_shdr = (ElfW (Shdr) *) ((char *) ei->image + str_soff);
+	  str_shdr = (Elf_W (Shdr) *) ((char *) ei->image + str_soff);
 	  strtab = (char *) ei->image + str_shdr->sh_offset;
 
 	  debug (160, "symtab=0x%lx[%d], strtab=0x%lx\n",
@@ -99,9 +99,9 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 
 	  for (sym = symtab;
 	       sym < symtab_end;
-	       sym = (ElfW (Sym) *) ((char *) sym + syment_size))
+	       sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
 	    {
-	      if (ELFW (ST_TYPE) (sym->st_info) == STT_FUNC
+	      if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
 		  && sym->st_shndx != SHN_UNDEF)
 		{
 		  val = sym->st_value;
@@ -110,9 +110,9 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		  debug (160, "0x%016lx info=0x%02x %s\n",
 			 (long) val, sym->st_info, strtab + sym->st_name);
 
-		  if ((ElfW (Addr)) (ip - val) < min_dist)
+		  if ((Elf_W (Addr)) (ip - val) < min_dist)
 		    {
-		      min_dist = (ElfW (Addr)) (ip - val);
+		      min_dist = (Elf_W (Addr)) (ip - val);
 		      strncpy (buf, strtab + sym->st_name, buf_len);
 		      buf[buf_len - 1] = '\0';
 		      if (strlen (strtab + sym->st_name) >= buf_len)
@@ -125,7 +125,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	default:
 	  break;
 	}
-      shdr = (ElfW (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
+      shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
   if (min_dist >= ei->size)
     return -UNW_ENOINFO;		/* not found */
@@ -140,14 +140,14 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
    sensitive to the performance of this routine, why bother...  */
 
 HIDDEN int
-elfW (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
-		      unw_word_t *offp)
+elf_w (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
+		       unw_word_t *offp)
 {
   unsigned long segbase, mapoff;
-  ElfW (Addr) load_offset = 0;
+  Elf_W (Addr) load_offset = 0;
   struct elf_image ei;
-  ElfW (Ehdr) *ehdr;
-  ElfW (Phdr) *phdr;
+  Elf_W (Ehdr) *ehdr;
+  Elf_W (Phdr) *phdr;
   int i, ret;
 
   ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff);
@@ -155,7 +155,7 @@ elfW (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
     return ret;
 
   ehdr = ei.image;
-  phdr = (ElfW (Phdr) *) ((char *) ei.image + ehdr->e_phoff);
+  phdr = (Elf_W (Phdr) *) ((char *) ei.image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD && phdr[i].p_offset == mapoff)
@@ -164,7 +164,7 @@ elfW (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
 	break;
       }
 
-  ret = elfW (lookup_symbol) (ip, &ei, load_offset, buf, buf_len, offp);
+  ret = elf_w (lookup_symbol) (ip, &ei, load_offset, buf, buf_len, offp);
 
   munmap (ei.image, ei.size);
   ei.image = NULL;
