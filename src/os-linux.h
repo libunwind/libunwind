@@ -30,6 +30,9 @@ struct map_iterator
   {
     off_t offset;
     int fd;
+    size_t buf_size;
+    char *buf;
+    char *buf_end;
   };
 
 static inline char *
@@ -68,6 +71,15 @@ maps_init (struct map_iterator *mi, pid_t pid)
 
   mi->fd = open (path, O_RDONLY);
   mi->offset = 0;
+
+  /* Try to allocate a page-sized buffer.  If that fails, we'll fall
+     back on reading one line at a time.  */
+  mi->buf_size = getpagesize ();
+  cp = mmap (0, mi->buf_size, PROT_READ | PROT_WRITE,
+	     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
+  if (cp == MAP_FAILED)
+    cp = NULL;
+  mi->buf = mi->buf_end = cp;
 }
 
 static inline char *
@@ -182,28 +194,74 @@ maps_next (struct map_iterator *mi,
 
   while (1)
     {
-      lseek (mi->fd, mi->offset, SEEK_SET);
-
-      if ((nread = read (mi->fd, line, to_read)) <= 0)
-	return 0;
-      for (i = 0; i < nread && line[i] != '\n'; ++i)
-	/* skip */;
-      if (i < nread)
+      if (mi->buf)
 	{
-	  line[i] = '\0';
-	  mi->offset += i + 1;
+	  ssize_t bytes_left = mi->buf_end - mi->buf;
+	  char *eol = NULL;
+
+	  for (i = 0; i < bytes_left; ++i)
+	    {
+	      if (mi->buf[i] == '\n')
+		{
+		  eol = mi->buf + i;
+		  break;
+		}
+	      else if (mi->buf[i] == '\0')
+		break;
+	    }
+	  if (!eol)
+	    {
+	      /* copy down the remaining bytes, if any */
+	      if (bytes_left > 0)
+		memcpy (mi->buf_end - mi->buf_size, mi->buf, bytes_left);
+
+	      mi->buf = mi->buf_end - mi->buf_size;
+	      nread = read (mi->fd, mi->buf + bytes_left,
+			    mi->buf_size - bytes_left);
+	      if (nread <= 0)
+		return 0;
+
+	      eol = mi->buf + bytes_left + nread - 1;
+
+	      for (i = bytes_left; i < bytes_left + nread; ++i)
+		if (mi->buf[i] == '\n')
+		  {
+		    eol = mi->buf + i;
+		    break;
+		  }
+	    }
+	  cp = mi->buf;
+	  mi->buf = eol + 1;
+	  *eol = '\0';
 	}
       else
 	{
-	  if (to_read < sizeof (line))
-	    to_read = sizeof (line) - 1;
+	  /* maps_init() wasn't able to allocate a buffer; do it the
+	     slow way.  */
+	  lseek (mi->fd, mi->offset, SEEK_SET);
+
+	  if ((nread = read (mi->fd, line, to_read)) <= 0)
+	    return 0;
+	  for (i = 0; i < nread && line[i] != '\n'; ++i)
+	    /* skip */;
+	  if (i < nread)
+	    {
+	      line[i] = '\0';
+	      mi->offset += i + 1;
+	    }
 	  else
-	    mi->offset += nread;	/* not supposed to happen... */
-	  continue;	/* duh, no newline found */
+	    {
+	      if (to_read < sizeof (line))
+		to_read = sizeof (line) - 1;
+	      else
+		mi->offset += nread;	/* not supposed to happen... */
+	      continue;	/* duh, no newline found */
+	    }
+	  cp = line;
 	}
 
       /* scan: "LOW-HIGH PERM OFFSET MAJOR:MINOR INUM PATH" */
-      cp = scan_hex (line, low);
+      cp = scan_hex (cp, low);
       cp = scan_char (cp, &dash);
       cp = scan_hex (cp, high);
       cp = scan_string (cp, perm, sizeof (perm));
