@@ -104,30 +104,32 @@ struct ia64_proc_info
 
 struct ia64_cursor
   {
-#ifdef IA64_UNW_ACCESSORS
-    struct unw_accessors acc;
-#else
+#ifdef UNW_LOCAL_ONLY
     ucontext_t *uc;		/* pointer to struct of preserved registers */
+#else
+    struct unw_accessors acc;
 #endif
+
+    /* IP and predicate cache (these are always equal to the values
+       stored in ip_loc and pr_loc, respectively).  */
+    unw_word_t ip;		/* instruction pointer value */
+    unw_word_t pr;		/* current predicate values */
 
     /* current frame info: */
     unw_word_t bsp;		/* backing store pointer value */
     unw_word_t sp;		/* stack pointer value */
     unw_word_t psp;		/* previous sp value */
-    unw_word_t ip;		/* instruction pointer value */
-    struct ia64_proc_info pi;	/* info about current procedure */
-    unw_word_t pr;		/* current predicate values */
     unw_word_t cfm_loc;		/* cfm save location (or NULL) */
-
     unw_word_t rbs_top;		/* address of end of register backing store */
     unw_word_t top_rnat_loc;	/* location of final (topmost) RNaT word */
+    struct ia64_proc_info pi;	/* info about current procedure */
 
     /* preserved state: */
     unw_word_t bsp_loc;		/* previous bsp save location */
     unw_word_t bspstore_loc;
     unw_word_t pfs_loc;
     unw_word_t rnat_loc;
-    unw_word_t rp_loc;
+    unw_word_t ip_loc;
     unw_word_t pri_unat_loc;
     unw_word_t unat_loc;
     unw_word_t pr_loc;
@@ -179,7 +181,18 @@ struct ia64_cursor
 #define IA64_GET_NAT_LOC(loc)	((loc) >> 3)
 #endif
 
-#ifdef IA64_UNW_ACCESSORS
+#ifdef UNW_LOCAL_ONLY
+
+  extern int ia64_acquire_unwind_info (unw_word_t, void *);
+  extern int ia64_release_unwind_info (void *);
+# define ia64_acquire_unwind_info(c,ip,i)	\
+	ia64_acquire_unwind_info((ip), (i))
+# define ia64_release_unwind_info(c,ip,i)	\
+	ia64_release_unwind_info((i))
+# define ia64_get(c,l,v)	(*(v) = *(unw_word_t *) (l), 0)
+
+#else /* !UNW_LOCAL_ONLY */
+
 # define ia64_acquire_unwind_info(c,ip,i) \
 	(*(c)->acc.acquire_unwind_info)((ip), (i), (c)->acc.arg)
 # define ia64_release_unwind_info(c,ip,i) \
@@ -268,15 +281,7 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
     return (*c->acc.access_mem)(loc, &val, 1, c->acc.arg);
 }
 
-#else
-  extern int ia64_acquire_unwind_info (unw_word_t, void *);
-  extern int ia64_release_unwind_info (void *);
-# define ia64_acquire_unwind_info(c,ip,i)	\
-	ia64_acquire_unwind_info((ip), (i))
-# define ia64_release_unwind_info(c,ip,i)	\
-	ia64_release_unwind_info((i))
-# define ia64_get(c,l,v)	(*(v) = *(unw_word_t *) (l), 0)
-#endif
+#endif /* !UNW_LOCAL_ONLY */
 
 struct ia64_unwind_block
   {
@@ -297,8 +302,6 @@ struct ia64_unwind_table_entry
 struct ia64_unwind_table
   {
     struct ia64_unwind_table *next;	/* must be first member! */
-    unw_word_t start;			/* start offset covered by table */
-    unw_word_t end;			/* end offset covered table */
     unw_ia64_table_t info;
   };
 
@@ -327,6 +330,13 @@ struct ia64_reg_info
     int when;			/* when the register gets saved */
   };
 
+struct ia64_labeled_state;	/* opaque structure */
+
+struct ia64_reg_state {
+  struct ia64_reg_state *next;	/* next (outer) element on state stack */
+  struct ia64_reg_info reg[IA64_NUM_PREGS];	/* register save locations */
+};
+
 struct ia64_state_record
   {
     unsigned int first_region : 1;	/* is this the first region? */
@@ -349,13 +359,8 @@ struct ia64_state_record
     uint8_t gr_save_loc;	/* next save register */
     uint8_t return_link_reg;	/* branch register used as return pointer */
 
-    struct ia64_reg_state
-      {
-	struct ia64_reg_state *next;
-	unsigned long label;		/* label of this state record */
-	struct ia64_reg_info reg[IA64_NUM_PREGS];
-      }
-    curr, *stack, *reg_state_list;
+    struct ia64_labeled_state *labeled_states;
+    struct ia64_reg_state curr;
 };
 
 struct ia64_global_unwind_state
@@ -434,15 +439,13 @@ struct ia64_global_unwind_state
 #define ia64_get_proc_info		UNW_OBJ(ia64_get_proc_info)
 #define ia64_create_state_record	UNW_OBJ(ia64_create_state_record)
 #define ia64_free_state_record		UNW_OBJ(ia64_free_state_record)
-#define ia64_get_frame_state		UNW_OBJ(ia64_get_frame_state)
 #define ia64_find_save_locs		UNW_OBJ(ia64_find_save_locs)
 #define ia64_init			UNW_OBJ(ia64_init)
-#define ia64_init_remote		UNW_OBJ(ia64_init_remote)
 #define ia64_glibc_acquire_unwind_info	UNW_OBJ(ia64_glibc_acquire_unwind_info)
 #define ia64_glibc_release_unwind_info	UNW_OBJ(ia64_glibc_release_unwind_info)
 #define ia64_access_reg			UNW_OBJ(ia64_access_reg)
 #define ia64_access_fpreg		UNW_OBJ(ia64_access_fpreg)
-#define ia64_get_sigcontext_addr	UNW_OBJ(ia64_get_sigcontext_addr)
+#define ia64_scratch_loc		UNW_OBJ(ia64_scratch_loc)
 
 extern struct ia64_global_unwind_state unw;
 
@@ -450,10 +453,8 @@ extern int ia64_get_proc_info (struct ia64_cursor *c);
 extern int ia64_create_state_record (struct ia64_cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
-extern int ia64_get_frame_state (struct ia64_cursor *c);
 extern int ia64_find_save_locs (struct ia64_cursor *c);
 extern void ia64_init (void);
-extern int ia64_init_remote (unw_cursor_t *c, unw_accessors_t *a);
 extern int ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info,
 					   void *arg);
 extern int ia64_glibc_release_unwind_info (void *info, void *arg);
@@ -461,17 +462,11 @@ extern int ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int ia64_access_fpreg (struct ia64_cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
-extern unw_word_t ia64_get_sigcontext_addr (struct ia64_cursor *c);
+extern unw_word_t ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg);
 
 extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
 				    long r17, long r18)
 		   __attribute__ ((noreturn));
-
-/* XXX temporary (from glibc): */
-#define weak_alias(name, aliasname) \
-  extern __typeof (name) aliasname __attribute__ ((weak, alias (#name)));
-#define alias(name, aliasname) \
-  extern __typeof (name) aliasname __attribute__ ((alias (#name)));
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
