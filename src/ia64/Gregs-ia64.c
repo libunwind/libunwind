@@ -87,6 +87,9 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 	case UNW_IA64_AR_CSD: addr += LINUX_SC_AR_CSD_OFF; break;
 	case UNW_IA64_AR_SSD: addr += LINUX_SC_AR_SSD_OFF; break;
 	case UNW_IA64_AR_CCV: addr += LINUX_SC_AR_CCV; break;
+
+	default:
+	  return IA64_REG_LOC (c, reg);
 	}
       return IA64_LOC_ADDR (addr, 0);
 
@@ -119,6 +122,9 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 11:
 	  addr += LINUX_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
 	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+
+	default:
+	  return IA64_REG_LOC (c, reg);
 	}
       return IA64_LOC_ADDR (addr, 0);
 
@@ -147,6 +153,9 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 
 	case UNW_IA64_AR_RSC: addr += LINUX_OLD_PT_RSC_OFF; break;
 	case UNW_IA64_AR_CCV: addr += LINUX_OLD_PT_CCV_OFF; break;
+
+	default:
+	  return IA64_REG_LOC (c, reg);
 	}
       return IA64_LOC_ADDR (addr, 0);
 
