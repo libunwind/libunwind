@@ -8,16 +8,15 @@
 - for DWARF 2, use a dummy CIE entry with an augmentation that
   provides the dyn-info-list-address
 
-Testing:
-	- ensure that saving r4-r7 in a stacked register properly preserves
-	  the NaT bit, even in the face of register-rotation
-	- ensure that IA64_INSN_MOVE_STACKED works correctly in the face of
-	  register rotation
-	- on Linux, test access to f32-f127 in a signal handler (e.g., verify
-	  that fph partition gets initialized properly)
-
 === taken care of:
 
+Testing:
+	+ ensure that saving r4-r7 in a stacked register properly preserves
+	  the NaT bit, even in the face of register-rotation
+	+ ensure that IA64_INSN_MOVE_STACKED works correctly in the face of
+	  register rotation
+	+ on Linux, test access to f32-f127 in a signal handler (e.g., verify
+	  that fph partition gets initialized properly)
 + Switch ia64 (and rest over) to using Debug() instead of debug()
 + implement non-local versions of dwarf_readXX()
 + consolidate mostly architecture-independent code such as
