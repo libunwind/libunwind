@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST = run-ia64-test-dyn1
 
 noinst_PROGRAMS_common =
-check_PROGRAMS_common = Gtest-init Ltest-init test-proc-info test-flush-cache
+check_PROGRAMS_common = test-proc-info
 check_SCRIPTS_common =
 
 if REMOTE_ONLY
@@ -18,8 +18,10 @@ if ARCH_IA64
 			Gia64-test-rbs Lia64-test-rbs
 endif
  check_SCRIPTS_cdep =
- check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-resume-sig Ltest-resume-sig \
-			Gtest-dyn1 Ltest-dyn1 test-setjmp test-ptrace
+ check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	\
+			Gtest-resume-sig Ltest-resume-sig		\
+			Gtest-dyn1 Ltest-dyn1				\
+			test-flush-cache test-setjmp test-ptrace
  noinst_PROGRAMS_cdep = bt test-varargs Gperf-simple Lperf-simple
 endif
 
