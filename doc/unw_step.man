@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:25:06 PST 2003
+.\" Manual page created with latex2man on Thu Nov 20 17:29:54 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_STEP" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_STEP" "3" "20 November 2003" "Programming Library " "Programming Library "
 .SH NAME
 unw_step
 \-\- advance to next stack frame 
@@ -38,9 +38,9 @@ the next older, less deeply nested stack frame.
 .PP
 On successful completion, unw_step()
 returns a positive value 
-if there are more stack frames in the call\-chain, or 0 if the returned 
-stack frame is the last frame in the chain. On error, the negative 
-value of one of the error\-codes below is returned. 
+if the updated cursor refers to a valid stack frame, or 0 if the 
+previous stack frame was the last frame in the chain. On error, the 
+negative value of one of the error\-codes below is returned. 
 .PP
 .SH THREAD AND SIGNAL SAFETY
 
