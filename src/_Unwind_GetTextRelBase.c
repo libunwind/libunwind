@@ -28,7 +28,5 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 unsigned long
 _Unwind_GetTextRelBase (struct _Unwind_Context *context)
 {
-  /* Not yet implemented.  DWARF2-based exception-handling would need
-     this, apparently.  */
   return 0;
 }
