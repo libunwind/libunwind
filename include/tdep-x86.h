@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
+   Copyright (C) 2002-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -161,8 +161,6 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
 #define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
 								     d, e)
-#define tdep_debug_level			UNW_ARCH_OBJ(debug_level)
-
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);
@@ -171,6 +169,5 @@ extern void tdep_put_unwind_info (unw_addr_space_t as,
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff);
-extern int tdep_debug_level;
 
 #endif /* TDEP_X86_H */

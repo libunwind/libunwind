@@ -202,9 +202,6 @@ struct ia64_global_unwind_state
 # define tdep_put_unwind_info(a,b,c) 	UNW_OBJ(put_unwind_info)(a, b, c)
 #endif
 
-#define tdep_debug_level		UNW_ARCH_OBJ(debug_level)
-extern long tdep_debug_level;
-
 /* This can't be an UNW_ARCH_OBJ() because we need separate
    unw.initialized flags for the local-only and generic versions of
    the library.  Also, if we wanted to have a single, shared global

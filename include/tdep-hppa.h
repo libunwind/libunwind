@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -75,7 +75,6 @@ struct cursor
 		UNW_ARCH_OBJ(find_proc_info) (as,ip,pi,n,a)
 #define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a,b,c)
 #define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
-#define tdep_debug_level			UNW_ARCH_OBJ(debug_level)
 
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
@@ -86,6 +85,5 @@ extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 extern void tdep_put_unwind_info (unw_addr_space_t as,
 				  unw_proc_info_t *pi, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
-extern int tdep_debug_level;
 
 #endif /* TDEP_HPPA_H */

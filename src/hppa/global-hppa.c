@@ -2,10 +2,6 @@
 
 HIDDEN int hppa_needs_initialization = 1;
 
-#if UNW_DEBUG
-HIDDEN int tdep_debug_level;
-#endif
-
 HIDDEN void
 hppa_init (void)
 {
