@@ -109,7 +109,9 @@ include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
 
 
 @REMOTE_ONLY_TRUE@include_HEADERS = $(include_HEADERS_common)
-@REMOTE_ONLY_FALSE@include_HEADERS = $(include_HEADERS_common) include/libunwind.h
+@REMOTE_ONLY_FALSE@include_HEADERS = $(include_HEADERS_common) include/libunwind.h \
+@REMOTE_ONLY_FALSE@		    include/unwind.h
+
 
 SUBDIRS = src tests doc
 
