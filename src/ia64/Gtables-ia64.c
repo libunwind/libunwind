@@ -553,6 +553,34 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   return 1;
 }
 
+# ifdef HAVE_DL_PHDR_REMOVALS_COUNTER
+
+static inline int
+validate_cache (unw_addr_space_t as)
+{
+  /* Note: we don't need to serialize here with respect to
+     dl_iterate_phdr() because if somebody were to remove an object
+     that is required to complete the unwind on whose behalf we're
+     validating the cache here, we'd be hosed anyhow.  What we're
+     guarding against here is the case where library FOO gets mapped,
+     unwind info for FOO gets cached, FOO gets unmapped, BAR gets
+     mapped in the place where FOO was and then we unwind across a
+     function in FOO.  Since no thread can execute in BAR before FOO
+     has been removed, we are guaranteed that
+     dl_phdr_removals_counter() would have been incremented before we
+     get here.  */
+  unsigned long long removals = dl_phdr_removals_counter ();
+
+  if (removals == as->shared_object_removals)
+    return 1;
+
+  as->shared_object_removals = removals;
+  unw_flush_cache (as, 0, 0);
+  return -1;
+}
+
+# else /* HAVE_DL_PHDR_REMOVALS_COUNTER */
+
 /* Check whether any phdrs have been removed since we last flushed the
    cache.  If so we flush the cache and return -1, if not, we do
    nothing and return 1.  */
@@ -576,7 +604,7 @@ check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   as->shared_object_removals = info->dlpi_subs;
   unw_flush_cache (as, 0, 0);
-  return -1;		/* indicate that there were no new removals */
+  return -1;		/* indicate that there were removals */
 #else
   return 1;
 #endif
@@ -593,6 +621,8 @@ validate_cache (unw_addr_space_t as)
   sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
   return ret;
 }
+
+# endif /* HAVE_DL_PHDR_REMOVALS_COUNTER */
 
 #elif defined(HAVE_DLMODINFO)
   /* Support for HP-UX-style dlmodinfo() */
