@@ -191,16 +191,18 @@ struct ia64_global_unwind_state
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
 #define tdep_search_unwind_table(a,b,c,d,e,f)			\
-		_Uia64_search_unwind_table (a, b, c, d, e, f)
-#define tdep_find_proc_info(as,ip,pi,n,a)			\
-		UNW_ARCH_OBJ(find_proc_info) (as, ip, pi, n, a)
-#define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a, b, c)
-#define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc, reg)
+		UNW_OBJ(search_unwind_table) (a, b, c, d, e, f)
+#define tdep_find_proc_info		UNW_OBJ(find_proc_info)
+#define tdep_uc_addr(uc,reg)		UNW_OBJ(uc_addr)(uc, reg)
 #define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
 								     d, e)
+#ifndef UNW_LOCAL_ONLY
+# define tdep_put_unwind_info(a,b,c) 	UNW_OBJ(put_unwind_info)(a, b, c)
+#endif
+
 #define tdep_debug_level		unw.debug_level
 
-#define unw		UNW_ARCH_OBJ(data)
+#define unw		UNW_OBJ(data)
 
 extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				unw_proc_info_t *pi, int need_unwind_info,
