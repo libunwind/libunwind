@@ -33,6 +33,7 @@ AM_PROG_AS
 get_arch() {
  case "$1" in
   i?86) echo x86;;
+  hppa*) echo hppa;;
   *) echo $1;;
  esac
 }
@@ -42,6 +43,7 @@ target_arch=`get_arch $target_cpu`
 
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$build_arch)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch == xia64)
+AM_CONDITIONAL(ARCH_HPPA, test x$target_arch == xhppa)
 AM_CONDITIONAL(ARCH_X86, test x$target_arch == xx86)
 
 if test x$target_arch != x$build_arch; then
