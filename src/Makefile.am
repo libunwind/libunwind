@@ -59,6 +59,7 @@ libunwind_la_SOURCES_generic =						\
 
 # List of arch-independent files needed by local-only library (libunwind):
 libunwind_la_SOURCES_local =						\
+	$(libunwind_la_SOURCES_os_local)				\
 	mi/backtrace.c							\
 	mi/dyn-cancel.c mi/dyn-info-list.c mi/dyn-register.c		\
 	mi/Ldyn-extract.c mi/Lfind_dynamic_proc_info.c			\
@@ -77,6 +78,9 @@ libunwind_la_SOURCES_local =						\
 	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
+
+#  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
+libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 dwarf_SOURCES_common =				\
@@ -104,14 +108,9 @@ libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
 	ia64/regname-ia64.c
 
-if OS_LINUX
-  #  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
- libunwind_la_SOURCES_ia64_os = mi/_ReadULEB.c mi/_ReadSLEB.c
-endif
-
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
-	$(libunwind_la_SOURCES_local) $(libunwind_la_SOURCES_ia64_os)	   \
+	$(libunwind_la_SOURCES_local)					   \
 									   \
 	elf64.c elf64.h							   \
 									   \
@@ -198,11 +197,13 @@ install-exec-hook:
 endif
 
 if OS_LINUX
- libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
+ libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_linux)
+ libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_linux_local)
 endif
 
 if OS_HPUX
- libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
+ libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_hpux)
+ libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_hpux_local)
 endif
 
 if ARCH_IA64
@@ -267,6 +268,9 @@ EXTRA_DIST =	elfxx.h elfxx.c unwind-internal.h	\
 		$(libunwind_la_SOURCES_common)		\
 		$(libunwind_la_SOURCES_local)		\
 		$(libunwind_la_SOURCES_generic)		\
+		$(libunwind_hppa_la_SOURCES_hppa)	\
+		$(libunwind_ia64_la_SOURCES_ia64)	\
+		$(libunwind_x86_la_SOURCES_x86)		\
 		$(libunwind_ptrace_a_SOURCES)		\
 		$(libunwind_setjmp_la_SOURCES_common)	\
 		$(libunwind_setjmp_la_SOURCES_hppa)	\
