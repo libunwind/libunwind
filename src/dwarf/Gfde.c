@@ -47,7 +47,16 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 # define STR2(x)	#x
 # define STR(x)		STR2(x)
 
-  fde_encoding = DW_EH_PE_omit;
+  /* Pick appropriate default for FDE-encoding.  DWARF spec says it
+     has to be the size of the addressing unit of the architecture,
+     unless specfied otherwise in the augmentation string.  */
+  switch (sizeof (unw_word_t))
+    {
+    case 4:	fde_encoding = DW_EH_PE_udata4; break;
+    case 8:	fde_encoding = DW_EH_PE_udata8; break;
+    default:	fde_encoding = DW_EH_PE_omit; break;
+    }
+
   *lsda_encodingp = DW_EH_PE_omit;
   dfi->flags = 0;
 
@@ -176,7 +185,7 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
       }
   dfi->flags |= fde_encoding & UNW_DYN_DFI_FLAG_FDE_PE_MASK;
   pi->handler = handler;
-  Debug (16, "CIE parsed OK, augmentation = \"%s\", handler=0x%lx\n",
+  Debug (15, "CIE parsed OK, augmentation = \"%s\", handler=0x%lx\n",
 	 augstr, (long) handler);
   dfi->cie_instr_start = *addr;
   return 0;
@@ -281,7 +290,7 @@ dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
   pi->unwind_info_size = sizeof (pi->extra.dwarf_info) / sizeof (unw_word_t);
   pi->unwind_info = &pi->extra.dwarf_info;
 
-  Debug (16, "FDE covers IP 0x%lx-0x%lx, LSDA=0x%lx\n",
+  Debug (15, "FDE covers IP 0x%lx-0x%lx, LSDA=0x%lx\n",
 	 (long) pi->start_ip, (long) pi->end_ip, (long) pi->lsda);
   return 0;
 }
