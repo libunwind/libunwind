@@ -473,7 +473,7 @@ run_script (struct ia64_script *script, struct cursor *c)
 	    return ret;
 	}
       else
-	switch (__builtin_expect(opc, IA64_INSN_MOVE_STACKED))
+	switch (opc)
 	  {
 	  case IA64_INSN_SET:
 	    loc = IA64_LOC_ADDR (val, 0);
