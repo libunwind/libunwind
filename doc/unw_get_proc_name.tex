@@ -48,8 +48,9 @@ returned.
 
 \section{Thread and Signal Safety}
 
-\Func{unw\_get\_proc\_name}() is thread-safe but \emph{not} safe to
-use from a signal handler.
+\Func{unw\_get\_proc\_name}() is thread-safe.  If cursor \Var{cp} is
+in the local address-space, this routine is also safe to use from a
+signal handler.
 
 \section{Errors}
 
