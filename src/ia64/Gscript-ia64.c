@@ -709,7 +709,7 @@ HIDDEN void
 ia64_validate_cache (unw_addr_space_t as, void *arg)
 {
 #ifndef UNW_REMOTE_ONLY
-  if (ia64_local_validate_cache (as, arg) == 1)
+  if (as == unw_local_addr_space && ia64_local_validate_cache (as, arg) == 1)
     return;
 #endif
 
