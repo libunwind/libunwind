@@ -42,6 +42,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 #include <libunwind.h>
 
+#if UNW_TARGET_X86
+# define STACK_SIZE	(2*SIGSTKSZ)	/* On x86, SIGSTKSZ is too small */
+#else
+# define STACK_SIZE	SIGSTKSZ
+#endif
+
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
@@ -154,10 +160,10 @@ main (int argc, char **argv)
   kill (getpid (), SIGTERM);
 
   printf ("Backtrace across signal handler on alternate stack:\n");
-  stk.ss_sp = malloc (SIGSTKSZ);
+  stk.ss_sp = malloc (STACK_SIZE);
   if (!stk.ss_sp)
     panic ("failed to allocate SIGSTKSZ (%u) bytes\n", SIGSTKSZ);
-  stk.ss_size = SIGSTKSZ;
+  stk.ss_size = STACK_SIZE;
   stk.ss_flags = 0;
   if (sigaltstack (&stk, NULL) < 0)
     panic ("sigaltstack: %s\n", strerror (errno));
