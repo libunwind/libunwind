@@ -72,7 +72,8 @@ struct unw_addr_space
     int big_endian;
     unw_caching_policy_t caching_policy;
     uint32_t cache_generation;
-    unw_word_t dyn_generation;	/* see dyn-common.h */
+    unw_word_t dyn_generation;		/* see dyn-common.h */
+    unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
 
     struct ia64_script_cache global_cache;
    };
