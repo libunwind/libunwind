@@ -22,9 +22,9 @@ endif
 
 SUBDIRS = src tests doc
 
-EXTRA_DIST = include/internal.h include/mempool.h \
+EXTRA_DIST = include/dwarf.h include/internal.h include/mempool.h	   \
 	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/script.h \
-	include/libunwind-hppa.h include/tdep-hppa.h \
+	include/libunwind-hppa.h include/tdep-hppa.h			   \
 	include/libunwind-x86.h include/tdep-x86.h
 
 DISTCLEANFILES = include/libunwind.h include/tdep.h
