@@ -156,6 +156,7 @@ LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
 
 test_setjmp_LDADD = ../src/libunwind-setjmp.la
+test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
 Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 subdir = tests
@@ -331,8 +332,8 @@ test_proc_info_DEPENDENCIES = ../src/libunwind-$(arch).la
 test_proc_info_LDFLAGS =
 test_ptrace_SOURCES = test-ptrace.c
 test_ptrace_OBJECTS = test-ptrace.$(OBJEXT)
-test_ptrace_LDADD = $(LDADD)
-test_ptrace_DEPENDENCIES = ../src/libunwind-$(arch).la
+test_ptrace_DEPENDENCIES = ../src/libunwind-ptrace.a \
+	../src/libunwind-$(arch).la
 test_ptrace_LDFLAGS =
 test_setjmp_SOURCES = test-setjmp.c
 test_setjmp_OBJECTS = test-setjmp.$(OBJEXT)
