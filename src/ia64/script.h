@@ -62,7 +62,7 @@ struct ia64_script
     unw_word_t ip;		/* ip this script is for */
     unw_word_t pr_mask;		/* mask of predicates script depends on */
     unw_word_t pr_val;		/* predicate values this script is for */
-    struct ia64_proc_info pi;	/* info about underlying procedure */
+    unw_proc_info_t pi;		/* info about underlying procedure */
     unsigned short lru_chain;	/* used for least-recently-used chain */
     unsigned short coll_chain;	/* used for hash collisions */
     unsigned short hint;	/* hint for next script to try (or -1) */
