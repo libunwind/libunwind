@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <sys/uc_access.h>
 #endif
 
-#ifdef UNW_DEBUG
+#if UNW_DEBUG
 
 HIDDEN const char *
 ia64_strloc (ia64_loc_t loc)

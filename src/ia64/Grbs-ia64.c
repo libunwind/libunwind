@@ -86,7 +86,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 {
   unw_word_t nregs, bsp = c->bsp, curr = c->rbs_curr, n;
   unw_word_t left_edge = c->rbs_left_edge;
-#ifdef UNW_DEBUG
+#if UNW_DEBUG
   int reg = 32 + regs_to_skip;
 #endif
 
