@@ -41,13 +41,13 @@ enum ia64_pregnum
     IA64_REG_PRI_UNAT_GR,
     IA64_REG_PRI_UNAT_MEM,
 
+    /* memory stack (order matters: see build_script() */
+    IA64_REG_PSP,			/* previous memory stack pointer */
     /* register stack */
     IA64_REG_BSP,			/* register stack pointer */
     IA64_REG_BSPSTORE,
     IA64_REG_PFS,			/* previous function state */
     IA64_REG_RNAT,
-    /* memory stack */
-    IA64_REG_PSP,			/* previous memory stack pointer */
     /* return pointer: */
     IA64_REG_RP,
 
@@ -178,7 +178,6 @@ struct ia64_global_unwind_state
 #define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc, reg)
 #define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
 								     d, e)
-#define tdep_get_proc_name(a,b,c,d)	_Uelf64_get_proc_name (a, b, c, d)
 #define tdep_debug_level		unw.debug_level
 
 #define unw		UNW_ARCH_OBJ(data)
