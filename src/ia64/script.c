@@ -21,6 +21,7 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
+#include "offsets.h"
 #include "rse.h"
 #include "unwind_i.h"
 
@@ -241,8 +242,8 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
       else
 	{
 	  /* register got spilled to a scratch register */
-	  opc = IA64_INSN_MOVE_SIGCONTEXT;
-	  val = struct_offset (struct sigcontext, sc_gr[rval]);
+	  opc = IA64_INSN_MOVE_SCRATCH;
+	  val = UNW_IA64_GR + rval;
 	}
       break;
 
@@ -253,8 +254,8 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 	val = unw.preg_index[IA64_REG_F16 + (rval - 16)];
       else
 	{
-	  opc = IA64_INSN_MOVE_SIGCONTEXT;
-	  val = struct_offset (struct sigcontext, sc_fr[rval]);
+	  opc = IA64_INSN_MOVE_SCRATCH;
+	  val = UNW_IA64_FR + rval;
 	}
       break;
 
@@ -263,8 +264,8 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
 	val = unw.preg_index[IA64_REG_B1 + (rval - 1)];
       else
 	{
-	  opc = IA64_INSN_MOVE_SIGCONTEXT;
-	  val = struct_offset (struct sigcontext, sc_br[rval]);
+	  opc = IA64_INSN_MOVE_SCRATCH;
+	  val = UNW_IA64_BR + rval;
 	}
       break;
 
@@ -417,13 +418,12 @@ run_script (struct ia64_script *script, struct ia64_cursor *c)
 	  s[dst] = s[val];
 	  break;
 
-	case IA64_INSN_MOVE_SIGCONTEXT:
-	  s[dst] = ia64_get_sigcontext_addr (c);
+	case IA64_INSN_MOVE_SCRATCH:
+	  s[dst] = ia64_scratch_loc (c, val);
 	  break;
 
 	case IA64_INSN_MOVE_STACKED:
-	  s[dst] = (unsigned long) ia64_rse_skip_regs ((unsigned long *)
-						       c->bsp, val);
+	  s[dst] = ia64_rse_skip_regs (c->bsp, val);
 	  break;
 
 	case IA64_INSN_SETNAT_MEMSTK:
@@ -457,7 +457,7 @@ ia64_find_save_locs (struct ia64_cursor *c)
 	{
 	  if (ret != UNW_ESTOPUNWIND)
 	    dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
-		     __FUNCTION__, c->ip);
+		     __FUNCTION__, (long) c->ip);
 	  return ret;
 	}
     }
