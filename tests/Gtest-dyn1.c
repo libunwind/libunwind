@@ -34,6 +34,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/mman.h>
 
+#define MAX_FUNC_SIZE	2048	/* max. size of cloned function */
+
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
@@ -145,17 +147,17 @@ main (int argc, char *argv[])
   if (verbose)
     printf ("old code @ %p, new code @ %p\n", (void *) fdesc.code, mem);
 
-  memcpy (mem, (void *) fdesc.code, 256);
+  memcpy (mem, (void *) fdesc.code, MAX_FUNC_SIZE);
   mprotect ((void *) ((long) mem & ~(getpagesize () - 1)),
 	    2*getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC);
-  flush_cache (mem, 256);
+  flush_cache (mem, MAX_FUNC_SIZE);
 
   signal (SIGSEGV, sighandler);
 
   /* register the new function: */
   region = alloca (_U_dyn_region_info_size (2));
   region->next = NULL;
-  region->insn_count = 256;
+  region->insn_count = 3 * (MAX_FUNC_SIZE / 16);
   region->op_count = 2;
   _U_dyn_op_alias (&region->op[0], 0, -1, fdesc.code);
   _U_dyn_op_stop (&region->op[1]);
