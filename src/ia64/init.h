@@ -29,6 +29,7 @@ static inline int
 common_init (struct cursor *c)
 {
   unw_word_t bspstore;
+  uint8_t *natp;
   int i, ret;
 
   if (c->as->caching_policy != UNW_CACHE_NONE)
@@ -52,12 +53,11 @@ common_init (struct cursor *c)
   c->loc[IA64_REG_R6] = IA64_REG_LOC (c, UNW_IA64_GR + 6);
   c->loc[IA64_REG_R7] = IA64_REG_LOC (c, UNW_IA64_GR + 7);
 
-  /* This says that each NaT bit is stored along with the
-     corresponding preserved register: */
-  c->loc[IA64_REG_NAT4] = IA64_LOC_REG (4, 0);
-  c->loc[IA64_REG_NAT5] = IA64_LOC_REG (5, 0);
-  c->loc[IA64_REG_NAT6] = IA64_LOC_REG (6, 0);
-  c->loc[IA64_REG_NAT7] = IA64_LOC_REG (7, 0);
+  natp = c->nat_bitnr;
+  c->loc[IA64_REG_NAT4] = IA64_REG_NAT_LOC (c, UNW_IA64_NAT + 4, &natp[0]);
+  c->loc[IA64_REG_NAT5] = IA64_REG_NAT_LOC (c, UNW_IA64_NAT + 5, &natp[1]);
+  c->loc[IA64_REG_NAT6] = IA64_REG_NAT_LOC (c, UNW_IA64_NAT + 6, &natp[2]);
+  c->loc[IA64_REG_NAT7] = IA64_REG_NAT_LOC (c, UNW_IA64_NAT + 7, &natp[3]);
 
   c->loc[IA64_REG_B1] = IA64_REG_LOC (c, UNW_IA64_BR + 1);
   c->loc[IA64_REG_B2] = IA64_REG_LOC (c, UNW_IA64_BR + 2);
