@@ -125,6 +125,7 @@ libunwind_la_SOURCES_local = \
 	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
+libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 
 #
@@ -186,7 +187,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 									\
 	x86/Gget_reg-x86.c x86/Gget_proc_name-x86.c x86/Ginit-x86.c	\
 	x86/Ginit_local-x86.c x86/Gget_proc_info-x86.c x86/Gregs-x86.c	\
-	x86/Gresume-x86.c x86/Gstep-x86.c				\
+	x86/Gresume-x86.c x86/Gset_reg-x86.c x86/Gstep-x86.c		\
 									\
 	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
 	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
@@ -206,6 +207,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 @REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_hppa = $(libunwind_setjmp_la_SOURCES_local_hppa)
 @REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_x86 = $(libunwind_setjmp_la_SOURCES_local_x86)
 
+@OS_HPUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
 
 @ARCH_IA64_TRUE@mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
@@ -261,14 +263,16 @@ am__objects_2 = dyn-cancel.lo dyn-register.lo _UPT_accessors.lo \
 	_UPT_get_proc_name.lo _UPT_reg_offset.lo _UPT_resume.lo
 @REMOTE_ONLY_TRUE@am__objects_3 = $(am__objects_1)
 @REMOTE_ONLY_FALSE@am__objects_3 = $(am__objects_2)
-am__objects_4 = os-linux.lo
-@OS_LINUX_TRUE@am__objects_5 = $(am__objects_4)
-am__objects_6 = $(am__objects_3) $(am__objects_5) backtrace.lo \
+am__objects_4 = os-hpux.lo
+am__objects_5 = os-linux.lo
+@OS_HPUX_TRUE@am__objects_6 = $(am__objects_4)
+@OS_LINUX_TRUE@am__objects_6 = $(am__objects_5)
+am__objects_7 = $(am__objects_3) $(am__objects_6) backtrace.lo \
 	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
 	Gfind_dynamic_proc_info.lo Gget_proc_name.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
 	Lget_proc_name.lo Lput_dynamic_unwind_info.lo
-am__objects_7 = $(am__objects_6) flush_cache-hppa.lo \
+am__objects_8 = $(am__objects_7) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
 	Ginit_local-hppa.lo Gget_proc_info-hppa.lo Gregs-hppa.lo \
@@ -276,10 +280,10 @@ am__objects_7 = $(am__objects_6) flush_cache-hppa.lo \
 	Linit-hppa.lo Linit_local-hppa.lo Lget_proc_info-hppa.lo \
 	Lregs-hppa.lo Lstep-hppa.lo
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_hppa_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_7)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_8)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-am__objects_8 = $(am__objects_6) elf64.lo _Uia64_install_context.lo \
+am__objects_9 = $(am__objects_7) elf64.lo _Uia64_install_context.lo \
 	global-ia64.lo global-asm-ia64.lo rbs-ia64.lo tables-ia64.lo \
 	get_accessors-ia64.lo flush_cache-ia64.lo \
 	set_caching_policy-ia64.lo regname-ia64.lo Ginit-ia64.lo \
@@ -296,38 +300,38 @@ am__objects_8 = $(am__objects_6) elf64.lo _Uia64_install_context.lo \
 	Lget_save_loc-ia64.lo Lis_signal_frame-ia64.lo Lresume-ia64.lo \
 	Lset_reg-ia64.lo Lset_fpreg-ia64.lo Linit_local-ia64.lo \
 	Linit_remote-ia64.lo Lstep-ia64.lo
-@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_8)
+@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_9)
 libunwind_ia64_la_OBJECTS = $(am_libunwind_ia64_la_OBJECTS)
 @REMOTE_ONLY_TRUE@libunwind_setjmp_la_DEPENDENCIES =
 @REMOTE_ONLY_FALSE@libunwind_setjmp_la_DEPENDENCIES = \
 @REMOTE_ONLY_FALSE@	libunwind-$(arch).la
-am__objects_9 = longjmp.lo siglongjmp.lo
-@REMOTE_ONLY_FALSE@am__objects_10 = $(am__objects_9)
-am__objects_11 = setjmp.lo sigsetjmp.lo siglongjmp-x86.lo
-@REMOTE_ONLY_FALSE@am__objects_12 = $(am__objects_11)
-am__objects_13 = setjmp.lo sigsetjmp.lo siglongjmp-hppa.lo
-@REMOTE_ONLY_FALSE@am__objects_14 = $(am__objects_13)
-am__objects_15 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
-@REMOTE_ONLY_FALSE@am__objects_16 = $(am__objects_15)
+am__objects_10 = longjmp.lo siglongjmp.lo
+@REMOTE_ONLY_FALSE@am__objects_11 = $(am__objects_10)
+am__objects_12 = setjmp.lo sigsetjmp.lo siglongjmp-x86.lo
+@REMOTE_ONLY_FALSE@am__objects_13 = $(am__objects_12)
+am__objects_14 = setjmp.lo sigsetjmp.lo siglongjmp-hppa.lo
+@REMOTE_ONLY_FALSE@am__objects_15 = $(am__objects_14)
+am__objects_16 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
+@REMOTE_ONLY_FALSE@am__objects_17 = $(am__objects_16)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_setjmp_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_10) \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_12)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_11) \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_13)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_setjmp_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_10) \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_14)
-@ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_10) \
-@ARCH_IA64_TRUE@	$(am__objects_16)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_11) \
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_15)
+@ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_11) \
+@ARCH_IA64_TRUE@	$(am__objects_17)
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 libunwind_x86_la_LIBADD =
-am__objects_17 = $(am__objects_6) elf32.lo flush_cache-x86.lo \
+am__objects_18 = $(am__objects_7) elf32.lo flush_cache-x86.lo \
 	get_accessors-x86.lo global-x86.lo tables-x86.lo \
 	Gget_reg-x86.lo Gget_proc_name-x86.lo Ginit-x86.lo \
 	Ginit_local-x86.lo Gget_proc_info-x86.lo Gregs-x86.lo \
-	Gresume-x86.lo Gstep-x86.lo Lget_reg-x86.lo \
+	Gresume-x86.lo Gset_reg-x86.lo Gstep-x86.lo Lget_reg-x86.lo \
 	Lget_proc_name-x86.lo Linit-x86.lo Linit_local-x86.lo \
 	Lget_proc_info-x86.lo Lregs-x86.lo Lresume-x86.lo Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_17)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_18)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64$(EXEEXT)
 @ARCH_IA64_FALSE@noinst_PROGRAMS =
@@ -379,6 +383,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gscript-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_fpreg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gset_reg-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gset_reg-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gstep-x86.Plo \
@@ -447,7 +452,8 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/longjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mempool.Plo ./$(DEPDIR)/mi-init.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mk_cursor_i-ia64.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/os-linux.Plo ./$(DEPDIR)/rbs-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/os-hpux.Plo ./$(DEPDIR)/os-linux.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/rbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/setjmp.Plo ./$(DEPDIR)/siglongjmp.Plo \
@@ -595,6 +601,7 @@ Ginit_local-x86.lo: x86/Ginit_local-x86.c
 Gget_proc_info-x86.lo: x86/Gget_proc_info-x86.c
 Gregs-x86.lo: x86/Gregs-x86.c
 Gresume-x86.lo: x86/Gresume-x86.c
+Gset_reg-x86.lo: x86/Gset_reg-x86.c
 Gstep-x86.lo: x86/Gstep-x86.c
 Lget_reg-x86.lo: x86/Lget_reg-x86.c
 Lget_proc_name-x86.lo: x86/Lget_proc_name-x86.c
@@ -657,6 +664,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gscript-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_fpreg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_reg-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gset_reg-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gstep-x86.Plo@am__quote@
@@ -728,6 +736,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mi-init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_cursor_i-ia64.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-hpux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-linux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
@@ -2127,6 +2136,24 @@ Gresume-x86.lo: x86/Gresume-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume-x86.Plo' tmpdepfile='$(DEPDIR)/Gresume-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume-x86.lo `test -f 'x86/Gresume-x86.c' || echo '$(srcdir)/'`x86/Gresume-x86.c
+
+Gset_reg-x86.o: x86/Gset_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gset_reg-x86.c' object='Gset_reg-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gset_reg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg-x86.o `test -f 'x86/Gset_reg-x86.c' || echo '$(srcdir)/'`x86/Gset_reg-x86.c
+
+Gset_reg-x86.obj: x86/Gset_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gset_reg-x86.c' object='Gset_reg-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg-x86.Po' tmpdepfile='$(DEPDIR)/Gset_reg-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg-x86.obj `cygpath -w x86/Gset_reg-x86.c`
+
+Gset_reg-x86.lo: x86/Gset_reg-x86.c
+@AMDEP_TRUE@	source='x86/Gset_reg-x86.c' object='Gset_reg-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg-x86.Plo' tmpdepfile='$(DEPDIR)/Gset_reg-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg-x86.lo `test -f 'x86/Gset_reg-x86.c' || echo '$(srcdir)/'`x86/Gset_reg-x86.c
 
 Gstep-x86.o: x86/Gstep-x86.c
 @AMDEP_TRUE@	source='x86/Gstep-x86.c' object='Gstep-x86.o' libtool=no @AMDEPBACKSLASH@
