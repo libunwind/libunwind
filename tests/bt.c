@@ -84,9 +84,9 @@ do_backtrace (void)
       printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
       unw_get_proc_info (&cursor, &pi);
-      printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
+      printf ("\tproc=%lx-%lx\n\thandler=%lx lsda=%lx gp=%lx",
 	      (long) pi.start_ip, (long) pi.end_ip,
-	      (long) pi.handler, (long) pi.lsda);
+	      (long) pi.handler, (long) pi.lsda, (long) pi.gp);
 
 #if UNW_TARGET_IA64
       {
@@ -118,25 +118,31 @@ foo (void)
   printf ("\texplicit backtrace:\n");
   do_backtrace ();
 
-  printf ("\tvia backtrace():\n");
+  printf ("\n\tvia backtrace():\n");
   n = backtrace (buffer, 20);
   for (i = 0; i < n; ++i)
     printf ("[%d] ip=%p\n", i, buffer[i]);
 }
 
 void
-#ifdef UNW_TARGET_X86
-sighandler (int signal, struct sigcontext sc)
-#else
-sighandler (int signal, void *siginfo, struct sigcontext *sc)
-#endif
+sighandler (int signal, void *siginfo, void *context)
 {
+  ucontext_t *uc = context;
   int sp;
 
   printf ("sighandler: got signal %d, sp=%p", signal, &sp);
 #if UNW_TARGET_IA64
 # if defined(__linux__)
-  printf (" @ %lx", sc->sc_ip);
+  printf (" @ %lx", uc->uc_mcontext.sc_ip);
+# else
+  {
+    uint16_t reason;
+    uint64_t ip;
+
+    __uc_get_reason (uc, &reason);
+    __uc_get_ip (uc, &ip);
+    printf (" @ %lx (reason=%d)", ip, reason);
+  }
 # endif
 #elif UNW_TARGET_X86
   printf (" @ %lx", sc.eip);
@@ -155,11 +161,16 @@ main (int argc, char **argv)
   printf ("Normal backtrace:\n");
   foo ();
 
+  memset (&act, 0, sizeof (act));
+  act.sa_handler = (void (*)(int)) sighandler;
+  act.sa_flags = SA_SIGINFO;
+  if (sigaction (SIGTERM, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
+
   printf ("\nBacktrace across signal handler:\n");
-  signal (SIGTERM, (sighandler_t) sighandler);
   kill (getpid (), SIGTERM);
 
-  printf ("Backtrace across signal handler on alternate stack:\n");
+  printf ("\nBacktrace across signal handler on alternate stack:\n");
   stk.ss_sp = malloc (STACK_SIZE);
   if (!stk.ss_sp)
     panic ("failed to allocate SIGSTKSZ (%u) bytes\n", SIGSTKSZ);
@@ -170,7 +181,7 @@ main (int argc, char **argv)
 
   memset (&act, 0, sizeof (act));
   act.sa_handler = (void (*)(int)) sighandler;
-  act.sa_flags = SA_ONSTACK;
+  act.sa_flags = SA_ONSTACK | SA_SIGINFO;
   if (sigaction (SIGTERM, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
   kill (getpid (), SIGTERM);
