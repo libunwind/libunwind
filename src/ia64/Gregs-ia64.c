@@ -30,84 +30,158 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "rse.h"
 #include "unwind_i.h"
 
+static inline ia64_loc_t
+linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
+{
+#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
+  unw_word_t addr = c->sigcontext_addr, flags, tmp_addr;
+  int i, ret;
+
+  switch (c->last_abi_marker)
+    {
+    case ABI_MARKER_OLD_LINUX_SIGTRAMP:
+    case ABI_MARKER_LINUX_SIGTRAMP:
+      switch (reg)
+	{
+	case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
+	case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
+	  addr += LINUX_SC_NAT_OFF;
+	  break;
+
+	case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
+	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 31:
+	  addr += LINUX_SC_GR_OFF + 8 * (reg - UNW_IA64_GR);
+	  break;
+
+	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
+	  addr += LINUX_SC_FR_OFF + 16 * (reg - UNW_IA64_FR);
+	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+
+	case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
+	  if ((ret = ia64_get (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF, 0),
+			       &flags)) < 0)
+	    return IA64_NULL_LOC;
+
+	  if (!(flags & IA64_SC_FLAG_FPH_VALID))
+	    {
+	      /* initialize fph partition: */
+	      tmp_addr = addr + LINUX_SC_FR_OFF + 32*16;
+	      for (i = 32; i < 128; ++i, tmp_addr += 16)
+		if ((ret = ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0), unw.f0))
+		    < 0)
+		  return IA64_NULL_LOC;
+	      /* mark fph partition as valid: */
+	      if ((ret = ia64_put (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF,
+						     0),
+				   flags | IA64_SC_FLAG_FPH_VALID)) < 0)
+		return IA64_NULL_LOC;
+	    }
+
+	  addr += LINUX_SC_FR_OFF + 16 * (reg - UNW_IA64_FR);
+	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+
+	case UNW_IA64_BR + 0: addr += LINUX_SC_BR_OFF + 0; break;
+	case UNW_IA64_BR + 6: addr += LINUX_SC_BR_OFF + 6*8; break;
+	case UNW_IA64_BR + 7: addr += LINUX_SC_BR_OFF + 7*8; break;
+	case UNW_IA64_AR_RSC: addr += LINUX_SC_AR_RSC_OFF; break;
+	case UNW_IA64_AR_CSD: addr += LINUX_SC_AR_CSD_OFF; break;
+	case UNW_IA64_AR_SSD: addr += LINUX_SC_AR_SSD_OFF; break;
+	case UNW_IA64_AR_CCV: addr += LINUX_SC_AR_CCV; break;
+	}
+      return IA64_LOC_ADDR (addr, 0);
+
+    case ABI_MARKER_LINUX_INTERRUPT:
+      switch (reg)
+	{
+	case UNW_IA64_BR + 6 ... UNW_IA64_BR + 7:
+	  addr += LINUX_PT_B6_OFF + 8 * (reg - (UNW_IA64_BR + 6));
+	  break;
+
+	case UNW_IA64_AR_CSD: addr += LINUX_PT_CSD_OFF; break;
+	case UNW_IA64_AR_SSD: addr += LINUX_PT_SSD_OFF; break;
+
+	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
+	  addr += LINUX_PT_R8_OFF + 8 * (reg - (UNW_IA64_GR + 8));
+	  break;
+
+	case UNW_IA64_AR_RSC: addr += LINUX_PT_RSC_OFF; break;
+	case UNW_IA64_BR + 0: addr += LINUX_PT_B0_OFF; break;
+	case UNW_IA64_GR + 1: addr += LINUX_PT_R1_OFF; break;
+	case UNW_IA64_GR + 2: addr += LINUX_PT_R2_OFF; break;
+	case UNW_IA64_GR + 3: addr += LINUX_PT_R3_OFF; break;
+
+	case UNW_IA64_GR + 16 ... UNW_IA64_GR + 31:
+	  addr += LINUX_PT_R16_OFF + 8 * (reg - (UNW_IA64_GR + 16));
+	  break;
+
+	case UNW_IA64_AR_CCV: addr += LINUX_PT_CCV_OFF; break;
+
+	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 11:
+	  addr += LINUX_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
+	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+	}
+      return IA64_LOC_ADDR (addr, 0);
+
+    case ABI_MARKER_OLD_LINUX_INTERRUPT:
+      switch (reg)
+	{
+	case UNW_IA64_GR +  1 ... UNW_IA64_GR + 3:
+	  addr += LINUX_OLD_PT_R1_OFF + 8 * (reg - (UNW_IA64_GR + 1));
+	  break;
+
+	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
+	  addr += LINUX_OLD_PT_R8_OFF + 8 * (reg - (UNW_IA64_GR + 8));
+	  break;
+
+	case UNW_IA64_GR + 16 ... UNW_IA64_GR + 31:
+	  addr += LINUX_OLD_PT_R16_OFF + 8 * (reg - (UNW_IA64_GR + 16));
+	  break;
+
+	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 9:
+	  addr += LINUX_OLD_PT_F6_OFF + 16 * (reg - (UNW_IA64_FR + 6));
+	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
+
+	case UNW_IA64_BR + 0: addr += LINUX_OLD_PT_B0_OFF; break;
+	case UNW_IA64_BR + 6: addr += LINUX_OLD_PT_B6_OFF; break;
+	case UNW_IA64_BR + 7: addr += LINUX_OLD_PT_B7_OFF; break;
+
+	case UNW_IA64_AR_RSC: addr += LINUX_OLD_PT_RSC_OFF; break;
+	case UNW_IA64_AR_CCV: addr += LINUX_OLD_PT_CCV_OFF; break;
+	}
+      return IA64_LOC_ADDR (addr, 0);
+
+    default:
+      break;
+    }
+#endif
+  return IA64_NULL_LOC;
+}
+
+static inline ia64_loc_t
+hpux_scratch_loc (struct cursor *c, unw_regnum_t reg)
+{
+#if !defined(UNW_LOCAL_ONLY) || defined(__hpux)
+  return IA64_LOC_UC_REG (reg, c->sigcontext_addr);
+#else
+  return IA64_NULL_LOC;
+#endif
+}
+
 HIDDEN ia64_loc_t
 ia64_scratch_loc (struct cursor *c, unw_regnum_t reg)
 {
-  unw_word_t sc_addr = c->sigcontext_addr;
+  if (c->sigcontext_addr)
+    switch (c->as->abi)
+      {
+      case ABI_LINUX:
+	return linux_scratch_loc (c, reg);
 
-  if (sc_addr)
-    {
-      switch (c->as->abi)
-	{
-#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
-	case ABI_LINUX:
-	  {
-	    unw_word_t flags, tmp_addr;
-	    int i, ret;
+      case ABI_HPUX:
+	return hpux_scratch_loc (c, reg);
 
-	    switch (reg)
-	      {
-	      case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
-	      case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
-		sc_addr += LINUX_SC_NAT_OFF;
-		break;
-
-	      case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
-	      case UNW_IA64_GR +  8 ... UNW_IA64_GR + 31:
-		sc_addr += LINUX_SC_GR_OFF + 8*reg;
-		break;
-
-	      case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
-		sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
-		return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
-
-	      case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-		if ((ret = ia64_get (c, IA64_LOC_ADDR (sc_addr
-						       + LINUX_SC_FLAGS_OFF,
-						       0), &flags)) < 0)
-		  return IA64_NULL_LOC;
-
-		if (!(flags & IA64_SC_FLAG_FPH_VALID))
-		  {
-		    /* initialize fph partition: */
-		    tmp_addr = sc_addr + LINUX_SC_FR_OFF + 32*16;
-		    for (i = 32; i < 128; ++i, tmp_addr += 16)
-		      if ((ret = ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0),
-					     unw.f0)) < 0)
-			return IA64_NULL_LOC;
-		    /* mark fph partition as valid: */
-		    if ((ret = ia64_put (c,
-					 IA64_LOC_ADDR (sc_addr
-							+ LINUX_SC_FLAGS_OFF,
-							0),
-					 flags | IA64_SC_FLAG_FPH_VALID)) < 0)
-		      return IA64_NULL_LOC;
-		  }
-
-		sc_addr += LINUX_SC_FR_OFF + 16*(reg - UNW_IA64_FR);
-		return IA64_LOC_ADDR (sc_addr, IA64_LOC_TYPE_FP);
-
-	      case UNW_IA64_BR + 0: sc_addr += LINUX_SC_BR_OFF + 0; break;
-	      case UNW_IA64_BR + 6: sc_addr += LINUX_SC_BR_OFF + 6*8; break;
-	      case UNW_IA64_BR + 7: sc_addr += LINUX_SC_BR_OFF + 7*8; break;
-	      case UNW_IA64_AR_RSC: sc_addr += LINUX_SC_AR_RSC_OFF; break;
-	      case UNW_IA64_AR_CSD: sc_addr += LINUX_SC_AR_CSD_OFF; break;
-	      case UNW_IA64_AR_26:  sc_addr += LINUX_SC_AR_26_OFF; break;
-	      case UNW_IA64_AR_CCV: sc_addr += LINUX_SC_AR_CCV; break;
-	      }
-	    return IA64_LOC_ADDR (sc_addr, 0);
-	  }
-#endif
-
-#if !defined(UNW_LOCAL_ONLY) || defined(__hpux)
-	case ABI_HPUX:
-	  return IA64_LOC_UC_REG (reg, sc_addr);
-#endif
-
-	default:
-	  return IA64_NULL_LOC;
-	}
-    }
+      default:
+	return IA64_NULL_LOC;
+      }
   else
     return IA64_REG_LOC (c, reg);
 }
@@ -140,7 +214,7 @@ static int
 access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
 	    unw_word_t *valp, int write)
 {
-  unw_word_t mask = 0, sc_addr;
+  unw_word_t mask = 0;
   ia64_loc_t nat_loc;
   unw_fpreg_t tmp;
   int ret, reg;
@@ -256,10 +330,11 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
 	{
 	  /* NaT bit is saved in a scratch register.  */
 #if !defined(UNW_LOCAL_ONLY) || defined(__linux)
-	  sc_addr = c->sigcontext_addr;
-	  if (sc_addr && c->as->abi == ABI_LINUX)
+	  if (c->last_abi_marker == ABI_MARKER_LINUX_SIGTRAMP
+	      || c->last_abi_marker == ABI_MARKER_OLD_LINUX_SIGTRAMP)
 	    {
-	      nat_loc = IA64_LOC_ADDR (sc_addr + LINUX_SC_NAT_OFF, 0);
+	      nat_loc = IA64_LOC_ADDR (c->sigcontext_addr + LINUX_SC_NAT_OFF,
+				       0);
 	      mask = (unw_word_t) 1 << reg;
 	    }
 	  else
@@ -463,7 +538,7 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_BR + 7:
     case UNW_IA64_AR_RSC:
     case UNW_IA64_AR_CSD:
-    case UNW_IA64_AR_26:
+    case UNW_IA64_AR_SSD:
     case UNW_IA64_AR_CCV:
       loc = ia64_scratch_loc (c, reg);
       break;
