@@ -27,13 +27,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define _UPT_internal_h
 
 #include <errno.h>
+#include <libunwind.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-/* ensure tdep_search_unwind_table() uses optimized (local-only) version */
-#define UNW_LOCAL_ONLY
-#include <libunwind.h>
 
 #include <sys/ptrace.h>
 
