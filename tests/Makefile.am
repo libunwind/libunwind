@@ -18,11 +18,11 @@ if ARCH_IA64
 			Gia64-test-rbs Lia64-test-rbs
 endif
  check_SCRIPTS_cdep =
- check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	\
-			Gtest-concurrent Ltest-concurrent		\
-			Gtest-resume-sig Ltest-resume-sig		\
-			Gtest-dyn1 Ltest-dyn1				\
-			test-flush-cache test-setjmp test-ptrace
+ check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	  \
+			Gtest-concurrent Ltest-concurrent		  \
+			Gtest-resume-sig Ltest-resume-sig		  \
+			Gtest-dyn1 Ltest-dyn1				  \
+			test-flush-cache test-mem test-setjmp test-ptrace
  noinst_PROGRAMS_cdep = bt test-varargs Gperf-simple Lperf-simple
 endif
 
