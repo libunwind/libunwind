@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static inline int
-common_init (struct ia64_cursor *c)
+common_init (struct cursor *c)
 {
   int i, ret;
 

@@ -4,7 +4,7 @@
    the range of 0-127.  */
 
 static inline int
-rotate_gr (struct ia64_cursor *c, int reg)
+rotate_gr (struct cursor *c, int reg)
 {
   unsigned int rrb_gr, sor, sof;
   unw_word_t cfm;
@@ -37,7 +37,7 @@ rotate_gr (struct ia64_cursor *c, int reg)
    be in the range of 0-127.  */
 
 static inline int
-rotate_fr (struct ia64_cursor *c, int reg)
+rotate_fr (struct cursor *c, int reg)
 {
   unsigned int rrb_fr;
   unw_word_t cfm;
@@ -63,7 +63,7 @@ rotate_fr (struct ia64_cursor *c, int reg)
 /* Apply logical-to-physical rotation.  */
 
 static inline unw_word_t
-pr_ltop (struct ia64_cursor *c, unw_word_t pr)
+pr_ltop (struct cursor *c, unw_word_t pr)
 {
   unw_word_t rrb_pr, mask, rot, cfm;
   int ret;
@@ -82,7 +82,7 @@ pr_ltop (struct ia64_cursor *c, unw_word_t pr)
 /* Apply physical-to-logical rotation.  */
 
 static inline unw_word_t
-pr_ptol (struct ia64_cursor *c, unw_word_t pr)
+pr_ptol (struct cursor *c, unw_word_t pr)
 {
   unw_word_t rrb_pr, mask, rot, cfm;
   int ret;
