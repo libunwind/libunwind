@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 int
-unw_init_remote (unw_cursor_t *cursor, unw_accessors_t *a)
+unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 {
 #ifdef UNW_LOCAL_ONLY
   return -UNW_EINVAL;
@@ -41,7 +41,8 @@ unw_init_remote (unw_cursor_t *cursor, unw_accessors_t *a)
       ia64_init ();
     }
 
-  c->acc = *a;
+  c->as = as;
+  c->as_arg = as_arg;
   return common_init (c);
 #endif /* !UNW_LOCAL_ONLY */
 }
