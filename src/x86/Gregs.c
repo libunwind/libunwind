@@ -156,7 +156,16 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_X86_ECX: loc = c->dwarf.loc[ECX]; break;
     case UNW_X86_EDX: loc = c->dwarf.loc[EDX]; break;
     case UNW_X86_EBX: loc = c->dwarf.loc[EBX]; break;
-    case UNW_X86_ESP: loc = c->dwarf.loc[ESP]; break;
+    case UNW_X86_ESP:
+      if (c->dwarf.cfa_is_sp)
+	{
+	  if (write)
+	    return -UNW_EREADONLYREG;
+	  *valp = c->dwarf.cfa;
+	  return 0;
+	}
+      loc = c->dwarf.loc[ESP];
+      break;
     case UNW_X86_EBP: loc = c->dwarf.loc[EBP]; break;
     case UNW_X86_ESI: loc = c->dwarf.loc[ESI]; break;
     case UNW_X86_EDI: loc = c->dwarf.loc[EDI]; break;

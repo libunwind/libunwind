@@ -82,7 +82,16 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_X86_64_RCX: loc = c->dwarf.loc[RCX]; break;
     case UNW_X86_64_RDX: loc = c->dwarf.loc[RDX]; break;
     case UNW_X86_64_RBX: loc = c->dwarf.loc[RBX]; break;
-    case UNW_X86_64_RSP: loc = c->dwarf.loc[RSP]; break;
+    case UNW_X86_64_RSP:
+      if (c->dwarf.cfa_is_sp)
+	{
+	  if (write)
+	    return -UNW_EREADONLYREG;
+	  *valp = c->dwarf.cfa;
+	  return 0;
+	}
+      loc = c->dwarf.loc[RSP];
+      break;
     case UNW_X86_64_RBP: loc = c->dwarf.loc[RBP]; break;
     case UNW_X86_64_RSI: loc = c->dwarf.loc[RSI]; break;
     case UNW_X86_64_RDI: loc = c->dwarf.loc[RDI]; break;
