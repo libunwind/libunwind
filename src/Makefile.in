@@ -183,7 +183,8 @@ dwarf_sources = \
 # The list of files that go both into libunwind and libunwind-ia64:
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	\
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		\
-	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		\
+	ia64/debug_level-ia64.c
 
 
 # The list of files that go into libunwind:
@@ -370,7 +371,7 @@ am__objects_5 = $(am__objects_4) flush_cache-hppa.lo \
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 @ARCH_IA64_TRUE@libunwind_ia64_la_DEPENDENCIES = libunwind.la
 @ARCH_IA64_FALSE@libunwind_ia64_la_DEPENDENCIES =
-am__objects_6 = $(am__objects_4)
+am__objects_6 = $(am__objects_4) debug_level-ia64.lo
 am__objects_7 = Gdyn-extract.lo Gdyn-remote.lo \
 	Gfind_dynamic_proc_info.lo Gget_proc_info_by_ip.lo \
 	Gget_proc_name.lo Gput_dynamic_unwind_info.lo
@@ -409,7 +410,8 @@ libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@ARCH_X86_FALSE@libunwind_x86_la_DEPENDENCIES =
 @ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_TRUE@libunwind_x86_la_DEPENDENCIES =
 @ARCH_HPPA_TRUE@@ARCH_IA64_TRUE@@ARCH_X86_FALSE@libunwind_x86_la_DEPENDENCIES =
-am__objects_13 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
+am__objects_13 = $(am__objects_4)
+am__objects_14 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
 	Ldyn-extract.lo Lfind_dynamic_proc_info.lo \
 	Lget_proc_info_by_ip.lo Lget_proc_name.lo \
 	Lput_dynamic_unwind_info.lo _Unwind_Backtrace.lo \
@@ -420,11 +422,11 @@ am__objects_13 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
 	_Unwind_GetTextRelBase.lo _Unwind_RaiseException.lo \
 	_Unwind_Resume.lo _Unwind_Resume_or_Rethrow.lo _Unwind_SetGR.lo \
 	_Unwind_SetIP.lo
-am__objects_14 = global-dwarf.lo Gexpr-dwarf.lo Gfde-dwarf.lo \
+am__objects_15 = global-dwarf.lo Gexpr-dwarf.lo Gfde-dwarf.lo \
 	Gparser-dwarf.lo Gpe-dwarf.lo Gstep-dwarf.lo Lexpr-dwarf.lo \
 	Lfde-dwarf.lo Lparser-dwarf.lo Lpe-dwarf.lo Lstep-dwarf.lo
-am__objects_15 = $(am__objects_6) $(am__objects_13) elf32.lo \
-	$(am__objects_14) flush_cache-x86.lo get_accessors-x86.lo \
+am__objects_16 = $(am__objects_13) $(am__objects_14) elf32.lo \
+	$(am__objects_15) flush_cache-x86.lo get_accessors-x86.lo \
 	global-x86.lo set_caching_policy-x86.lo regname-x86.lo \
 	Lfind_proc_info-lsb.lo Lcreate_addr_space-x86.lo \
 	Lget_reg-x86.lo Lget_proc_name-x86.lo Linit-x86.lo \
@@ -432,10 +434,10 @@ am__objects_15 = $(am__objects_6) $(am__objects_13) elf32.lo \
 	Lget_proc_info-x86.lo Lregs-x86.lo Lresume-x86.lo \
 	Lset_reg-x86.lo Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_15)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 libunwind_la_LIBADD =
-am__objects_16 = $(am__objects_6) $(am__objects_13) elf64.lo \
+am__objects_17 = $(am__objects_6) $(am__objects_14) elf64.lo \
 	flush_cache-ia64.lo regname-ia64.lo dyn_info_list-ia64.lo \
 	Lcreate_addr_space-ia64.lo Ldestroy_addr_space-ia64.lo \
 	Lget_accessors-ia64.lo Lget_fpreg-ia64.lo \
@@ -447,10 +449,10 @@ am__objects_16 = $(am__objects_6) $(am__objects_13) elf64.lo \
 	Lset_caching_policy-ia64.lo Lset_fpreg-ia64.lo Lset_reg-ia64.lo \
 	Lstep-ia64.lo Ltables-ia64.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_15)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_la_OBJECTS = \
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_5)
-@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_16)
+@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_17)
 libunwind_la_OBJECTS = $(am_libunwind_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_Gcursor_i-ia64$(EXEEXT) \
 @ARCH_IA64_TRUE@	mk_Lcursor_i-ia64$(EXEEXT)
@@ -600,6 +602,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_Resume_or_Rethrow.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetGR.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_Unwind_SetIP.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/debug_level-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-info-list.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo ./$(DEPDIR)/elf32.Plo \
@@ -733,6 +736,7 @@ Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
 libunwind-hppa.la: $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_hppa_la_LDFLAGS) $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_LIBADD) $(LIBS)
+debug_level-ia64.lo: ia64/debug_level-ia64.c
 Gcreate_addr_space-ia64.lo: ia64/Gcreate_addr_space-ia64.c
 Gdestroy_addr_space-ia64.lo: ia64/Gdestroy_addr_space-ia64.c
 Gget_accessors-ia64.lo: ia64/Gget_accessors-ia64.c
@@ -971,6 +975,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_Resume_or_Rethrow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetGR.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_Unwind_SetIP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/debug_level-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-info-list.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-register.Plo@am__quote@
@@ -1424,6 +1429,24 @@ Lstep-hppa.lo: hppa/Lstep-hppa.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep-hppa.Plo' tmpdepfile='$(DEPDIR)/Lstep-hppa.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.lo `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
+
+debug_level-ia64.o: ia64/debug_level-ia64.c
+@AMDEP_TRUE@	source='ia64/debug_level-ia64.c' object='debug_level-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/debug_level-ia64.Po' tmpdepfile='$(DEPDIR)/debug_level-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o debug_level-ia64.o `test -f 'ia64/debug_level-ia64.c' || echo '$(srcdir)/'`ia64/debug_level-ia64.c
+
+debug_level-ia64.obj: ia64/debug_level-ia64.c
+@AMDEP_TRUE@	source='ia64/debug_level-ia64.c' object='debug_level-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/debug_level-ia64.Po' tmpdepfile='$(DEPDIR)/debug_level-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o debug_level-ia64.obj `cygpath -w ia64/debug_level-ia64.c`
+
+debug_level-ia64.lo: ia64/debug_level-ia64.c
+@AMDEP_TRUE@	source='ia64/debug_level-ia64.c' object='debug_level-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/debug_level-ia64.Plo' tmpdepfile='$(DEPDIR)/debug_level-ia64.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o debug_level-ia64.lo `test -f 'ia64/debug_level-ia64.c' || echo '$(srcdir)/'`ia64/debug_level-ia64.c
 
 Gcreate_addr_space-ia64.o: ia64/Gcreate_addr_space-ia64.c
 @AMDEP_TRUE@	source='ia64/Gcreate_addr_space-ia64.c' object='Gcreate_addr_space-ia64.o' libtool=no @AMDEPBACKSLASH@
