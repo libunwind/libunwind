@@ -1,0 +1,3 @@
+- c->prev_script is redundant now that we have c->script
+- finish & test unwinding across signal frame (pay attention that signal
+  frame gets updated)
