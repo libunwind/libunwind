@@ -156,6 +156,7 @@ libunwind_la_SOURCES_generic = \
 
 # List of arch-independent files needed by local-only library (libunwind):
 libunwind_la_SOURCES_local = \
+	mi/backtrace.c							\
 	mi/dyn-cancel.c mi/dyn-info-list.c mi/dyn-register.c		\
 	mi/Ldyn-extract.c mi/Lfind_dynamic_proc_info.c			\
 	mi/Lget_accessors.c						\
@@ -440,9 +441,9 @@ am__objects_16 = $(am__objects_14) $(am__objects_7) $(am__objects_15) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 libunwind_la_LIBADD =
-am__objects_17 = dyn-cancel.lo dyn-info-list.lo dyn-register.lo \
-	Ldyn-extract.lo Lfind_dynamic_proc_info.lo Lget_accessors.lo \
-	Lget_proc_info_by_ip.lo Lget_proc_name.lo \
+am__objects_17 = backtrace.lo dyn-cancel.lo dyn-info-list.lo \
+	dyn-register.lo Ldyn-extract.lo Lfind_dynamic_proc_info.lo \
+	Lget_accessors.lo Lget_proc_info_by_ip.lo Lget_proc_name.lo \
 	Lput_dynamic_unwind_info.lo Ldestroy_addr_space.lo Lget_reg.lo \
 	Lset_reg.lo Lget_fpreg.lo Lset_fpreg.lo Lset_caching_policy.lo \
 	Backtrace.lo DeleteException.lo FindEnclosingFunction.lo \
@@ -629,6 +630,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_put_unwind_info.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_reg_offset.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_resume.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/backtrace.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-info-list.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo ./$(DEPDIR)/elf32.Plo \
@@ -815,6 +817,7 @@ Gresume-x86.lo: x86/Gresume-x86.c
 Gstep-x86.lo: x86/Gstep-x86.c
 libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
+backtrace.lo: mi/backtrace.c
 dyn-cancel.lo: mi/dyn-cancel.c
 dyn-info-list.lo: mi/dyn-info-list.c
 dyn-register.lo: mi/dyn-register.c
@@ -1052,6 +1055,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_put_unwind_info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_reg_offset.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_resume.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-info-list.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-register.Plo@am__quote@
@@ -2337,6 +2341,24 @@ Gstep-x86.lo: x86/Gstep-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep-x86.Plo' tmpdepfile='$(DEPDIR)/Gstep-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep-x86.lo `test -f 'x86/Gstep-x86.c' || echo '$(srcdir)/'`x86/Gstep-x86.c
+
+backtrace.o: mi/backtrace.c
+@AMDEP_TRUE@	source='mi/backtrace.c' object='backtrace.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/backtrace.Po' tmpdepfile='$(DEPDIR)/backtrace.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.o `test -f 'mi/backtrace.c' || echo '$(srcdir)/'`mi/backtrace.c
+
+backtrace.obj: mi/backtrace.c
+@AMDEP_TRUE@	source='mi/backtrace.c' object='backtrace.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/backtrace.Po' tmpdepfile='$(DEPDIR)/backtrace.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.obj `cygpath -w mi/backtrace.c`
+
+backtrace.lo: mi/backtrace.c
+@AMDEP_TRUE@	source='mi/backtrace.c' object='backtrace.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/backtrace.Plo' tmpdepfile='$(DEPDIR)/backtrace.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o backtrace.lo `test -f 'mi/backtrace.c' || echo '$(srcdir)/'`mi/backtrace.c
 
 dyn-cancel.o: mi/dyn-cancel.c
 @AMDEP_TRUE@	source='mi/dyn-cancel.c' object='dyn-cancel.o' libtool=no @AMDEPBACKSLASH@
