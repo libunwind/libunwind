@@ -102,10 +102,12 @@ CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
+AC_SUBST(build_arch)
+AC_SUBST(target_os)
 AC_SUBST(arch)
 AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 
-AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile
+AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
 		doc/Makefile doc/common.tex)
 AC_OUTPUT
