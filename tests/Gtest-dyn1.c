@@ -67,20 +67,7 @@ struct fdesc
 # define get_gp(fdesc)		(0)
 #endif
 
-static void
-flush_cache (void *addr, unsigned long len)
-{
-#ifdef __ia64__
-  void *end = (char *) addr + len;
-
-  while (addr < end)
-    {
-      asm volatile ("fc %0" :: "r"(addr));
-      addr = (char *) addr + 32;
-    }
-  asm volatile (";;sync.i;;srlz.i;;");
-#endif
-}
+extern void flush_cache (void *addr, size_t len);
 
 void
 template (int i, template_t self,
