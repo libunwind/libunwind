@@ -81,7 +81,6 @@ struct ia64_global_unwind_state unw =
       struct_offset (struct ia64_cursor, fr_loc[30 - 16])/8,
       struct_offset (struct ia64_cursor, fr_loc[31 - 16])/8,
     },
-    hash : { [0 ... IA64_UNW_HASH_SIZE - 1] = -1 },
 #if IA64_UNW_DEBUG
     debug_level: 0,
     preg_name: {
@@ -164,12 +163,5 @@ ia64_init (void)
   if (8*sizeof(unw_hash_index_t) < IA64_LOG_UNW_HASH_SIZE)
     unw_hash_index_t_is_too_narrow();
 
-  for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i) {
-    if (i > 0)
-      unw.cache[i].lru_chain = (i - 1);
-    unw.cache[i].coll_chain = -1;
-//    unw.cache[i].lock = RW_LOCK_UNLOCKED;
-  }
-  unw.lru_head = IA64_UNW_CACHE_SIZE - 1;
-  unw.lru_tail = 0;
+  ia64_script_cache_init (&unw.global_cache);
 }
