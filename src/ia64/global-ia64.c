@@ -78,6 +78,8 @@ ia64_init (void)
   uint8_t *lep, *bep;
   long i;
 
+  sigfillset (&unwi_full_sigmask);
+
   sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
   mutex_lock (&unw.lock);
   {
