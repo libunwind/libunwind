@@ -1,0 +1,54 @@
+- man-page for _U_dyn_cancel()
+- man-page for _U_dyn_register()
+- man-page for unw_is_fpreg()
+
+Testing:
+	- ensure that saving r4-r7 in a stacked register properly preserves
+	  the NaT bit, even in the face of register-rotation
+	- ensure that IA64_INSN_MOVE_STACKED works correctly in the face of
+	  register rotation
+	- test with Intel compiler
+
+=== taken care of:
+
++ cache the value of *cfm_loc; each rotate_FOO() call needs it!
++ implement the remote-lookup of the dynamic registration list
++ when doing sigreturn, must restore fp regs (and perhaps other regs) the same
+  way as the (user-level) gate.S sigreturn path does!
++ unw_resume() must at least restore gp (r1)!  consider restoring all
+  scratch regs (but what's the performance impact on exception handling?);
+  alternative: restore scratch regs that may be used during procedure
+  call/return (e.g., r8-r11, f8-f11)
++ implement unw_resume() for the case where the current register frame is split
+  across multiple backing stores
++ document restricions on using unw_resume():
++ implement remote cases of unw_resume()
++ test both with UNW_LOCAL_ONLY and without where this makes sense
++ allow region-length (insn_count) in unw_dyn_region_info_t to be negative
+  to indicate counting from the end of the procedure (to make it possible
+  for differently-sized procedures to share the same region list if they
+  share the same prologue/epilogue).
++ it appears that it is currently not possible to read register UNW_IA64_TP;
+  fix that => no, attempts to access r13 will result in access_reg() callbacks,
+  as desired; for local-case, access to r13 will fail though (since
+  getcontext() doesn't, and shouldn't, capture r13)
++ document the special nature of UNW_IA64_GP: read-only, but adjusted
+  automatically if the IP is changed
++ use pthread-mutexes where necessary, atomic ops where possible
++ man-page for unw_init_local()
++ man-page for unw_init_remote()
++ man-page for unw_create_addr_space()
++ man-page for unw_destroy_addr_space()
++ man-page for unw_get_proc_info()
++ man-page for unw_get_proc_name()
++ man-page for unw_get_accessors()
++ man-page for unw_regname()
++ man-page for unw_flush_cache()
++ man-page for unw_set_caching_policy()
++ man-page for unw_getcontext()
++ man-page for unw_is_signal_frame()
++ man-page for unw_step()
++ man-page for unw_get_reg()
++ man-page for unw_set_reg()
++ man-page for unw_get_fpreg()
++ man-page for unw_set_fpreg()
