@@ -44,6 +44,6 @@ setjmp (env)
   /* this should work on most platforms, but may not be
      performance-optimal; check the code! */
   wp[JB_SP] = __builtin_frame_address (0);
-  wp[JB_RP] = (unw_word_t) __builtin_return_address (0);
+  wp[JB_RP] = (void *) __builtin_return_address (0);
   return 0;
 }
