@@ -139,9 +139,12 @@ scan_dec (char *cp, unsigned long *valp)
 
   while (1)
     {
-      digit = *cp++;
+      digit = *cp;
       if ((digit - '0') <= 9)
-	digit -= '0';
+	{
+	  digit -= '0';
+	  ++cp;
+	}
       else
 	break;
       val = (10 * val) + digit;
@@ -159,7 +162,11 @@ scan_char (char *cp, char *valp)
   if (!cp)
     return NULL;
 
-  *valp = *cp++;
+  *valp = *cp;
+
+  /* don't step over NUL terminator */
+  if (*cp)
+    ++cp;
   return cp;
 }
 
