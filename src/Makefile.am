@@ -39,13 +39,13 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	elf64.c elf64.h							      \
-	ia64/_Uia64_install_cursor.S					      \
 	ia64/global-ia64.c ia64/global-asm-ia64.S			      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
 									      \
-	ia64/Ginit-ia64.c ia64/Gparser-ia64.c ia64/Gregs-ia64.c		      \
+	ia64/Ginit-ia64.c ia64/Ginstall_cursor.S			      \
+	ia64/Gparser-ia64.c ia64/Gregs-ia64.c				      \
 	ia64/Grbs-ia64.c ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c   \
 	ia64/Gdestroy_addr_space-ia64.c					      \
 	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c		      \
@@ -54,7 +54,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/Gresume-ia64.c ia64/Gset_reg-ia64.c ia64/Gset_fpreg-ia64.c	      \
 	ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c ia64/Gstep-ia64.c    \
 									      \
-	ia64/Linit-ia64.c ia64/Lparser-ia64.c ia64/Lregs-ia64.c		      \
+	ia64/Linit-ia64.c ia64/Linstall_cursor.S			      \
+	ia64/Lparser-ia64.c ia64/Lregs-ia64.c				      \
 	ia64/Lrbs-ia64.c ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c   \
 	ia64/Ldestroy_addr_space-ia64.c					      \
 	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c		      \
@@ -131,11 +132,14 @@ if OS_HPUX
 endif
 
 if ARCH_IA64
- mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
- noinst_PROGRAMS = mk_cursor_i-ia64
- BUILT_SOURCES = cursor_i.h
-cursor_i.h: mk_cursor_i-ia64
-	./mk_cursor_i-ia64 > $@
+ Gmk_cursor_i_ia64_SOURCES = ia64/Gmk_cursor_i-ia64.c
+ Lmk_cursor_i_ia64_SOURCES = ia64/Lmk_cursor_i-ia64.c
+ noinst_PROGRAMS = Gmk_cursor_i-ia64 Lmk_cursor_i-ia64
+ BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
+Gcursor_i.h: Gmk_cursor_i-ia64
+	./Gmk_cursor_i-ia64 > $@
+Lcursor_i.h: Lmk_cursor_i-ia64
+	./Lmk_cursor_i-ia64 > $@
  lib_LTLIBRARIES_arch = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
