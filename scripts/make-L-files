@@ -1,0 +1,7 @@
+#!/bin/sh
+for gname in G*.c G*.cxx; do
+	lname="L$(expr $gname : '.\(.*\)')"
+	bk edit $lname >/dev/null 2>&1
+	echo -e "#ifndef UNW_REMOTE_ONLY\n#define UNW_LOCAL_ONLY\n\
+#include \"$gname\"\n#endif" > $lname
+done
