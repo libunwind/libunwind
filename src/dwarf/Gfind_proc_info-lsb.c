@@ -34,6 +34,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf-eh.h"
 #include "tdep.h"
 
+struct table_entry
+  {
+    unw_word_t start_ip_offset;
+    unw_word_t fde_offset;
+  };
+
 #ifndef UNW_REMOTE_ONLY
 
 /* Info is a pointer to a unw_dyn_info_t structure and, on entry,
@@ -211,12 +217,6 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   /* now search the table: */
   return dwarf_search_unwind_table (as, ip, &di, pi, need_unwind_info, arg);
 }
-
-struct table_entry
-  {
-    unw_word_t start_ip_offset;
-    unw_word_t fde_offset;
-  };
 
 static inline const struct table_entry *
 lookup (struct table_entry *table, size_t table_size, unw_word_t rel_ip)
