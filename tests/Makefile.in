@@ -14,7 +14,7 @@
 
 @SET_MAKE@
 
-SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-bt.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-bt.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-setjmp.c ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c $(test_static_link_SOURCES) test-strerror.c test-varargs.c
+SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) $(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c $(Gtest_bt_SOURCES) Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) $(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c $(Ltest_bt_SOURCES) Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c forker.c $(ia64_test_dyn1_SOURCES) ia64-test-setjmp.c ia64-test-sig.c mapper.c test-async-sig.c test-flush-cache.c test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c $(test_ptrace_misc_SOURCES) test-setjmp.c $(test_static_link_SOURCES) test-strerror.c test-varargs.c
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -79,6 +79,7 @@ am__EXEEXT_1 = test-proc-info$(EXEEXT) test-static-link$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-sig$(EXEEXT)
 am__EXEEXT_4 =
 @REMOTE_ONLY_FALSE@am__EXEEXT_5 = forker$(EXEEXT) mapper$(EXEEXT) \
+@REMOTE_ONLY_FALSE@	test-ptrace-misc$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) Gperf-simple$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Lperf-simple$(EXEEXT)
 @REMOTE_ONLY_TRUE@am__EXEEXT_5 = $(am__EXEEXT_4)
@@ -110,8 +111,8 @@ Gperf_simple_SOURCES = Gperf-simple.c
 Gperf_simple_OBJECTS = Gperf-simple.$(OBJEXT)
 Gperf_simple_LDADD = $(LDADD)
 Gperf_simple_DEPENDENCIES = $(am__DEPENDENCIES_1)
-Gtest_bt_SOURCES = Gtest-bt.c
-Gtest_bt_OBJECTS = Gtest-bt.$(OBJEXT)
+am_Gtest_bt_OBJECTS = Gtest-bt.$(OBJEXT) ident.$(OBJEXT)
+Gtest_bt_OBJECTS = $(am_Gtest_bt_OBJECTS)
 Gtest_bt_LDADD = $(LDADD)
 Gtest_bt_DEPENDENCIES = $(am__DEPENDENCIES_1)
 Gtest_concurrent_SOURCES = Gtest-concurrent.c
@@ -157,8 +158,8 @@ Lperf_simple_SOURCES = Lperf-simple.c
 Lperf_simple_OBJECTS = Lperf-simple.$(OBJEXT)
 Lperf_simple_LDADD = $(LDADD)
 Lperf_simple_DEPENDENCIES = $(am__DEPENDENCIES_1)
-Ltest_bt_SOURCES = Ltest-bt.c
-Ltest_bt_OBJECTS = Ltest-bt.$(OBJEXT)
+am_Ltest_bt_OBJECTS = Ltest-bt.$(OBJEXT) ident.$(OBJEXT)
+Ltest_bt_OBJECTS = $(am_Ltest_bt_OBJECTS)
 Ltest_bt_LDADD = $(LDADD)
 Ltest_bt_DEPENDENCIES = $(am__DEPENDENCIES_1)
 Ltest_concurrent_SOURCES = Ltest-concurrent.c
@@ -223,6 +224,11 @@ test_ptrace_SOURCES = test-ptrace.c
 test_ptrace_OBJECTS = test-ptrace.$(OBJEXT)
 test_ptrace_DEPENDENCIES = ../src/libunwind-ptrace.a \
 	$(am__DEPENDENCIES_1)
+am_test_ptrace_misc_OBJECTS = test-ptrace-misc.$(OBJEXT) \
+	ident.$(OBJEXT)
+test_ptrace_misc_OBJECTS = $(am_test_ptrace_misc_OBJECTS)
+test_ptrace_misc_LDADD = $(LDADD)
+test_ptrace_misc_DEPENDENCIES = $(am__DEPENDENCIES_1)
 test_setjmp_SOURCES = test-setjmp.c
 test_setjmp_OBJECTS = test-setjmp.$(OBJEXT)
 test_setjmp_DEPENDENCIES = ../src/libunwind-setjmp.la
@@ -263,32 +269,32 @@ CXXLINK = $(LIBTOOL) --mode=link --tag=CXX $(CXXLD) $(AM_CXXFLAGS) \
 	$(CXXFLAGS) $(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	$(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) \
-	Gperf-simple.c Gtest-bt.c Gtest-concurrent.c \
+	Gperf-simple.c $(Gtest_bt_SOURCES) Gtest-concurrent.c \
 	$(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) \
 	Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) \
 	$(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) \
-	$(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-bt.c \
+	$(Lia64_test_stack_SOURCES) Lperf-simple.c $(Ltest_bt_SOURCES) \
 	Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c \
 	$(Ltest_init_SOURCES) Ltest-resume-sig.c forker.c \
 	$(ia64_test_dyn1_SOURCES) ia64-test-setjmp.c ia64-test-sig.c \
 	mapper.c test-async-sig.c test-flush-cache.c \
 	test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c \
-	test-setjmp.c $(test_static_link_SOURCES) test-strerror.c \
-	test-varargs.c
+	$(test_ptrace_misc_SOURCES) test-setjmp.c \
+	$(test_static_link_SOURCES) test-strerror.c test-varargs.c
 DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	$(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) \
-	Gperf-simple.c Gtest-bt.c Gtest-concurrent.c \
+	Gperf-simple.c $(Gtest_bt_SOURCES) Gtest-concurrent.c \
 	$(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) \
 	Gtest-resume-sig.c $(Lia64_test_nat_SOURCES) \
 	$(Lia64_test_rbs_SOURCES) $(Lia64_test_readonly_SOURCES) \
-	$(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-bt.c \
+	$(Lia64_test_stack_SOURCES) Lperf-simple.c $(Ltest_bt_SOURCES) \
 	Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c \
 	$(Ltest_init_SOURCES) Ltest-resume-sig.c forker.c \
 	$(ia64_test_dyn1_SOURCES) ia64-test-setjmp.c ia64-test-sig.c \
 	mapper.c test-async-sig.c test-flush-cache.c \
 	test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c \
-	test-setjmp.c $(test_static_link_SOURCES) test-strerror.c \
-	test-varargs.c
+	$(test_ptrace_misc_SOURCES) test-setjmp.c \
+	$(test_static_link_SOURCES) test-strerror.c test-varargs.c
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -420,7 +426,7 @@ target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
 AM_CPPFLAGS = -I$(top_srcdir)/include
-EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper		\
+EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 		run-check-namespace check-namespace.sh.in
 
 noinst_PROGRAMS_common = 
@@ -428,7 +434,7 @@ check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
 
 check_SCRIPTS_common = run-check-namespace
-@REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = run-ptrace-mapper
+@REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = run-ptrace-mapper run-ptrace-misc
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
 @REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 @REMOTE_ONLY_FALSE@			Gtest-init Ltest-init				 \
@@ -439,7 +445,9 @@ check_SCRIPTS_common = run-check-namespace
 @REMOTE_ONLY_FALSE@			test-mem test-setjmp test-ptrace
 
 @REMOTE_ONLY_TRUE@check_PROGRAMS_cdep = 
-@REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = forker mapper test-varargs Gperf-simple Lperf-simple
+@REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
+@REMOTE_ONLY_FALSE@			Gperf-simple Lperf-simple
+
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_SCRIPTS_arch = run-ia64-test-dyn1
@@ -473,6 +481,9 @@ Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
 test_static_link_LDFLAGS = -static
 forker_LDFLAGS = -static
+Gtest_bt_SOURCES = Gtest-bt.c ident.c
+Ltest_bt_SOURCES = Ltest-bt.c ident.c
+test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
 test_setjmp_LDADD = ../src/libunwind-setjmp.la
@@ -629,6 +640,9 @@ test-proc-info$(EXEEXT): $(test_proc_info_OBJECTS) $(test_proc_info_DEPENDENCIES
 test-ptrace$(EXEEXT): $(test_ptrace_OBJECTS) $(test_ptrace_DEPENDENCIES) 
 	@rm -f test-ptrace$(EXEEXT)
 	$(LINK) $(test_ptrace_LDFLAGS) $(test_ptrace_OBJECTS) $(test_ptrace_LDADD) $(LIBS)
+test-ptrace-misc$(EXEEXT): $(test_ptrace_misc_OBJECTS) $(test_ptrace_misc_DEPENDENCIES) 
+	@rm -f test-ptrace-misc$(EXEEXT)
+	$(LINK) $(test_ptrace_misc_LDFLAGS) $(test_ptrace_misc_OBJECTS) $(test_ptrace_misc_LDADD) $(LIBS)
 test-setjmp$(EXEEXT): $(test_setjmp_OBJECTS) $(test_setjmp_DEPENDENCIES) 
 	@rm -f test-setjmp$(EXEEXT)
 	$(LINK) $(test_setjmp_LDFLAGS) $(test_setjmp_OBJECTS) $(test_setjmp_LDADD) $(LIBS)
@@ -674,12 +688,14 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-setjmp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-sig.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ident.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapper.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-async-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-flush-cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init-remote.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-mem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-proc-info.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ptrace-misc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ptrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setjmp.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-static-link-gen.Po@am__quote@
