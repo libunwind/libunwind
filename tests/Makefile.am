@@ -1,6 +1,6 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
-EXTRA_DIST = run-ia64-test-dyn1
+EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper
 
 noinst_PROGRAMS_common =
 check_PROGRAMS_common = test-proc-info test-static-link
@@ -65,8 +65,8 @@ Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
-test_static_link_LDFLAGS = -all-static
-forker_LDFLAGS = -all-static
+test_static_link_LDFLAGS = -static
+forker_LDFLAGS = -static
 
 LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
