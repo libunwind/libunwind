@@ -77,7 +77,7 @@ do_backtrace (void)
       if (unw_get_proc_name (&cursor, name, sizeof (name), &off) == 0)
 	{
 	  if (off)
-	    snprintf (buf, sizeof (buf), "<%s+0x%lx>", name, off);
+	    snprintf (buf, sizeof (buf), "<%s+0x%lx>", name, (long) off);
 	  else
 	    snprintf (buf, sizeof (buf), "<%s>", name);
 	}
@@ -145,7 +145,7 @@ sighandler (int signal, void *siginfo, void *context)
   }
 # endif
 #elif UNW_TARGET_X86
-  printf (" @ %lx", sc.eip);
+  printf (" @ %lx", uc->uc_mcontext.gregs[REG_EIP]);
 #endif
   printf ("\n");
 
