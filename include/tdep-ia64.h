@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -186,7 +186,6 @@ struct ia64_global_unwind_state
     struct mempool labeled_state_pool;
 
 # if UNW_DEBUG
-    long debug_level;
     const char *preg_name[IA64_NUM_PREGS];
 # endif
   };
@@ -194,7 +193,7 @@ struct ia64_global_unwind_state
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
 #define tdep_search_unwind_table(a,b,c,d,e,f)			\
-		UNW_OBJ(search_unwind_table) (a, b, c, d, e, f)
+		unw_search_ia64_unwind_table(a,b,c,d,e,f)
 #define tdep_find_proc_info		UNW_OBJ(find_proc_info)
 #define tdep_uc_addr(uc,reg)		UNW_OBJ(uc_addr)(uc, reg)
 #define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
@@ -203,9 +202,14 @@ struct ia64_global_unwind_state
 # define tdep_put_unwind_info(a,b,c) 	UNW_OBJ(put_unwind_info)(a, b, c)
 #endif
 
-#define tdep_debug_level		unw.debug_level
+#define tdep_debug_level		UNW_ARCH_OBJ(debug_level)
+extern long tdep_debug_level;
 
-#define unw		UNW_OBJ(data)
+/* This can't be an UNW_ARCH_OBJ() because we need separate
+   unw.initialized flags for the local-only and generic versions of
+   the library.  Also, if we wanted to have a single, shared global
+   data structure, we couldn't declare "unw" as HIDDEN/PROTECTED.  */
+#define unw				UNW_OBJ(data)
 
 extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				unw_proc_info_t *pi, int need_unwind_info,
