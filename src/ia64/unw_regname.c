@@ -70,10 +70,7 @@ static const char *regname[] = {
    "cfm",
    "bsp",
     "ip",
-    "sp",
-  "<proc-start>",
-  "<handler>",
-  "<lsda>"
+    "sp"
 };
 
 const char *
