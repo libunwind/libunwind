@@ -4,8 +4,8 @@ libunwind_la_SOURCES_common = backtrace.c
 endif
 
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
-	ia64/init.h ia64/offsets.h ia64/rse.h ia64/script.h		   \
-	ia64/ucontext_i.h ia64/unwind_i.h ia64/unwind_decoder.h		   \
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h ia64/script.h	   \
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		   \
 									   \
 	ia64/__ia64_install_context.S ia64/shared.c ia64/tables-glibc.c	   \
 									   \
