@@ -1,2 +1,0 @@
-#define UNW_TARGET_IA64
-#undef UNW_LOCAL_ONLY
