@@ -1,9 +1,10 @@
 SOVERSION=0:0:0		# See comments at end of file.
 
 if REMOTE_ONLY
-libunwind_la_SOURCES_common = mempool.c mempool.h
+libunwind_la_SOURCES_common = dyn-common.h mempool.c mempool.h
 else
-libunwind_la_SOURCES_common = mempool.c mempool.h backtrace.c
+libunwind_la_SOURCES_common = dyn-common.h dyn-local.c dyn-register.c \
+	mempool.c mempool.h backtrace.c
 
 #
 # This is not ideal, but I know of no other way to install an
@@ -19,12 +20,14 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h ia64/script.h	   \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		   \
 									   \
-	ia64/__ia64_install_context.S ia64/tables-glibc.c		   \
+	ia64/__ia64_install_context.S ia64/tables.c			   \
 	ia64/unw_regname.c						   \
 									   \
 	ia64/init.c ia64/parser.c ia64/regs.c ia64/script.c		   \
 	ia64/unw_create_addr_space.c ia64/unw_destroy_addr_space.c	   \
+	ia64/unw_find_dynamic_proc_info.c				   \
 	ia64/unw_set_caching_policy.c ia64/unw_flush_cache.c		   \
+	ia64/unw_get_accessors.c ia64/unw_get_proc_info.c		   \
 	ia64/unw_get_reg.c ia64/unw_get_fpreg.c ia64/unw_get_save_loc.c	   \
 	ia64/unw_is_signal_frame.c					   \
 	ia64/unw_resume.c ia64/unw_set_reg.c ia64/unw_set_fpreg.c	   \
@@ -32,7 +35,9 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 									   \
 	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		   \
 	ia64/Lunw_create_addr_space.c ia64/Lunw_destroy_addr_space.c	   \
+	ia64/Lunw_find_dynamic_proc_info.c				   \
 	ia64/Lunw_set_caching_policy.c ia64/Lunw_flush_cache.c		   \
+	ia64/Lunw_get_accessors.c ia64/Lunw_get_proc_info.c		   \
 	ia64/Lunw_get_reg.c ia64/Lunw_get_fpreg.c ia64/Lunw_get_save_loc.c \
 	ia64/Lunw_is_signal_frame.c					   \
 	ia64/Lunw_resume.c ia64/Lunw_set_reg.c ia64/Lunw_set_fpreg.c	   \
