@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -54,7 +54,7 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 # define GET_NAT(n)						\
   do								\
     {								\
-      ret = ia64_access_reg (c, UNW_IA64_NAT + (n), &val, 0);	\
+      ret = tdep_access_reg (c, UNW_IA64_NAT + (n), &val, 0);	\
       if (ret < 0)						\
 	return ret;						\
       if (val)							\
@@ -125,8 +125,8 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       if (c->eh_valid_mask & 0x2) sc->sc_gr[16] = c->eh_args[1];
       if (c->eh_valid_mask & 0x4) sc->sc_gr[17] = c->eh_args[2];
       if (c->eh_valid_mask & 0x8) sc->sc_gr[18] = c->eh_args[3];
-      debug (10, "%s: sc: r15=%lx,r16=%lx,r17=%lx,r18=%lx\n",
-	     __FUNCTION__, (long) sc->sc_gr[15], (long) sc->sc_gr[16],
+      Debug (9, "sc: r15=%lx,r16=%lx,r17=%lx,r18=%lx\n",
+	     (long) sc->sc_gr[15], (long) sc->sc_gr[16],
 	     (long) sc->sc_gr[17], (long) sc->sc_gr[18]);
     }
   else
@@ -143,11 +143,11 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r16 = c->eh_args[1];
       extra.r17 = c->eh_args[2];
       extra.r18 = c->eh_args[3];
-      debug (10, "%s: extra: r15=%lx,r16=%lx,r17=%lx,r18=%lx\n",
-	     __FUNCTION__, (long) extra.r15, (long) extra.r16,
+      Debug (9, "extra: r15=%lx,r16=%lx,r17=%lx,r18=%lx\n",
+	     (long) extra.r15, (long) extra.r16,
 	     (long) extra.r17, (long) extra.r18);
     }
-  debug (10, "%s: resuming at ip=%lx\n", __FUNCTION__, (long) c->ip);
+  Debug (8, "resuming at ip=%lx\n", (long) c->ip);
   ia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
 #elif defined(__hpux)
   struct cursor *c = (struct cursor *) cursor;
@@ -231,18 +231,18 @@ remote_install_cursor (struct cursor *c)
       access_reg = c->as->acc.access_reg;
       access_fpreg = c->as->acc.access_fpreg;
 
-      debug (1, "%s: copying out cursor state\n", __FUNCTION__);
+      Debug (8, "copying out cursor state\n");
 
       for (reg = 0; reg < UNW_REG_LAST; ++reg)
 	{
 	  if (unw_is_fpreg (reg))
 	    {
-	      if (ia64_access_fpreg (c, reg, &fpval, 0) >= 0)
+	      if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
 		(*access_fpreg) (c->as, reg, &fpval, 1, c->as_arg);
 	    }
 	  else
 	    {
-	      if (ia64_access_reg (c, reg, &val, 0) >= 0)
+	      if (tdep_access_reg (c, reg, &val, 0) >= 0)
 		(*access_reg) (c->as, reg, &val, 1, c->as_arg);
 	    }
 	}
@@ -256,6 +256,8 @@ PROTECTED int
 unw_resume (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
+
+  Debug (2, "(cursor=%p)\n", c);
 
 #ifdef UNW_LOCAL_ONLY
   return local_resume (c->as, cursor, c->as_arg);

@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -56,8 +56,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   if (!path)
     return -UNW_ENOINFO;
 
-  debug(1, "%s: segbase=%lx, mapoff=%lx, path=%s\n", __FUNCTION__, *segbase,
-	*mapoff, path);
+  Debug(1, "segbase=%lx, mapoff=%lx, path=%s\n", *segbase, *mapoff, path);
 
   return elf_map_image (ei, path);
 }

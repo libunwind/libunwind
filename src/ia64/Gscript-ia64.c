@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -95,7 +95,7 @@ get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
   sigprocmask (SIG_SETMASK, &unwi_full_sigmask, saved_sigmaskp);
   if (likely (caching == UNW_CACHE_GLOBAL))
     {
-      debug (200, "%s: acquiring lock\n", __FUNCTION__);
+      Debug (16, "%s: acquiring lock\n");
       mutex_lock (&cache->lock);
     }
 #endif
@@ -114,7 +114,7 @@ put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
 {
   assert (as->caching_policy != UNW_CACHE_NONE);
 
-  debug (200, "%s: unmasking signals/releasing lock\n", __FUNCTION__);
+  Debug (16, "unmasking signals/releasing lock\n");
 #ifdef HAVE_ATOMIC_OPS_H
   AO_CLEAR (&cache->busy);
 #else
@@ -554,14 +554,13 @@ ia64_find_save_locs (struct cursor *c)
   cache = get_script_cache (c->as, &saved_sigmask);
   if (!cache)
     {
-      debug (125, "%s: contention on script-cached; doing uncached lookup\n",
-	     __FUNCTION__);
+      Debug (1, "contention on script-cache; doing uncached lookup\n");
       return uncached_find_save_locs (c);
     }
   {
     script = script_lookup (cache, c);
-    debug (125, "%s: ip %lx %s in script cache\n",
-	   __FUNCTION__, (long) c->ip, script ? "hit" : "missed");
+    Debug (8, "ip %lx %s in script cache\n", (long) c->ip,
+	   script ? "hit" : "missed");
     if (!script)
       {
 	if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)

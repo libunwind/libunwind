@@ -157,13 +157,13 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 {
   if (write)
     {
-      debug (100, "%s: mem[%lx] <- %lx\n", __FUNCTION__, addr, *val);
+      Debug (16, "mem[%lx] <- %lx\n", addr, *val);
       *(unw_word_t *) addr = *val;
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      debug (100, "%s: mem[%lx] -> %lx\n", __FUNCTION__, addr, *val);
+      Debug (16, "mem[%lx] -> %lx\n", addr, *val);
     }
   return 0;
 }
@@ -281,15 +281,15 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
   if (ret != 0)
     {
-      debug (1, "%s: failed to %s %s\n",
-	     __FUNCTION__, write ? "write" : "read", unw_regname (reg));
+      Debug (1, "failed to %s %s\n",
+	     write ? "write" : "read", unw_regname (reg));
       return -UNW_EBADREG;
     }
 
   if (write)
-    debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
+    Debug (12, "%s <- %lx\n", unw_regname (reg), *val);
   else
-    debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
+    Debug (12, "%s -> %lx\n", unw_regname (reg), *val);
   return 0;
 }
 
@@ -352,9 +352,9 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 	*val = (uc->uc_mcontext.sc_nat & mask) != 0;
 
       if (write)
-	debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
+	Debug (12, "%s <- %lx\n", unw_regname (reg), *val);
       else
-	debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
+	Debug (12, "%s -> %lx\n", unw_regname (reg), *val);
       return 0;
     }
 
@@ -365,17 +365,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (write)
     {
       *(unw_word_t *) addr = *val;
-      debug (100, "%s: %s <- %lx\n", __FUNCTION__, unw_regname (reg), *val);
+      Debug (12, "%s <- %lx\n", unw_regname (reg), *val);
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
+      Debug (12, "%s -> %lx\n", unw_regname (reg), *val);
     }
   return 0;
 
  badreg:
-  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  Debug (1, "bad register number %u\n", reg);
   return -UNW_EBADREG;
 }
 
@@ -395,20 +395,20 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
   if (write)
     {
-      debug (100, "%s: %s <- %016lx.%016lx\n", __FUNCTION__,
+      Debug (12, "%s <- %016lx.%016lx\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
-      debug (100, "%s: %s -> %016lx.%016lx\n", __FUNCTION__,
+      Debug (12, "%s -> %016lx.%016lx\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
     }
   return 0;
 
  badreg:
-  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  Debug (1, "bad register number %u\n", reg);
   /* attempt to access a non-preserved register */
   return -UNW_EBADREG;
 }
@@ -458,7 +458,7 @@ ia64_uc_access_reg (struct cursor *c, ia64_loc_t loc, unw_word_t *valp,
   ucontext_t *ucp;
   int ret;
 
-  debug (100, "%s: %s locaction %s\n", __FUNCTION__,
+  Debug (16, "%s location %s\n",
 	 write ? "writing" : "reading", ia64_strloc (loc));
 
   if (c->as == unw_local_addr_space)

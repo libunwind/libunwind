@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by ...
+   Copyright (C) 2003-2004 Hewlett-Packard Co
+	Contributed by David Mosberger
 
 This file is part of libunwind.
 
@@ -42,8 +42,7 @@ update_frame_state (struct cursor *c)
   if (c->is_signal_frame)
     {
       ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &c->sigcontext_loc);
-      debug (100, "%s: sigcontext_loc=%lx (ret=%d)\n",
-	     __FUNCTION__, c->sigcontext_loc, ret);
+      Debug (12, "sigcontext_loc=%lx (ret=%d)\n", c->sigcontext_loc, ret);
       if (ret < 0)
 	return ret;
 
@@ -82,7 +81,7 @@ update_frame_state (struct cursor *c)
   if ((ip & 0xc) != 0)
     {
       /* don't let obviously bad addresses pollute the cache */
-      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
+      Debug (1, "rejecting bad ip=0x%lx\n",  (long) c->ip);
       return -UNW_EINVALIDIP;
     }
   if (ip == 0)

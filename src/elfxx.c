@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -62,8 +62,7 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
   soff = ehdr->e_shoff;
   if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
     {
-      debug (1, "%s: section table outside of image? (%lu > %lu)\n",
-	     __FUNCTION__,
+      Debug (1, "section table outside of image? (%lu > %lu)\n",
 	     (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
 	     (unsigned long) ei->size);
       return -UNW_ENOINFO;
@@ -84,8 +83,7 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	  str_soff = soff + (shdr->sh_link * ehdr->e_shentsize);
 	  if (str_soff + ehdr->e_shentsize >= ei->size)
 	    {
-	      debug (1, "%s: string table outside of image? (%lu >= %lu)\n",
-		     __FUNCTION__,
+	      Debug (1, "string table outside of image? (%lu >= %lu)\n",
 		     (unsigned long) (str_soff + ehdr->e_shentsize),
 		     (unsigned long) ei->size);
 	      break;
@@ -93,7 +91,7 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	  str_shdr = (Elf_W (Shdr) *) ((char *) ei->image + str_soff);
 	  strtab = (char *) ei->image + str_shdr->sh_offset;
 
-	  debug (160, "symtab=0x%lx[%d], strtab=0x%lx\n",
+	  Debug (16, "symtab=0x%lx[%d], strtab=0x%lx\n",
 		 (long) shdr->sh_offset, shdr->sh_type,
 		 (long) str_shdr->sh_offset);
 
@@ -107,7 +105,7 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		  val = sym->st_value;
 		  if (sym->st_shndx != SHN_ABS)
 		    val += load_offset;
-		  debug (160, "0x%016lx info=0x%02x %s\n",
+		  Debug (16, "0x%016lx info=0x%02x %s\n",
 			 (long) val, sym->st_info, strtab + sym->st_name);
 
 		  if ((Elf_W (Addr)) (ip - val) < min_dist)

@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -47,8 +47,7 @@ rbs_switch (struct cursor *c,
   struct rbs_area *rbs = &c->rbs_area[c->rbs_curr];
   unw_word_t lo, ndirty;
 
-  debug (10, "%s: (left=%u, curr=%u)\n\t",
-	 __FUNCTION__, c->rbs_left_edge, c->rbs_curr);
+  Debug (10, "(left=%u, curr=%u)", c->rbs_left_edge, c->rbs_curr);
 
   /* Calculate address "lo" at which the backing store starts:  */
   ndirty = ia64_rse_num_regs (saved_bspstore, saved_bsp);
@@ -60,7 +59,7 @@ rbs_switch (struct cursor *c,
      track it and we can simply overwrite it... */
   if (rbs->size)
     {
-      debug (10, "inner=[0x%lx-0x%lx)\n\t",
+      Debug (10, "inner=[0x%lx-0x%lx)",
 	     (long) (rbs->end - rbs->size), (long) rbs->end);
 
       c->rbs_curr = (c->rbs_curr + 1) % NELEMS (c->rbs_area);
@@ -75,7 +74,7 @@ rbs_switch (struct cursor *c,
 
   c->bsp = saved_bsp;
 
-  debug (10, "outer=[?????????????????\?-0x%llx), rnat@%s\n",
+  Debug (10, "outer=[?????????????????\?-0x%llx), rnat@%s\n",
 	 (long long) rbs->end, ia64_strloc (rbs->rnat_loc));
   return 0;
 }
@@ -94,7 +93,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
     {
       if (curr == left_edge)
 	{
-	  debug (1, "%s: could not find register r%d!\n", __FUNCTION__, reg);
+	  Debug (1, "could not find register r%d!\n", reg);
 	  return -UNW_EBADREG;
 	}
 
@@ -123,7 +122,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 
       if (curr == left_edge)
 	{
-	  debug (1, "%s: could not find register r%d!\n", __FUNCTION__, reg);
+	  Debug (1, "could not find register r%d!\n", reg);
 	  return -UNW_EBADREG;
 	}
 
@@ -203,9 +202,8 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
 	  /* switch to next rbs-area, adjust src_bsp accordingly: */
 	  if (curr == left_edge)
 	    {
-	      debug (1, "%s: rbs-underflow while flushing %lu regs, "
-		     "src_bsp=0x%lx, dst_bsp=0x%lx\n",
-		     __FUNCTION__, (unsigned long) nregs,
+	      Debug (1, "rbs-underflow while flushing %lu regs, "
+		     "src_bsp=0x%lx, dst_bsp=0x%lx\n", (unsigned long) nregs,
 		     (unsigned long) src_bsp, (unsigned long) dst_bsp);
 	      return -UNW_EBADREG;
 	    }

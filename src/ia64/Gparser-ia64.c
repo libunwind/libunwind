@@ -765,8 +765,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 	{
 	  if (r->next)
 	    {
-	      debug (10, "libunwind: negative region length allowed in last "
-		     "region only!");
+	      Debug (1, "negative region length allowed in last region only!");
 	      return -UNW_EINVAL;
 	    }
 	  len = -len;
@@ -938,7 +937,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     {
       /* No info, return default unwinder (leaf proc, no mem stack, no
          saved regs), rp in b0, pfs in ar.pfs.  */
-      debug (1, "unwind.parser: no unwind info for ip=0x%lx (gp=%lx)\n",
+      Debug (1, "no unwind info for ip=0x%lx (gp=%lx)\n",
 	     (long) ip, (long) c->pi.gp);
       sr->curr.reg[IA64_REG_IP].where = IA64_WHERE_BR;
       sr->curr.reg[IA64_REG_IP].when = -1;
@@ -1003,8 +1002,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
       && sr->when_target > sr->curr.reg[IA64_REG_BSPSTORE].when
       && sr->when_target > sr->curr.reg[IA64_REG_RNAT].when)
     {
-      debug (10,
-	     "libunwind: func 0x%lx may switch the register-backing-store\n",
+      Debug (8, "func 0x%lx may switch the register-backing-store\n",
 	     c->pi.start_ip);
       c->pi.flags |= UNW_PI_FLAG_IA64_RBS_SWITCH;
     }

@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002, 2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -99,13 +99,13 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 {
   if (write)
     {
-      debug (100, "%s: mem[%x] <- %x\n", __FUNCTION__, addr, *val);
+      Debug (16, "mem[%x] <- %x\n", addr, *val);
       *(unw_word_t *) addr = *val;
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      debug (100, "%s: mem[%x] -> %x\n", __FUNCTION__, addr, *val);
+      Debug (16, "mem[%x] -> %x\n", addr, *val);
     }
   return 0;
 }
@@ -129,17 +129,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (write)
     {
       *(unw_word_t *) addr = *val;
-      debug (100, "%s: %s <- %x\n", __FUNCTION__, unw_regname (reg), *val);
+      Debug (16, "%s <- %x\n", unw_regname (reg), *val);
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      debug (100, "%s: %s -> %x\n", __FUNCTION__, unw_regname (reg), *val);
+      Debug (16, "%s -> %x\n", unw_regname (reg), *val);
     }
   return 0;
 
  badreg:
-  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  Debug (1, "bad register number %u\n", reg);
   return -UNW_EBADREG;
 }
 
@@ -163,20 +163,20 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
   if (write)
     {
-      debug (100, "%s: %s <- %016lx.%016lx\n", __FUNCTION__,
+      Debug (16, "%s <- %016lx.%016lx\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
-      debug (100, "%s: %s -> %016lx.%016lx\n", __FUNCTION__,
+      Debug (16, "%s -> %016lx.%016lx\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
     }
   return 0;
 
  badreg:
-  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  Debug (1, "bad register number %u\n", reg);
   /* attempt to access a non-preserved register */
   return -UNW_EBADREG;
 #endif

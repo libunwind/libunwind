@@ -89,7 +89,7 @@ ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 {
   if (!loc)
     {
-      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
     }
   *val = *(unw_fpreg_t *) IA64_GET_ADDR (loc);
@@ -101,7 +101,7 @@ ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 {
   if (!loc)
     {
-      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
     }
   *(unw_fpreg_t *) IA64_GET_ADDR (loc) = val;
@@ -113,7 +113,7 @@ ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 {
   if (!loc)
     {
-      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
     }
   *val = *(unw_word_t *) IA64_GET_ADDR (loc);
@@ -125,7 +125,7 @@ ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 {
   if (!loc)
     {
-      debug (150, "%s: access to unsaved register\n", __FUNCTION__);
+      Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
     }
   *(unw_word_t *) IA64_GET_ADDR (loc) = (val);
@@ -371,8 +371,6 @@ struct ia64_labeled_state
 #define ia64_validate_cache		UNW_OBJ(ia64_validate_cache)
 #define ia64_local_validate_cache	UNW_OBJ(ia64_local_validate_cache)
 #define ia64_per_thread_cache		UNW_OBJ(per_thread_cache)
-#define ia64_access_reg			UNW_OBJ(access_reg)
-#define ia64_access_fpreg		UNW_OBJ(access_fpreg)
 #define ia64_scratch_loc		UNW_OBJ(scratch_loc)
 #define ia64_local_resume		UNW_OBJ(local_resume)
 #define ia64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
@@ -381,7 +379,6 @@ struct ia64_labeled_state
 #define rbs_switch			UNW_OBJ(rbs_switch)
 #define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
 #define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
-#define ia64_init			UNW_OBJ(init)
 
 extern int ia64_make_proc_info (struct cursor *c);
 extern int ia64_fetch_proc_info (struct cursor *c, unw_word_t ip,
@@ -395,11 +392,6 @@ extern int ia64_find_save_locs (struct cursor *c);
 extern void ia64_validate_cache (unw_addr_space_t as, void *arg);
 extern int ia64_local_validate_cache (unw_addr_space_t as, void *arg);
 extern void ia64_local_addr_space_init (void);
-extern void ia64_init (void);
-extern int ia64_access_reg (struct cursor *c, unw_regnum_t reg,
-			    unw_word_t *valp, int write);
-extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
-			      unw_fpreg_t *valp, int write);
 extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
 extern NORETURN void ia64_install_cursor (struct cursor *c,
@@ -437,7 +429,7 @@ rbs_contains (struct rbs_area *rbs, unw_word_t bsp)
      test is (bsp >= rbs->end - rbs->size) && (bsp < rbs->end).  We
      take advantage of the fact that -n == ~n + 1.  */
   result = bsp - rbs->end > ~rbs->size;
-  debug (150, "%s: 0x%lx in [0x%lx-0x%lx) => %d\n", __FUNCTION__,
+  Debug (16, "0x%lx in [0x%lx-0x%lx) => %d\n",
 	 (long) bsp, (long) (rbs->end - rbs->size), (long) rbs->end, result);
   return result;
 }

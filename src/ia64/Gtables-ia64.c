@@ -260,8 +260,7 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
       /* read the personality routine address (address is gp-relative): */
       if ((ret = read_mem (as, info_end_addr, &handler_offset, arg)) < 0)
 	return ret;
-      debug (50, "%s: handler ptr @ offset=%lx, gp=%lx\n",
-	     __FUNCTION__, handler_offset, di->gp);
+      Debug (4, "handler ptr @ offset=%lx, gp=%lx\n", handler_offset, di->gp);
       if ((read_mem (as, handler_offset + di->gp, &pi->handler, arg)) < 0)
 	return ret;
     }
@@ -312,7 +311,7 @@ get_kernel_table (unw_dyn_info_t *di)
   struct ia64_table_entry *ktab, *etab;
   size_t size;
 
-  debug (100, "unwind: getting kernel table");
+  Debug (16, "getting kernel table");
 
   size = getunwind (NULL, 0);
   ktab = sos_alloc (size);
@@ -337,7 +336,7 @@ get_kernel_table (unw_dyn_info_t *di)
   di->u.ti.table_len = ((char *) etab - (char *) ktab) / sizeof (unw_word_t);
   di->u.ti.table_data = (unw_word_t *) ktab;
 
-  debug (100, "unwind: found table `%s': [%lx-%lx) segbase=%lx len=%lu\n",
+  Debug (16, "found table `%s': [%lx-%lx) segbase=%lx len=%lu\n",
 	 (char *) di->u.ti.name_ptr, di->start_ip, di->end_ip,
 	 di->u.ti.segbase, di->u.ti.table_len);
   return 0;
@@ -468,7 +467,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	     + sizeof (info->dlpi_phnum))
     return -1;
 
-  debug (100, "unwind: checking `%s' (load_base=%lx)\n",
+  Debug (16, "checking `%s' (load_base=%lx)\n",
 	 info->dlpi_name, info->dlpi_addr);
 
   phdr = info->dlpi_phdr;
@@ -541,7 +540,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   di->u.ti.table_len = p_unwind->p_memsz / sizeof (unw_word_t);
   di->u.ti.segbase = segbase;
 
-  debug (100, "unwind: found table `%s': segbase=%lx, len=%lu, gp=%lx, "
+  Debug (16, "found table `%s': segbase=%lx, len=%lu, gp=%lx, "
 	 "table_data=%p\n", (char *) di->u.ti.name_ptr, di->u.ti.segbase,
 	 di->u.ti.table_len, di->gp, di->u.ti.table_data);
   return 1;
@@ -642,14 +641,13 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   if ((uhdr->header_version & ~UNWIND_TBL_32BIT) != 1
       && (uhdr->header_version & ~UNWIND_TBL_32BIT) != 2)
     {
-      debug (1, "%s: encountered unknown unwind header version %ld\n",
- 	     __FUNCTION__, (long) (uhdr->header_version & ~UNWIND_TBL_32BIT));
+      Debug (1, "encountered unknown unwind header version %ld\n",
+ 	     (long) (uhdr->header_version & ~UNWIND_TBL_32BIT));
       return -UNW_EBADVERSION;
     }
   if (uhdr->header_version & UNWIND_TBL_32BIT)
     {
-      debug (1, "%s: 32-bit unwind tables are not supported yet\n",
- 	     __FUNCTION__);
+      Debug (1, "32-bit unwind tables are not supported yet\n";
       return -UNW_EINVAL;
     }
 
@@ -657,7 +655,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   di.u.ti.table_len = ((uhdr->end_offset - uhdr->start_offset)
 		       / sizeof (unw_word_t));
 
-  debug (100, "unwind: found table `%s': segbase=%lx, len=%lu, gp=%lx, "
+  Debug (16, "found table `%s': segbase=%lx, len=%lu, gp=%lx, "
  	 "table_data=%p\n", (char *) di.u.ti.name_ptr, di.u.ti.segbase,
  	 di.u.ti.table_len, di.gp, di.u.ti.table_data);
 #endif

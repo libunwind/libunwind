@@ -108,7 +108,7 @@ common_init (struct cursor *c)
   c->rbs_area[0].end = bspstore;
   c->rbs_area[0].size = ((unw_word_t) 1) << 63;	/* initial guess... */
   c->rbs_area[0].rnat_loc = IA64_REG_LOC (c, UNW_IA64_AR_RNAT);
-  debug (10, "%s: initial rbs-area: [?-0x%llx), rnat@%s\n", __FUNCTION__,
+  Debug (10, "%s: initial rbs-area: [?-0x%llx), rnat@%s\n",
 	 (long long) c->rbs_area[0].end,
 	 ia64_strloc (c->rbs_area[0].rnat_loc));
 

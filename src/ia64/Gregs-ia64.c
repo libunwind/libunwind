@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -358,7 +358,7 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
 }
 
 HIDDEN int
-ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
+tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
   ia64_loc_t loc, reg_loc, nat_loc;
@@ -551,7 +551,7 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     default:
-      debug (1, "%s: bad register number %d\n", __FUNCTION__, reg);
+      Debug (1, "bad register number %d\n", reg);
       return -UNW_EBADREG;
     }
 
@@ -566,7 +566,7 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 }
 
 HIDDEN int
-ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
+tdep_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
 		   int write)
 {
   ia64_loc_t loc;
@@ -607,7 +607,7 @@ ia64_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
       break;
 
     default:
-      debug (1, "%s: bad register number %d\n", __FUNCTION__, reg);
+      Debug (1, "bad register number %d\n", reg);
       return -UNW_EBADREG;
     }
 

@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -236,7 +236,7 @@ update_frame_state (struct cursor *c)
   if ((ip & 0xc) != 0)
     {
       /* don't let obviously bad addresses pollute the cache */
-      debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
+      Debug (1, "rejecting bad ip=0x%lx\n", (long) c->ip);
       return -UNW_EINVALIDIP;
     }
   if (ip == 0)
@@ -276,12 +276,12 @@ update_frame_state (struct cursor *c)
 	  break;
 
 	default:
-	  debug (1, "%s: unknown ABI marker: ABI=%u, context=%u\n",
-		 __FUNCTION__, c->abi_marker >> 8, c->abi_marker & 0xff);
+	  Debug (1, "unknown ABI marker: ABI=%u, context=%u\n",
+		 c->abi_marker >> 8, c->abi_marker & 0xff);
 	  return -UNW_EINVAL;
 	}
-      debug (100, "%s: sigcontext_addr=%lx (ret=%d)\n",
-	     __FUNCTION__, (unsigned long) c->sigcontext_addr, ret);
+      Debug (12, "sigcontext_addr=%lx (ret=%d)\n",
+	     (unsigned long) c->sigcontext_addr, ret);
 
       c->sigcontext_off = c->sigcontext_addr - c->sp;
 
