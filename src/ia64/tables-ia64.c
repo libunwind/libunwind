@@ -409,7 +409,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   unw_dyn_info_t di, *dip = &di;
   struct unwind_header
     {
-      uint64_t format;
+      uint64_t unknown1;
       uint64_t start_offset;
       uint64_t end_offset;
     }
