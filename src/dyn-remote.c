@@ -55,10 +55,10 @@ static int
 intern_regions (unw_addr_space_t as, unw_accessors_t *a,
 		unw_word_t *addr, unw_dyn_region_info_t **regionp, void *arg)
 {
-  uint32_t insn_count, op_count;
+  uint32_t insn_count, op_count, i;
   unw_dyn_region_info_t *region;
   unw_word_t next_addr;
-  int i, ret;
+  int ret;
 
   *regionp = NULL;
 
@@ -98,8 +98,8 @@ intern_array (unw_addr_space_t as, unw_accessors_t *a,
 	      unw_word_t *addr, unw_word_t table_len, unw_word_t **table_data,
 	      void *arg)
 {
-  unw_word_t *data = calloc (table_len, WSIZE);
-  int ret = 0, i;
+  unw_word_t i, *data = calloc (table_len, WSIZE);
+  int ret = 0;
 
   if (!data)
     {
