@@ -38,7 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define FRAME_SIZE		48
 
 #define SPILL(n)							     \
-	/* void rbs_spill_#n(long iteration, void (*next_func[])()) */	     \
+	/* int rbs_spill_#n(long iteration, int (*next_func[])()) */	     \
 	.globl rbs_spill_##n;						     \
 	.proc rbs_spill_##n;						     \
 rbs_spill_##n:								     \
@@ -91,7 +91,9 @@ rbs_spill_##n:								     \
 	br.call.sptk.many rp = b6;					     \
 1:	/* switch back to stack: */					     \
 	adds r3 = SAVED_SP_OFF+16, sp;					     \
+	cmp.ge p8, p0 = r8, r0;						     \
 	;;								     \
+(p8)	add r8 = 1, r8;							     \
 	ld8 r16 = [r3], (SAVED_RP_OFF-SAVED_SP_OFF);;	/* saved sp */	     \
 	ld8 r17 = [r3], (SAVED_PFS_OFF-SAVED_RP_OFF);;	/* saved rp */	     \
 	ld8 r18 = [r3], (SAVED_RNAT_OFF-SAVED_PFS_OFF);;/* saved pfs */	     \
@@ -100,8 +102,17 @@ rbs_spill_##n:								     \
 	ld8 r21 = [r3];;				/* saved bspstore */ \
 	mov rp = r17;							     \
 	mov ar.pfs = r18;						     \
-	mov ar.bspstore = r21;	/* this also restores ar.bsp */		     \
-	;;								     \
+	shl r3 = in0, STACK_SIZE_SHIFT;					     \
+	addl r2 = @ltoff(stackmem), gp;;				     \
+	ld8 r2 = [r2];;			/* r2 = &stackmem */		     \
+	add r2 = r2, r3;		/* r2 = stackmem[iteration] */	     \
+	mov r3 = ar.bsp;;						     \
+	sub r2 = r3, r2;;		/* r2 = dirty_size */		     \
+	shl r2 = r2, 16;;						     \
+	mov ar.rsc = r2;;						     \
+	alloc r3 = ar.pfs, 0, 0, 0, 0;;					     \
+	loadrs;;							     \
+	mov ar.bspstore = r21;;	/* this also restores ar.bsp */		     \
 	mov ar.rnat = r19;						     \
 	.restore sp;							     \
 	mov sp = r16;							     \
@@ -134,18 +145,28 @@ rbs_spill_##n:								     \
  SPILL(92); SPILL(93); SPILL(94)
 
 #define LD_LOC(n)				\
-	ld4 loc##n = [in1], 8;;			\
+	ld4 loc##n = [in1], 4;;			\
 	cmp.eq p8, p9 = r0, loc##n;;		\
 (p9)	or loc##n = loc##n, r8;			\
 (p8)	ld4.s loc##n = [r0]
 
-	/* void loadup (long iteration, int *values, next_func[]) */
+#define CK_LOC(n)				\
+	ld4 r16 = [in1], 4;;			\
+	cmp.eq p8, p9 = r0, r16;		\
+	or r16 = r16, r9;;			\
+(p8)	tnat.z p10, p0 = loc##n;		\
+(p9)	cmp.ne p10, p0 = r16, loc##n;		\
+	;;					\
+(p10)	mov r8 = -n;				\
+(p10)	br.cond.spnt.many .fail
+
+	/* int loadup(long iteration, int *values, next_func[]) */
 
 	.global loadup
 	.proc loadup
 loadup:
 	.prologue
-	.save ar.pfs, r34
+	.save ar.pfs, r36
 	alloc loc1 = ar.pfs, 3, 90, 3, 0
 	.save rp, loc0
 	mov loc0 = rp
@@ -163,6 +184,7 @@ loadup:
 	;;
 (p6)	ld8 r16 = [r17], 8	// load entry point
 	shl r8 = in0, 32	// store iteration # in top 32 bits
+	mov r18 = in1
 	;;
 (p6)	ld8 r1 = [r17]		// load gp
 (p6)	mov b6 = r16
@@ -194,12 +216,54 @@ loadup:
 	LD_LOC(88); LD_LOC(89)
 	;;
 {	.mbb
+	mov in1 = r18
 (p6)	br.call.sptk.many rp = b6
 (p7)	br.call.sptk.many rp = loadup
 }
+	cmp.lt p8, p9 = r8, r0
+	shl r9 = in0, 32	// store iteration # in top 32 bits
+(p8)	br.cond.spnt.few .fail
 	;;
-
+	add r8 = 1, r8
+	CK_LOC( 2); CK_LOC( 3)
+	CK_LOC( 4); CK_LOC( 5); CK_LOC( 6); CK_LOC( 7)
+	CK_LOC( 8); CK_LOC( 9); CK_LOC(10); CK_LOC(11)
+	CK_LOC(12); CK_LOC(13); CK_LOC(14); CK_LOC(15)
+	CK_LOC(16); CK_LOC(17); CK_LOC(18); CK_LOC(19)
+	CK_LOC(20); CK_LOC(21); CK_LOC(22); CK_LOC(23)
+	CK_LOC(24); CK_LOC(25); CK_LOC(26); CK_LOC(27)
+	CK_LOC(28); CK_LOC(29); CK_LOC(30); CK_LOC(31)
+	CK_LOC(32); CK_LOC(33); CK_LOC(34); CK_LOC(35)
+	CK_LOC(36); CK_LOC(37); CK_LOC(38); CK_LOC(39)
+	CK_LOC(40); CK_LOC(41); CK_LOC(42); CK_LOC(43)
+	CK_LOC(44); CK_LOC(45); CK_LOC(46); CK_LOC(47)
+	CK_LOC(48); CK_LOC(49); CK_LOC(50); CK_LOC(51)
+	CK_LOC(52); CK_LOC(53); CK_LOC(54); CK_LOC(55)
+	CK_LOC(56); CK_LOC(57); CK_LOC(58); CK_LOC(59)
+	CK_LOC(60); CK_LOC(61); CK_LOC(62); CK_LOC(63)
+	CK_LOC(64); CK_LOC(65); CK_LOC(66); CK_LOC(67)
+	CK_LOC(68); CK_LOC(69); CK_LOC(70); CK_LOC(71)
+	CK_LOC(72); CK_LOC(73); CK_LOC(74); CK_LOC(75)
+	CK_LOC(76); CK_LOC(77); CK_LOC(78); CK_LOC(79)
+	CK_LOC(80); CK_LOC(81); CK_LOC(82); CK_LOC(83)
+	CK_LOC(84); CK_LOC(85); CK_LOC(86); CK_LOC(87)
+	CK_LOC(88); CK_LOC(89)
+.fail:
 	mov rp = loc0
 	mov ar.pfs = loc1
 	br.ret.sptk.many rp
 	.endp loadup
+
+	.global resumption_point_label
+	.proc resumption_point
+resumption_point:
+resumption_point_label:
+	.prologue
+	.save rp, r16
+	.save ar.pfs, r0
+	.body
+	mov r8 = r15
+	mov b6 = r16
+	;;
+	br.cond.sptk.many b6
+	.endp resumption_point
