@@ -153,7 +153,7 @@ uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
 static inline int
 ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 {
-  if (!loc)
+  if (IA64_IS_NULL_LOC (loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -165,7 +165,7 @@ ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 static inline int
 ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 {
-  if (!loc)
+  if (IA64_IS_NULL_LOC(loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -177,7 +177,7 @@ ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 static inline int
 ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 {
-  if (!loc)
+  if (IA64_IS_NULL_LOC(loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -189,7 +189,7 @@ ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 static inline int
 ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 {
-  if (!loc)
+  if (IA64_IS_NULL_LOC(loc))
     {
       Debug (16, "access to unsaved register\n");
       return -UNW_EBADREG;
@@ -251,6 +251,12 @@ ia64_getfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t *val)
   unw_word_t addr;
   int ret;
 
+  if (IA64_IS_NULL_LOC(loc))
+    {
+      Debug (16, "access to unsaved register\n");
+      return -UNW_EBADREG;
+    }
+
   if (IA64_IS_UC_LOC (loc))
     return ia64_uc_access_fpreg (c, loc, val, 0);
 
@@ -273,6 +279,12 @@ ia64_putfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t val)
 {
   unw_word_t addr;
   int ret;
+
+  if (IA64_IS_NULL_LOC(loc))
+    {
+      Debug (16, "access to unsaved register\n");
+      return -UNW_EBADREG;
+    }
 
   if (IA64_IS_UC_LOC (loc))
     return ia64_uc_access_fpreg (c, loc, &val, 1);
@@ -299,6 +311,12 @@ ia64_putfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t val)
 static inline int
 ia64_get (struct cursor *c, ia64_loc_t loc, unw_word_t *val)
 {
+  if (IA64_IS_NULL_LOC(loc))
+    {
+      Debug (16, "access to unsaved register\n");
+      return -UNW_EBADREG;
+    }
+
   if (IA64_IS_FP_LOC (loc))
     {
       unw_fpreg_t tmp;
@@ -329,6 +347,12 @@ ia64_get (struct cursor *c, ia64_loc_t loc, unw_word_t *val)
 static inline int
 ia64_put (struct cursor *c, ia64_loc_t loc, unw_word_t val)
 {
+  if (IA64_IS_NULL_LOC(loc))
+    {
+      Debug (16, "access to unsaved register\n");
+      return -UNW_EBADREG;
+    }
+
   if (IA64_IS_FP_LOC (loc))
     {
       unw_fpreg_t tmp;
