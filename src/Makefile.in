@@ -16,7 +16,7 @@
 
 
 
-SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(libunwind_la_SOURCES) $(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES)
+SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) $(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) $(libunwind_x86_64_la_SOURCES) $(libunwind_la_SOURCES) $(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES)
 
 srcdir = @srcdir@
 top_srcdir = @top_srcdir@
@@ -126,19 +126,23 @@ libunwind_ia64_la_OBJECTS = $(am_libunwind_ia64_la_OBJECTS)
 @ARCH_IA64_TRUE@am_libunwind_ia64_la_rpath = -rpath $(libdir)
 libunwind_setjmp_la_DEPENDENCIES = libunwind-$(arch).la
 am__libunwind_setjmp_la_SOURCES_DIST = longjmp.c siglongjmp.c setjmp.c \
-	sigsetjmp.c x86/siglongjmp.S hppa/siglongjmp.S ia64/setjmp.S \
-	ia64/sigsetjmp.S ia64/siglongjmp.S
+	sigsetjmp.c x86_64/siglongjmp.S x86/siglongjmp.S \
+	hppa/siglongjmp.S ia64/setjmp.S ia64/sigsetjmp.S \
+	ia64/siglongjmp.S
 am__objects_8 = longjmp.lo siglongjmp.lo
-am__objects_9 = setjmp.lo sigsetjmp.lo x86/siglongjmp.lo
-am__objects_10 = setjmp.lo sigsetjmp.lo hppa/siglongjmp.lo
-am__objects_11 = ia64/setjmp.lo ia64/sigsetjmp.lo ia64/siglongjmp.lo
+am__objects_9 = setjmp.lo sigsetjmp.lo x86_64/siglongjmp.lo
+am__objects_10 = setjmp.lo sigsetjmp.lo x86/siglongjmp.lo
+am__objects_11 = setjmp.lo sigsetjmp.lo hppa/siglongjmp.lo
+am__objects_12 = ia64/setjmp.lo ia64/sigsetjmp.lo ia64/siglongjmp.lo
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_8) \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@	$(am__objects_9)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_8) \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_9)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_10)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_setjmp_la_OBJECTS =  \
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_8) \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_10)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_11)
 @ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_8) \
-@ARCH_IA64_TRUE@	$(am__objects_11)
+@ARCH_IA64_TRUE@	$(am__objects_12)
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 @REMOTE_ONLY_FALSE@am_libunwind_setjmp_la_rpath = -rpath $(libdir)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES = libunwind.la
@@ -157,27 +161,56 @@ am__libunwind_x86_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	x86/Ginit.c x86/Ginit_local.c x86/Ginit_remote.c \
 	x86/Gis_signal_frame.c x86/Gget_proc_info.c x86/Gregs.c \
 	x86/Gresume.c x86/Gstep.c
-am__objects_12 = dwarf/global.lo
-am__objects_13 = $(am__objects_4) $(am__objects_12) x86/is_fpreg.lo \
+am__objects_13 = dwarf/global.lo
+am__objects_14 = $(am__objects_4) $(am__objects_13) x86/is_fpreg.lo \
 	x86/regname.lo
-am__objects_14 = dwarf/Gexpr.lo dwarf/Gfde.lo dwarf/Gparser.lo \
+am__objects_15 = dwarf/Gexpr.lo dwarf/Gfde.lo dwarf/Gparser.lo \
 	dwarf/Gpe.lo dwarf/Gstep.lo
-am__objects_15 = $(am__objects_13) $(am__objects_6) $(am__objects_14) \
+am__objects_16 = $(am__objects_14) $(am__objects_6) $(am__objects_15) \
 	dwarf/Gfind_proc_info-lsb.lo x86/Gcreate_addr_space.lo \
 	x86/Gget_save_loc.lo x86/Gglobal.lo x86/Ginit.lo \
 	x86/Ginit_local.lo x86/Ginit_remote.lo x86/Gis_signal_frame.lo \
 	x86/Gget_proc_info.lo x86/Gregs.lo x86/Gresume.lo x86/Gstep.lo
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = $(am__objects_15)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = $(am__objects_16)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_rpath =  \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	-rpath \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(libdir)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_64_la_DEPENDENCIES = libunwind.la
+am__libunwind_x86_64_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
+	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
+	dwarf/dwarf-eh.h dwarf/global.c x86_64/init.h \
+	x86_64/unwind_i.h x86_64/is_fpreg.c x86_64/regname.c \
+	mi/Gdyn-extract.c mi/Gdyn-remote.c \
+	mi/Gfind_dynamic_proc_info.c mi/Gget_accessors.c \
+	mi/Gget_proc_info_by_ip.c mi/Gget_proc_name.c \
+	mi/Gput_dynamic_unwind_info.c mi/Gdestroy_addr_space.c \
+	mi/Gget_reg.c mi/Gset_reg.c mi/Gget_fpreg.c mi/Gset_fpreg.c \
+	mi/Gset_caching_policy.c dwarf/Gexpr.c dwarf/Gfde.c \
+	dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c \
+	dwarf/Gfind_proc_info-lsb.c x86_64/Gcreate_addr_space.c \
+	x86_64/Gget_save_loc.c x86_64/Gglobal.c x86_64/Ginit.c \
+	x86_64/Ginit_local.c x86_64/Ginit_remote.c \
+	x86_64/Gis_signal_frame.c x86_64/Gget_proc_info.c \
+	x86_64/Gregs.c x86_64/Gresume.c x86_64/Gstep.c
+am__objects_17 = $(am__objects_4) $(am__objects_13) x86_64/is_fpreg.lo \
+	x86_64/regname.lo
+am__objects_18 = $(am__objects_17) $(am__objects_6) $(am__objects_15) \
+	dwarf/Gfind_proc_info-lsb.lo x86_64/Gcreate_addr_space.lo \
+	x86_64/Gget_save_loc.lo x86_64/Gglobal.lo x86_64/Ginit.lo \
+	x86_64/Ginit_local.lo x86_64/Ginit_remote.lo \
+	x86_64/Gis_signal_frame.lo x86_64/Gget_proc_info.lo \
+	x86_64/Gregs.lo x86_64/Gresume.lo x86_64/Gstep.lo
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_libunwind_x86_64_la_OBJECTS = $(am__objects_18)
+libunwind_x86_64_la_OBJECTS = $(am_libunwind_x86_64_la_OBJECTS)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_libunwind_x86_64_la_rpath = -rpath \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@	$(libdir)
 libunwind_la_DEPENDENCIES =
 am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
-	dwarf/dwarf-eh.h dwarf/global.c x86/init.h x86/offsets.h \
-	x86/unwind_i.h x86/is_fpreg.c x86/regname.c mi/_ReadULEB.c \
-	mi/_ReadSLEB.c mi/backtrace.c mi/dyn-cancel.c \
+	dwarf/dwarf-eh.h dwarf/global.c x86_64/init.h \
+	x86_64/unwind_i.h x86_64/is_fpreg.c x86_64/regname.c \
+	mi/_ReadULEB.c mi/_ReadSLEB.c mi/backtrace.c mi/dyn-cancel.c \
 	mi/dyn-info-list.c mi/dyn-register.c mi/Ldyn-extract.c \
 	mi/Lfind_dynamic_proc_info.c mi/Lget_accessors.c \
 	mi/Lget_proc_info_by_ip.c mi/Lget_proc_name.c \
@@ -190,30 +223,35 @@ am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	unwind/GetLanguageSpecificData.c unwind/GetRegionStart.c \
 	unwind/GetTextRelBase.c unwind/RaiseException.c \
 	unwind/Resume.c unwind/Resume_or_Rethrow.c unwind/SetGR.c \
-	unwind/SetIP.c elf32.c elf32.h dwarf/Lexpr.c dwarf/Lfde.c \
+	unwind/SetIP.c elf64.c elf64.h dwarf/Lexpr.c dwarf/Lfde.c \
 	dwarf/Lparser.c dwarf/Lpe.c dwarf/Lstep.c \
-	dwarf/Lfind_proc_info-lsb.c x86/Lcreate_addr_space.c \
-	x86/Lget_save_loc.c x86/Lglobal.c x86/Linit.c \
-	x86/Linit_local.c x86/Linit_remote.c x86/Lis_signal_frame.c \
-	x86/Lget_proc_info.c x86/Lregs.c x86/Lresume.c x86/Lstep.c \
-	hppa/global.c hppa/tables.c hppa/init.h hppa/unwind_i.h \
-	hppa/Gget_reg.c hppa/Gget_proc_name.c hppa/Ginit.c \
-	hppa/Ginit_local.c hppa/Gget_proc_info.c hppa/Gregs.c \
-	hppa/Gstep.c hppa/Lget_reg.c hppa/Lget_proc_name.c \
-	hppa/Linit.c hppa/Linit_local.c hppa/Lget_proc_info.c \
-	hppa/Lregs.c hppa/Lstep.c ia64/init.h ia64/offsets.h \
-	ia64/regs.h ia64/ucontext_i.h ia64/unwind_decoder.h \
-	ia64/unwind_i.h ia64/regname.c elf64.c elf64.h \
-	ia64/dyn_info_list.S ia64/getcontext.S \
+	dwarf/Lfind_proc_info-lsb.c x86_64/Lcreate_addr_space.c \
+	x86_64/Lget_save_loc.c x86_64/Lglobal.c x86_64/Linit.c \
+	x86_64/Linit_local.c x86_64/Linit_remote.c \
+	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c \
+	x86_64/Lregs.c x86_64/Lresume.c x86_64/Lstep.c x86/init.h \
+	x86/offsets.h x86/unwind_i.h x86/is_fpreg.c x86/regname.c \
+	elf32.c elf32.h x86/Lcreate_addr_space.c x86/Lget_save_loc.c \
+	x86/Lglobal.c x86/Linit.c x86/Linit_local.c x86/Linit_remote.c \
+	x86/Lis_signal_frame.c x86/Lget_proc_info.c x86/Lregs.c \
+	x86/Lresume.c x86/Lstep.c hppa/global.c hppa/tables.c \
+	hppa/init.h hppa/unwind_i.h hppa/Gget_reg.c \
+	hppa/Gget_proc_name.c hppa/Ginit.c hppa/Ginit_local.c \
+	hppa/Gget_proc_info.c hppa/Gregs.c hppa/Gstep.c \
+	hppa/Lget_reg.c hppa/Lget_proc_name.c hppa/Linit.c \
+	hppa/Linit_local.c hppa/Lget_proc_info.c hppa/Lregs.c \
+	hppa/Lstep.c ia64/init.h ia64/offsets.h ia64/regs.h \
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h \
+	ia64/regname.c ia64/dyn_info_list.S ia64/getcontext.S \
 	ia64/Lcreate_addr_space.c ia64/Lget_proc_info.c \
 	ia64/Lget_save_loc.c ia64/Lglobal.c ia64/Linit.c \
 	ia64/Linit_local.c ia64/Linit_remote.c ia64/Linstall_cursor.S \
 	ia64/Lis_signal_frame.c ia64/Lparser.c ia64/Lrbs.c \
 	ia64/Lregs.c ia64/Lresume.c ia64/Lscript.c ia64/Lstep.c \
 	ia64/Ltables.c
-am__objects_16 = mi/_ReadULEB.lo mi/_ReadSLEB.lo
-@OS_LINUX_TRUE@am__objects_17 = $(am__objects_16)
-am__objects_18 = $(am__objects_17) mi/backtrace.lo mi/dyn-cancel.lo \
+am__objects_19 = mi/_ReadULEB.lo mi/_ReadSLEB.lo
+@OS_LINUX_TRUE@am__objects_20 = $(am__objects_19)
+am__objects_21 = $(am__objects_20) mi/backtrace.lo mi/dyn-cancel.lo \
 	mi/dyn-info-list.lo mi/dyn-register.lo mi/Ldyn-extract.lo \
 	mi/Lfind_dynamic_proc_info.lo mi/Lget_accessors.lo \
 	mi/Lget_proc_info_by_ip.lo mi/Lget_proc_name.lo \
@@ -227,21 +265,28 @@ am__objects_18 = $(am__objects_17) mi/backtrace.lo mi/dyn-cancel.lo \
 	unwind/GetTextRelBase.lo unwind/RaiseException.lo \
 	unwind/Resume.lo unwind/Resume_or_Rethrow.lo unwind/SetGR.lo \
 	unwind/SetIP.lo
-am__objects_19 = dwarf/Lexpr.lo dwarf/Lfde.lo dwarf/Lparser.lo \
+am__objects_22 = dwarf/Lexpr.lo dwarf/Lfde.lo dwarf/Lparser.lo \
 	dwarf/Lpe.lo dwarf/Lstep.lo
-am__objects_20 = $(am__objects_13) $(am__objects_18) elf32.lo \
-	$(am__objects_19) dwarf/Lfind_proc_info-lsb.lo \
+am__objects_23 = $(am__objects_17) $(am__objects_21) elf64.lo \
+	$(am__objects_22) dwarf/Lfind_proc_info-lsb.lo \
+	x86_64/Lcreate_addr_space.lo x86_64/Lget_save_loc.lo \
+	x86_64/Lglobal.lo x86_64/Linit.lo x86_64/Linit_local.lo \
+	x86_64/Linit_remote.lo x86_64/Lis_signal_frame.lo \
+	x86_64/Lget_proc_info.lo x86_64/Lregs.lo x86_64/Lresume.lo \
+	x86_64/Lstep.lo
+am__objects_24 = $(am__objects_14) $(am__objects_21) elf32.lo \
+	$(am__objects_22) dwarf/Lfind_proc_info-lsb.lo \
 	x86/Lcreate_addr_space.lo x86/Lget_save_loc.lo x86/Lglobal.lo \
 	x86/Linit.lo x86/Linit_local.lo x86/Linit_remote.lo \
 	x86/Lis_signal_frame.lo x86/Lget_proc_info.lo x86/Lregs.lo \
 	x86/Lresume.lo x86/Lstep.lo
-am__objects_21 = $(am__objects_4) hppa/global.lo hppa/tables.lo \
+am__objects_25 = $(am__objects_4) hppa/global.lo hppa/tables.lo \
 	hppa/Gget_reg.lo hppa/Gget_proc_name.lo hppa/Ginit.lo \
 	hppa/Ginit_local.lo hppa/Gget_proc_info.lo hppa/Gregs.lo \
 	hppa/Gstep.lo hppa/Lget_reg.lo hppa/Lget_proc_name.lo \
 	hppa/Linit.lo hppa/Linit_local.lo hppa/Lget_proc_info.lo \
 	hppa/Lregs.lo hppa/Lstep.lo
-am__objects_22 = $(am__objects_5) $(am__objects_18) elf64.lo \
+am__objects_26 = $(am__objects_5) $(am__objects_21) elf64.lo \
 	ia64/dyn_info_list.lo ia64/getcontext.lo \
 	ia64/Lcreate_addr_space.lo ia64/Lget_proc_info.lo \
 	ia64/Lget_save_loc.lo ia64/Lglobal.lo ia64/Linit.lo \
@@ -249,10 +294,11 @@ am__objects_22 = $(am__objects_5) $(am__objects_18) elf64.lo \
 	ia64/Linstall_cursor.lo ia64/Lis_signal_frame.lo \
 	ia64/Lparser.lo ia64/Lrbs.lo ia64/Lregs.lo ia64/Lresume.lo \
 	ia64/Lscript.lo ia64/Lstep.lo ia64/Ltables.lo
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_la_OBJECTS = $(am__objects_20)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_libunwind_la_OBJECTS = $(am__objects_23)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_la_OBJECTS = $(am__objects_24)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_la_OBJECTS =  \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_21)
-@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_22)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_25)
+@ARCH_IA64_TRUE@am_libunwind_la_OBJECTS = $(am__objects_26)
 libunwind_la_OBJECTS = $(am_libunwind_la_OBJECTS)
 @REMOTE_ONLY_FALSE@am_libunwind_la_rpath = -rpath $(libdir)
 PROGRAMS = $(noinst_PROGRAMS)
@@ -282,13 +328,15 @@ LINK = $(LIBTOOL) --mode=link --tag=CC $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) \
 	$(libunwind_ia64_la_SOURCES) $(libunwind_setjmp_la_SOURCES) \
-	$(libunwind_x86_la_SOURCES) $(libunwind_la_SOURCES) \
-	$(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES)
+	$(libunwind_x86_la_SOURCES) $(libunwind_x86_64_la_SOURCES) \
+	$(libunwind_la_SOURCES) $(ia64_mk_Gcursor_i_SOURCES) \
+	$(ia64_mk_Lcursor_i_SOURCES)
 DIST_SOURCES = $(libunwind_ptrace_a_SOURCES) \
 	$(libunwind_hppa_la_SOURCES) \
 	$(am__libunwind_ia64_la_SOURCES_DIST) \
 	$(am__libunwind_setjmp_la_SOURCES_DIST) \
 	$(am__libunwind_x86_la_SOURCES_DIST) \
+	$(am__libunwind_x86_64_la_SOURCES_DIST) \
 	$(am__libunwind_la_SOURCES_DIST) \
 	$(am__ia64_mk_Gcursor_i_SOURCES_DIST) \
 	$(am__ia64_mk_Lcursor_i_SOURCES_DIST)
@@ -305,6 +353,8 @@ ARCH_HPPA_FALSE = @ARCH_HPPA_FALSE@
 ARCH_HPPA_TRUE = @ARCH_HPPA_TRUE@
 ARCH_IA64_FALSE = @ARCH_IA64_FALSE@
 ARCH_IA64_TRUE = @ARCH_IA64_TRUE@
+ARCH_X86_64_FALSE = @ARCH_X86_64_FALSE@
+ARCH_X86_64_TRUE = @ARCH_X86_64_TRUE@
 ARCH_X86_FALSE = @ARCH_X86_FALSE@
 ARCH_X86_TRUE = @ARCH_X86_TRUE@
 AUTOCONF = @AUTOCONF@
@@ -455,6 +505,9 @@ libunwind_setjmp_la_SOURCES_hppa = setjmp.c sigsetjmp.c	\
 					  hppa/siglongjmp.S
 
 libunwind_setjmp_la_SOURCES_x86 = setjmp.c sigsetjmp.c x86/siglongjmp.S
+libunwind_setjmp_la_SOURCES_x86_64 = setjmp.c sigsetjmp.c \
+					  x86_64/siglongjmp.S
+
 
 ### libunwind:
 
@@ -583,6 +636,36 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 	x86/Gis_signal_frame.c x86/Gget_proc_info.c x86/Gregs.c		\
 	x86/Gresume.c x86/Gstep.c
 
+
+# The list of files that go both into libunwind and libunwind-x86_64:
+libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
+	$(dwarf_SOURCES_common)						\
+	x86_64/init.h x86_64/unwind_i.h					\
+	x86_64/is_fpreg.c x86_64/regname.c
+
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
+	$(libunwind_la_SOURCES_local)					    \
+	elf64.c elf64.h							    \
+	$(dwarf_SOURCES_local)						    \
+	dwarf/Lfind_proc_info-lsb.c					    \
+	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
+	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
+	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c x86_64/Lregs.c    \
+	x86_64/Lresume.c x86_64/Lstep.c
+
+
+# The list of files that go into libunwind:
+libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
+	$(libunwind_la_SOURCES_generic)					    \
+	$(dwarf_SOURCES_generic)					    \
+	dwarf/Gfind_proc_info-lsb.c					    \
+	x86_64/Gcreate_addr_space.c x86_64/Gget_save_loc.c x86_64/Gglobal.c \
+	x86_64/Ginit.c x86_64/Ginit_local.c x86_64/Ginit_remote.c	    \
+	x86_64/Gis_signal_frame.c x86_64/Gget_proc_info.c x86_64/Gregs.c    \
+	x86_64/Gresume.c x86_64/Gstep.c
+
 @OS_HPUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_hpux)
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
 @OS_HPUX_TRUE@libunwind_la_SOURCES_os_local = $(libunwind_la_SOURCES_os_hpux_local)
@@ -590,15 +673,20 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @ARCH_IA64_TRUE@ia64_mk_Gcursor_i_SOURCES = ia64/mk_Gcursor_i.c
 @ARCH_IA64_TRUE@ia64_mk_Lcursor_i_SOURCES = ia64/mk_Lcursor_i.c
 @ARCH_IA64_TRUE@BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@lib_LTLIBRARIES_arch = libunwind-x86_64.la
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@lib_LTLIBRARIES_arch = libunwind-x86.la
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@lib_LTLIBRARIES_arch = libunwind-hppa.la
 @ARCH_IA64_TRUE@lib_LTLIBRARIES_arch = libunwind-ia64.la
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86_64)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_hppa)
 @ARCH_IA64_TRUE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
 @ARCH_IA64_TRUE@libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
 @ARCH_IA64_TRUE@libunwind_ia64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_LIBADD = libunwind.la -lc
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@				  $(libunwind_setjmp_la_SOURCES_x86_64)
+
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@				  $(libunwind_setjmp_la_SOURCES_x86)
 
@@ -614,6 +702,9 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_LIBADD = libunwind.la -lc
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_x86_64_la_SOURCES = $(libunwind_x86_64_la_SOURCES_x86_64)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_x86_64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_64_la_LIBADD = libunwind.la -lc
 libunwind_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 libunwind_la_LIBADD = -lc
 lib_LIBRARIES = $(LIBRARIES_cdep)
@@ -632,11 +723,13 @@ EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h	\
 		$(libunwind_hppa_la_SOURCES_hppa)	\
 		$(libunwind_ia64_la_SOURCES_ia64)	\
 		$(libunwind_x86_la_SOURCES_x86)		\
+		$(libunwind_x86_64_la_SOURCES_x86_64)	\
 		$(libunwind_ptrace_a_SOURCES)		\
 		$(libunwind_setjmp_la_SOURCES_common)	\
 		$(libunwind_setjmp_la_SOURCES_hppa)	\
 		$(libunwind_setjmp_la_SOURCES_ia64)	\
-		$(libunwind_setjmp_la_SOURCES_x86)
+		$(libunwind_setjmp_la_SOURCES_x86)	\
+		$(libunwind_setjmp_la_SOURCES_x86_64)
 
 all: $(BUILT_SOURCES)
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -824,6 +917,14 @@ ia64/Gstep.lo: ia64/$(am__dirstamp) ia64/$(DEPDIR)/$(am__dirstamp)
 ia64/Gtables.lo: ia64/$(am__dirstamp) ia64/$(DEPDIR)/$(am__dirstamp)
 libunwind-ia64.la: $(libunwind_ia64_la_OBJECTS) $(libunwind_ia64_la_DEPENDENCIES) 
 	$(LINK) $(am_libunwind_ia64_la_rpath) $(libunwind_ia64_la_LDFLAGS) $(libunwind_ia64_la_OBJECTS) $(libunwind_ia64_la_LIBADD) $(LIBS)
+x86_64/$(am__dirstamp):
+	@$(mkdir_p) x86_64
+	@: > x86_64/$(am__dirstamp)
+x86_64/$(DEPDIR)/$(am__dirstamp):
+	@$(mkdir_p) x86_64/$(DEPDIR)
+	@: > x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/siglongjmp.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
 x86/$(am__dirstamp):
 	@$(mkdir_p) x86
 	@: > x86/$(am__dirstamp)
@@ -879,6 +980,34 @@ x86/Gresume.lo: x86/$(am__dirstamp) x86/$(DEPDIR)/$(am__dirstamp)
 x86/Gstep.lo: x86/$(am__dirstamp) x86/$(DEPDIR)/$(am__dirstamp)
 libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
 	$(LINK) $(am_libunwind_x86_la_rpath) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
+x86_64/is_fpreg.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/regname.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gcreate_addr_space.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gget_save_loc.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gglobal.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Ginit.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Ginit_local.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Ginit_remote.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gis_signal_frame.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gget_proc_info.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gregs.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gresume.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Gstep.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+libunwind-x86_64.la: $(libunwind_x86_64_la_OBJECTS) $(libunwind_x86_64_la_DEPENDENCIES) 
+	$(LINK) $(am_libunwind_x86_64_la_rpath) $(libunwind_x86_64_la_LDFLAGS) $(libunwind_x86_64_la_OBJECTS) $(libunwind_x86_64_la_LIBADD) $(LIBS)
 mi/_ReadULEB.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
 mi/_ReadSLEB.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
 mi/backtrace.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
@@ -950,6 +1079,28 @@ dwarf/Lpe.lo: dwarf/$(am__dirstamp) dwarf/$(DEPDIR)/$(am__dirstamp)
 dwarf/Lstep.lo: dwarf/$(am__dirstamp) dwarf/$(DEPDIR)/$(am__dirstamp)
 dwarf/Lfind_proc_info-lsb.lo: dwarf/$(am__dirstamp) \
 	dwarf/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lcreate_addr_space.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lget_save_loc.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lglobal.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Linit.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Linit_local.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Linit_remote.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lis_signal_frame.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lget_proc_info.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lregs.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lresume.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
+x86_64/Lstep.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
 x86/Lcreate_addr_space.lo: x86/$(am__dirstamp) \
 	x86/$(DEPDIR)/$(am__dirstamp)
 x86/Lget_save_loc.lo: x86/$(am__dirstamp) \
@@ -1340,6 +1491,56 @@ mostlyclean-compile:
 	-rm -f x86/regname.lo
 	-rm -f x86/siglongjmp.$(OBJEXT)
 	-rm -f x86/siglongjmp.lo
+	-rm -f x86_64/Gcreate_addr_space.$(OBJEXT)
+	-rm -f x86_64/Gcreate_addr_space.lo
+	-rm -f x86_64/Gget_proc_info.$(OBJEXT)
+	-rm -f x86_64/Gget_proc_info.lo
+	-rm -f x86_64/Gget_save_loc.$(OBJEXT)
+	-rm -f x86_64/Gget_save_loc.lo
+	-rm -f x86_64/Gglobal.$(OBJEXT)
+	-rm -f x86_64/Gglobal.lo
+	-rm -f x86_64/Ginit.$(OBJEXT)
+	-rm -f x86_64/Ginit.lo
+	-rm -f x86_64/Ginit_local.$(OBJEXT)
+	-rm -f x86_64/Ginit_local.lo
+	-rm -f x86_64/Ginit_remote.$(OBJEXT)
+	-rm -f x86_64/Ginit_remote.lo
+	-rm -f x86_64/Gis_signal_frame.$(OBJEXT)
+	-rm -f x86_64/Gis_signal_frame.lo
+	-rm -f x86_64/Gregs.$(OBJEXT)
+	-rm -f x86_64/Gregs.lo
+	-rm -f x86_64/Gresume.$(OBJEXT)
+	-rm -f x86_64/Gresume.lo
+	-rm -f x86_64/Gstep.$(OBJEXT)
+	-rm -f x86_64/Gstep.lo
+	-rm -f x86_64/Lcreate_addr_space.$(OBJEXT)
+	-rm -f x86_64/Lcreate_addr_space.lo
+	-rm -f x86_64/Lget_proc_info.$(OBJEXT)
+	-rm -f x86_64/Lget_proc_info.lo
+	-rm -f x86_64/Lget_save_loc.$(OBJEXT)
+	-rm -f x86_64/Lget_save_loc.lo
+	-rm -f x86_64/Lglobal.$(OBJEXT)
+	-rm -f x86_64/Lglobal.lo
+	-rm -f x86_64/Linit.$(OBJEXT)
+	-rm -f x86_64/Linit.lo
+	-rm -f x86_64/Linit_local.$(OBJEXT)
+	-rm -f x86_64/Linit_local.lo
+	-rm -f x86_64/Linit_remote.$(OBJEXT)
+	-rm -f x86_64/Linit_remote.lo
+	-rm -f x86_64/Lis_signal_frame.$(OBJEXT)
+	-rm -f x86_64/Lis_signal_frame.lo
+	-rm -f x86_64/Lregs.$(OBJEXT)
+	-rm -f x86_64/Lregs.lo
+	-rm -f x86_64/Lresume.$(OBJEXT)
+	-rm -f x86_64/Lresume.lo
+	-rm -f x86_64/Lstep.$(OBJEXT)
+	-rm -f x86_64/Lstep.lo
+	-rm -f x86_64/is_fpreg.$(OBJEXT)
+	-rm -f x86_64/is_fpreg.lo
+	-rm -f x86_64/regname.$(OBJEXT)
+	-rm -f x86_64/regname.lo
+	-rm -f x86_64/siglongjmp.$(OBJEXT)
+	-rm -f x86_64/siglongjmp.lo
 
 distclean-compile:
 	-rm -f *.tab.c
@@ -1502,6 +1703,30 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@x86/$(DEPDIR)/Lstep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@x86/$(DEPDIR)/is_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@x86/$(DEPDIR)/regname.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gcreate_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gget_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gget_save_loc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gglobal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Ginit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Ginit_local.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Ginit_remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gis_signal_frame.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gregs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gresume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Gstep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lcreate_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lget_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lget_save_loc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lglobal.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Linit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Linit_local.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Linit_remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lis_signal_frame.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lregs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lresume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lstep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/is_fpreg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/regname.Plo@am__quote@
 
 .S.o:
 	$(CCASCOMPILE) -c $<
@@ -1547,6 +1772,7 @@ clean-libtool:
 	-rm -rf mi/.libs mi/_libs
 	-rm -rf unwind/.libs unwind/_libs
 	-rm -rf x86/.libs x86/_libs
+	-rm -rf x86_64/.libs x86_64/_libs
 
 distclean-libtool:
 	-rm -f libtool
@@ -1601,7 +1827,7 @@ distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH tags
 
 distdir: $(DISTFILES)
-	$(mkdir_p) $(distdir)/dwarf $(distdir)/hppa $(distdir)/ia64 $(distdir)/mi $(distdir)/ptrace $(distdir)/unwind $(distdir)/x86
+	$(mkdir_p) $(distdir)/dwarf $(distdir)/hppa $(distdir)/ia64 $(distdir)/mi $(distdir)/ptrace $(distdir)/unwind $(distdir)/x86 $(distdir)/x86_64
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
@@ -1657,19 +1883,21 @@ clean-generic:
 
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
-	-rm -f dwarf/$(DEPDIR)/$(am__dirstamp)
 	-rm -f hppa/$(DEPDIR)/$(am__dirstamp)
 	-rm -f unwind/$(DEPDIR)/$(am__dirstamp)
-	-rm -f unwind/$(am__dirstamp)
 	-rm -f x86/$(DEPDIR)/$(am__dirstamp)
-	-rm -f mi/$(DEPDIR)/$(am__dirstamp)
 	-rm -f x86/$(am__dirstamp)
 	-rm -f ia64/$(DEPDIR)/$(am__dirstamp)
 	-rm -f dwarf/$(am__dirstamp)
-	-rm -f hppa/$(am__dirstamp)
-	-rm -f ptrace/$(DEPDIR)/$(am__dirstamp)
+	-rm -f x86_64/$(am__dirstamp)
 	-rm -f ptrace/$(am__dirstamp)
 	-rm -f mi/$(am__dirstamp)
+	-rm -f dwarf/$(DEPDIR)/$(am__dirstamp)
+	-rm -f unwind/$(am__dirstamp)
+	-rm -f mi/$(DEPDIR)/$(am__dirstamp)
+	-rm -f x86_64/$(DEPDIR)/$(am__dirstamp)
+	-rm -f ptrace/$(DEPDIR)/$(am__dirstamp)
+	-rm -f hppa/$(am__dirstamp)
 	-rm -f ia64/$(am__dirstamp)
 
 maintainer-clean-generic:
@@ -1682,7 +1910,7 @@ clean-am: clean-generic clean-libLIBRARIES clean-libLTLIBRARIES \
 	clean-libtool clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
-	-rm -rf ./$(DEPDIR) dwarf/$(DEPDIR) hppa/$(DEPDIR) ia64/$(DEPDIR) mi/$(DEPDIR) ptrace/$(DEPDIR) unwind/$(DEPDIR) x86/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) dwarf/$(DEPDIR) hppa/$(DEPDIR) ia64/$(DEPDIR) mi/$(DEPDIR) ptrace/$(DEPDIR) unwind/$(DEPDIR) x86/$(DEPDIR) x86_64/$(DEPDIR)
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-libtool distclean-tags
@@ -1710,7 +1938,7 @@ install-man:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-	-rm -rf ./$(DEPDIR) dwarf/$(DEPDIR) hppa/$(DEPDIR) ia64/$(DEPDIR) mi/$(DEPDIR) ptrace/$(DEPDIR) unwind/$(DEPDIR) x86/$(DEPDIR)
+	-rm -rf ./$(DEPDIR) dwarf/$(DEPDIR) hppa/$(DEPDIR) ia64/$(DEPDIR) mi/$(DEPDIR) ptrace/$(DEPDIR) unwind/$(DEPDIR) x86/$(DEPDIR) x86_64/$(DEPDIR)
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

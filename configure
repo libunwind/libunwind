@@ -465,7 +465,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL CCAS CCASFLAGS LIBOBJS REMOTE_ONLY_TRUE REMOTE_ONLY_FALSE ARCH_IA64_TRUE ARCH_IA64_FALSE ARCH_HPPA_TRUE ARCH_HPPA_FALSE ARCH_X86_TRUE ARCH_X86_FALSE OS_LINUX_TRUE OS_LINUX_FALSE OS_HPUX_TRUE OS_HPUX_FALSE build_arch arch ARCH LDFLAGS_STATIC_LIBCXA LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA CYGPATH_W PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM mkdir_p AWK SET_MAKE am__leading_dot AMTAR am__tar am__untar MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE am__fastdepCC_TRUE am__fastdepCC_FALSE CXX CXXFLAGS ac_ct_CXX CXXDEPMODE am__fastdepCXX_TRUE am__fastdepCXX_FALSE EGREP LN_S ECHO AR ac_ct_AR RANLIB ac_ct_RANLIB CPP CXXCPP F77 FFLAGS ac_ct_F77 LIBTOOL CCAS CCASFLAGS LIBOBJS REMOTE_ONLY_TRUE REMOTE_ONLY_FALSE ARCH_IA64_TRUE ARCH_IA64_FALSE ARCH_HPPA_TRUE ARCH_HPPA_FALSE ARCH_X86_TRUE ARCH_X86_FALSE ARCH_X86_64_TRUE ARCH_X86_64_FALSE OS_LINUX_TRUE OS_LINUX_FALSE OS_HPUX_TRUE OS_HPUX_FALSE build_arch arch ARCH LDFLAGS_STATIC_LIBCXA LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -20755,6 +20755,16 @@ fi
 
 
 
+if test x$target_arch = xx86_64; then
+  ARCH_X86_64_TRUE=
+  ARCH_X86_64_FALSE='#'
+else
+  ARCH_X86_64_TRUE='#'
+  ARCH_X86_64_FALSE=
+fi
+
+
+
 if expr x$target_os : xlinux >/dev/null; then
   OS_LINUX_TRUE=
   OS_LINUX_FALSE='#'
@@ -21078,6 +21088,13 @@ if test -z "${ARCH_X86_TRUE}" && test -z "${ARCH_X86_FALSE}"; then
   { { echo "$as_me:$LINENO: error: conditional \"ARCH_X86\" was never defined.
 Usually this means the macro was only invoked conditionally." >&5
 echo "$as_me: error: conditional \"ARCH_X86\" was never defined.
+Usually this means the macro was only invoked conditionally." >&2;}
+   { (exit 1); exit 1; }; }
+fi
+if test -z "${ARCH_X86_64_TRUE}" && test -z "${ARCH_X86_64_FALSE}"; then
+  { { echo "$as_me:$LINENO: error: conditional \"ARCH_X86_64\" was never defined.
+Usually this means the macro was only invoked conditionally." >&5
+echo "$as_me: error: conditional \"ARCH_X86_64\" was never defined.
 Usually this means the macro was only invoked conditionally." >&2;}
    { (exit 1); exit 1; }; }
 fi
@@ -21721,6 +21738,8 @@ s,@ARCH_HPPA_TRUE@,$ARCH_HPPA_TRUE,;t t
 s,@ARCH_HPPA_FALSE@,$ARCH_HPPA_FALSE,;t t
 s,@ARCH_X86_TRUE@,$ARCH_X86_TRUE,;t t
 s,@ARCH_X86_FALSE@,$ARCH_X86_FALSE,;t t
+s,@ARCH_X86_64_TRUE@,$ARCH_X86_64_TRUE,;t t
+s,@ARCH_X86_64_FALSE@,$ARCH_X86_64_FALSE,;t t
 s,@OS_LINUX_TRUE@,$OS_LINUX_TRUE,;t t
 s,@OS_LINUX_FALSE@,$OS_LINUX_FALSE,;t t
 s,@OS_HPUX_TRUE@,$OS_HPUX_TRUE,;t t
