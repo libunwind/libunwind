@@ -32,6 +32,8 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret, i;
 
+  Debug (2, "(cursor=%p)\n", c);
+
   /* Try DWARF-based unwinding... */
   ret = dwarf_step (&c->dwarf);
 
@@ -41,10 +43,9 @@ unw_step (unw_cursor_t *cursor)
 	 or skip over the signal trampoline.  */
       struct dwarf_loc ebp_loc, eip_loc;
 
-      Debug (14, "dwarf_step() failed (ret=%d), trying frame-chain\n",
-	     ret);
+      Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
-      if (unw_is_signal_frame(cursor))
+      if (unw_is_signal_frame (cursor))
 	{
 	  /* XXX This code is Linux-specific! */
 
@@ -53,6 +54,7 @@ unw_step (unw_cursor_t *cursor)
 	     followed by a struct sigcontext.  With SA_SIGINFO, the
 	     arguments consist a signal number, a siginfo *, and a
 	     ucontext *. */
+	  unw_word_t sigcontext_addr;
 	  unw_word_t siginfo_ptr_addr = c->dwarf.cfa + 4;
 	  unw_word_t sigcontext_ptr_addr = c->dwarf.cfa + 8;
 	  unw_word_t siginfo_ptr, sigcontext_ptr;
@@ -70,10 +72,8 @@ unw_step (unw_cursor_t *cursor)
 	      || sigcontext_ptr > c->dwarf.cfa + 256)
 	    {
 	      /* Not plausible for SA_SIGINFO signal */
-	      unw_word_t sigcontext_addr = c->dwarf.cfa + 4;
-	      esp_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_ESP_OFF, 0);
-	      ebp_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_EBP_OFF, 0);
-	      eip_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_EIP_OFF, 0);
+	      c->sigcontext_format = X86_SCF_LINUX_SIGFRAME;
+	      c->sigcontext_addr = sigcontext_addr = c->dwarf.cfa + 4;
 	    }
 	  else
 	    {
@@ -82,10 +82,13 @@ unw_step (unw_cursor_t *cursor)
 		 least fs and _fsh are always zero for linux, so it is
 		 not just unlikely, but impossible that we would end
 		 up here. */
-	      esp_loc = DWARF_LOC (sigcontext_ptr + LINUX_UC_ESP_OFF, 0);
-	      ebp_loc = DWARF_LOC (sigcontext_ptr + LINUX_UC_EBP_OFF, 0);
-	      eip_loc = DWARF_LOC (sigcontext_ptr + LINUX_UC_EIP_OFF, 0);
+	      c->sigcontext_format = X86_SCF_LINUX_RT_SIGFRAME;
+	      c->sigcontext_addr = sigcontext_ptr;
+	      sigcontext_addr = sigcontext_ptr + LINUX_UC_MCONTEXT_OFF;
 	    }
+	  esp_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_ESP_OFF, 0);
+	  ebp_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_EBP_OFF, 0);
+	  eip_loc = DWARF_LOC (sigcontext_addr + LINUX_SC_EIP_OFF, 0);
 	  ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
 	  if (ret < 0)
 	    return 0;
@@ -96,9 +99,8 @@ unw_step (unw_cursor_t *cursor)
 	  if (ret < 0)
 	    return ret;
 
-	  Debug (14, "[EBP=0x%lx] = 0x%lx\n",
-		 (long) DWARF_GET_LOC (c->dwarf.loc[EBP]),
-		 (long) c->dwarf.cfa);
+	  Debug (13, "[EBP=0x%x] = 0x%xx\n", DWARF_GET_LOC (c->dwarf.loc[EBP]),
+		 c->dwarf.cfa);
 
 	  ebp_loc = DWARF_LOC (c->dwarf.cfa, 0);
 	  eip_loc = DWARF_LOC (c->dwarf.cfa + 4, 0);
