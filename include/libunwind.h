@@ -146,7 +146,7 @@ typedef enum unw_save_loc_type
   {
     UNW_SLT_NONE,	/* register is not saved ("not an l-value") */
     UNW_SLT_MEMORY,	/* register has been saved in memory */
-    UNW_SLT_REG,	/* register has been saved in (another) register */
+    UNW_SLT_REG		/* register has been saved in (another) register */
   }
 unw_save_loc_type_t;
 
@@ -159,6 +159,7 @@ typedef struct unw_save_loc
 	unw_regnum_t regnum;	/* valid if type==UNW_SLT_REG */
       }
     u;
+    unw_tdep_save_loc_t extra;	/* target-dependent additional information */
   }
 unw_save_loc_t;
 
@@ -203,6 +204,8 @@ extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
    value on failure.  */
 #define unw_get_fpreg(c,r,v)	UNW_OBJ(get_fpreg)(c,r,v)
 #define unw_set_fpreg(c,r,v)	UNW_OBJ(set_fpreg)(c,r,v)
+
+#define unw_get_save_loc(c,r,l)	UNW_OBJ(get_save_loc)(c,r,l)
 
 /* Returns non-zero value if the cursor points to a signal frame.  */
 #define unw_is_signal_frame(c)	UNW_OBJ(is_signal_frame)(c)
