@@ -133,123 +133,146 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
     }
 }
 
+#ifndef REMOTE_ONLY
+
 static inline int
 get_rnat (struct cursor *c, struct rbs_area *rbs, unw_word_t bsp,
-	  ia64_loc_t *__restrict rnat_locp, unw_word_t *__restrict rnatp)
+	  unw_word_t *__restrict rnatp)
 {
-  *rnat_locp = rbs_get_rnat_loc (rbs, bsp);
-  return ia64_get (c, *rnat_locp, rnatp);
+  ia64_loc_t rnat_locp = rbs_get_rnat_loc (rbs, bsp);
+
+  return ia64_get (c, rnat_locp, rnatp);
 }
 
-/* Ensure that the first "nregs" stacked registers are on the current
-   register backing store area.  This effectively simulates the effect
-   of a "cover" followed by a "flushrs" for the current frame.
+/* Simulate the effect of "cover" followed by a "flushrs" for the
+   target-frame.  However, since the target-frame's backing store
+   may not have space for the registers that got spilled onto other
+   rbs-areas, we save those registers to DIRTY_PARTITION where
+   we can then load them via a single "loadrs".
+
+   This function returns the size of the dirty-partition that was
+   created or a negative error-code in case of error.
 
    Note: This does not modify the rbs_area[] structure in any way.  */
 HIDDEN int
-rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
+rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
+		     unw_word_t *dirty_partition, unw_word_t *dirty_rnat,
+		     unw_word_t *bspstore)
 {
-  unw_word_t src_mask, dst_mask, curr, val, left_edge = c->rbs_left_edge;
-  unw_word_t src_bsp, dst_bsp, src_rnat, dst_rnat, dst_rnat_addr;
-  ia64_loc_t src_rnat_loc, dst_rnat_loc;
-  unw_word_t final_bsp;
-  struct rbs_area *dst_rbs;
+  unw_word_t n, src_mask, dst_mask, bsp, *dst, src_rnat, dst_rnat = 0;
+  unw_word_t curr = c->rbs_curr, left_edge = c->rbs_left_edge;
+  struct rbs_area *rbs = c->rbs_area + curr;
   int ret;
 
-  if (nregs < 1)
-    return 0;		/* nothing to do... */
+  bsp = c->bsp;
+  c->bsp = ia64_rse_skip_regs (bsp, nregs);
 
-  /* Handle the common case quickly: */
-
-  curr = c->rbs_curr;
-  dst_rbs = c->rbs_area + curr;
-  final_bsp = ia64_rse_skip_regs (c->bsp, nregs);	/* final bsp */
-  if (likely (rbs_contains (dst_rbs, final_bsp) || curr == left_edge))
+  if (likely (rbs_contains (rbs, bsp)))
     {
-      dst_rnat_addr = ia64_rse_rnat_addr (ia64_rse_skip_regs (c->bsp,
-							      nregs - 1));
-      if (rbs_contains (dst_rbs, dst_rnat_addr))
-	c->loc[IA64_REG_RNAT] =	rbs_loc (dst_rbs, dst_rnat_addr);
-      c->bsp = final_bsp;
-      return 0;
-    }
-
-  /* Skip over regs that are already on the destination rbs-area: */
-
-  dst_bsp = src_bsp = dst_rbs->end;
-
-  if ((ret = get_rnat (c, dst_rbs, dst_bsp, &dst_rnat_loc, &dst_rnat)) < 0)
-    return ret;
-
-  /* This may seem a bit surprising, but with a hyper-lazy RSE, it's
-     perfectly common that ar.bspstore points to an RNaT slot at the
-     time of a backing-store switch.  When that happens, install the
-     appropriate RNaT value (if necessary) and move on to the next
-     slot.  */
-  if (ia64_rse_is_rnat_slot (dst_bsp))
-    {
-      if ((IA64_IS_REG_LOC (dst_rnat_loc)
-	   || IA64_GET_ADDR (dst_rnat_loc) != dst_bsp)
-	  && (ret = ia64_put (c, rbs_loc (dst_rbs, dst_bsp), dst_rnat)) < 0)
-	return ret;
-      dst_bsp = src_bsp = dst_bsp + 8;
-    }
-
-  while (dst_bsp != final_bsp)
-    {
-      while (!rbs_contains (&c->rbs_area[curr], src_bsp))
+      /* at least _some_ registers are on rbs... */
+      n = ia64_rse_num_regs (bsp, rbs->end);
+      if (likely (n >= nregs))
 	{
-	  /* switch to next rbs-area, adjust src_bsp accordingly: */
-	  if (curr == left_edge)
+	  /* common case #1: all registers are on current rbs... */
+	  /* got lucky: _all_ registers are on rbs... */
+	  ia64_loc_t rnat_loc = rbs_get_rnat_loc (rbs, c->bsp);
+
+	  *bspstore = c->bsp;
+
+	  if (IA64_IS_REG_LOC (rnat_loc))
 	    {
-	      Debug (1, "rbs-underflow while flushing %lu regs, "
-		     "src_bsp=0x%lx, dst_bsp=0x%lx\n", (unsigned long) nregs,
-		     (unsigned long) src_bsp, (unsigned long) dst_bsp);
-	      return -UNW_EBADREG;
+	      unw_word_t rnat_addr = (unw_word_t)
+		tdep_uc_addr (c->as_arg, UNW_IA64_AR_RNAT, NULL);
+	      rnat_loc = IA64_LOC_ADDR (rnat_addr, 0);
 	    }
-	  curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
-	  src_bsp = c->rbs_area[curr].end - c->rbs_area[curr].size;
+	  c->loc[IA64_REG_RNAT] = rnat_loc;
+	  return 0;	/* all done */
+	}
+      nregs -= n;	/* account for registers already on the rbs */
+
+      assert (ia64_rse_skip_regs (c->bsp, -nregs) ==
+	      ia64_rse_skip_regs (rbs->end, 0));
+    }
+  else
+    /* Earlier frames also didn't get spilled; need to "loadrs" those,
+       too... */
+    nregs += ia64_rse_num_regs (rbs->end, bsp);
+
+  /* OK, we need to copy NREGS registers to the dirty partition.  */
+
+  *bspstore = bsp = rbs->end;
+  c->loc[IA64_REG_RNAT] = rbs->rnat_loc;
+  assert (!IA64_IS_REG_LOC (rbs->rnat_loc));
+
+  dst = dirty_partition;
+
+  while (nregs > 0)
+    {
+      if (unlikely (!rbs_contains (rbs, bsp)))
+	{
+	  /* switch to next non-empty rbs-area: */
+	  do
+	    {
+	      if (curr == left_edge)
+		{
+		  Debug (0, "rbs-underflow while flushing %lu regs, "
+			 "bsp=0x%lx, dst=0x%p\n", (unsigned long) nregs,
+			 (unsigned long) bsp, dst);
+		  return -UNW_EBADREG;
+		}
+
+	      assert (ia64_rse_num_regs (rbs->end, bsp) == 0);
+
+	      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
+	      rbs = c->rbs_area + curr;
+	      bsp = rbs->end - rbs->size;
+	    }
+	  while (rbs->size == 0);
+
+	  if ((ret = get_rnat (c, rbs, bsp, &src_rnat)) < 0)
+	    return ret;
 	}
 
-      /* OK, found the right rbs-area.  Now copy both the register
-	 value and its NaT bit:  */
+      if (unlikely (ia64_rse_is_rnat_slot (bsp)))
+	{
+	  bsp += 8;
+	  if ((ret = get_rnat (c, rbs, bsp, &src_rnat)) < 0)
+	    return ret;
+	}
+      if (unlikely (ia64_rse_is_rnat_slot ((unw_word_t) dst)))
+	{
+	  *dst++ = dst_rnat;
+	  dst_rnat = 0;
+	}
 
-      if ((ret = get_rnat (c, c->rbs_area + curr, src_bsp,
-			   &src_rnat_loc, &src_rnat)) < 0)
-	return ret;
-
-      src_mask = ((unw_word_t) 1) << ia64_rse_slot_num (src_bsp);
-      dst_mask = ((unw_word_t) 1) << ia64_rse_slot_num (dst_bsp);
+      src_mask = ((unw_word_t) 1) << ia64_rse_slot_num (bsp);
+      dst_mask = ((unw_word_t) 1) << ia64_rse_slot_num ((unw_word_t) dst);
 
       if (src_rnat & src_mask)
 	dst_rnat |= dst_mask;
       else
 	dst_rnat &= ~dst_mask;
 
-      if ((ret = ia64_get (c, rbs_loc (c->rbs_area + curr, src_bsp), &val)) < 0
-	  || (ret = ia64_put (c, rbs_loc (dst_rbs, dst_bsp), val)) < 0)
+      /* copy one slot: */
+      if ((ret = ia64_get (c, rbs_loc (rbs, bsp), dst)) < 0)
 	return ret;
 
-      /* advance src_bsp & dst_bsp to next slot: */
-
-      src_bsp += 8;
-      if (ia64_rse_is_rnat_slot (src_bsp))
-	src_bsp += 8;
-
-      dst_bsp += 8;
-      if (ia64_rse_is_rnat_slot (dst_bsp))
-	{
-	  if ((ret = ia64_put (c, rbs_loc (dst_rbs, dst_bsp), dst_rnat)) < 0)
-	    return ret;
-
-	  dst_bsp += 8;
-
-	  if ((ret = get_rnat (c, dst_rbs, dst_bsp,
-			       &dst_rnat_loc, &dst_rnat)) < 0)
-	    return ret;
-	}
+      /* advance to next slot: */
+      --nregs;
+      bsp += 8;
+      ++dst;
     }
-  c->bsp = dst_bsp;
-  c->loc[IA64_REG_RNAT] = dst_rnat_loc;
-  return ia64_put (c, dst_rnat_loc, dst_rnat);
+  if (unlikely (ia64_rse_is_rnat_slot ((unw_word_t) dst)))
+    {
+      /* The LOADRS instruction loads "the N bytes below the current
+	 BSP" but BSP can never point to an RNaT slot so if the last
+	 destination word happens to be an RNaT slot, we need to write
+	 that slot now. */
+      *dst++ = dst_rnat;
+      dst_rnat = 0;
+    }
+  *dirty_rnat = dst_rnat;
+  return (char *) dst - (char *) dirty_partition;
 }
+
+#endif /* !REMOTE_ONLY */
