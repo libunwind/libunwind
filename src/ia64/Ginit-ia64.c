@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* unw_local_addr_space is a NULL pointer in this case.  */
 unw_addr_space_t unw_local_addr_space;
 
-#else
+#else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
