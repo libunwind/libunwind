@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST = run-ia64-test-dyn1
 
 noinst_PROGRAMS_common =
-check_PROGRAMS_common =
+check_PROGRAMS_common = Gtest-init Ltest-init
 check_SCRIPTS_common =
 
 if REMOTE_ONLY
@@ -20,7 +20,7 @@ endif
  check_SCRIPTS_cdep =
  check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-resume-sig Ltest-resume-sig \
 			Gtest-dyn1 Ltest-dyn1 test-setjmp test-ptrace
- noinst_PROGRAMS_cdep = bt test-init test-varargs
+ noinst_PROGRAMS_cdep = bt test-varargs
 endif
 
 check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
@@ -41,6 +41,8 @@ Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+Gtest_init_SOURCES = Gtest-init.cxx
+Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 
