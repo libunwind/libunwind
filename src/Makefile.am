@@ -1,8 +1,9 @@
 SOVERSION=0:0:0		# See comments at end of file.
 
 if REMOTE_ONLY
+libunwind_la_SOURCES_common = mempool.c mempool.h
 else
-libunwind_la_SOURCES_common = backtrace.c
+libunwind_la_SOURCES_common = mempool.c mempool.h backtrace.c
 
 #
 # This is not ideal, but I know of no other way to install an
