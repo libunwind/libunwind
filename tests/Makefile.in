@@ -87,6 +87,7 @@ F77 = @F77@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LDFLAGS_STATIC_LIBCXA = @LDFLAGS_STATIC_LIBCXA@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
@@ -158,6 +159,7 @@ Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
 test_static_link_LDFLAGS = -all-static
+forker_LDFLAGS = -all-static
 
 LIBUNWIND = ../src/libunwind-$(arch).la
 LDADD = $(LIBUNWIND)
@@ -338,7 +340,6 @@ forker_SOURCES = forker.c
 forker_OBJECTS = forker.$(OBJEXT)
 forker_LDADD = $(LDADD)
 forker_DEPENDENCIES = ../src/libunwind-$(arch).la
-forker_LDFLAGS =
 am_ia64_test_dyn1_OBJECTS = ia64-test-dyn1.$(OBJEXT) \
 	ia64-dyn-asm.$(OBJEXT) flush-cache.$(OBJEXT)
 ia64_test_dyn1_OBJECTS = $(am_ia64_test_dyn1_OBJECTS)
