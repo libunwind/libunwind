@@ -25,6 +25,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#ifdef UNW_TARGET_IA64
+# include "elf64.h"
+# include "os-linux.h"
+#endif
+
 int
 _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 			     void *arg)
@@ -45,9 +50,16 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 
   ui->checked_dyn_info_list_addr = 1;
 
+#if UNW_TARGET_IA64
   maps_init (&mi, ui->pid);
   while (maps_next (&mi, &lo, &hi, &off, path))
     {
+      if (off)
+	continue;
+
+      if (elf_map_image (&ui->ei, path) < 0)
+	return -UNW_ENOINFO;
+
       di = _UPTi_find_unwind_table (ui, as, path, lo, off);
       if (di)
 	{
@@ -60,6 +72,9 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 	}
     }
   maps_close (&mi);
+#else
+# error Implement me, please.
+#endif
 
   /* If multiple dynamic-info list addresses are found, we would have
      to determine which was is the one actually in use (since the
