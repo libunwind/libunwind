@@ -34,7 +34,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-#ifndef __hpux
   unw_word_t val, sol, sof, pri_unat, n, pfs;
   struct cursor *c = (struct cursor *) cursor;
   struct
@@ -68,10 +67,10 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   /* Copy contents of r4-r7 into "extra", so that their values end up
      contiguous, so we can use a single (primary-) UNaT value.  */
-  if ((ret = ia64_get (c, c->r4_loc, &extra.r4)) < 0
-      || (ret = ia64_get (c, c->r5_loc, &extra.r5)) < 0
-      || (ret = ia64_get (c, c->r6_loc, &extra.r6)) < 0
-      || (ret = ia64_get (c, c->r7_loc, &extra.r7)) < 0)
+  if ((ret = ia64_get (c, c->loc[IA64_REG_R4], &extra.r4)) < 0
+      || (ret = ia64_get (c, c->loc[IA64_REG_R5], &extra.r5)) < 0
+      || (ret = ia64_get (c, c->loc[IA64_REG_R6], &extra.r6)) < 0
+      || (ret = ia64_get (c, c->loc[IA64_REG_R7], &extra.r7)) < 0)
     return ret;
 
   /* Form the primary UNaT value: */
@@ -81,9 +80,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   n = (((uintptr_t) &extra.r4) / 8 - 4) % 64;
   pri_unat = (pri_unat << n) | (pri_unat >> (64 - n));
 
-  if (unlikely (c->sigcontext_loc))
+  if (unlikely (c->sigcontext_addr))
     {
-      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_loc;
+      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 #     define PR_SCRATCH		0xffc0	/* p6-p15 are scratch */
 #     define PR_PRESERVED	(~(PR_SCRATCH | 1))
 
@@ -103,7 +102,7 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	 save "rp"). */
 
       sc->sc_gr[12] = c->psp;
-      c->psp = (c->sigcontext_loc - c->sigcontext_off);
+      c->psp = c->sigcontext_addr - c->sigcontext_off;
 
       sof = (c->cfm & 0x7f);
       rbs_cover_and_flush (c, sof);
@@ -111,9 +110,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       sc->sc_ip = c->ip;
       sc->sc_cfm = c->cfm & (((unw_word_t) 1 << 38) - 1);
       sc->sc_pr = (c->pr & ~PR_SCRATCH) | (sc->sc_pr & ~PR_PRESERVED);
-      if ((ret = ia64_get (c, c->pfs_loc, &sc->sc_ar_pfs)) < 0
-	  || (ret = ia64_get (c, c->fpsr_loc, &sc->sc_ar_fpsr)) < 0
-	  || (ret = ia64_get (c, c->unat_loc, &sc->sc_ar_unat)) < 0)
+      if ((ret = ia64_get (c, c->loc[IA64_REG_PFS], &sc->sc_ar_pfs)) < 0
+	  || (ret = ia64_get (c, c->loc[IA64_REG_FPSR], &sc->sc_ar_fpsr)) < 0
+	  || (ret = ia64_get (c, c->loc[IA64_REG_UNAT], &sc->sc_ar_unat)) < 0)
 	return ret;
 
       sc->sc_gr[1] = c->pi.gp;
@@ -126,7 +125,7 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
     {
       /* Account for the fact that _Uia64_install_context() will
 	 return via br.ret, which will decrement bsp by size-of-locals.  */
-      if ((ret = ia64_get (c, c->pfs_loc, &pfs)) < 0)
+      if ((ret = ia64_get (c, c->loc[IA64_REG_PFS], &pfs)) < 0)
 	return ret;
       sol = (pfs >> 7) & 0x7f;
       rbs_cover_and_flush (c, sol);
@@ -137,16 +136,13 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r17 = c->eh_args[2];
       extra.r18 = c->eh_args[3];
     }
-  _Uia64_install_context (c, pri_unat, (unw_word_t *) &extra);
-#else
-  return -UNW_EINVAL;
-#endif
+  _Uia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
 }
 
 HIDDEN int
 ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-  return local_resume (as, cursor, arg);
+  return -UNW_EINVAL;
 }
 
 #endif /* !UNW_REMOTE_ONLY */
@@ -156,6 +152,7 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 static inline int
 remote_install_cursor (struct cursor *c)
 {
+#if 0
 #ifndef __hpux
   int (*access_reg) (unw_addr_space_t, unw_regnum_t, unw_word_t *,
 		     int write, void *);
@@ -185,7 +182,7 @@ remote_install_cursor (struct cursor *c)
       MEMIFY (IA64_REG_UNAT,	UNW_IA64_AR_UNAT);
       MEMIFY (IA64_REG_LC,	UNW_IA64_AR_LC);
       MEMIFY (IA64_REG_FPSR,	UNW_IA64_AR_FPSR);
-      MEMIFY (IA64_REG_RP,	UNW_IA64_BR + 0);
+      MEMIFY (IA64_REG_IP,	UNW_IA64_BR + 0);
       MEMIFY (IA64_REG_B1,	UNW_IA64_BR + 1);
       MEMIFY (IA64_REG_B2,	UNW_IA64_BR + 2);
       MEMIFY (IA64_REG_B3,	UNW_IA64_BR + 3);
@@ -232,6 +229,7 @@ remote_install_cursor (struct cursor *c)
 	}
     }
   return (*c->as->acc.resume) (c->as, (unw_cursor_t *) c, c->as_arg);
+#endif
 #endif
 }
 
