@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -48,7 +48,7 @@ intern_string (unw_addr_space_t as, unw_accessors_t *a,
 
 HIDDEN int
 unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip, int is_local,
-		    char *buf, size_t buf_len, void *arg)
+		    char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
   unw_accessors_t *a = unw_get_accessors (as);
   unw_proc_info_t pi;
@@ -60,6 +60,9 @@ unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip, int is_local,
   if (ret == 0)
     {
       unw_dyn_info_t *di = pi.unwind_info;
+
+      if (offp)
+	*offp = ip - pi.start_ip;
 
       switch (di->format)
 	{
@@ -93,7 +96,5 @@ unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip, int is_local,
        look up a procedure name anyhow.  */
     return -UNW_ENOINFO;
 
-  /* XXX implement me: look up ELF executable covering IP, then check
-     dynamic and regular symbol tables for a good name.  */
-  return -UNW_ENOINFO;
+  return tdep_get_proc_name (ip, buf, buf_len, offp);
 }
