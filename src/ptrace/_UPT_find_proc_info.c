@@ -151,10 +151,21 @@ HIDDEN unw_dyn_info_t *
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff)
 {
+  /* fix me */
   return NULL;
 }
 
-#endif /* UNW_TARGET_X86 */
+#elif UNW_TARGET_X86_64
+
+HIDDEN unw_dyn_info_t *
+_UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
+			 char *path, unw_word_t segbase, unw_word_t mapoff)
+{
+  /* fix me */
+  return NULL;
+}
+
+#endif /* UNW_TARGET_X86_64 */
 
 static unw_dyn_info_t *
 get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
