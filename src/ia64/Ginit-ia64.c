@@ -157,13 +157,13 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 {
   if (write)
     {
-      Debug (16, "mem[%lx] <- %lx\n", addr, *val);
+      Debug (12, "mem[%lx] <- %lx\n", addr, *val);
       *(unw_word_t *) addr = *val;
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      Debug (16, "mem[%lx] -> %lx\n", addr, *val);
+      Debug (12, "mem[%lx] -> %lx\n", addr, *val);
     }
   return 0;
 }
