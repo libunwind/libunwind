@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -33,3 +33,6 @@ _Unwind_DeleteException (struct _Unwind_Exception *exception_object)
   if (cleanup)
     (*cleanup) (_URC_FOREIGN_EXCEPTION_CAUGHT, exception_object);
 }
+
+void __libunwind_Unwind_DeleteException (struct _Unwind_Exception *)
+     ALIAS (_Unwind_DeleteException);

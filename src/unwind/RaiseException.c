@@ -97,3 +97,7 @@ _Unwind_RaiseException (struct _Unwind_Exception *exception_object)
 
   return _Unwind_Phase2 (exception_object, &context);
 }
+
+_Unwind_Reason_Code
+__libunwind_Unwind_RaiseException (struct _Unwind_Exception *)
+     ALIAS (_Unwind_RaiseException);

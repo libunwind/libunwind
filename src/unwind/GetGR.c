@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -38,3 +38,6 @@ _Unwind_GetGR (struct _Unwind_Context *context, int index)
   unw_get_reg (&context->cursor, index, &val);
   return val;
 }
+
+unsigned long __libunwind_Unwind_GetGR (struct _Unwind_Context *, int)
+     ALIAS (_Unwind_GetGR);

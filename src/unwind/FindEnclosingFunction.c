@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -36,3 +36,6 @@ _Unwind_FindEnclosingFunction (void *ip)
 
   return (void *) pi.start_ip;
 }
+
+void *__libunwind_Unwind_FindEnclosingFunction (void *)
+     ALIAS (_Unwind_FindEnclosingFunction);

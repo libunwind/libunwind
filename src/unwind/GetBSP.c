@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -37,3 +37,6 @@ _Unwind_GetBSP (struct _Unwind_Context *context)
   return 0;
 #endif
 }
+
+unsigned long __libunwind_Unwind_GetBSP (struct _Unwind_Context *)
+     ALIAS (_Unwind_GetBSP);

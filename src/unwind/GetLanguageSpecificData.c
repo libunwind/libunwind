@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -34,3 +34,7 @@ _Unwind_GetLanguageSpecificData (struct _Unwind_Context *context)
   unw_get_proc_info (&context->cursor, &pi);
   return pi.lsda;
 }
+
+unsigned long
+__libunwind_Unwind_GetLanguageSpecificData (struct _Unwind_Context *)
+     ALIAS (_Unwind_GetLanguageSpecificData);

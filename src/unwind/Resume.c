@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -37,3 +37,6 @@ _Unwind_Resume (struct _Unwind_Exception *exception_object)
   _Unwind_Phase2 (exception_object, &context);
   abort ();
 }
+
+void __libunwind_Unwind_Resume (struct _Unwind_Exception *)
+     ALIAS (_Unwind_Resume);

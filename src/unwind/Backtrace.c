@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -51,3 +51,6 @@ _Unwind_Backtrace (_Unwind_Trace_Fn trace, void *trace_parameter)
 	return _URC_FATAL_PHASE1_ERROR;
     }
 }
+
+_Unwind_Reason_Code __libunwind_Unwind_Backtrace (_Unwind_Trace_Fn, void *)
+     ALIAS (_Unwind_Backtrace);
