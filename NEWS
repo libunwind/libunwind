@@ -1,5 +1,14 @@
 -*-Mode: outline-*-
 
+* News for v0.98.1:
+
+** Fixed a bug which caused "make install" to install libunwind-common.h.in
+   instead of libunwind-common.h.
+** Convert tests/bt into a full-blown test-case.  It's designed to
+   trigger a (rarely-encountered) bug in the GNU assembler on ia64.
+   The assembler has been fixed and once the libraries (libc etc)
+   have been rebuilt, this test will pass.
+
 * News for v0.98:
 
 ** Update libunwind to be compliant with the updated/expanded
