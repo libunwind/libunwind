@@ -100,6 +100,9 @@ struct unw_addr_space
 #endif
     unw_word_t dyn_generation;
     unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
+#ifndef UNW_REMOTE_ONLY
+    int shared_object_removals;
+#endif
 
     struct ia64_script_cache global_cache;
    };
