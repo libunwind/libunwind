@@ -29,6 +29,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdint.h>
 #include <ucontext.h>
 
+#ifdef ia64
+  /* This works around a bug in Intel's ECC v7.0 which defines "ia64"
+     as "1".  */
+# undef ia64
+#endif
+
 #define UNW_TARGET	ia64
 #define UNW_TARGET_IA64	1
 
@@ -145,7 +151,8 @@ extern int _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
    list-address is returned.  In all other cases, 0 is returned.  */
 extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t as,
 					void *table, size_t table_size,
-					unw_word_t segbase, void *arg);
+					unw_word_t segbase, unw_word_t gp,
+					void *arg);
 
 /* This is a helper routine to obtain the kernel-unwind info.  It is
    signal-safe.  */
