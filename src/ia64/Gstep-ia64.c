@@ -218,7 +218,7 @@ check_rbs_switch (struct cursor *c)
 static inline int
 update_frame_state (struct cursor *c)
 {
-  unw_word_t prev_ip, prev_sp, prev_bsp, ip, pr, num_regs;
+  unw_word_t prev_ip, prev_sp, prev_bsp, ip, num_regs;
   int ret;
 
   prev_ip = c->ip;
@@ -305,7 +305,6 @@ update_frame_state (struct cursor *c)
 
   c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
 
-  pr = c->pr;
   c->sp = c->psp;
   c->abi_marker = 0;
 
