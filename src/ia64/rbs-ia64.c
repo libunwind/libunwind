@@ -44,37 +44,52 @@ rbs_record_switch (struct cursor *c,
 		   unw_word_t saved_bsp, unw_word_t saved_bspstore,
 		   unw_word_t saved_rnat_loc)
 {
-  unw_word_t ndirty, prev, last = c->rbs_wridx;
+  unw_word_t bsp, i, j, lo, ndirty, nregs, right_edge = c->rbs_right_edge;
 
-  debug (10, "%s: ", __FUNCTION__);
+  debug (10, "%s: (left=%u, curr=%u, right=%u)\n\t", __FUNCTION__,
+	 c->rbs_left_edge, c->rbs_curr, c->rbs_right_edge);
 
-  ndirty = ia64_rse_num_regs (saved_bspstore, saved_bsp);
+  bsp = c->bsp;
 
-  if (ndirty == 0)
-    /* The last-recorded rbs-area is empty.  No point in tracking it... */
-    prev = last;
-  else
+  /* If other stacks are already pending, we need to convert "bsp" to
+     equivalent address on the final stack.  The conversion is easy
+     because we know that the low end of a stack corresponds to the
+     high end of the next stack. */
+  for (i = c->rbs_curr; i != right_edge; i = (i + 1) % NELEMS (c->rbs_area))
     {
-      c->rbs_area[last].size = (c->rbs_area[last].end
-				- ia64_rse_skip_regs (c->bsp, -ndirty));
-      debug (10, "\n\tinner=[0x%lx-0x%lx),\n\t",
-	     (long) (c->rbs_area[last].end - c->rbs_area[last].size),
-	     (long) c->rbs_area[last].end);
-
-      last = ((last + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area));
-
-      ++c->rbs_nvalid;
-      if (c->rbs_nvalid > NELEMS (c->rbs_area))
-	c->rbs_nvalid = NELEMS (c->rbs_area);
-
-      assert (last != c->rbs_curr);
+      j = (i + 1) % NELEMS (c->rbs_area);
+      nregs = ia64_rse_num_regs (c->rbs_area[i].end - c->rbs_area[i].size, bsp);
+      bsp = ia64_rse_skip_regs (c->rbs_area[j].end, nregs);
     }
-  c->rbs_area[last].end = saved_bspstore;
-  c->rbs_area[last].size = ~(unw_word_t) 0;	/* initial guess... */
-  c->rbs_area[last].rnat_loc = saved_rnat_loc;
 
-  debug (10, "outer=[??????????????????-0x%lx), rnat @ 0x%lx\n",
-	 (long) c->rbs_area[last].end, (long) c->rbs_area[last].rnat_loc);
+  /* Calculate address "lo" at which the backing store starts:  */
+  ndirty = ia64_rse_num_regs (saved_bspstore, saved_bsp);
+  lo = ia64_rse_skip_regs (bsp, -ndirty);
+
+  c->rbs_area[right_edge].size = (c->rbs_area[right_edge].end - lo);
+
+  /* If the previously-recorded rbs-area is empty we don't need to
+     track it and we can simply overwrite it... */
+  if (c->rbs_area[right_edge].size)
+    {
+      debug (10, "inner=[0x%lx-0x%lx)\n\t",
+	     (long) (c->rbs_area[right_edge].end - c->rbs_area[right_edge].size),
+	     (long) c->rbs_area[right_edge].end);
+
+      right_edge = (right_edge + 1) % NELEMS (c->rbs_area);
+      c->rbs_right_edge = right_edge;
+
+      assert (right_edge != c->rbs_curr);
+
+      if (right_edge == c->rbs_left_edge)
+	c->rbs_left_edge = (right_edge + 1) % NELEMS (c->rbs_area);
+    }
+  c->rbs_area[right_edge].end = saved_bspstore;
+  c->rbs_area[right_edge].size = ~(unw_word_t) 0;	/* initial guess... */
+  c->rbs_area[right_edge].rnat_loc = saved_rnat_loc;
+
+  debug (10, "outer=[?????????????????\?-0x%lx), rnat@0x%lx\n",
+	 (long) c->rbs_area[right_edge].end, (long) c->rbs_area[right_edge].rnat_loc);
   return 0;
 }
 
@@ -83,8 +98,9 @@ rbs_underflow (struct cursor *c)
 {
   size_t num_regs;
 
-  while (c->rbs_area[c->rbs_curr].end - c->bsp
-	 > c->rbs_area[c->rbs_curr].size)
+  assert (c->rbs_area[c->rbs_curr].end - c->bsp > c->rbs_area[c->rbs_curr].size);
+
+  while (1)
     {
       unw_word_t old_base = (c->rbs_area[c->rbs_curr].end
 			     - c->rbs_area[c->rbs_curr].size);
@@ -92,9 +108,19 @@ rbs_underflow (struct cursor *c)
       /* # of register we were short on old rbs-area: */
       num_regs = ia64_rse_num_regs (c->bsp, old_base);
 
-      c->rbs_curr = ((c->rbs_curr + NELEMS (c->rbs_area) - 1)
-		     % NELEMS (c->rbs_area));
+      c->rbs_curr = (c->rbs_curr + 1) % NELEMS (c->rbs_area);
       c->bsp = ia64_rse_skip_regs (c->rbs_area[c->rbs_curr].end, -num_regs);
+
+      if (c->rbs_area[c->rbs_curr].end - c->bsp <= c->rbs_area[c->rbs_curr].size)
+	{
+	  debug (10, "%s: [0x%016lx-0x%016lx), bsp=0x%lx\n",
+		 __FUNCTION__, (long) (c->rbs_area[c->rbs_curr].end
+				       - c->rbs_area[c->rbs_curr].size),
+		 (long) c->rbs_area[c->rbs_curr].end, c->bsp);
+	  return;
+	}
+
+      assert (c->rbs_curr != c->rbs_right_edge);
     }
 }
 
@@ -102,12 +128,10 @@ HIDDEN int
 rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 		  unw_word_t *locp, unw_word_t *rnat_locp)
 {
-  unw_word_t curr, nregs, bsp = c->bsp;
-  int i;
+  unw_word_t nregs, bsp = c->bsp, curr = c->rbs_curr, left_edge = c->rbs_left_edge;
+  int reg = 32 + regs_to_skip;
 
-  curr = c->rbs_curr;
-
-  for (i = 0; i < c->rbs_nvalid; ++i)
+  while (1)
     {
       nregs = ia64_rse_num_regs (bsp, c->rbs_area[curr].end);
 
@@ -124,12 +148,15 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 	  return 0;
 	}
 
+      if (curr == left_edge)
+	{
+	  debug (1, "%s: could not find register r%d!\n", __FUNCTION__, reg);
+	  return -UNW_EBADREG;
+	}
+
       regs_to_skip -= nregs;
 
-      curr = (curr + 1) % NELEMS (c->rbs_area);
+      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
       bsp = c->rbs_area[curr].end - c->rbs_area[curr].size;
     }
-  debug (1, "%s: could not find register r%d!\n",
-	 __FUNCTION__, 32 + regs_to_skip);
-  return -UNW_EINVAL;
 }
