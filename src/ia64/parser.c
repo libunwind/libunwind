@@ -725,9 +725,9 @@ get_proc_info (struct ia64_cursor *c)
   uint64_t hdr;
   int ret;
 
-  /* search the kernels and the modules' unwind tables for IP: */
+  /* search the unwind tables for IP: */
 
-  for (table = unw.tables; table; table = table->next)
+  for (table = c->as->tables; table; table = table->next)
     if (ip >= table->info.start && ip < table->info.end)
       break;
 
@@ -748,8 +748,8 @@ get_proc_info (struct ia64_cursor *c)
 	}
       table->info = info;
       /* XXX LOCK { */
-      table->next = unw.tables;
-      unw.tables = table;
+      table->next = c->as->tables;
+      c->as->tables = table;
       /* XXX LOCK } */
     }
 
@@ -915,15 +915,15 @@ ia64_free_state_record (struct ia64_state_record *sr)
 int
 ia64_get_proc_info (struct ia64_cursor *c)
 {
-#ifdef IA64_UNW_SCRIPT_CACHE
-  struct ia64_script *script = ia64_script_lookup (c);
-
-  if (script)
+  if (c->as->caching_policy != UNW_CACHE_NONE)
     {
-      c->pi = script->pi;
-      return 0;
-    }
-#endif
+      struct ia64_script *script = ia64_script_lookup (c);
 
+      if (script)
+	{
+	  c->pi = script->pi;
+	  return 0;
+	}
+    }
   return get_proc_info (c);
 }
