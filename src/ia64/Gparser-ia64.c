@@ -1075,15 +1075,9 @@ ia64_free_state_record (struct ia64_state_record *sr)
 HIDDEN int
 ia64_make_proc_info (struct cursor *c)
 {
-  if (c->as->caching_policy != UNW_CACHE_NONE)
-    {
-      struct ia64_script *script = ia64_script_lookup (c);
-
-      if (script)
-	{
-	  c->pi = script->pi;
-	  return 0;
-	}
-    }
-  return get_proc_info (c, c->ip, 0);
+  if (c->as->caching_policy == UNW_CACHE_NONE
+      || ia64_get_cached_proc_info (c) < 0)
+    /* Lookup it up the slow way... */
+    return get_proc_info (c, c->ip, 0);
+  return 0;
 }
