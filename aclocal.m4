@@ -32,6 +32,12 @@ else
   libc_cv_gcc___thread=no
 fi])
 
+AC_DEFUN([CHECK_ATOMIC_OPS],
+[dnl Check whether the system has the atomic_ops package installed.
+  AC_CHECK_HEADERS(atomic_ops.h)
+  AC_CHECK_LIB(atomic_ops, main)
+])
+
 # Do all the work for Automake.                            -*- Autoconf -*-
 
 # This macro actually does too much some checks are only needed if

@@ -3,6 +3,9 @@
 /* Define to 1 if you have the <asm/ptrace_offsets.h> header file. */
 #undef HAVE_ASM_PTRACE_OFFSETS_H
 
+/* Define to 1 if you have the <atomic_ops.h> header file. */
+#undef HAVE_ATOMIC_OPS_H
+
 /* Define to 1 if you have the <dlfcn.h> header file. */
 #undef HAVE_DLFCN_H
 
@@ -26,6 +29,9 @@
 
 /* Define to 1 if you have the <inttypes.h> header file. */
 #undef HAVE_INTTYPES_H
+
+/* Define to 1 if you have the `atomic_ops' library (-latomic_ops). */
+#undef HAVE_LIBATOMIC_OPS
 
 /* Define to 1 if you have the `uca' library (-luca). */
 #undef HAVE_LIBUCA
