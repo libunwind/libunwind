@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Fri Mar  7 14:31:39 PST 2003
+.\" Manual page created with latex2man on Wed Mar 12 11:39:23 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_RESUME" "3" "07 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_RESUME" "3" "12 March 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -23,7 +23,7 @@ unw_resume \-\- resume execution in a particular stack frame
 .br
 .PP
 int
-unw_resume(unw_cursor_t *cursor);
+unw_resume(unw_cursor_t *cp);
 .br
 .PP
 .SH DESCRIPTION
@@ -31,7 +31,7 @@ unw_resume(unw_cursor_t *cursor);
 .PP
 The unw_resume()
 routine resumes execution at the stack frame 
-identified by cursor\&.
+identified by cp\&.
 The behavior of this routine differs 
 slightly for local and remote unwinding. 
 .PP
@@ -43,12 +43,13 @@ does not return in this case. Restoring the
 machine state normally involves restoring the ``preserved\&'' 
 (callee\-saved) registers. However, if execution in any of the stack 
 frames younger (more deeply nested) than the one identified by 
-cursor
+cp
 was interrupted by a signal, then unw_resume()
-will restore all registers as well as the signal mask. Attempting to 
-call unw_resume()
-on a cursor which identifies the stack frame 
-of another thread results in undefined behavior (e.g., the program may 
+will 
+restore all registers as well as the signal mask. Attempting to call 
+unw_resume()
+on a cursor which identifies the stack frame of 
+another thread results in undefined behavior (e.g., the program may 
 crash). 
 .PP
 For remote unwinding, unw_resume()
@@ -118,12 +119,12 @@ accessible.
 .TP
 UNW_EINVALIDIP
  The instruction pointer identified by 
-cursor
+cp
 is not valid. 
 .TP
 UNW_BADFRAME
  The stack frame identified by 
-cursor
+cp
 is not valid. 
 .PP
 .SH SEE ALSO

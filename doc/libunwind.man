@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Fri Mar  7 14:44:48 PST 2003
+.\" Manual page created with latex2man on Wed Mar 12 14:41:32 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND" "3" "07 March 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND" "3" "12 March 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -84,7 +84,7 @@ unw_set_caching_policy(unw_addr_space_t,
 unw_caching_policy_t);
 .br
 .PP
-const char *unw_regname(int);
+const char *unw_regname(unw_regnum_t);
 .br
 int
 unw_get_proc_info(unw_cursor_t *,
