@@ -984,39 +984,39 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
 #if UNW_DEBUG
   if (unw.debug_level > 0)
     {
-      printf ("unwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
-	      (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
+      dprintf ("unwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
+	       (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
       for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
 	{
 	  if (r->where != IA64_WHERE_NONE || r->when != IA64_WHEN_NEVER)
 	    {
-	      printf ("  %s <- ", unw.preg_name[r - sr->curr.reg]);
+	      dprintf ("  %s <- ", unw.preg_name[r - sr->curr.reg]);
 	      switch (r->where)
 		{
 		case IA64_WHERE_GR:
-		  printf ("r%lu", (long) r->val);
+		  dprintf ("r%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_FR:
-		  printf ("f%lu", (long) r->val);
+		  dprintf ("f%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_BR:
-		  printf ("b%lu", (long) r->val);
+		  dprintf ("b%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_SPREL:
-		  printf ("[sp+0x%lx]", (long) r->val);
+		  dprintf ("[sp+0x%lx]", (long) r->val);
 		  break;
 		case IA64_WHERE_PSPREL:
-		  printf ("[psp+0x%lx]", (long) r->val);
+		  dprintf ("[psp+0x%lx]", (long) r->val);
 		  break;
 		case IA64_WHERE_NONE:
-		  printf ("%s+0x%lx",
-			  unw.preg_name[r - sr->curr.reg], (long) r->val);
+		  dprintf ("%s+0x%lx",
+			   unw.preg_name[r - sr->curr.reg], (long) r->val);
 		  break;
 		default:
-		  printf ("BADWHERE(%d)", r->where);
+		  dprintf ("BADWHERE(%d)", r->where);
 		  break;
 		}
-	      printf ("\t\t%d\n", r->when);
+	      dprintf ("\t\t%d\n", r->when);
 	    }
 	}
     }
