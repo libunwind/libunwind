@@ -40,10 +40,6 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 
   memset (as, 0, sizeof (*as));
 
-  /* Initialize the cache while we're certain that nobody is using
-     this address space yet.  */
-  ia64_script_cache_init (&as->global_cache);
-
   as->acc = *a;
 
   /*
