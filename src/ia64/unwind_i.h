@@ -100,16 +100,6 @@ enum ia64_pregnum
 
 #define IA64_FLAG_SIGTRAMP	(1 << 0)	/* signal trampoline? */
 #define IA64_FLAG_BIG_ENDIAN	(1 << 1)	/* big-endian? */
-#define IA64_FLAG_HAS_HANDLER	(1 << 2)	/* has personality routine? */
-
-struct ia64_proc_info
-  {
-    unsigned int flags;		/* see IA64_FLAG_* above */
-    unw_word_t gp;		/* global pointer value */
-    unw_word_t proc_start;	/* start address of procedure */
-    uint64_t *pers_addr;	/* address of personality routine pointer */
-    uint8_t *desc;		/* encoded unwind descriptors (or NULL) */
-  };
 
 struct ia64_cursor
   {
@@ -128,7 +118,7 @@ struct ia64_cursor
     unw_word_t cfm_loc;		/* cfm save location (or NULL) */
     unw_word_t rbs_top;		/* address of end of register backing store */
     unw_word_t top_rnat_loc;	/* location of final (topmost) RNaT word */
-    struct ia64_proc_info pi;	/* info about current procedure */
+    unw_proc_info_t pi;		/* info about current procedure */
 
     /* preserved state: */
     unw_word_t bsp_loc;		/* previous bsp save location */
@@ -157,14 +147,10 @@ struct ia64_cursor
 
 struct unw_addr_space
   {
-#ifndef UNW_LOCAL_ONLY
     struct unw_accessors acc;
-#endif
     unw_caching_policy_t caching_policy;
     u_int32_t cache_generation;
 
-    /* List of unwind tables (one per load-module).  */
-    struct ia64_unwind_table *tables;
     struct ia64_script_cache global_cache;
    };
 
@@ -193,10 +179,9 @@ extern void *_Uia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
 #define IA64_FPREG_LOC(c,r)						   \
 	((unw_word_t) _Uia64_uc_addr((c)->as_arg, (r)) | IA64_LOC_TYPE_FP)
 
-# define ia64_acquire_unwind_info(c,ip,i)				\
-	_Uia64_glibc_acquire_unwind_info((ip), (i), (c)->as_arg)
-# define ia64_release_unwind_info(c,ip,i)				\
-	_Uia64_glibc_release_unwind_info((i), (c)->as_arg)
+# define ia64_find_proc_info(c,ip)					\
+	_Uia64_find_proc_info(unw_local_addr_space, (ip), &(c)->pi,	\
+			      (c)->as_arg)
 
 /* Note: the register accessors (ia64_{get,set}{,fp}()) must check for
    NULL locations because _Uia64_uc_addr() returns NULL for unsaved
@@ -245,10 +230,8 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
 #define IA64_FPREG_LOC(c,r)	IA64_LOC((r), (IA64_LOC_TYPE_REG	\
 					       | IA64_LOC_TYPE_FP))
 
-# define ia64_acquire_unwind_info(c,ip,i) \
-	(*(c)->as->acc.acquire_unwind_info)((ip), (i), (c)->as_arg)
-# define ia64_release_unwind_info(c,ip,i) \
-	(*(c)->as->acc.release_unwind_info)((i), (c)->as->as_arg)
+# define ia64_find_proc_info(c,ip)					     \
+	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (c)->as_arg)
 
 static inline int
 ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
@@ -256,14 +239,17 @@ ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
   int ret;
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (IA64_GET_LOC (loc), val, 0, c->as_arg);
+    return (*c->as->acc.access_fpreg) (c->as, IA64_GET_LOC (loc),
+				       val, 0, c->as_arg);
 
   loc = IA64_MASK_LOC_TYPE(loc);
-  ret = (*c->as->acc.access_mem) (loc + 0, &val->raw.bits[0], 0, c->as_arg);
+  ret = (*c->as->acc.access_mem) (c->as, loc + 0, &val->raw.bits[0], 0,
+				  c->as_arg);
   if (ret < 0)
     return ret;
 
-  return (*c->as->acc.access_mem) (loc + 8, &val->raw.bits[1], 0, c->as_arg);
+  return (*c->as->acc.access_mem) (c->as, loc + 8, &val->raw.bits[1], 0,
+				   c->as_arg);
 }
 
 static inline int
@@ -272,14 +258,17 @@ ia64_putfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t val)
   int ret;
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (IA64_GET_LOC (loc), &val, 1, c->as_arg);
+    return (*c->as->acc.access_fpreg) (c->as, IA64_GET_LOC (loc), &val, 1,
+				       c->as_arg);
 
   loc = IA64_MASK_LOC_TYPE(loc);
-  ret = (*c->as->acc.access_mem) (loc + 0, &val.raw.bits[0], 1, c->as_arg);
+  ret = (*c->as->acc.access_mem) (c->as, loc + 0, &val.raw.bits[0], 1,
+				  c->as_arg);
   if (ret < 0)
     return ret;
 
-  return (*c->as->acc.access_mem) (loc + 8, &val.raw.bits[1], 1, c->as_arg);
+  return (*c->as->acc.access_mem) (c->as, loc + 8, &val.raw.bits[1], 1,
+				   c->as_arg);
 }
 
 /* Get the 64 data bits from location LOC.  If bit 0 is cleared, LOC
@@ -307,9 +296,10 @@ ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
     }
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg)(IA64_GET_LOC (loc), val, 0, c->as_arg);
+    return (*c->as->acc.access_reg)(c->as, IA64_GET_LOC (loc), val, 0,
+				    c->as_arg);
   else
-    return (*c->as->acc.access_mem)(loc, val, 0, c->as_arg);
+    return (*c->as->acc.access_mem)(c->as, loc, val, 0, c->as_arg);
 }
 
 static inline int
@@ -328,9 +318,10 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
     }
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg)(IA64_GET_LOC (loc), &val, 1, c->as_arg);
+    return (*c->as->acc.access_reg)(c->as, IA64_GET_LOC (loc), &val, 1,
+				    c->as_arg);
   else
-    return (*c->as->acc.access_mem)(loc, &val, 1, c->as_arg);
+    return (*c->as->acc.access_mem)(c->as, loc, &val, 1, c->as_arg);
 }
 
 #endif /* !UNW_LOCAL_ONLY */
@@ -342,19 +333,6 @@ struct ia64_unwind_block
 
     /* Personality routine and language-specific data follow behind
        descriptors.  */
-  };
-
-struct ia64_unwind_table_entry
-  {
-    unw_word_t start_offset;
-    unw_word_t end_offset;
-    unw_word_t info_offset;
-  };
-
-struct ia64_unwind_table
-  {
-    struct ia64_unwind_table *next;	/* must be first member! */
-    unw_ia64_table_t info;
   };
 
 enum ia64_where
@@ -441,7 +419,6 @@ struct ia64_global_unwind_state
     unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
     unw_fpreg_t nat_val_be, int_val_le, int_val_be;
 
-    struct mempool unwind_table_pool;
     struct mempool state_record_pool;
     struct mempool labeled_state_pool;
 
@@ -486,7 +463,7 @@ struct ia64_global_unwind_state
 
 /* Convenience macros: */
 #define unw				UNW_OBJ(data)
-#define ia64_get_proc_info		UNW_OBJ(get_proc_info)
+#define ia64_make_proc_info		UNW_OBJ(make_proc_info)
 #define ia64_create_state_record	UNW_OBJ(create_state_record)
 #define ia64_free_state_record		UNW_OBJ(free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(find_save_locs)
@@ -500,7 +477,7 @@ struct ia64_global_unwind_state
 
 extern struct ia64_global_unwind_state unw;
 
-extern int ia64_get_proc_info (struct ia64_cursor *c);
+extern int ia64_make_proc_info (struct ia64_cursor *c);
 extern int ia64_create_state_record (struct ia64_cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
@@ -516,11 +493,11 @@ extern unw_word_t ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg);
 extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
 				    long r17, long r18)
 	__attribute__ ((noreturn));
-extern int ia64_local_resume (unw_cursor_t *cursor, void *arg);
+extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
+			      void *arg);
 
-extern int _Uia64_glibc_acquire_unwind_info (unw_word_t ip, void *info,
-					     void *arg);
-extern int _Uia64_glibc_release_unwind_info (void *info, void *arg);
+extern int _Uia64_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+				  unw_proc_info_t *pi, void *arg);
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
