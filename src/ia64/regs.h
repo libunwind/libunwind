@@ -7,16 +7,11 @@ static inline int
 rotate_gr (struct cursor *c, int reg)
 {
   unsigned int rrb_gr, sor, sof;
-  unw_word_t cfm;
-  int preg, ret;
+  int preg;
 
-  ret = ia64_get (c, c->cfm_loc, &cfm);
-  if (ret < 0)
-    return ret;
-
-  sof = (cfm & 0x7f);
-  sor = 8 * ((cfm >> 14) & 0xf);
-  rrb_gr = (cfm >> 18) & 0x7f;
+  sof = (c->cfm & 0x7f);
+  sor = 8 * ((c->cfm >> 14) & 0xf);
+  rrb_gr = (c->cfm >> 18) & 0x7f;
 
   if ((unsigned) (reg - 32) > sof)
     return -1;		/* not a valid stacked register number */
@@ -28,8 +23,8 @@ rotate_gr (struct cursor *c, int reg)
       if (preg > 32 + sor)
 	preg -= sor;		/* wrap around */
     }
-  debug (100, "%s: sor=%u rrb.gr=%u, r%d -> r%d\n", __FUNCTION__, sor, rrb_gr,
-	 reg, preg);
+  debug (100, "%s: sor=%u rrb.gr=%u, r%d -> r%d\n",
+	 __FUNCTION__, sor, rrb_gr, reg, preg);
   return preg;
 }
 
@@ -40,14 +35,9 @@ static inline int
 rotate_fr (struct cursor *c, int reg)
 {
   unsigned int rrb_fr;
-  unw_word_t cfm;
-  int preg, ret;
+  int preg;
 
-  ret = ia64_get (c, c->cfm_loc, &cfm);
-  if (ret < 0)
-    return ret;
-
-  rrb_fr = (cfm >> 25) & 0x7f;
+  rrb_fr = (c->cfm >> 25) & 0x7f;
   if (reg < 32)
     preg = reg;		/* register not part of the rotating partition */
   else
@@ -65,14 +55,9 @@ rotate_fr (struct cursor *c, int reg)
 static inline unw_word_t
 pr_ltop (struct cursor *c, unw_word_t pr)
 {
-  unw_word_t rrb_pr, mask, rot, cfm;
-  int ret;
+  unw_word_t rrb_pr, mask, rot;
 
-  ret = ia64_get (c, c->cfm_loc, &cfm);
-  if (ret < 0)
-    return ret;
-
-  rrb_pr = (cfm >> 32) & 0x3f;
+  rrb_pr = (c->cfm >> 32) & 0x3f;
   rot = pr >> 16;
   mask = ((unw_word_t) 1 << rrb_pr) - 1;
   rot = ((pr & mask) << (48 - rrb_pr)) | ((pr >> rrb_pr) & mask);
@@ -84,14 +69,9 @@ pr_ltop (struct cursor *c, unw_word_t pr)
 static inline unw_word_t
 pr_ptol (struct cursor *c, unw_word_t pr)
 {
-  unw_word_t rrb_pr, mask, rot, cfm;
-  int ret;
+  unw_word_t rrb_pr, mask, rot;
 
-  ret = ia64_get (c, c->cfm_loc, &cfm);
-  if (ret < 0)
-    return ret;
-
-  rrb_pr = 48 - ((cfm >> 32) & 0x3f);
+  rrb_pr = 48 - ((c->cfm >> 32) & 0x3f);
   rot = pr >> 16;
   mask = ((unw_word_t) 1 << rrb_pr) - 1;
   rot = ((pr & mask) << (48 - rrb_pr)) | ((pr >> rrb_pr) & mask);
