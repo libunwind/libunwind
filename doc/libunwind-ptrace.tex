@@ -13,7 +13,7 @@
 \File{\#include $<$libunwind-ptrace.h$>$}\\
 
 \noindent
-\Type{unw\_accessors\_t} \Var{_UPT\_accessors};\\
+\Type{unw\_accessors\_t} \Var{\_UPT\_accessors};\\
 
 \Type{void~*}\Func{\_UPT\_create}(\Type{pid\_t});\\
 \noindent
@@ -32,7 +32,7 @@
 \noindent
 \Type{int} \Func{\_UPT\_access\_fpreg}(\Type{unw\_addr\_space\_t}, \Type{unw\_regnum\_t}, \Type{unw\_fpreg\_t~*}, \Type{int}, \Type{void~*});\\
 \noindent
-\Type{int} \Func{\_UPT\_get\_proc\_name}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t}, \Type{char~*}, \Type{size\_t}, \Type{unw_word_t~*}, \Type{void~*});\\
+\Type{int} \Func{\_UPT\_get\_proc\_name}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t}, \Type{char~*}, \Type{size\_t}, \Type{unw\_word\_t~*}, \Type{void~*});\\
 \noindent
 \Type{int} \Func{\_UPT\_resume}(\Type{unw\_addr\_space\_t}, \Type{unw\_cursor\_t~*}, \Type{void~*});\\
 

@@ -23,7 +23,7 @@ The call-back routines are described in detail below.  The
 \Var{byteorder} can be set to 0 to request the default byte-order of
 the unwind target.  To request a particular byte-order,
 \Var{byteorder} can be set to any constant defined by
-\File{$<$endian.h$>$}.  In particular, \Const{\_\_LITTLE_ENDIAN} would
+\File{$<$endian.h$>$}.  In particular, \Const{\_\_LITTLE\_ENDIAN} would
 request little-endian byte-order and \Const{\_\_BIG\_ENDIAN} would
 request big-endian byte-order.  Whether or not a particular byte-order
 is supported depends on the target platform.
@@ -194,7 +194,7 @@ execution in the target address space.  Argument \Var{cp} is the
 unwind-cursor that identifies the stack-frame in which execution
 should resume.  By the time \Prog{libunwind} invokes the \Func{resume}
 call-back, it has already established the desired machine- and
-memory-state via calls to the \Func{access_reg}(),
+memory-state via calls to the \Func{access\_reg}(),
 \Func{access\_fpreg}, and \Func{access\_mem}() call-backs.  Thus, all
 the call-back needs to do is perform whatever action is needed to
 actually resume execution.
@@ -216,9 +216,9 @@ obtain the procedure-name of a static (not dynamically generated)
 procedure.  Argument \Var{addr} is an instruction-address within the
 procedure whose name is to be obtained.  The \Var{bufp} argument is a
 pointer to a character-buffer used to return the procedure name.  The
-size of this buffer is specified in argument \Var{buf_len}.  The
+size of this buffer is specified in argument \Var{buf\_len}.  The
 returned name must be terminated by a NUL character.  If the
-procedure's name is longer than \Var{buf_len} bytes, it must be
+procedure's name is longer than \Var{buf\_len} bytes, it must be
 truncated to \Var{buf\_len}\Prog{-1} bytes, with the last byte in the
 buffer set to the NUL character and -\Const{UNW\_ENOMEM} must be
 returned.  Argument \Var{offp} is a pointer to a word which is used to
@@ -244,8 +244,6 @@ address-space.  Otherwise, \Const{NULL} is returned.
 
 \Func{unw\_create\_addr\_space}() is thread-safe but \emph{not}
 safe to use from a signal handler.
-
-\end{Description}
 
 \section{See Also}
 
