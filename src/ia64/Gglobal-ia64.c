@@ -84,12 +84,12 @@ tdep_init (void)
     mempool_init (&unw.labeled_state_pool,
 		  sizeof (struct ia64_labeled_state), 0);
 
-    unw.r0 = 0;
-    unw.f0.raw.bits[0] = 0;
-    unw.f0.raw.bits[1] = 0;
+    unw.read_only.r0 = 0;
+    unw.read_only.f0.raw.bits[0] = 0;
+    unw.read_only.f0.raw.bits[1] = 0;
 
-    lep = (uint8_t *) &unw.f1_le + 16;
-    bep = (uint8_t *) &unw.f1_be;
+    lep = (uint8_t *) &unw.read_only.f1_le + 16;
+    bep = (uint8_t *) &unw.read_only.f1_be;
     for (i = 0; i < 16; ++i)
       {
 	*--lep = f1_bytes[i];
