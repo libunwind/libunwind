@@ -8535,8 +8535,9 @@ fi
 
 
 
+
 for ac_header in asm/ptrace_offsets.h endian.h execinfo.h ia64intrin.h \
-		 sys/uc_access.h unistd.h
+		 sys/uc_access.h unistd.h signal.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -8952,6 +8953,13 @@ _ACEOF
 fi
 
 
+CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
+if test x$enable_debug = xyes; then
+  CPPFLAGS="${CPPFLAGS} -DDEBUG"
+else
+  CPPFLAGS="${CPPFLAGS} -DNDEBUG"
+fi
+
 echo "$as_me:$LINENO: checking for sighandler_t" >&5
 echo $ECHO_N "checking for sighandler_t... $ECHO_C" >&6
 if test "${ac_cv_type_sighandler_t+set}" = set; then
@@ -8965,6 +8973,11 @@ cat confdefs.h >>conftest.$ac_ext
 cat >>conftest.$ac_ext <<_ACEOF
 /* end confdefs.h.  */
 $ac_includes_default
+#if HAVE_SIGNAL_H
+# include <signal.h>
+#endif
+
+
 int
 main ()
 {
@@ -9348,13 +9361,6 @@ _ACEOF
   fi
 else
   libc_cv_gcc___thread=no
-fi
-
-CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
-if test x$enable_debug = xyes; then
-  CPPFLAGS="${CPPFLAGS} -DDEBUG"
-else
-  CPPFLAGS="${CPPFLAGS} -DNDEBUG"
 fi
 
 if test x$GCC = xyes; then
