@@ -30,14 +30,12 @@ flush_cache:
         br.ret.sptk.many rp
 	.endp flush_cache
 
-#elif defined(__i386__)
+#elif defined(__i386__) || defined (__x86_64__)
 
 	.globl flush_cache
 flush_cache:
 	ret
 
-#elif
-
+#else
 # error Need flush_cache code for this architecture.
-
 #endif
