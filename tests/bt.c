@@ -41,6 +41,7 @@ do_backtrace (void)
   unw_cursor_t cursor;
   unw_word_t ip, sp;
   unw_context_t uc;
+  int ret;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -53,17 +54,22 @@ do_backtrace (void)
       printf ("ip=%016lx sp=%016lx\n", ip, sp);
 
       {
-	unw_word_t proc_start, handler, lsda, bsp;
+	unw_proc_info_t pi;
+	unw_word_t bsp;
 
-	unw_get_reg (&cursor, UNW_REG_PROC_START, &proc_start);
-	unw_get_reg (&cursor, UNW_REG_HANDLER, &handler);
-	unw_get_reg (&cursor, UNW_REG_LSDA, &lsda);
+	unw_get_proc_info (&cursor, &pi);
 	unw_get_reg (&cursor, UNW_IA64_BSP, &bsp);
 	printf ("\tproc_start=%016lx handler=%lx lsda=%lx bsp=%lx\n",
-		proc_start, handler, lsda, bsp);
+		pi.start_ip, pi.end_ip, pi.lsda, bsp);
       }
+      ret = unw_step (&cursor);
+      if (ret < 0)
+	{
+	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
+	  printf ("FAILURE: unw_step() returned %d for ip=%lx\n", ret, ip);
+	}
     }
-  while (unw_step (&cursor) > 0);
+  while (ret > 0);
 }
 
 static void
