@@ -744,6 +744,48 @@ lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
   return sr->curr.reg + preg;
 }
 
+/* An alias directive inside a region of length RLEN is interpreted to
+   mean that the region behaves exactly like the first RLEN
+   instructions at the aliased IP.  RLEN=0 implies that the current
+   state matches exactly that of the aliased IP.  */
+
+static int
+desc_alias (unw_dyn_op_t *op, struct cursor *c, struct ia64_state_record *sr)
+{
+  struct ia64_state_record orig_sr = *sr;
+  int i, ret, when, rlen = sr->region_len;
+  unw_word_t new_ip;
+
+  when = MIN(sr->when_target, rlen - 1);
+  new_ip = op->val + ((when / 3) * 16 + (when % 3));
+
+  if ((ret = ia64_fetch_proc_info (c, new_ip, 1)) < 0)
+    return ret;
+
+  if ((ret = create_state_record_for (c, sr, new_ip)) < 0)
+    return ret;
+
+  sr->first_region = orig_sr.first_region;
+  sr->done = 0;
+  sr->any_spills |= orig_sr.any_spills;
+  sr->in_body = orig_sr.in_body;
+  sr->region_start = orig_sr.region_start;
+  sr->region_len = orig_sr.region_len;
+  if (sr->when_sp_restored != IA64_WHEN_NEVER)
+    sr->when_sp_restored = op->when + MIN (orig_sr.when_sp_restored, rlen - 1);
+  sr->epilogue_count = orig_sr.epilogue_count;
+  sr->when_target = orig_sr.when_target;
+
+  for (i = 0; i < IA64_NUM_PREGS; ++i)
+    if (sr->curr.reg[i].when != IA64_WHEN_NEVER)
+      sr->curr.reg[i].when = op->when + MIN (sr->curr.reg[i].when, rlen - 1);
+
+  ia64_free_state_record (sr);
+  sr->labeled_states = orig_sr.labeled_states;
+  sr->curr.next = orig_sr.curr.next;
+  return 0;
+}
+
 static inline int
 parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 {
@@ -751,10 +793,10 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
   unw_dyn_proc_info_t *proc = &di->u.pi;
   unw_dyn_region_info_t *r;
   struct ia64_reg_info *ri;
-  unw_word_t val, new_ip;
   enum ia64_where where;
-  unw_dyn_op_t *op;
   int32_t when, len;
+  unw_dyn_op_t *op;
+  unw_word_t val;
   int memory, ret;
   int8_t qp;
 
@@ -861,15 +903,8 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 	      break;
 
 	    case UNW_DYN_ALIAS:
-	      while (sr->curr.next)
-		pop (sr);
-	      new_ip = op->val + ((sr->when_target / 3) * 16
-				  + (sr->when_target % 3));
-	      ret = ia64_fetch_proc_info (c, new_ip, 1);
-	      if (ret < 0)
+	      if ((ret = desc_alias (op, c, sr)) < 0)
 		return ret;
-	      ia64_free_state_record (sr);
-	      return create_state_record_for (c, sr, new_ip);
 
 	    case UNW_DYN_STOP:
 	      goto end_of_ops;
