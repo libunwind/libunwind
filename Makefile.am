@@ -6,7 +6,8 @@ include_HEADERS_tdep = include/libunwind-ia32.h
 endif
 endif
 
-include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h
+include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
+	include/libunwind-dynamic.h
 
 if REMOTE_ONLY
   include_HEADERS = $(include_HEADERS_common)
@@ -16,4 +17,5 @@ endif
 
 SUBDIRS = src tests doc
 
-EXTRA_DIST = include/libunwind-ia64.h
+EXTRA_DIST = include/internal.h \
+	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/script.h
