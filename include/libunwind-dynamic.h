@@ -73,8 +73,9 @@ unw_dyn_operation_t;
 
 typedef enum
   {
-    UNW_INFO_FORMAT_DYNAMIC,	/* unw_dyn_proc_info_t */
-    UNW_INFO_FORMAT_TABLE	/* unw_dyn_table_t */
+    UNW_INFO_FORMAT_DYNAMIC,		/* unw_dyn_proc_info_t */
+    UNW_INFO_FORMAT_TABLE,		/* unw_dyn_table_t */
+    UNW_INFO_FORMAT_REMOTE_TABLE,	/* unw_dyn_remote_table_t */
   }
 unw_dyn_info_format_t;
 
@@ -116,6 +117,15 @@ typedef struct unw_dyn_table_info
   }
 unw_dyn_table_info_t;
 
+typedef struct unw_dyn_remote_table_info
+  {
+    unw_word_t name_ptr;	/* addr. of table name (e.g., library name) */
+    unw_word_t segbase;		/* segment base */
+    unw_word_t table_len;	/* must be a multiple of sizeof(unw_word_t)! */
+    unw_word_t table_data;
+  }
+unw_dyn_remote_table_info_t;
+
 typedef struct unw_dyn_info
   {
     /* doubly-linked list of dyn-info structures: */
@@ -130,6 +140,7 @@ typedef struct unw_dyn_info
       {
 	unw_dyn_proc_info_t pi;
 	unw_dyn_table_info_t ti;
+	unw_dyn_remote_table_info_t rti;
       }
     u;
   }
