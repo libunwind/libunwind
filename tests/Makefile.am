@@ -8,13 +8,13 @@ if REMOTE_ONLY
 else
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig
- TESTS_arch = ia64-test-rbs ia64-test-stack
+ TESTS_arch = ia64-test-stack ia64-test-rbs
 endif
  TESTS_cdep = test-dyn1 test-exc test-resume-sig test-setjmp test-ptrace
  noinst_PROGRAMS_cdep = bt test-init test-varargs
 endif
 
-TESTS = $(TESTS_cdep) $(TESTS_arch)
+TESTS = $(TESTS_arch) $(TESTS_cdep)
 
 check_PROGRAMS = $(TESTS)
 
