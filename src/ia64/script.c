@@ -71,7 +71,7 @@ get_script_cache (unw_addr_space_t as)
     cache = &ia64_per_thread_cache;
 #endif
 
-  if (as->cache_generation - cache->generation < 0x80000000)
+  if (as->cache_generation != cache->generation)
     flush_script_cache (as, cache);
 
   return cache;
