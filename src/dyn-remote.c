@@ -144,6 +144,7 @@ free_dyn_info (unw_dyn_info_t *di)
 	}
       break;
 
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
     default:
       break;
     }
@@ -177,6 +178,14 @@ intern_dyn_info (unw_addr_space_t as, unw_accessors_t *a,
 	  || (ret = fetchw (as, a, addr, &di->u.ti.table_len, arg)) < 0
 	  || (ret = intern_array (as, a, addr, di->u.ti.table_len,
 				  &di->u.ti.table_data, arg)) < 0)
+	goto out;
+      break;
+
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
+      if ((ret = fetchw (as, a, addr, &di->u.rti.name_ptr, arg)) < 0
+	  || (ret = fetchw (as, a, addr, &di->u.rti.segbase, arg)) < 0
+	  || (ret = fetchw (as, a, addr, &di->u.rti.table_len, arg)) < 0
+	  || (ret = fetchw (as, a, addr, &di->u.rti.table_data, arg)) < 0)
 	goto out;
       break;
 
