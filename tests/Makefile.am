@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST = run-ia64-test-dyn1
 
 noinst_PROGRAMS_common =
-check_PROGRAMS_common = Gtest-init Ltest-init test-proc-info
+check_PROGRAMS_common = Gtest-init Ltest-init test-proc-info test-flush-cache
 check_SCRIPTS_common =
 
 if REMOTE_ONLY
