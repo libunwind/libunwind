@@ -29,7 +29,7 @@ unw_resume (unw_cursor_t *cursor)
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
 
 #ifdef UNW_LOCAL_ONLY
-# error fix me.
+  return ia64_local_resume (cursor, c->uc);
 #else
   return (*c->acc.resume) (cursor, c->acc.arg);
 #endif
