@@ -21,29 +21,54 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
-#include "config.h"
-
 #include <assert.h>
-#include "unwind_i.h"
-#include "rse.h"
 
-/* The first three 64-bit words in a signal frame contain the signal
-   number, siginfo pointer, and sigcontext pointer passed to the
-   signal handler.  We use this to locate the sigcontext pointer.  */
-#define SIGFRAME_ARG2_OFF	0x10
+#include "offsets.h"
+#include "rse.h"
+#include "unwind_i.h"
 
 unw_word_t
-ia64_get_sigcontext_addr (struct ia64_cursor *c)
+ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg)
 {
-  unw_word_t addr;
+  unw_word_t loc;
 
-  if (!(c->pi.flags & IA64_FLAG_SIGTRAMP))
-    return 0;
+  if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+    {
+      if (ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &loc) < 0)
+	return 0;
 
-  if (ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &addr) < 0)
-    return 0;
+      switch (reg)
+	{
+	case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
+	case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
+	  loc += SIGCONTEXT_NAT_OFF;
+	  break;
 
-  return addr;
+	case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
+	case UNW_IA64_GR +  8 ... UNW_IA64_GR + 31:
+	  loc += SIGCONTEXT_GR_OFF + 8*reg;
+	  break;
+
+	case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
+	  loc += SIGCONTEXT_FR_OFF + 16*(reg - UNW_IA64_FR);
+	  break;
+
+	case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
+	  loc += SIGCONTEXT_FR_OFF + 16*(reg - UNW_IA64_FR);
+	  break;
+
+	case UNW_IA64_BR + 0: loc += SIGCONTEXT_BR_OFF + 0; break;
+	case UNW_IA64_BR + 7: loc += SIGCONTEXT_BR_OFF + 7*8; break;
+	case UNW_IA64_AR_RSC: loc += SIGCONTEXT_AR_RSC_OFF; break;
+	case UNW_IA64_AR_25:  loc += SIGCONTEXT_AR_25_OFF; break;
+	case UNW_IA64_AR_26:  loc += SIGCONTEXT_AR_26_OFF; break;
+	case UNW_IA64_AR_CCV: loc += SIGCONTEXT_AR_CCV; break;
+	}
+
+      return loc;
+    }
+  else
+    return IA64_REG_LOC (reg);
 }
 
 /* Apply rotation to a general register.  The number REG must be in
@@ -171,7 +196,7 @@ access_nat (struct ia64_cursor *c, unw_word_t loc, unw_word_t reg_loc,
 {
   unw_word_t nat_loc = -8, mask = 0, sc_addr;
   unw_fpreg_t tmp;
-  int ret;
+  int ret, reg;
 
   if (IA64_IS_FP_LOC (reg_loc))
     {
@@ -221,13 +246,13 @@ access_nat (struct ia64_cursor *c, unw_word_t loc, unw_word_t reg_loc,
   if (IA64_IS_MEMSTK_NAT (loc))
     {
       nat_loc = IA64_GET_LOC (loc) << 3;
-      mask = (unw_word_t) 1 << ia64_rse_slot_num ((unsigned long *) reg_loc);
+      mask = (unw_word_t) 1 << ia64_rse_slot_num (reg_loc);
     }
   else
     {
-      loc = IA64_GET_LOC (loc);
-      assert (loc >= 0 && loc < 128);
-      if (!loc)
+      reg = IA64_GET_LOC (loc);
+      assert (reg >= 0 && reg < 128);
+      if (!reg)
 	{
 	  /* NaT bit is not saved. This happens if a general register
 	     is saved to a branch register.  Since the NaT bit gets
@@ -244,39 +269,44 @@ access_nat (struct ia64_cursor *c, unw_word_t loc, unw_word_t reg_loc,
 	  return 0;
 	}
 
-      if (loc >= 4 && loc <= 7)
+      if (reg >= 4 && reg <= 7)
 	{
 	  /* NaT bit is saved in a NaT register.  This happens when a
 	     general register is saved to another general
 	     register.  */
 	  if (write)
-	    ret = ia64_put (c, UNW_IA64_NAT + loc, *valp);
+	    ret = ia64_put (c, UNW_IA64_NAT + reg, *valp);
 	  else
-	    ret = ia64_get (c, UNW_IA64_NAT + loc, valp);
+	    ret = ia64_get (c, UNW_IA64_NAT + reg, valp);
 	  return ret;
 	}
-      else if (loc >= 32)
+      else if (reg >= 32)
 	{
 	  /* NaT bit is saved in a stacked register.  */
-	  nat_loc = (unw_word_t) ia64_rse_rnat_addr ((unsigned long *)
-						     reg_loc);
+	  nat_loc = (intptr_t) ia64_rse_rnat_addr (reg_loc);
 	  if (nat_loc > c->rbs_top)
 	    nat_loc = c->top_rnat_loc;
-	  mask = (unw_word_t) 1 << ia64_rse_slot_num ((unsigned long *)
-						      reg_loc);
+	  mask = (intptr_t) 1 << ia64_rse_slot_num (reg_loc);
 	}
       else
 	{
 	  /* NaT bit is saved in a scratch register.  */
-	  if (!(c->pi.flags & IA64_FLAG_SIGTRAMP))
-	    return -UNW_EBADREG;
+	  if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+	    {
+	      ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &sc_addr);
+	      if (ret < 0)
+		return ret;
 
-	  sc_addr = ia64_get_sigcontext_addr (c);
-	  if (!sc_addr)
-	    return -UNW_EBADREG;
-
-	  nat_loc = sc_addr + struct_offset (struct sigcontext, sc_nat);
-	  mask = (unw_word_t) 1 << loc;
+	      nat_loc = sc_addr + SIGCONTEXT_NAT_OFF;
+	      mask = (unw_word_t) 1 << reg;
+	    }
+	  else
+	    {
+	      if (write)
+		return ia64_put (c, loc, *valp);
+	      else
+		return ia64_get (c, loc, valp);
+	    }
 	}
     }
   return update_nat (c, nat_loc, mask, valp, write);
@@ -286,7 +316,7 @@ int
 ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
-  unw_word_t loc = -8, reg_loc, sc_off = 0, nat, nat_loc, cfm, mask, pr;
+  unw_word_t loc = -8, reg_loc, nat, nat_loc, cfm, mask, pr;
   int ret, readonly = 0;
 
   switch (reg)
@@ -310,14 +340,14 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	case UNW_REG_SP:	*valp = c->sp; break;
 	case UNW_REG_PROC_START:*valp = c->pi.proc_start; break;
 	case UNW_REG_LSDA:
-	  *valp = (unw_word_t) (c->pi.pers_addr + 1);
+	  *valp = (intptr_t) (c->pi.pers_addr + 1);
 	  break;
 	case UNW_REG_HANDLER:
 	  if (c->pi.flags & IA64_FLAG_HAS_HANDLER)
 	    /* *c->pers_addr is the linkage-table offset of the word
 	       that stores the address of the personality routine's
 	       function descriptor.  */
-	    *valp = *(unw_word_t *) (*c->pi.pers_addr + c->pi.gp);
+	    return ia64_get (c, *c->pi.pers_addr + c->pi.gp, valp);
 	  else
 	    *valp = 0;
 	  break;
@@ -325,15 +355,23 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
       return 0;
 
     case UNW_REG_IP:
-      loc = c->rp_loc;
+      if (write)
+	c->ip = *valp;	/* also update the IP cache */
+      loc = c->ip_loc;
       break;
 
       /* preserved registers: */
 
-    case UNW_IA64_GR + 4:	loc = c->r4_loc; break;
-    case UNW_IA64_GR + 5:	loc = c->r5_loc; break;
-    case UNW_IA64_GR + 6:	loc = c->r6_loc; break;
-    case UNW_IA64_GR + 7:	loc = c->r7_loc; break;
+    case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
+      loc = (&c->r4_loc)[reg - (UNW_IA64_GR + 4)];
+      break;
+
+    case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
+      loc = (&c->nat4_loc)[reg - (UNW_IA64_NAT + 4)];
+      reg_loc = (&c->r4_loc)[reg - (UNW_IA64_NAT + 4)];
+      return access_nat (c, loc, reg_loc, valp, write);
+
+
     case UNW_IA64_AR_BSP:	loc = c->bsp_loc; break;
     case UNW_IA64_AR_BSPSTORE:	loc = c->bspstore_loc; break;
     case UNW_IA64_AR_PFS:	loc = c->pfs_loc; break;
@@ -351,6 +389,7 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_PR:
       if (write)
 	{
+	  c->pr = *valp;		/* update the predicate cache */
 	  pr = pr_ltop (c, *valp);
 	  return ia64_put (c, c->pr_loc, pr);
 	}
@@ -365,18 +404,16 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
       reg = rotate_gr (c, reg - UNW_IA64_GR) + UNW_IA64_GR;
-      loc = (unw_word_t) ia64_rse_skip_regs ((unsigned long *) c->bsp,
-					     reg - (UNW_IA64_GR + 32));
+      loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_GR + 32));
       break;
 
     case UNW_IA64_NAT + 32 ... UNW_IA64_NAT + 127:	/* stacked reg */
       reg = rotate_gr (c, reg - UNW_IA64_NAT) + UNW_IA64_NAT;
-      loc = (unw_word_t) ia64_rse_skip_regs ((unsigned long *) c->bsp,
-					     reg - (UNW_IA64_NAT + 32));
-      nat_loc = (unw_word_t) ia64_rse_rnat_addr ((unsigned long *) loc);
+      loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_NAT + 32));
+      nat_loc = ia64_rse_rnat_addr (loc);
       if (nat_loc > c->rbs_top)
 	nat_loc = c->top_rnat_loc;
-      mask = (unw_word_t) 1 << ia64_rse_slot_num ((unsigned long *) loc);
+      mask = (unw_word_t) 1 << ia64_rse_slot_num (loc);
       return update_nat (c, nat_loc, mask, valp, write);
 
     case UNW_IA64_AR_EC:
@@ -405,25 +442,6 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
       *valp = c->pi.gp;
       return 0;
 
-    case UNW_IA64_GR + 15 ... UNW_IA64_GR + 18:
-      if (!(c->pi.flags & IA64_FLAG_SIGTRAMP))
-	{
-	  if (write)
-	    c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
-	  else
-	    *valp = c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
-	  return 0;
-	}
-      else
-	sc_off = struct_offset (struct sigcontext, sc_gr[reg]);
-      break;
-
-    case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
-    case UNW_IA64_GR +  8 ... UNW_IA64_GR + 14:
-    case UNW_IA64_GR + 19 ... UNW_IA64_GR + 31:
-      sc_off = struct_offset (struct sigcontext, sc_gr[reg]);
-      break;
-
     case UNW_IA64_NAT + 0:
     case UNW_IA64_NAT + 1:				/* global pointer */
       if (write)
@@ -433,64 +451,57 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
     case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
-      mask = (unw_word_t) 1 << (reg - UNW_IA64_NAT);
-      loc = ia64_get_sigcontext_addr (c);
-      if (!loc)
-	return -UNW_EBADREG;
-
-      loc += struct_offset (struct sigcontext, sc_nat);
-
-      ret = ia64_get (c, loc, &nat);
-      if (ret < 0)
-	return ret;
-
-      if (write)
+      loc = ia64_scratch_loc (c, reg);
+      if (c->pi.flags & IA64_FLAG_SIGTRAMP)
 	{
-	  if (*valp)
-	    nat |= mask;
+	  mask = (unw_word_t) 1 << (reg - UNW_IA64_NAT);
+
+	  ret = ia64_get (c, loc, &nat);
+	  if (ret < 0)
+	    return ret;
+
+	  if (write)
+	    {
+	      if (*valp)
+		nat |= mask;
+	      else
+		nat &= ~mask;
+	      ret = ia64_put (c, loc, nat);
+	    }
 	  else
-	    nat &= ~mask;
-	  ret = ia64_put (c, loc, nat);
+	    *valp = (nat & mask) != 0;
+	  return ret;
 	}
+      break;
+
+    case UNW_IA64_GR + 15 ... UNW_IA64_GR + 18:
+      if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+	loc = ia64_scratch_loc (c, reg);
       else
-	*valp = (nat & mask) != 0;
-      return ret;
+	{
+	  if (write)
+	    c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
+	  else
+	    *valp = c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
+	  return 0;
+	}
+      break;
 
-    case UNW_IA64_NAT + 4 ... UNW_IA64_NAT + 7:
-      loc = (&c->nat4_loc)[reg - (UNW_IA64_NAT + 4)];
-      reg_loc = (&c->r4_loc)[reg - (UNW_IA64_NAT + 4)];
-      return access_nat (c, loc, reg_loc, valp, write);
-
+    case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
+    case UNW_IA64_GR +  8 ... UNW_IA64_GR + 14:
+    case UNW_IA64_GR + 19 ... UNW_IA64_GR + 31:
+    case UNW_IA64_BR + 0:
+    case UNW_IA64_BR + 7:
     case UNW_IA64_AR_RSC:
-      sc_off = struct_offset (struct sigcontext, sc_ar_rsc);
-      break;
-
-#ifdef SIGCONTEXT_HAS_AR25_AND_AR26
     case UNW_IA64_AR_25:
-      sc_off = struct_offset (struct sigcontext, sc_ar25);
-      break;
-
     case UNW_IA64_AR_26:
-      sc_off = struct_offset (struct sigcontext, sc_ar26);
-      break;
-#endif
-
     case UNW_IA64_AR_CCV:
-      sc_off = struct_offset (struct sigcontext, sc_ar_ccv);
+      loc = ia64_scratch_loc (c, reg);
       break;
 
     default:
       dprintf ("%s: bad register number %d\n", __FUNCTION__, reg);
       return -UNW_EBADREG;
-    }
-
-  if (sc_off)
-    {
-      loc = ia64_get_sigcontext_addr (c);
-      if (!loc)
-	return -UNW_EBADREG;
-
-      loc += sc_off;
     }
 
   if (write)
@@ -537,49 +548,46 @@ ia64_access_fpreg (struct ia64_cursor *c, int reg, unw_fpreg_t *valp,
       break;
 
     case UNW_IA64_FR + 6 ... UNW_IA64_FR + 15:
-      loc = ia64_get_sigcontext_addr (c);
-      if (!loc)
-	return -UNW_EBADREG;
-      loc += struct_offset (struct sigcontext, sc_fr[reg - UNW_IA64_FR]);
+      loc = ia64_scratch_loc (c, reg);
       break;
 
     case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-      reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
-      loc = ia64_get_sigcontext_addr (c);
-      if (!loc)
-	return -UNW_EBADREG;
-
-      ret = ia64_get (c, loc + struct_offset (struct sigcontext, sc_flags),
-		      &flags);
-      if (ret < 0)
-	return ret;
-
-      if (!(flags & IA64_SC_FLAG_FPH_VALID))
+      if (c->pi.flags & IA64_FLAG_SIGTRAMP)
 	{
-	  if (write)
+	  ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &loc);
+	  if (ret < 0)
+	    return ret;
+	  ret = ia64_get (c, loc + SIGCONTEXT_FLAGS_OFF, &flags);
+	  if (ret < 0)
+	    return ret;
+
+	  if (!(flags & IA64_SC_FLAG_FPH_VALID))
 	    {
-	      /* initialize fph partition: */
-	      tmp_loc = loc + struct_offset (struct sigcontext, sc_fr[32]);
-	      for (i = 32; i < 128; ++i, tmp_loc += 16)
+	      if (write)
 		{
-		  ret = ia64_putfp (c, tmp_loc, unw.f0);
+		  /* initialize fph partition: */
+		  tmp_loc = loc + SIGCONTEXT_FR_OFF + 32*16;
+		  for (i = 32; i < 128; ++i, tmp_loc += 16)
+		    {
+		      ret = ia64_putfp (c, tmp_loc, unw.f0);
+		      if (ret < 0)
+			return ret;
+		    }
+		  /* mark fph partition as valid: */
+		  ret = ia64_put (c, loc + SIGCONTEXT_FLAGS_OFF,
+				  flags | IA64_SC_FLAG_FPH_VALID);
 		  if (ret < 0)
 		    return ret;
 		}
-	      /* mark fph partition as being valid: */
-	      ret = ia64_put (c, loc + struct_offset (struct sigcontext,
-						      sc_flags),
-			      flags | IA64_SC_FLAG_FPH_VALID);
-	      if (ret < 0)
-		return ret;
-	    }
-	  else
-	    {
-	      *valp = unw.f0;
-	      return 0;
+	      else
+		{
+		  *valp = unw.f0;
+		  return 0;
+		}
 	    }
 	}
-      loc += struct_offset (struct sigcontext, sc_fr[reg - UNW_IA64_FR]);
+      reg = rotate_fr (c, reg - UNW_IA64_FR) + UNW_IA64_FR;
+      loc = ia64_scratch_loc (c, reg);
       break;
     }
 
