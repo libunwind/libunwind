@@ -40,7 +40,9 @@ Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
 				ia64-test-stack.h
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
-ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S
+ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
+Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 
 LDADD = ../src/libunwind-$(arch).la
 
