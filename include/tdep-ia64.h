@@ -172,7 +172,7 @@ struct ia64_global_unwind_state
     unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
     unw_fpreg_t nat_val_be, int_val_le, int_val_be;
 
-    struct mempool state_record_pool;
+    struct mempool reg_state_pool;
     struct mempool labeled_state_pool;
 
 # if UNW_DEBUG
