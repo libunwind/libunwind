@@ -8,7 +8,7 @@ static const char *regname[] =
 const char *
 unw_regname (unw_regnum_t reg)
 {
-  if (reg < NELEMS (regname))
+  if (reg < (unw_regnum_t) NELEMS (regname))
     return regname[reg];
   else
     return "???";
