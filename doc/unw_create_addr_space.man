@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Wed Mar 19 23:33:01 PST 2003
+.\" Manual page created with latex2man on Mon Mar 31 14:18:03 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,11 +10,10 @@
 
 .fi
 ..
-.TH "UNW\\_CREATE\\_ADDR\\_SPACE" "3" "19 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_CREATE\\_ADDR\\_SPACE" "3" "31 March 2003" "Programming Library " "Programming Library "
 .SH NAME
-
-.PP
-unw_create_addr_space \-\- create address space for remote unwinding 
+unw_create_addr_space
+\-\- create address space for remote unwinding 
 .PP
 .SH SYNOPSIS
 

@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Wed Mar  5 10:22:28 PST 2003
+.\" Manual page created with latex2man on Mon Mar 31 14:18:01 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,10 +10,10 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-IA64" "3" "05 March 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-IA64" "3" "31 March 2003" "Programming Library " "Programming Library "
 .SH NAME
-
-libunwind\-ia64 \-\- IA\-64\-specific support in libunwind 
+libunwind\-ia64
+\-\- IA\-64\-specific support in libunwind 
 .PP
 .SH INTRODUCTION
 

@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Wed Mar 12 14:07:43 PST 2003
+.\" Manual page created with latex2man on Mon Mar 31 14:18:02 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,11 +10,10 @@
 
 .fi
 ..
-.TH "UNW\\_INIT\\_REMOTE" "3" "12 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_INIT\\_REMOTE" "3" "31 March 2003" "Programming Library " "Programming Library "
 .SH NAME
-
-.PP
-unw_init_remote \-\- initialize cursor for remote unwinding 
+unw_init_remote
+\-\- initialize cursor for remote unwinding 
 .PP
 .SH SYNOPSIS
 
