@@ -51,7 +51,7 @@ struct UPT_info
 #endif
   };
 
-HIDDEN int _UPT_reg_offset[UNW_REG_LAST + 1];
+extern HIDDEN int _UPT_reg_offset[UNW_REG_LAST + 1];
 
 extern HIDDEN unw_dyn_info_t *_UPTi_find_unwind_table (struct UPT_info *ui,
 						       unw_addr_space_t as,
