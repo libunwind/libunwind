@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -31,6 +31,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_TARGET	ia64
 #define UNW_TARGET_IA64	1
+
+/* This needs to be big enough to accommodate "struct cursor", while
+   leaving some slack for future expansion.  Changing this value will
+   require recompiling all users of this library.  Stack allocation is
+   relatively cheap and unwind-state copying is relatively rare, so we
+   want to err on making it rather too big than too small.  */
+#define UNW_TDEP_CURSOR_LEN	511
+
+/* If this bit is it indicates that the procedure saved all of ar.bsp,
+   ar.bspstore, and ar.rnat.  If, additionally, ar.bsp != saved ar.bsp,
+   then this procedure has performed a register-backing-store switch.  */
+#define UNW_PI_FLAG_IA64_RBS_SWITCH_BIT	(UNW_PI_FLAG_FIRST_TDEP_BIT + 0)
+
+#define UNW_PI_FLAG_IA64_RBS_SWITCH	(1 << UNW_PI_FLAG_IA64_RBS_SWITCH_BIT)
 
 typedef uint64_t unw_tdep_word_t;
 
