@@ -437,7 +437,7 @@ check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
     {
       if (f4.raw.bits[0] != 0 || f4.raw.bits[1] != 0x1fffe)
 	panic ("%s: f4=%016lx.%016lx instead of NaTVal!\n",
-	       __FUNCTION__, f4.raw.bits[1], f4.raw.bits[0], r[0]);
+	       __FUNCTION__, f4.raw.bits[1], f4.raw.bits[0]);
     }
   else
     {
