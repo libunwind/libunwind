@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -1010,7 +1010,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     }
  out:
 #if UNW_DEBUG
-  if (unw.debug_level > 0)
+  if (tdep_debug_level > 0)
     {
       dprintf ("libunwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
 	       (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
