@@ -347,10 +347,14 @@ get_kernel_table (unw_dyn_info_t *di)
 PROTECTED int
 _Uia64_get_kernel_table (unw_dyn_info_t *di)
 {
-  if (kernel_table.u.ti.table_data)
-    return kernel_table.u.ti.table_data;
-  else
-    return get_kernel_table (di);
+  int ret;
+
+  if (!kernel_table.u.ti.table_data)
+    if ((ret = get_kernel_table (&kernel_table)) < 0)
+      return ret;
+
+  memcpy (di, &kernel_table, sizeof (*di));
+  return 0;
 }
 
 PROTECTED unw_word_t
