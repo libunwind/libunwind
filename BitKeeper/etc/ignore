@@ -13,3 +13,13 @@ src/ia64/unw_resume.o
 src/ia64/unw_set_reg.o
 src/ia64/unw_step.o
 src/libunwind.a
+Makefile.in
+configure
+doc/Makefile.in
+include/libunwind-tdep.h
+include/stamp-h
+include/stamp-h1
+libunwind-0.2.tar.gz
+src/Makefile-orig
+src/Makefile.in
+tests/Makefile.in
