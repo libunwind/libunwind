@@ -1,17 +1,17 @@
 SOVERSION=1:0:0		# See comments at end of file.
 
-libunwind_la_SOURCES_common =					\
-	backtrace.c get_proc_name.c				\
-	dyn-cancel.c dyn-extract.c dyn-register.c		\
-	dyn-remote.c					 	\
-	mi-init.c						\
-	mempool.c						\
-	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
-	Lfind_dynamic_proc_info.c Lput_dynamic_unwind_info.c
-
 if REMOTE_ONLY
 # Nothing special.
 else
+
+libunwind_la_SOURCES_cdep =						     \
+	_UPT_internal.h							     \
+									     \
+	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
+	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
+	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
+	_UPT_reg_offset.c
+
 #
 # This is not ideal, but I know of no other way to install an
 # alias for a library.
@@ -22,6 +22,15 @@ install-exec-hook:
 
 endif
 
+libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
+	backtrace.c get_proc_name.c				\
+	dyn-cancel.c dyn-extract.c dyn-register.c		\
+	dyn-remote.c						\
+	mi-init.c						\
+	mempool.c						\
+	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
+	Lfind_dynamic_proc_info.c Lput_dynamic_unwind_info.c
+
 #
 # Note: As of automake-1.6, there is a stupid limitation which requires
 #	that each filename is unique.  This prevents us from having, e.g.,
@@ -30,7 +39,7 @@ endif
 #
 
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
-	ia64/ia64-init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
