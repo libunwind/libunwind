@@ -80,7 +80,7 @@ const char *
 unw_regname (unw_regnum_t reg)
 {
   if (reg < sizeof (regname) / sizeof (regname[0]))
-    return regname[reg + 7];
+    return regname[reg];
   else
     return "???";
 }
