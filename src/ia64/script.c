@@ -51,36 +51,35 @@ cache_match (struct ia64_script *script, unw_word_t ip, unw_word_t pr)
 }
 
 static inline void
-flush_script_cache (struct ia64_script_cache *cache)
+flush_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache)
 {
   int i;
 
   for (i = 0; i < IA64_UNW_CACHE_SIZE; ++i)
     cache->buckets[i].ip = 0;
 
-  cache->generation = unw.cache_generation;
+  cache->generation = as->cache_generation;
 }
 
 static inline struct ia64_script_cache *
-get_script_cache (void)
+get_script_cache (unw_addr_space_t as)
 {
-  struct ia64_script_cache *cache = &unw.global_cache;
+  struct ia64_script_cache *cache = &as->global_cache;
 
 #ifdef HAVE___THREAD
-  if (unw.caching_policy == UNW_CACHE_PER_THREAD)
+  if (as->caching_policy == UNW_CACHE_PER_THREAD)
     cache = &ia64_per_thread_cache;
 #endif
 
-  if (unw.cache_generation - cache->generation < 0x80000000)
-    flush_script_cache (cache);
+  if (as->cache_generation - cache->generation < 0x80000000)
+    flush_script_cache (as, cache);
 
   return cache;
 }
 
-inline struct ia64_script *
-ia64_script_lookup (struct ia64_cursor *c)
+static struct ia64_script *
+script_lookup (struct ia64_script_cache *cache, struct ia64_cursor *c)
 {
-  struct ia64_script_cache *cache = get_script_cache ();
   struct ia64_script *script = cache->buckets + c->hint;
   unsigned short index;
   unw_word_t ip, pr;
@@ -116,6 +115,12 @@ ia64_script_lookup (struct ia64_cursor *c)
       script = cache->buckets + script->coll_chain;
       STAT(++unw.stat.cache.collision_chain_traversals);
     }
+}
+
+struct ia64_script *
+ia64_script_lookup (struct ia64_cursor *c)
+{
+  return script_lookup (get_script_cache (c->as), c);
 }
 
 /* On returning, the lock for the SCRIPT is still being held.  */
@@ -343,25 +348,14 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
    entrypoint of the function that called OLD_STATE.  */
 
 static inline int
-build_script (struct ia64_script_cache *cache, struct ia64_cursor *c,
-	      struct ia64_script **scriptp)
+build_script (struct ia64_cursor *c, struct ia64_script *script)
 {
-  struct ia64_script *script;
   struct ia64_state_record sr;
   struct ia64_script_insn insn;
   int i, ret;
   STAT(unsigned long start, parse_start;)
   STAT(++unw.stat.script.builds; start = ia64_get_itc ());
   STAT(unw.stat.script.parse_time += ia64_get_itc () - parse_start);
-
-  script = script_new (cache, c->ip);
-  if (!script)
-    {
-      dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
-      STAT(unw.stat.script.build_time += ia64_get_itc() - start);
-      return -UNW_EUNSPEC;
-    }
-  cache->buckets[c->prev_script].hint = script - cache->buckets;
 
   ret = ia64_create_state_record (c, &sr);
   if (ret < 0)
@@ -402,7 +396,6 @@ build_script (struct ia64_script_cache *cache, struct ia64_cursor *c,
   ia64_free_state_record (&sr);
 
   STAT(unw.stat.script.build_time += ia64_get_itc () - start);
-  *scriptp = script;
   return 0;
 }
 
@@ -483,24 +476,47 @@ run_script (struct ia64_script *script, struct ia64_cursor *c)
 int
 ia64_find_save_locs (struct ia64_cursor *c)
 {
-  struct ia64_script_cache *cache = get_script_cache ();
-  struct ia64_script *script = ia64_script_lookup (c);
-  int ret;
+  struct ia64_script *script = NULL;
+  int ret = 0;
 
-  if (!script)
+  if (c->as->caching_policy == UNW_CACHE_NONE)
     {
-      ret = build_script (cache, c, &script);
-      if (ret < 0)
-	{
-	  if (ret != UNW_ESTOPUNWIND)
-	    dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
-		     __FUNCTION__, (long) c->ip);
-	  return ret;
-	}
-    }
-  c->hint = script->hint;
-  c->prev_script = script - cache->buckets;
+      struct ia64_script tmp_script;
 
+      script = &tmp_script;
+      script->ip = c->ip;
+      script->hint = 0;
+      script->count = 0;
+      ret = build_script (c, script);
+    }
+  else
+    {
+      struct ia64_script_cache *cache = get_script_cache (c->as);
+
+      script = script_lookup (cache, c);
+      if (!script)
+	{
+	  script = script_new (cache, c->ip);
+	  if (!script)
+	    {
+	      dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
+	      STAT(unw.stat.script.build_time += ia64_get_itc() - start);
+	      return -UNW_EUNSPEC;
+	    }
+	  cache->buckets[c->prev_script].hint = script - cache->buckets;
+
+	  ret = build_script (c, script);
+	}
+      c->hint = script->hint;
+      c->prev_script = script - cache->buckets;
+    }
+  if (ret < 0)
+    {
+      if (ret != UNW_ESTOPUNWIND)
+	dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
+		 __FUNCTION__, (long) c->ip);
+      return ret;
+    }
   run_script (script, c);
   return 0;
 }
