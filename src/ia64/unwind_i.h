@@ -48,7 +48,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "tdep.h"
 
-/* Bits 0 and 1 of an location are used to encode its type:
+/* Bits 0 and 1 of a location are used to encode its type:
 	bit 0: set if location uses floating-point format.
 	bit 1: set if location is a NaT bit on memory stack.  */
 
@@ -60,7 +60,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define IA64_LOC_REG(r,t)	(((r) << 2) | (t))
 #define IA64_LOC_ADDR(a,t)	(((a) & ~0x3) | (t))
 #define IA64_LOC_UC_ADDR(a,t)	IA64_LOC_ADDR(a, t)
-#define IA64_LOC_UC_REG(a,t)
 #define IA64_NULL_LOC		(0)
 
 #define IA64_GET_REG(l)		((l) >> 2)
