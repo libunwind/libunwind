@@ -65,13 +65,13 @@ typedef enum
   {
     UNW_REG_IP = UNW_TDEP_IP,		/* (rw) instruction pointer (pc) */
     UNW_REG_SP = UNW_TDEP_SP,		/* (ro) stack pointer */
-    UNW_REG_EH_ARG0 = UNW_TDEP_EH_ARG0,	/* (rw) exception-handling arg 0 */
-    UNW_REG_EH_ARG1 = UNW_TDEP_EH_ARG1,	/* (rw) exception-handling arg 1 */
-    UNW_REG_EH_ARG2 = UNW_TDEP_EH_ARG2,	/* (rw) exception-handling arg 2 */
-    UNW_REG_EH_ARG3 = UNW_TDEP_EH_ARG3,	/* (rw) exception-handling arg 3 */
+    UNW_REG_EH = UNW_TDEP_EH,		/* (rw) exception-handling reg base */
     UNW_REG_LAST = UNW_TDEP_LAST_REG
   }
 unw_frame_regnum_t;
+
+/* Number of exception-handler argument registers: */
+#define UNW_NUM_EH_REGS		UNW_TDEP_NUM_EH_REGS
 
 typedef enum
   {
@@ -360,4 +360,5 @@ extern int _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg,
 extern int _UPT_get_proc_name (unw_addr_space_t as, unw_word_t addr,
 			       char *buf, size_t len, unw_word_t *offp,
 			       void *arg);
+extern int _UPT_resume (unw_addr_space_t as, unw_cursor_t *c, void *arg);
 extern unw_accessors_t _UPT_accessors;
