@@ -32,6 +32,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 void
 unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
 {
+  /* clear dyn_info_list_addr cache: */
+  as->dyn_info_list_addr = 0;
+
   /* This lets us flush caches lazily.  The implementation currently
      ignores the flush range arguments (lo-hi).  This is OK because
      unw_flush_cache() is allowed to flush more than the requested
