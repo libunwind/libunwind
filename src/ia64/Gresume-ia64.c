@@ -227,7 +227,7 @@ remote_install_cursor (struct cursor *c)
       MEMIFY (IA64_REG_F31,	UNW_IA64_FR + 31);
     }
   else
-#endif /* __linux */
+#endif /* __linux && !UNW_REMOTE_ONLY */
     {
       access_reg = c->as->acc.access_reg;
       access_fpreg = c->as->acc.access_fpreg;
