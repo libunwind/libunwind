@@ -29,6 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/types.h>
 
+#include "tdep.h"
 
 extern HIDDEN int
 elfW (valid_object) (struct elf_image *ei)

@@ -1,6 +1,7 @@
 #include <stdio.h>
 
 #include "internal.h"
+#include "tdep.h"
 
 #ifndef UNW_REMOTE_ONLY
 

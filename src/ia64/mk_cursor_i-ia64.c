@@ -29,6 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 
 #include "internal.h"
+#include "tdep.h"
 
 #ifdef offsetof
 # undef offsetof

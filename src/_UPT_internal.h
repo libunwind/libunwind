@@ -35,6 +35,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/ptrace.h>
 
 #include "internal.h"
+#include "tdep.h"
 
 struct UPT_info
   {

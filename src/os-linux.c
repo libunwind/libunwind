@@ -29,6 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 
 #include "internal.h"
+#include "tdep.h"
 #include "os-linux.h"
 
 /* Here, it doesn't matter whether we include elf64.h or elf32.h.
