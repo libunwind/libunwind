@@ -238,7 +238,7 @@ _Uia64_install_context:
 
 (pRet)	mov.m ar.fpsr = r27		// fpsr restored (don't touch no more)
 	mov.m ar.rnat = r28
-(pSig)	br.cond.dpnt.many 1f
+(pSig)	br.cond.dpnt.many .next
 
 /****** Return via br.ret: */
 
@@ -263,7 +263,7 @@ _Uia64_install_context:
 
 /****** Return via sigreturn(): */
 
-1:	mov.m ar.rsc = r10		// restore original ar.rsc
+.next:	mov.m ar.rsc = r10		// restore original ar.rsc
 	add r2 = (SC_FR + 6*16), r8
 	add r3 = (SC_FR + 7*16), r8
 	;;
