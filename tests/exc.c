@@ -61,6 +61,7 @@ b (void *addr)
 {
   printf ("b() calling raise_exception()\n");
   raise_exception (addr);
+  printf ("b(): back from raise_exception!!\n");
 }
 
 static int
