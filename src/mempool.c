@@ -40,7 +40,7 @@ static char sos_memory[SOS_MEMORY_SIZE];
 static char *sos_memp = sos_memory;
 static size_t pg_size = 0;
 
-void *
+HIDDEN void *
 sos_alloc (size_t size)
 {
   char *mem;
@@ -135,7 +135,7 @@ expand (struct mempool *pool)
   add_memory (pool, mem, size, pool->obj_size);
 }
 
-void
+HIDDEN void
 mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
 {
   if (pg_size == 0)
@@ -162,7 +162,7 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
   expand (pool);
 }
 
-void *
+HIDDEN void *
 mempool_alloc (struct mempool *pool)
 {
   sigset_t saved_sigmask;
@@ -185,7 +185,7 @@ mempool_alloc (struct mempool *pool)
   return obj;
 }
 
-void
+HIDDEN void
 mempool_free (struct mempool *pool, void *object)
 {
   sigset_t saved_sigmask;

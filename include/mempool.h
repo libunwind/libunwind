@@ -75,15 +75,15 @@ struct mempool
 /* Emergency allocation for one-time stuff that doesn't fit the memory
    pool model.  A limited amount of memory is available in this
    fashion and once allocated, there is no way to free it.  */
-extern void *sos_alloc (size_t size);
+extern HIDDEN void *sos_alloc (size_t size);
 
 /* Initialize POOL for an object size of OBJECT_SIZE bytes.  RESERVE
    is the number of objects that should be reserved for use under
    tight memory situations.  If it is zero, mempool attempts to pick a
    reasonable default value.  */
-extern void mempool_init (struct mempool *pool,
+extern HIDDEN void mempool_init (struct mempool *pool,
 			  size_t obj_size, size_t reserve);
-extern void *mempool_alloc (struct mempool *pool);
-extern void mempool_free (struct mempool *pool, void *object);
+extern HIDDEN void *mempool_alloc (struct mempool *pool);
+extern HIDDEN void mempool_free (struct mempool *pool, void *object);
 
 #endif /* mempool_h */
