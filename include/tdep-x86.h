@@ -39,7 +39,11 @@ struct unw_addr_space
   {
     struct unw_accessors acc;
     unw_caching_policy_t caching_policy;
+#ifdef HAVE_ATOMIC_OPS_H
+    AO_t cache_generation;
+#else
     uint32_t cache_generation;
+#endif
     unw_word_t dyn_generation;		/* see dyn-common.h */
     unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
    };
@@ -125,6 +129,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 {
+  char *valp = (char *) &val;
   unw_word_t addr;
   int ret;
 
@@ -136,17 +141,18 @@ dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 				       val, 0, c->as_arg);
 
   addr = DWARF_GET_LOC (loc);
-  if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, (unw_word_t *) &val,
+  if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, (unw_word_t *) valp,
 				       0, c->as_arg)) < 0)
     return ret;
 
-  return (*c->as->acc.access_mem) (c->as, addr + 4, (unw_word_t *) &val + 1, 0,
+  return (*c->as->acc.access_mem) (c->as, addr + 4, (unw_word_t *) valp + 1, 0,
 				   c->as_arg);
 }
 
 static inline int
 dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 {
+  char *valp = (char *) &val;
   unw_word_t addr;
   int ret;
 
@@ -158,11 +164,11 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 				       &val, 1, c->as_arg);
 
   addr = DWARF_GET_LOC (loc);
-  if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, (unw_word_t *) &val,
+  if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, (unw_word_t *) valp,
 				       1, c->as_arg)) < 0)
     return ret;
 
-  return (*c->as->acc.access_mem) (c->as, addr + 4, (unw_word_t *) &val + 1,
+  return (*c->as->acc.access_mem) (c->as, addr + 4, (unw_word_t *) valp + 1,
 				   1, c->as_arg);
 }
 
