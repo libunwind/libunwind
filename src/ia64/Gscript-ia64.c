@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -442,7 +442,10 @@ run_script (struct ia64_script *script, struct cursor *c)
 	  break;
 
 	case IA64_INSN_MOVE_STACKED:
-	  s[dst] = ia64_rse_skip_regs (c->bsp, val);
+	  val = rotate_gr (c, val);
+	  ret = ia64_get_stacked (c, val, &s[dst], NULL);
+	  if (ret < 0)
+		  return ret;
 	  break;
 
 	case IA64_INSN_SETNAT_MEMSTK:
