@@ -37,6 +37,14 @@ contents of that register.  In other words, the exception handling
 arguments are installed even in cases where normally only the
 ``preserved'' registers are restored.
 
+Note that \Func{unw\_resume}() does \emph{not} invoke any unwind
+handlers (aka, ``personality routines'').  If a program needs this, it
+will have to do so on its own by obtaining the \Type{unw\_proc\_info\_t}
+of each unwound frame and appropriately processing its unwind handler
+and language-specific data area (lsda).  These steps are generally
+dependent on the target-platform and are regulated by the
+processor-specific ABI (application-binary interface).
+
 \section{Return Value}
 
 For local unwinding, \Func{unw\_resume}() does not return on success.
