@@ -247,7 +247,11 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
     case UNW_REG_IP:
       if (write)
-	c->ip = *valp;	/* also update the IP cache */
+	{
+	  c->ip = *valp;	/* also update the IP cache */
+	  if (c->pi_valid && (*valp < c->pi.start_ip || *valp >= c->pi.end_ip))
+	    c->pi_valid = 0;	/* new IP outside of current proc */
+	}
       loc = c->ip_loc;
       break;
 
@@ -319,7 +323,8 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_AR_EC:
       if (write)
 	{
-	  c->cfm = (c->cfm & ~((unw_word_t) 0x3f << 52)) | ((*valp & 0x3f) << 52);
+	  c->cfm = ((c->cfm & ~((unw_word_t) 0x3f << 52))
+		    | ((*valp & 0x3f) << 52));
 	  return ia64_put (c, c->cfm_loc, c->cfm);
 	}
       else
@@ -379,16 +384,20 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_IA64_GR + 15 ... UNW_IA64_GR + 18:
-      if (c->is_signal_frame)
-	loc = ia64_scratch_loc (c, reg);
-      else
+      mask = 1 << (reg - (UNW_IA64_GR + 15));
+      if (write)
 	{
-	  if (write)
-	    c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
-	  else
-	    *valp = c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
+	  c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
+	  c->eh_valid_mask |= mask;
 	  return 0;
 	}
+      else if ((c->eh_valid_mask & mask) != 0)
+	{
+	  *valp = c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
+	  return 0;
+	}
+      else
+	loc = ia64_scratch_loc (c, reg);
       break;
 
     case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
