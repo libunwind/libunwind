@@ -183,7 +183,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 }
 
 int
-ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info, void *arg)
+_U_ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info, void *arg)
 {
   ((unw_ia64_table_t *) info)->segbase = ip;	/* this is cheap... */
 
@@ -194,7 +194,7 @@ ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info, void *arg)
 }
 
 int
-ia64_glibc_release_unwind_info (void *info, void *arg)
+_U_ia64_glibc_release_unwind_info (void *info, void *arg)
 {
   /* nothing to do */
   return 0;
