@@ -9,7 +9,7 @@ if ARCH_IA64
  noinst_PROGRAMS_arch = sig
 endif
  noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_arch) bt exc \
-	test-init test-varargs test-dyn1
+	test-init test-varargs test-dyn1 test-resume-sig
 endif
 
 LDADD = ../src/libunwind-$(arch).la
