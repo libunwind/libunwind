@@ -98,7 +98,7 @@ noinst_PROGRAMS_common =
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS = $(noinst_PROGRAMS_common)
 @REMOTE_ONLY_FALSE@noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_arch) bt exc \
-@REMOTE_ONLY_FALSE@	test-init test-varargs test-dyn1
+@REMOTE_ONLY_FALSE@	test-init test-varargs test-dyn1 test-resume-sig
 
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = sig
 
@@ -112,13 +112,15 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	exc$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) \
-@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-dyn1$(EXEEXT)
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-dyn1$(EXEEXT) \
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-resume-sig$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = sig$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	bt$(EXEEXT) exc$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-dyn1$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-dyn1$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-resume-sig$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
 bt_SOURCES = bt.c
@@ -146,6 +148,11 @@ test_init_OBJECTS = test-init.$(OBJEXT)
 test_init_LDADD = $(LDADD)
 test_init_DEPENDENCIES = ../src/libunwind-$(arch).la
 test_init_LDFLAGS =
+test_resume_sig_SOURCES = test-resume-sig.c
+test_resume_sig_OBJECTS = test-resume-sig.$(OBJEXT)
+test_resume_sig_LDADD = $(LDADD)
+test_resume_sig_DEPENDENCIES = ../src/libunwind-$(arch).la
+test_resume_sig_LDFLAGS =
 test_varargs_SOURCES = test-varargs.c
 test_varargs_OBJECTS = test-varargs.$(OBJEXT)
 test_varargs_LDADD = $(LDADD)
@@ -162,6 +169,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/bt.Po ./$(DEPDIR)/exc.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/sig.Po ./$(DEPDIR)/test-dyn1.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-init.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test-resume-sig.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-varargs.Po
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -171,9 +179,10 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = bt.c exc.c sig.c test-dyn1.c test-init.c test-varargs.c
+DIST_SOURCES = bt.c exc.c sig.c test-dyn1.c test-init.c \
+	test-resume-sig.c test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = bt.c exc.c sig.c test-dyn1.c test-init.c test-varargs.c
+SOURCES = bt.c exc.c sig.c test-dyn1.c test-init.c test-resume-sig.c test-varargs.c
 
 all: all-am
 
@@ -206,6 +215,9 @@ test-dyn1$(EXEEXT): $(test_dyn1_OBJECTS) $(test_dyn1_DEPENDENCIES)
 test-init$(EXEEXT): $(test_init_OBJECTS) $(test_init_DEPENDENCIES) 
 	@rm -f test-init$(EXEEXT)
 	$(LINK) $(test_init_LDFLAGS) $(test_init_OBJECTS) $(test_init_LDADD) $(LIBS)
+test-resume-sig$(EXEEXT): $(test_resume_sig_OBJECTS) $(test_resume_sig_DEPENDENCIES) 
+	@rm -f test-resume-sig$(EXEEXT)
+	$(LINK) $(test_resume_sig_LDFLAGS) $(test_resume_sig_OBJECTS) $(test_resume_sig_LDADD) $(LIBS)
 test-varargs$(EXEEXT): $(test_varargs_OBJECTS) $(test_varargs_DEPENDENCIES) 
 	@rm -f test-varargs$(EXEEXT)
 	$(LINK) $(test_varargs_LDFLAGS) $(test_varargs_OBJECTS) $(test_varargs_LDADD) $(LIBS)
@@ -221,6 +233,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-resume-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-varargs.Po@am__quote@
 
 distclean-depend:
