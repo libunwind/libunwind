@@ -69,12 +69,10 @@ struct cursor
 
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
-#define tdep_search_unwind_table(a,b,c,d,e,f)			\
-		UNW_ARCH_OBJ(search_unwind_table) (a,b,c,d,e,f)
-#define tdep_find_proc_info(as,ip,pi,n,a)			\
-		UNW_ARCH_OBJ(find_proc_info) (as,ip,pi,n,a)
-#define tdep_put_unwind_info(a,b,c) 	UNW_ARCH_OBJ(put_unwind_info)(a,b,c)
-#define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
+#define tdep_search_unwind_table	UNW_ARCH_OBJ(search_unwind_table)
+#define tdep_find_proc_info		UNW_ARCH_OBJ(find_proc_info)
+#define tdep_put_unwind_info	 	UNW_ARCH_OBJ(put_unwind_info)
+#define tdep_uc_addr			UNW_ARCH_OBJ(uc_addr)
 
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
