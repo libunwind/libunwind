@@ -37,8 +37,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define SOS_MEMORY_SIZE	16384
 
 static char sos_memory[SOS_MEMORY_SIZE];
-static char *sos_memp = sos_memory;
-static size_t pg_size = 0;
+static char *sos_memp;
+static size_t pg_size;
 
 HIDDEN void *
 sos_alloc (size_t size)
@@ -49,6 +49,8 @@ sos_alloc (size_t size)
   char *old_mem;
 
   size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
+  if (!sos_memp)
+    cmpxchg_ptr (&sos_memp, 0, sos_memory);
   do
     {
       old_mem = sos_memp;
@@ -68,6 +70,9 @@ sos_alloc (size_t size)
   sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
   mutex_lock(&sos_lock);
   {
+    if (!sos_memp)
+      sos_memp = sos_memory;
+
     mem = (char *) (((unsigned long) sos_memp + MAX_ALIGN - 1) & -MAX_ALIGN);
     mem += size;
     if (mem >= sos_memory + sizeof (sos_memory))
