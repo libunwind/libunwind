@@ -327,8 +327,8 @@ extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
 extern unw_word_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
-extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
-				    long r17, long r18, long do_sigreturn)
+extern void _Uia64_install_context (struct cursor *c, unw_word_t pri_unat,
+				    unw_word_t *extra, unw_word_t loadrs)
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
