@@ -43,11 +43,8 @@ hash (unw_word_t ip)
 static inline long
 cache_match (struct ia64_script *script, unw_word_t ip, unw_word_t pr)
 {
-  /* XXX lock script cache */
   if (ip == script->ip && ((pr ^ script->pr_val) & script->pr_mask) == 0)
-    /* keep the lock... */
     return 1;
-  /* XXX unlock script cache */
   return 0;
 }
 
@@ -111,13 +108,33 @@ script_lookup (struct ia64_script_cache *cache, struct cursor *c)
     }
 }
 
-HIDDEN struct ia64_script *
-ia64_script_lookup (struct cursor *c)
+HIDDEN int
+ia64_get_cached_proc_info (struct cursor *c)
 {
-  return script_lookup (get_script_cache (c->as), c);
-}
+  int global_cache = (c->as->caching_policy == UNW_CACHE_GLOBAL);
+  struct ia64_script_cache *cache;
+  struct ia64_script *script;
+  sigset_t saved_sigmask;
 
-/* On returning, the lock for the SCRIPT is still being held.  */
+  cache = get_script_cache (c->as);
+
+  if (likely (global_cache))
+    {
+      sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+      mutex_lock (&cache->lock);
+    }
+
+  script = script_lookup (cache, c);
+  if (script)
+    c->pi = script->pi;
+
+  if (likely (global_cache))
+    {
+      mutex_unlock (&cache->lock);
+      sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+    }
+  return script ? 0 : -UNW_ENOINFO;
+}
 
 static inline struct ia64_script *
 script_new (struct ia64_script_cache *cache, unw_word_t ip)
@@ -126,58 +143,45 @@ script_new (struct ia64_script_cache *cache, unw_word_t ip)
   unw_hash_index_t index;
   unsigned short head;
 
-  /* XXX lock hash table */
-  {
-    head = cache->lru_head;
-    script = cache->buckets + head;
-    cache->lru_head = script->lru_chain;
-  }
-  /* XXX unlock hash table */
+  head = cache->lru_head;
+  script = cache->buckets + head;
+  cache->lru_head = script->lru_chain;
 
-  /* XXX We'll deadlock here if we interrupt a thread that is holding
-     the script->lock.  */
-  /* XXX lock script */
+  /* re-insert script at the tail of the LRU chain: */
+  cache->buckets[cache->lru_tail].lru_chain = head;
+  cache->lru_tail = head;
 
-  /* XXX lock unwind data lock */
-  {
-    /* re-insert script at the tail of the LRU chain: */
-    cache->buckets[cache->lru_tail].lru_chain = head;
-    cache->lru_tail = head;
-
-    /* remove the old script from the hash table (if it's there): */
-    if (script->ip)
-      {
-	index = hash (script->ip);
-	tmp = cache->buckets + cache->hash[index];
-	prev = 0;
-	while (1)
-	  {
-	    if (tmp == script)
-	      {
-		if (prev)
-		  prev->coll_chain = tmp->coll_chain;
-		else
-		  cache->hash[index] = tmp->coll_chain;
-		break;
-	      }
-	    else
-	      prev = tmp;
-	    if (tmp->coll_chain >= IA64_UNW_CACHE_SIZE)
-	      /* old script wasn't in the hash-table */
+  /* remove the old script from the hash table (if it's there): */
+  if (script->ip)
+    {
+      index = hash (script->ip);
+      tmp = cache->buckets + cache->hash[index];
+      prev = 0;
+      while (1)
+	{
+	  if (tmp == script)
+	    {
+	      if (prev)
+		prev->coll_chain = tmp->coll_chain;
+	      else
+		cache->hash[index] = tmp->coll_chain;
 	      break;
-	    tmp = cache->buckets + tmp->coll_chain;
-	  }
-      }
+	    }
+	  else
+	    prev = tmp;
+	  if (tmp->coll_chain >= IA64_UNW_CACHE_SIZE)
+	    /* old script wasn't in the hash-table */
+	    break;
+	  tmp = cache->buckets + tmp->coll_chain;
+	}
+    }
 
-    /* enter new script in the hash table */
-    index = hash (ip);
-    script->coll_chain = cache->hash[index];
-    cache->hash[index] = script - cache->buckets;
+  /* enter new script in the hash table */
+  index = hash (ip);
+  script->coll_chain = cache->hash[index];
+  cache->hash[index] = script - cache->buckets;
 
-    script->ip = ip;		/* set new IP while we're holding the locks */
-  }
-  /* XXX unlock unwind data lock */
-
+  script->ip = ip;
   script->hint = 0;
   script->count = 0;
   return script;
@@ -474,8 +478,19 @@ run_script (struct ia64_script *script, struct cursor *c)
 HIDDEN int
 ia64_find_save_locs (struct cursor *c)
 {
+  int global_cache = (c->as->caching_policy == UNW_CACHE_GLOBAL);
+  struct ia64_script_cache *cache = NULL;
   struct ia64_script *script = NULL;
+  sigset_t saved_sigmask;
   int ret = 0;
+
+  cache = get_script_cache (c->as);
+
+  if (likely (global_cache))
+    {
+      sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+      mutex_lock (&cache->lock);
+    }
 
   if (c->as->caching_policy == UNW_CACHE_NONE)
     {
@@ -489,8 +504,6 @@ ia64_find_save_locs (struct cursor *c)
     }
   else
     {
-      struct ia64_script_cache *cache = get_script_cache (c->as);
-
       script = script_lookup (cache, c);
       if (!script)
 	{
@@ -498,7 +511,8 @@ ia64_find_save_locs (struct cursor *c)
 	  if (!script)
 	    {
 	      dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
-	      return -UNW_EUNSPEC;
+	      ret = -UNW_EUNSPEC;
+	      goto out;
 	    }
 	  cache->buckets[c->prev_script].hint = script - cache->buckets;
 
@@ -512,10 +526,18 @@ ia64_find_save_locs (struct cursor *c)
       if (ret != UNW_ESTOPUNWIND)
 	dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
 		 __FUNCTION__, (long) c->ip);
-      return ret;
+      goto out;
     }
+
   run_script (script, c);
-  return 0;
+
+ out:
+  if (likely (global_cache))
+    {
+      mutex_unlock (&cache->lock);
+      sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+    }
+  return ret;
 }
 
 HIDDEN void
@@ -523,6 +545,7 @@ ia64_script_cache_init (struct ia64_script_cache *cache)
 {
   int i;
 
+  mutex_init (&cache->lock);
   cache->lru_head = IA64_UNW_CACHE_SIZE - 1;
   cache->lru_tail = 0;
 
@@ -531,10 +554,6 @@ ia64_script_cache_init (struct ia64_script_cache *cache)
       if (i > 0)
 	cache->buckets[i].lru_chain = (i - 1);
       cache->buckets[i].coll_chain = -1;
-#if 0
-      /* must be lock-free! */
-      unw.cache[i].lock = RW_LOCK_UNLOCKED;
-#endif
     }
   for (i = 0; i<IA64_UNW_HASH_SIZE; ++i)
     cache->hash[i] = -1;
