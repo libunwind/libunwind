@@ -933,7 +933,6 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     r->when = IA64_WHEN_NEVER;
   sr->pr_val = predicates;
   sr->first_region = 1;
-  sr->return_link_reg = 0;
 
   if (!c->pi.unwind_info)
     {
