@@ -32,6 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind-ia64.h>
 
 #include "config.h"
+#include "internal.h"
 #include "mempool.h"
 
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
@@ -69,37 +70,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define STAT(x...)
 #endif
 
-enum ia64_pregnum
-  {
-    /* primary unat: */
-    IA64_REG_PRI_UNAT_GR,
-    IA64_REG_PRI_UNAT_MEM,
-
-    /* register stack */
-    IA64_REG_BSP,			/* register stack pointer */
-    IA64_REG_BSPSTORE,
-    IA64_REG_PFS,			/* previous function state */
-    IA64_REG_RNAT,
-    /* memory stack */
-    IA64_REG_PSP,			/* previous memory stack pointer */
-    /* return pointer: */
-    IA64_REG_RP,
-
-    /* preserved registers: */
-    IA64_REG_R4, IA64_REG_R5, IA64_REG_R6, IA64_REG_R7,
-    IA64_REG_NAT4, IA64_REG_NAT5, IA64_REG_NAT6, IA64_REG_NAT7,
-    IA64_REG_UNAT, IA64_REG_PR, IA64_REG_LC, IA64_REG_FPSR,
-    IA64_REG_B1, IA64_REG_B2, IA64_REG_B3, IA64_REG_B4, IA64_REG_B5,
-    IA64_REG_F2, IA64_REG_F3, IA64_REG_F4, IA64_REG_F5,
-    IA64_REG_F16, IA64_REG_F17, IA64_REG_F18, IA64_REG_F19,
-    IA64_REG_F20, IA64_REG_F21, IA64_REG_F22, IA64_REG_F23,
-    IA64_REG_F24, IA64_REG_F25, IA64_REG_F26, IA64_REG_F27,
-    IA64_REG_F28, IA64_REG_F29, IA64_REG_F30, IA64_REG_F31,
-    IA64_NUM_PREGS
-  };
-
-#define IA64_FLAG_SIGTRAMP	(1 << 0)	/* signal trampoline? */
-#define IA64_FLAG_BIG_ENDIAN	(1 << 1)	/* big-endian? */
+#include "tdep.h"
 
 struct ia64_cursor
   {
@@ -118,7 +89,6 @@ struct ia64_cursor
     unw_word_t cfm_loc;		/* cfm save location (or NULL) */
     unw_word_t rbs_top;		/* address of end of register backing store */
     unw_word_t top_rnat_loc;	/* location of final (topmost) RNaT word */
-    unw_proc_info_t pi;		/* info about current procedure */
 
     /* preserved state: */
     unw_word_t bsp_loc;		/* previous bsp save location */
@@ -138,21 +108,15 @@ struct ia64_cursor
 
     unw_word_t eh_args[4];	/* exception handler arguments */
     unw_word_t sigcontext_loc;	/* location of sigcontext or NULL */
+    unw_word_t is_signal_frame;	/* is this a signal trampoline frame? */
 
     short hint;
     short prev_script;
+
+    int pi_valid : 1;		/* is proc_info valid? */
+    int pi_is_dynamic : 1;	/* proc_info found via dynamic proc info? */
+    unw_proc_info_t pi;		/* info about current procedure */
 };
-
-#include "script.h"
-
-struct unw_addr_space
-  {
-    struct unw_accessors acc;
-    unw_caching_policy_t caching_policy;
-    u_int32_t cache_generation;
-
-    struct ia64_script_cache global_cache;
-   };
 
 /* Bits 0 to 2 of an location are used to encode its type:
 
@@ -179,9 +143,10 @@ extern void *_Uia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
 #define IA64_FPREG_LOC(c,r)						   \
 	((unw_word_t) _Uia64_uc_addr((c)->as_arg, (r)) | IA64_LOC_TYPE_FP)
 
-# define ia64_find_proc_info(c,ip)					\
-	_Uia64_find_proc_info(unw_local_addr_space, (ip), &(c)->pi,	\
+# define ia64_find_proc_info(c,ip,n)					 \
+	_Uia64_find_proc_info(unw_local_addr_space, (ip), &(c)->pi, (n), \
 			      (c)->as_arg)
+# define ia64_put_unwind_info(c, pi)	do { ; } while (0)
 
 /* Note: the register accessors (ia64_{get,set}{,fp}()) must check for
    NULL locations because _Uia64_uc_addr() returns NULL for unsaved
@@ -230,8 +195,11 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
 #define IA64_FPREG_LOC(c,r)	IA64_LOC((r), (IA64_LOC_TYPE_REG	\
 					       | IA64_LOC_TYPE_FP))
 
-# define ia64_find_proc_info(c,ip)					     \
-	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (c)->as_arg)
+# define ia64_find_proc_info(c,ip,n)					\
+	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (n),	\
+				       (c)->as_arg)
+# define ia64_put_unwind_info(c,pi)					\
+	(*(c)->as->acc.put_unwind_info)((c)->as, (pi), (c)->as_arg)
 
 static inline int
 ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
@@ -288,7 +256,7 @@ ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
       if (ret < 0)
 	return ret;
 
-      if (c->pi.flags & IA64_FLAG_BIG_ENDIAN)
+      if (c->as->big_endian)
 	*val = tmp.raw.bits[1];
       else
 	*val = tmp.raw.bits[0];
@@ -310,7 +278,7 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
       unw_fpreg_t tmp;
 
       memset (&tmp, 0, sizeof (tmp));
-      if (c->pi.flags & IA64_FLAG_BIG_ENDIAN)
+      if (c->as->big_endian)
 	tmp.raw.bits[1] = val;
       else
 	tmp.raw.bits[0] = val;
@@ -374,7 +342,7 @@ struct ia64_state_record
     unsigned int done : 1;		/* are we done scanning descriptors? */
     unsigned int any_spills : 1;	/* got any register spills? */
     unsigned int in_body : 1;		/* are we inside prologue or body? */
-    unsigned int flags;		/* see IA64_FLAG_* */
+    unsigned int is_signal_frame : 1;
 
     uint8_t *imask;		/* imask of spill_mask record or NULL */
     unw_word_t pr_val;		/* predicate values */
@@ -497,7 +465,8 @@ extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
 
 extern int _Uia64_find_proc_info (unw_addr_space_t as, unw_word_t ip,
-				  unw_proc_info_t *pi, void *arg);
+				  unw_proc_info_t *pi, int need_unwind_info,
+				  void *arg);
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
