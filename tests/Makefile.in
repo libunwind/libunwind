@@ -96,17 +96,33 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 
 noinst_PROGRAMS_common = 
 
-@REMOTE_ONLY_TRUE@noinst_PROGRAMS = $(noinst_PROGRAMS_common)
-@REMOTE_ONLY_FALSE@noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_arch) bt exc \
-@REMOTE_ONLY_FALSE@	test-init test-varargs test-dyn1 test-resume-sig
+@REMOTE_ONLY_TRUE@TESTS_cdep = 
+@REMOTE_ONLY_FALSE@TESTS_cdep = test-dyn1
+@REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
+@REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = bt exc test-init test-varargs test-dyn1 test-resume-sig
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-sig
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@TESTS_arch = ia64-test-stack
 
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = sig
+TESTS = $(TESTS_cdep) $(TESTS_arch)
+
+check_PROGRAMS = $(TESTS)
+
+noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
+	$(noinst_PROGRAMS_arch)
+
+
+ia64_test_stack_SOURCES = ia64-test-stack.c ia64-test-stack-asm.S
 
 LDADD = ../src/libunwind-$(arch).la
 subdir = tests
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
+@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@check_PROGRAMS =
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@check_PROGRAMS = test-dyn1$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@check_PROGRAMS =
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS = test-dyn1$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-stack$(EXEEXT)
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	exc$(EXEEXT) \
@@ -115,12 +131,13 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-dyn1$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-resume-sig$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = sig$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	bt$(EXEEXT) exc$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	exc$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-dyn1$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-resume-sig$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-resume-sig$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-sig$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
 bt_SOURCES = bt.c
@@ -133,11 +150,17 @@ exc_OBJECTS = exc.$(OBJEXT)
 exc_LDADD = $(LDADD)
 exc_DEPENDENCIES = ../src/libunwind-$(arch).la
 exc_LDFLAGS =
-sig_SOURCES = sig.c
-sig_OBJECTS = sig.$(OBJEXT)
-sig_LDADD = $(LDADD)
-sig_DEPENDENCIES = ../src/libunwind-$(arch).la
-sig_LDFLAGS =
+ia64_test_sig_SOURCES = ia64-test-sig.c
+ia64_test_sig_OBJECTS = ia64-test-sig.$(OBJEXT)
+ia64_test_sig_LDADD = $(LDADD)
+ia64_test_sig_DEPENDENCIES = ../src/libunwind-$(arch).la
+ia64_test_sig_LDFLAGS =
+am_ia64_test_stack_OBJECTS = ia64-test-stack.$(OBJEXT) \
+	ia64-test-stack-asm.$(OBJEXT)
+ia64_test_stack_OBJECTS = $(am_ia64_test_stack_OBJECTS)
+ia64_test_stack_LDADD = $(LDADD)
+ia64_test_stack_DEPENDENCIES = ../src/libunwind-$(arch).la
+ia64_test_stack_LDFLAGS =
 test_dyn1_SOURCES = test-dyn1.c
 test_dyn1_OBJECTS = test-dyn1.$(OBJEXT)
 test_dyn1_LDADD = $(LDADD)
@@ -167,10 +190,14 @@ LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/bt.Po ./$(DEPDIR)/exc.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/sig.Po ./$(DEPDIR)/test-dyn1.Po \
-@AMDEP_TRUE@	./$(DEPDIR)/test-init.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ia64-test-sig.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ia64-test-stack.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test-dyn1.Po ./$(DEPDIR)/test-init.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-resume-sig.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-varargs.Po
+CCASCOMPILE = $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS)
+LTCCASCOMPILE = $(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) \
+	$(CCASFLAGS)
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
 LTCOMPILE = $(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) \
@@ -179,20 +206,27 @@ CCLD = $(CC)
 LINK = $(LIBTOOL) --mode=link $(CCLD) $(AM_CFLAGS) $(CFLAGS) \
 	$(AM_LDFLAGS) $(LDFLAGS) -o $@
 CFLAGS = @CFLAGS@
-DIST_SOURCES = bt.c exc.c sig.c test-dyn1.c test-init.c \
-	test-resume-sig.c test-varargs.c
+DIST_SOURCES = bt.c exc.c ia64-test-sig.c $(ia64_test_stack_SOURCES) \
+	test-dyn1.c test-init.c test-resume-sig.c test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = bt.c exc.c sig.c test-dyn1.c test-init.c test-resume-sig.c test-varargs.c
+SOURCES = bt.c exc.c ia64-test-sig.c $(ia64_test_stack_SOURCES) test-dyn1.c test-init.c test-resume-sig.c test-varargs.c
 
 all: all-am
 
 .SUFFIXES:
-.SUFFIXES: .c .lo .o .obj
+.SUFFIXES: .S .c .lo .o .obj
 $(srcdir)/Makefile.in: @MAINTAINER_MODE_TRUE@ Makefile.am  $(top_srcdir)/configure.in $(ACLOCAL_M4)
 	cd $(top_srcdir) && \
 	  $(AUTOMAKE) --gnu  tests/Makefile
 Makefile: @MAINTAINER_MODE_TRUE@ $(srcdir)/Makefile.in  $(top_builddir)/config.status
 	cd $(top_builddir) && $(SHELL) ./config.status $(subdir)/$@ $(am__depfiles_maybe)
+
+clean-checkPROGRAMS:
+	@list='$(check_PROGRAMS)'; for p in $$list; do \
+	  f=`echo $$p|sed 's/$(EXEEXT)$$//'`; \
+	  echo " rm -f $$p $$f"; \
+	  rm -f $$p $$f ; \
+	done
 
 clean-noinstPROGRAMS:
 	@list='$(noinst_PROGRAMS)'; for p in $$list; do \
@@ -206,9 +240,12 @@ bt$(EXEEXT): $(bt_OBJECTS) $(bt_DEPENDENCIES)
 exc$(EXEEXT): $(exc_OBJECTS) $(exc_DEPENDENCIES) 
 	@rm -f exc$(EXEEXT)
 	$(LINK) $(exc_LDFLAGS) $(exc_OBJECTS) $(exc_LDADD) $(LIBS)
-sig$(EXEEXT): $(sig_OBJECTS) $(sig_DEPENDENCIES) 
-	@rm -f sig$(EXEEXT)
-	$(LINK) $(sig_LDFLAGS) $(sig_OBJECTS) $(sig_LDADD) $(LIBS)
+ia64-test-sig$(EXEEXT): $(ia64_test_sig_OBJECTS) $(ia64_test_sig_DEPENDENCIES) 
+	@rm -f ia64-test-sig$(EXEEXT)
+	$(LINK) $(ia64_test_sig_LDFLAGS) $(ia64_test_sig_OBJECTS) $(ia64_test_sig_LDADD) $(LIBS)
+ia64-test-stack$(EXEEXT): $(ia64_test_stack_OBJECTS) $(ia64_test_stack_DEPENDENCIES) 
+	@rm -f ia64-test-stack$(EXEEXT)
+	$(LINK) $(ia64_test_stack_LDFLAGS) $(ia64_test_stack_OBJECTS) $(ia64_test_stack_LDADD) $(LIBS)
 test-dyn1$(EXEEXT): $(test_dyn1_OBJECTS) $(test_dyn1_DEPENDENCIES) 
 	@rm -f test-dyn1$(EXEEXT)
 	$(LINK) $(test_dyn1_LDFLAGS) $(test_dyn1_OBJECTS) $(test_dyn1_LDADD) $(LIBS)
@@ -230,7 +267,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bt.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/exc.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sig.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-sig.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-stack.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-resume-sig.Po@am__quote@
@@ -238,6 +276,15 @@ distclean-compile:
 
 distclean-depend:
 	-rm -rf ./$(DEPDIR)
+
+.S.o:
+	$(CCASCOMPILE) -c `test -f '$<' || echo '$(srcdir)/'`$<
+
+.S.obj:
+	$(CCASCOMPILE) -c `cygpath -w $<`
+
+.S.lo:
+	$(LTCCASCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
 .c.o:
 @AMDEP_TRUE@	source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
@@ -303,6 +350,61 @@ GTAGS:
 
 distclean-tags:
 	-rm -f TAGS ID GTAGS GRTAGS GSYMS GPATH
+
+check-TESTS: $(TESTS)
+	@failed=0; all=0; xfail=0; xpass=0; \
+	srcdir=$(srcdir); export srcdir; \
+	list='$(TESTS)'; \
+	if test -n "$$list"; then \
+	  for tst in $$list; do \
+	    if test -f ./$$tst; then dir=./; \
+	    elif test -f $$tst; then dir=; \
+	    else dir="$(srcdir)/"; fi; \
+	    if $(TESTS_ENVIRONMENT) $${dir}$$tst; then \
+	      all=`expr $$all + 1`; \
+	      case " $(XFAIL_TESTS) " in \
+	      *" $$tst "*) \
+	        xpass=`expr $$xpass + 1`; \
+	        failed=`expr $$failed + 1`; \
+	        echo "XPASS: $$tst"; \
+	      ;; \
+	      *) \
+	        echo "PASS: $$tst"; \
+	      ;; \
+	      esac; \
+	    elif test $$? -ne 77; then \
+	      all=`expr $$all + 1`; \
+	      case " $(XFAIL_TESTS) " in \
+	      *" $$tst "*) \
+	        xfail=`expr $$xfail + 1`; \
+	        echo "XFAIL: $$tst"; \
+	      ;; \
+	      *) \
+	        failed=`expr $$failed + 1`; \
+	        echo "FAIL: $$tst"; \
+	      ;; \
+	      esac; \
+	    fi; \
+	  done; \
+	  if test "$$failed" -eq 0; then \
+	    if test "$$xfail" -eq 0; then \
+	      banner="All $$all tests passed"; \
+	    else \
+	      banner="All $$all tests behaved as expected ($$xfail expected failures)"; \
+	    fi; \
+	  else \
+	    if test "$$xpass" -eq 0; then \
+	      banner="$$failed of $$all tests failed"; \
+	    else \
+	      banner="$$failed of $$all tests did not behave as expected ($$xpass unexpected passes)"; \
+	    fi; \
+	  fi; \
+	  dashes=`echo "$$banner" | sed s/./=/g`; \
+	  echo "$$dashes"; \
+	  echo "$$banner"; \
+	  echo "$$dashes"; \
+	  test "$$failed" -eq 0; \
+	else :; fi
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
 
 top_distdir = ..
@@ -330,6 +432,8 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
 all-am: Makefile $(PROGRAMS)
 
@@ -361,8 +465,8 @@ maintainer-clean-generic:
 	@echo "it deletes files that may require special tools to rebuild."
 clean: clean-am
 
-clean-am: clean-generic clean-libtool clean-noinstPROGRAMS \
-	mostlyclean-am
+clean-am: clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-noinstPROGRAMS mostlyclean-am
 
 distclean: distclean-am
 
@@ -398,8 +502,9 @@ mostlyclean-am: mostlyclean-compile mostlyclean-generic \
 
 uninstall-am: uninstall-info-am
 
-.PHONY: GTAGS all all-am check check-am clean clean-generic \
-	clean-libtool clean-noinstPROGRAMS distclean distclean-compile \
+.PHONY: GTAGS all all-am check check-TESTS check-am clean \
+	clean-checkPROGRAMS clean-generic clean-libtool \
+	clean-noinstPROGRAMS distclean distclean-compile \
 	distclean-depend distclean-generic distclean-libtool \
 	distclean-tags distdir dvi dvi-am info info-am install \
 	install-am install-data install-data-am install-exec \

@@ -92,7 +92,7 @@ am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
 install_sh = @install_sh@
-SOVERSION = 0:0:0		# See comments at end of file.
+SOVERSION = 1:0:0		# See comments at end of file.
 
 libunwind_la_SOURCES_common = \
 	backtrace.c get_proc_name.c				\
@@ -115,8 +115,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/ia64-init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
-	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/tables-ia64.c   \
-	ia64/get_accessors-ia64.c					      \
+	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
+	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
 									      \
@@ -205,7 +205,7 @@ am__objects_2 = $(am__objects_1) flush_cache-hppa.lo \
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
 am__objects_3 = $(am__objects_1) __ia64_install_context.lo \
-	global-ia64.lo tables-ia64.lo get_accessors-ia64.lo \
+	global-ia64.lo rbs-ia64.lo tables-ia64.lo get_accessors-ia64.lo \
 	flush_cache-ia64.lo set_caching_policy-ia64.lo regname-ia64.lo \
 	Ginit-ia64.lo Gparser-ia64.lo Gregs-ia64.lo Gscript-ia64.lo \
 	Gcreate_addr_space-ia64.lo Gdestroy_addr_space-ia64.lo \
@@ -322,7 +322,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/global-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/mempool.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/mi-init.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/mi-init.Plo ./$(DEPDIR)/rbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-hppa.Plo \
@@ -403,6 +403,7 @@ libunwind-hppa.la: $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_DEPENDENCIES
 	$(LINK) -rpath $(libdir) $(libunwind_hppa_la_LDFLAGS) $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_LIBADD) $(LIBS)
 __ia64_install_context.lo: ia64/__ia64_install_context.S
 global-ia64.lo: ia64/global-ia64.c
+rbs-ia64.lo: ia64/rbs-ia64.c
 tables-ia64.lo: ia64/tables-ia64.c
 get_accessors-ia64.lo: ia64/get_accessors-ia64.c
 flush_cache-ia64.lo: ia64/flush_cache-ia64.c
@@ -558,6 +559,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mempool.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mi-init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/tables-hppa.Plo@am__quote@
@@ -944,6 +946,24 @@ global-ia64.lo: ia64/global-ia64.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/global-ia64.Plo' tmpdepfile='$(DEPDIR)/global-ia64.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-ia64.lo `test -f 'ia64/global-ia64.c' || echo '$(srcdir)/'`ia64/global-ia64.c
+
+rbs-ia64.o: ia64/rbs-ia64.c
+@AMDEP_TRUE@	source='ia64/rbs-ia64.c' object='rbs-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/rbs-ia64.Po' tmpdepfile='$(DEPDIR)/rbs-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rbs-ia64.o `test -f 'ia64/rbs-ia64.c' || echo '$(srcdir)/'`ia64/rbs-ia64.c
+
+rbs-ia64.obj: ia64/rbs-ia64.c
+@AMDEP_TRUE@	source='ia64/rbs-ia64.c' object='rbs-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/rbs-ia64.Po' tmpdepfile='$(DEPDIR)/rbs-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rbs-ia64.obj `cygpath -w ia64/rbs-ia64.c`
+
+rbs-ia64.lo: ia64/rbs-ia64.c
+@AMDEP_TRUE@	source='ia64/rbs-ia64.c' object='rbs-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/rbs-ia64.Plo' tmpdepfile='$(DEPDIR)/rbs-ia64.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rbs-ia64.lo `test -f 'ia64/rbs-ia64.c' || echo '$(srcdir)/'`ia64/rbs-ia64.c
 
 tables-ia64.o: ia64/tables-ia64.c
 @AMDEP_TRUE@	source='ia64/tables-ia64.c' object='tables-ia64.o' libtool=no @AMDEPBACKSLASH@
