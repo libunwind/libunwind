@@ -26,6 +26,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
+#include "ucontext_i.h"
 #include <signal.h>
 
 PROTECTED int
@@ -48,20 +49,16 @@ unw_step (unw_cursor_t *cursor)
   else
     {
       struct dwarf_loc rbp_loc, rsp_loc, rip_loc;
-      struct ucontext *ucontext = (struct ucontext *)c->dwarf.cfa;
-      unw_word_t *uc_gregs = &ucontext->uc_mcontext.gregs[0];
+      unw_word_t ucontext = c->dwarf.cfa;
 
       Debug(1, "signal frame, skip over trampoline\n");
 
       c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
       c->sigcontext_addr = c->dwarf.cfa;
 
-#if 0
-      /* XXX this needs to be fixed for cross-compilation --davidm */
-      rsp_loc = DWARF_LOC ((unw_word_t)&uc_gregs[REG_RSP], 0);
-      rbp_loc = DWARF_LOC ((unw_word_t)&uc_gregs[REG_RBP], 0);
-      rip_loc = DWARF_LOC ((unw_word_t)&uc_gregs[REG_RIP], 0);
-#endif
+      rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+      rbp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
+      rip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
 
       ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
       if (ret < 0)
