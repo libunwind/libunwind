@@ -28,7 +28,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "internal.h"
 #include "tdep.h"
 
-#ifndef UNW_REMOTE_ONLY
+#ifdef UNW_REMOTE_ONLY
+
+static inline int
+local_find_proc_info (unw_dyn_info_list_t *list,
+		      unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
+		      int need_unwind_info, void *arg)
+{
+  return -UNW_ENOINFO;
+}
+
+#else /* !UNW_REMOTE_ONLY */
 
 static inline int
 local_find_proc_info (unw_dyn_info_list_t *list,
@@ -44,46 +54,36 @@ local_find_proc_info (unw_dyn_info_list_t *list,
   return -UNW_ENOINFO;
 }
 
-#endif /* UNW_REMOTE_ONLY */
+#endif /* !UNW_REMOTE_ONLY */
+
+#ifdef UNW_LOCAL_ONLY
 
 static inline int
 remote_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 		       int need_unwind_info, void *arg)
 {
-  unw_word_t generation;
-  int ret;
-
-  ret = unwi_dyn_remote_find_proc_info (as, ip, pi, &generation,
-					need_unwind_info, arg);
-  if (ret < 0)
-    return ret;
-
-  /* XXX fix me; this checks/flushes the cache at the wrong time.  */
-  if (as->dyn_generation != generation)
-    {
-      unw_flush_cache (as, 0, 0);
-      as->dyn_generation = generation;
-    }
-  return 0;
+  return -UNW_ENOINFO;
 }
+
+#else /* !UNW_LOCAL_ONLY */
+
+static inline int
+remote_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
+		       int need_unwind_info, void *arg)
+{
+  return unwi_dyn_remote_find_proc_info (as, ip, pi, need_unwind_info, arg);
+}
+
+#endif /* !UNW_LOCAL_ONLY */
 
 HIDDEN int
 unwi_find_dynamic_proc_info (unw_addr_space_t as, unw_word_t ip,
 			     unw_proc_info_t *pi, int need_unwind_info,
 			     void *arg)
 {
-#ifdef UNW_LOCAL_ONLY
-  return local_find_proc_info (&_U_dyn_info_list,
-			       as, ip, pi, need_unwind_info, arg);
-#else
-# ifdef UNW_REMOTE_ONLY
-  return remote_find_proc_info (as, ip, pi, need_unwind_info, arg);
-# else
   if (as == unw_local_addr_space)
     return local_find_proc_info ((unw_dyn_info_t *) _U_dyn_info_list_addr (),
 				 as, ip, pi, need_unwind_info, arg);
   else
     return remote_find_proc_info (as, ip, pi, need_unwind_info, arg);
-# endif
-#endif
 }
