@@ -28,15 +28,12 @@ AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(getunwind)
 
-dnl Hopefully there will be an AC_PROG_AS at some point...
-AS="$CC"
-AC_SUBST(AS)
-AC_SUBST(ASFLAGS)
+AM_PROG_AS
 
 get_arch() {
  case "$1" in
   i?86) echo x86;;
-  *) echo $target_cpu;;
+  *) echo $1;;
  esac
 }
 
@@ -45,7 +42,7 @@ target_arch=`get_arch $target_cpu`
 
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$build_arch)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch == xia64)
-AM_CONDITIONAL(ARCH_IA32, test x$target_arch == x86)
+AM_CONDITIONAL(ARCH_X86, test x$target_arch == xx86)
 
 if test x$target_arch != x$build_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
