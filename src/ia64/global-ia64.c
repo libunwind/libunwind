@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-struct ia64_global_unwind_state unw =
+HIDDEN struct ia64_global_unwind_state unw =
   {
     .needs_initialization = 1,
     .lock = PTHREAD_MUTEX_INITIALIZER,
