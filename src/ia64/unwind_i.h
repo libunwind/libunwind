@@ -350,9 +350,8 @@ rbs_contains (struct rbs_area *rbs, unw_word_t bsp)
      test is (bsp >= rbs->end - rbs->size) && (bsp < rbs->end).  We
      take advantage of the fact that -n == ~n + 1.  */
   result = bsp - rbs->end > ~rbs->size;
-  debug (150, "%s: 0x%lx in [0x%lx-0x%lx) => %d\n\t(from %p)\n", __FUNCTION__,
-	 (long) bsp, (long) (rbs->end - rbs->size), (long) rbs->end, result,
-	 __builtin_return_address (0));
+  debug (150, "%s: 0x%lx in [0x%lx-0x%lx) => %d\n", __FUNCTION__,
+	 (long) bsp, (long) (rbs->end - rbs->size), (long) rbs->end, result);
   return result;
 }
 
