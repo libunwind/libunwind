@@ -120,3 +120,5 @@ typedef ucontext_t unw_tdep_context_t;
    can't just use __getcontext() either, because that isn't exported
    by glibc...  */
 #define unw_tdep_getcontext(uc)		getcontext(uc)
+
+#define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_IA64_FR) < 128)
