@@ -73,7 +73,7 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
     }
   maps_close (&mi);
 #else
-# error Implement me, please.
+# warning Implement me, please.
 #endif
 
   /* If multiple dynamic-info list addresses are found, we would have
