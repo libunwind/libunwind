@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -28,10 +28,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 common_init (struct cursor *c)
 {
+  unw_word_t bspstore;
   int i, ret;
 
   c->cfm_loc =		IA64_REG_LOC (c, UNW_IA64_CFM);
-  c->top_rnat_loc =	IA64_REG_LOC (c, UNW_IA64_AR_RNAT);
   c->bsp_loc =		IA64_REG_LOC (c, UNW_IA64_AR_BSP);
   c->bspstore_loc =	IA64_REG_LOC (c, UNW_IA64_AR_BSPSTORE);
   c->pfs_loc =		IA64_REG_LOC (c, UNW_IA64_AR_PFS);
@@ -86,7 +86,17 @@ common_init (struct cursor *c)
   if (ret < 0)
     return ret;
 
-  c->rbs_top = c->bsp;
+  ret = ia64_get (c, c->bsp_loc, &bspstore);
+  if (ret < 0)
+    return ret;
+
+  c->rbs_curr = c->rbs_wridx = c->rbs_nvalid = 0;
+  c->rbs_area[0].end = bspstore;
+  c->rbs_area[0].size = ~(unw_word_t) 0;	/* initial guess... */
+  c->rbs_area[0].rnat_loc = IA64_REG_LOC (c, UNW_IA64_AR_RNAT);
+  debug (10, "%s: initial rbs-area: [?-0x%lx), rnat @ 0x%lx\n", __FUNCTION__,
+	 (long) c->rbs_area[0].end, (long) c->rbs_area[0].rnat_loc);
+
   c->pi.flags = 0;
 
 #ifdef UNW_LOCAL_ONLY
