@@ -86,37 +86,39 @@ install_sh = @install_sh@
 
 SOVERSION = 0:0:0		# See comments at end of file.
 
-@REMOTE_ONLY_TRUE@libunwind_la_SOURCES_common = dyn-common.h mempool.c mempool.h
-@REMOTE_ONLY_FALSE@libunwind_la_SOURCES_common = dyn-common.h dyn-local.c dyn-register.c \
-@REMOTE_ONLY_FALSE@	mempool.c mempool.h backtrace.c
+libunwind_la_SOURCES_common = \
+	backtrace.c get_proc_name.c				\
+	dyn-cancel.c dyn-extract.c dyn-local.c dyn-register.c	\
+	dyn-remote.c					 	\
+	mempool.c mempool.h					\
+	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
+	Lfind_dynamic_proc_info.c Lput_dynamic_unwind_info.c
 
 
-libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
-	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h ia64/script.h	   \
-	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		   \
-									   \
-	ia64/__ia64_install_context.S ia64/tables.c			   \
-	ia64/unw_regname.c						   \
-									   \
-	ia64/init.c ia64/parser.c ia64/regs.c ia64/script.c		   \
-	ia64/unw_create_addr_space.c ia64/unw_destroy_addr_space.c	   \
-	ia64/unw_find_dynamic_proc_info.c				   \
-	ia64/unw_set_caching_policy.c ia64/unw_flush_cache.c		   \
-	ia64/unw_get_accessors.c ia64/unw_get_proc_info.c		   \
-	ia64/unw_get_reg.c ia64/unw_get_fpreg.c ia64/unw_get_save_loc.c	   \
-	ia64/unw_is_signal_frame.c					   \
-	ia64/unw_resume.c ia64/unw_set_reg.c ia64/unw_set_fpreg.c	   \
-	ia64/unw_init_local.c ia64/unw_init_remote.c ia64/unw_step.c	   \
-									   \
-	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		   \
-	ia64/Lunw_create_addr_space.c ia64/Lunw_destroy_addr_space.c	   \
-	ia64/Lunw_find_dynamic_proc_info.c				   \
-	ia64/Lunw_set_caching_policy.c ia64/Lunw_flush_cache.c		   \
-	ia64/Lunw_get_accessors.c ia64/Lunw_get_proc_info.c		   \
-	ia64/Lunw_get_reg.c ia64/Lunw_get_fpreg.c ia64/Lunw_get_save_loc.c \
-	ia64/Lunw_is_signal_frame.c					   \
-	ia64/Lunw_resume.c ia64/Lunw_set_reg.c ia64/Lunw_set_fpreg.c	   \
-	ia64/Lunw_init_local.c ia64/Lunw_init_remote.c ia64/Lunw_step.c
+libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		  \
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		  \
+	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		  \
+									  \
+	ia64/__ia64_install_context.S ia64/tables.c			  \
+	ia64/unw_regname.c						  \
+									  \
+	ia64/Ginit.c ia64/Gparser.c ia64/Gregs.c ia64/Gscript.c		  \
+	ia64/Gcreate_addr_space.c ia64/Gdestroy_addr_space.c		  \
+	ia64/Gset_caching_policy.c ia64/Gflush_cache.c			  \
+	ia64/Gget_accessors.c ia64/Gget_proc_info.c ia64/Gget_proc_name.c \
+	ia64/Gget_reg.c ia64/Gget_fpreg.c ia64/Gget_save_loc.c		  \
+	ia64/Gis_signal_frame.c						  \
+	ia64/Gresume.c ia64/Gset_reg.c ia64/Gset_fpreg.c		  \
+	ia64/Ginit_local.c ia64/Ginit_remote.c ia64/Gstep.c		  \
+									  \
+	ia64/Linit.c ia64/Lparser.c ia64/Lregs.c ia64/Lscript.c		  \
+	ia64/Lcreate_addr_space.c ia64/Ldestroy_addr_space.c		  \
+	ia64/Lset_caching_policy.c ia64/Lflush_cache.c			  \
+	ia64/Lget_accessors.c ia64/Lget_proc_info.c ia64/Lget_proc_name.c \
+	ia64/Lget_reg.c ia64/Lget_fpreg.c ia64/Lget_save_loc.c		  \
+	ia64/Lis_signal_frame.c						  \
+	ia64/Lresume.c ia64/Lset_reg.c ia64/Lset_fpreg.c		  \
+	ia64/Linit_local.c ia64/Linit_remote.c ia64/Lstep.c
 
 
 @ARCH_IA32_TRUE@@ARCH_IA64_FALSE@lib_LTLIBRARIES = libunwind-ia32.la
@@ -144,91 +146,32 @@ libunwind_ia32_la_LIBADD =
 @ARCH_IA32_TRUE@@ARCH_IA64_FALSE@am_libunwind_ia32_la_OBJECTS =
 libunwind_ia32_la_OBJECTS = $(am_libunwind_ia32_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-@ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@am_libunwind_ia64_la_OBJECTS =
-@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@am_libunwind_ia64_la_OBJECTS =
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@am_libunwind_ia64_la_OBJECTS = \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	mempool.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	__ia64_install_context.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	tables.lo unw_regname.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	init.lo parser.lo regs.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	script.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_create_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_destroy_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_find_dynamic_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_set_caching_policy.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_flush_cache.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_accessors.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_get_save_loc.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_is_signal_frame.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_resume.lo unw_set_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_set_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_init_local.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_init_remote.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	unw_step.lo Linit.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lparser.lo Lregs.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lscript.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_create_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_destroy_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_find_dynamic_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_set_caching_policy.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_flush_cache.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_accessors.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_get_save_loc.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_is_signal_frame.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_resume.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_set_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_set_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_init_local.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_init_remote.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@	Lunw_step.lo
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@am_libunwind_ia64_la_OBJECTS = \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	dyn-local.lo dyn-register.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	mempool.lo backtrace.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	__ia64_install_context.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	tables.lo unw_regname.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	init.lo parser.lo regs.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	script.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_create_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_destroy_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_find_dynamic_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_set_caching_policy.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_flush_cache.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_accessors.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_get_save_loc.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_is_signal_frame.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_resume.lo unw_set_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_set_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_init_local.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_init_remote.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	unw_step.lo Linit.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lparser.lo Lregs.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lscript.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_create_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_destroy_addr_space.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_find_dynamic_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_set_caching_policy.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_flush_cache.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_accessors.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_proc_info.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_get_save_loc.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_is_signal_frame.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_resume.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_set_reg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_set_fpreg.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_init_local.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_init_remote.lo \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lunw_step.lo
+@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = backtrace.lo \
+@ARCH_IA64_TRUE@	get_proc_name.lo dyn-cancel.lo dyn-extract.lo \
+@ARCH_IA64_TRUE@	dyn-local.lo dyn-register.lo dyn-remote.lo \
+@ARCH_IA64_TRUE@	mempool.lo Gfind_dynamic_proc_info.lo \
+@ARCH_IA64_TRUE@	Gput_dynamic_unwind_info.lo \
+@ARCH_IA64_TRUE@	Lfind_dynamic_proc_info.lo \
+@ARCH_IA64_TRUE@	Lput_dynamic_unwind_info.lo \
+@ARCH_IA64_TRUE@	__ia64_install_context.lo tables.lo \
+@ARCH_IA64_TRUE@	unw_regname.lo Ginit.lo Gparser.lo Gregs.lo \
+@ARCH_IA64_TRUE@	Gscript.lo Gcreate_addr_space.lo \
+@ARCH_IA64_TRUE@	Gdestroy_addr_space.lo Gset_caching_policy.lo \
+@ARCH_IA64_TRUE@	Gflush_cache.lo Gget_accessors.lo \
+@ARCH_IA64_TRUE@	Gget_proc_info.lo Gget_proc_name.lo Gget_reg.lo \
+@ARCH_IA64_TRUE@	Gget_fpreg.lo Gget_save_loc.lo \
+@ARCH_IA64_TRUE@	Gis_signal_frame.lo Gresume.lo Gset_reg.lo \
+@ARCH_IA64_TRUE@	Gset_fpreg.lo Ginit_local.lo Ginit_remote.lo \
+@ARCH_IA64_TRUE@	Gstep.lo Linit.lo Lparser.lo Lregs.lo \
+@ARCH_IA64_TRUE@	Lscript.lo Lcreate_addr_space.lo \
+@ARCH_IA64_TRUE@	Ldestroy_addr_space.lo Lset_caching_policy.lo \
+@ARCH_IA64_TRUE@	Lflush_cache.lo Lget_accessors.lo \
+@ARCH_IA64_TRUE@	Lget_proc_info.lo Lget_proc_name.lo Lget_reg.lo \
+@ARCH_IA64_TRUE@	Lget_fpreg.lo Lget_save_loc.lo \
+@ARCH_IA64_TRUE@	Lis_signal_frame.lo Lresume.lo Lset_reg.lo \
+@ARCH_IA64_TRUE@	Lset_fpreg.lo Linit_local.lo Linit_remote.lo \
+@ARCH_IA64_TRUE@	Lstep.lo
+@ARCH_IA64_FALSE@am_libunwind_ia64_la_OBJECTS =
 libunwind_ia64_la_OBJECTS = $(am_libunwind_ia64_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -237,45 +180,49 @@ CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
 depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
-@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Linit.Plo $(DEPDIR)/Lparser.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lregs.Plo $(DEPDIR)/Lscript.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_create_addr_space.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_destroy_addr_space.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_find_dynamic_proc_info.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_flush_cache.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_get_accessors.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_get_fpreg.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_get_proc_info.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_get_reg.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_get_save_loc.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_init_local.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_init_remote.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_is_signal_frame.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_resume.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_set_caching_policy.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_set_fpreg.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/Lunw_set_reg.Plo $(DEPDIR)/Lunw_step.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/backtrace.Plo $(DEPDIR)/dyn-local.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/dyn-register.Plo $(DEPDIR)/init.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/mempool.Plo $(DEPDIR)/parser.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/regs.Plo $(DEPDIR)/script.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/tables.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_create_addr_space.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_destroy_addr_space.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_find_dynamic_proc_info.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_flush_cache.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_get_accessors.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_get_fpreg.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_get_proc_info.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_get_reg.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_get_save_loc.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_init_local.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_init_remote.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_is_signal_frame.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_regname.Plo $(DEPDIR)/unw_resume.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_set_caching_policy.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_set_fpreg.Plo \
-@AMDEP_TRUE@	$(DEPDIR)/unw_set_reg.Plo $(DEPDIR)/unw_step.Plo
+@AMDEP_TRUE@DEP_FILES = $(DEPDIR)/Gcreate_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gdestroy_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gfind_dynamic_proc_info.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gflush_cache.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gget_accessors.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gget_fpreg.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gget_proc_info.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gget_proc_name.Plo $(DEPDIR)/Gget_reg.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gget_save_loc.Plo $(DEPDIR)/Ginit.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Ginit_local.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Ginit_remote.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gis_signal_frame.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gparser.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gput_dynamic_unwind_info.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gregs.Plo $(DEPDIR)/Gresume.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gscript.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gset_caching_policy.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gset_fpreg.Plo $(DEPDIR)/Gset_reg.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Gstep.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lcreate_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Ldestroy_addr_space.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lfind_dynamic_proc_info.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lflush_cache.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lget_accessors.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lget_fpreg.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lget_proc_info.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lget_proc_name.Plo $(DEPDIR)/Lget_reg.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lget_save_loc.Plo $(DEPDIR)/Linit.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Linit_local.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Linit_remote.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lis_signal_frame.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lparser.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lput_dynamic_unwind_info.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lregs.Plo $(DEPDIR)/Lresume.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lscript.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lset_caching_policy.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lset_fpreg.Plo $(DEPDIR)/Lset_reg.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/Lstep.Plo $(DEPDIR)/backtrace.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/dyn-cancel.Plo $(DEPDIR)/dyn-extract.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/dyn-local.Plo $(DEPDIR)/dyn-register.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/dyn-remote.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/get_proc_name.Plo $(DEPDIR)/mempool.Plo \
+@AMDEP_TRUE@	$(DEPDIR)/tables.Plo $(DEPDIR)/unw_regname.Plo
 ASCOMPILE = $(AS) $(AM_ASFLAGS) $(ASFLAGS)
 LTASCOMPILE = $(LIBTOOL) --mode=compile $(AS) $(AM_ASFLAGS) $(ASFLAGS)
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
@@ -334,48 +281,48 @@ libunwind-ia32.la: $(libunwind_ia32_la_OBJECTS) $(libunwind_ia32_la_DEPENDENCIES
 __ia64_install_context.lo: ia64/__ia64_install_context.S
 tables.lo: ia64/tables.c
 unw_regname.lo: ia64/unw_regname.c
-init.lo: ia64/init.c
-parser.lo: ia64/parser.c
-regs.lo: ia64/regs.c
-script.lo: ia64/script.c
-unw_create_addr_space.lo: ia64/unw_create_addr_space.c
-unw_destroy_addr_space.lo: ia64/unw_destroy_addr_space.c
-unw_find_dynamic_proc_info.lo: ia64/unw_find_dynamic_proc_info.c
-unw_set_caching_policy.lo: ia64/unw_set_caching_policy.c
-unw_flush_cache.lo: ia64/unw_flush_cache.c
-unw_get_accessors.lo: ia64/unw_get_accessors.c
-unw_get_proc_info.lo: ia64/unw_get_proc_info.c
-unw_get_reg.lo: ia64/unw_get_reg.c
-unw_get_fpreg.lo: ia64/unw_get_fpreg.c
-unw_get_save_loc.lo: ia64/unw_get_save_loc.c
-unw_is_signal_frame.lo: ia64/unw_is_signal_frame.c
-unw_resume.lo: ia64/unw_resume.c
-unw_set_reg.lo: ia64/unw_set_reg.c
-unw_set_fpreg.lo: ia64/unw_set_fpreg.c
-unw_init_local.lo: ia64/unw_init_local.c
-unw_init_remote.lo: ia64/unw_init_remote.c
-unw_step.lo: ia64/unw_step.c
+Ginit.lo: ia64/Ginit.c
+Gparser.lo: ia64/Gparser.c
+Gregs.lo: ia64/Gregs.c
+Gscript.lo: ia64/Gscript.c
+Gcreate_addr_space.lo: ia64/Gcreate_addr_space.c
+Gdestroy_addr_space.lo: ia64/Gdestroy_addr_space.c
+Gset_caching_policy.lo: ia64/Gset_caching_policy.c
+Gflush_cache.lo: ia64/Gflush_cache.c
+Gget_accessors.lo: ia64/Gget_accessors.c
+Gget_proc_info.lo: ia64/Gget_proc_info.c
+Gget_proc_name.lo: ia64/Gget_proc_name.c
+Gget_reg.lo: ia64/Gget_reg.c
+Gget_fpreg.lo: ia64/Gget_fpreg.c
+Gget_save_loc.lo: ia64/Gget_save_loc.c
+Gis_signal_frame.lo: ia64/Gis_signal_frame.c
+Gresume.lo: ia64/Gresume.c
+Gset_reg.lo: ia64/Gset_reg.c
+Gset_fpreg.lo: ia64/Gset_fpreg.c
+Ginit_local.lo: ia64/Ginit_local.c
+Ginit_remote.lo: ia64/Ginit_remote.c
+Gstep.lo: ia64/Gstep.c
 Linit.lo: ia64/Linit.c
 Lparser.lo: ia64/Lparser.c
 Lregs.lo: ia64/Lregs.c
 Lscript.lo: ia64/Lscript.c
-Lunw_create_addr_space.lo: ia64/Lunw_create_addr_space.c
-Lunw_destroy_addr_space.lo: ia64/Lunw_destroy_addr_space.c
-Lunw_find_dynamic_proc_info.lo: ia64/Lunw_find_dynamic_proc_info.c
-Lunw_set_caching_policy.lo: ia64/Lunw_set_caching_policy.c
-Lunw_flush_cache.lo: ia64/Lunw_flush_cache.c
-Lunw_get_accessors.lo: ia64/Lunw_get_accessors.c
-Lunw_get_proc_info.lo: ia64/Lunw_get_proc_info.c
-Lunw_get_reg.lo: ia64/Lunw_get_reg.c
-Lunw_get_fpreg.lo: ia64/Lunw_get_fpreg.c
-Lunw_get_save_loc.lo: ia64/Lunw_get_save_loc.c
-Lunw_is_signal_frame.lo: ia64/Lunw_is_signal_frame.c
-Lunw_resume.lo: ia64/Lunw_resume.c
-Lunw_set_reg.lo: ia64/Lunw_set_reg.c
-Lunw_set_fpreg.lo: ia64/Lunw_set_fpreg.c
-Lunw_init_local.lo: ia64/Lunw_init_local.c
-Lunw_init_remote.lo: ia64/Lunw_init_remote.c
-Lunw_step.lo: ia64/Lunw_step.c
+Lcreate_addr_space.lo: ia64/Lcreate_addr_space.c
+Ldestroy_addr_space.lo: ia64/Ldestroy_addr_space.c
+Lset_caching_policy.lo: ia64/Lset_caching_policy.c
+Lflush_cache.lo: ia64/Lflush_cache.c
+Lget_accessors.lo: ia64/Lget_accessors.c
+Lget_proc_info.lo: ia64/Lget_proc_info.c
+Lget_proc_name.lo: ia64/Lget_proc_name.c
+Lget_reg.lo: ia64/Lget_reg.c
+Lget_fpreg.lo: ia64/Lget_fpreg.c
+Lget_save_loc.lo: ia64/Lget_save_loc.c
+Lis_signal_frame.lo: ia64/Lis_signal_frame.c
+Lresume.lo: ia64/Lresume.c
+Lset_reg.lo: ia64/Lset_reg.c
+Lset_fpreg.lo: ia64/Lset_fpreg.c
+Linit_local.lo: ia64/Linit_local.c
+Linit_remote.lo: ia64/Linit_remote.c
+Lstep.lo: ia64/Lstep.c
 libunwind-ia64.la: $(libunwind_ia64_la_OBJECTS) $(libunwind_ia64_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_ia64_la_LDFLAGS) $(libunwind_ia64_la_OBJECTS) $(libunwind_ia64_la_LIBADD) $(LIBS)
 
@@ -385,54 +332,62 @@ mostlyclean-compile:
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gcreate_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gdestroy_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gfind_dynamic_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gflush_cache.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gget_accessors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gget_fpreg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gget_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gget_proc_name.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gget_reg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gget_save_loc.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Ginit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Ginit_local.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Ginit_remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gis_signal_frame.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gparser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gput_dynamic_unwind_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gregs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gresume.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gscript.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gset_caching_policy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gset_fpreg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gset_reg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Gstep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lcreate_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Ldestroy_addr_space.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lfind_dynamic_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lflush_cache.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lget_accessors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lget_fpreg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lget_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lget_proc_name.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lget_reg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lget_save_loc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Linit.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Linit_local.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Linit_remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lis_signal_frame.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lparser.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lput_dynamic_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lregs.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lresume.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lscript.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_create_addr_space.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_destroy_addr_space.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_find_dynamic_proc_info.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_flush_cache.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_accessors.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_fpreg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_proc_info.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_reg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_get_save_loc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_init_local.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_init_remote.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_is_signal_frame.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_resume.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_set_caching_policy.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_set_fpreg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_set_reg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lunw_step.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lset_caching_policy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lset_fpreg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lset_reg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/Lstep.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/backtrace.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/dyn-cancel.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/dyn-extract.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/dyn-local.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/dyn-register.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/init.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/dyn-remote.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/get_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/mempool.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/parser.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/regs.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/script.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/tables.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_create_addr_space.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_destroy_addr_space.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_find_dynamic_proc_info.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_flush_cache.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_accessors.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_fpreg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_proc_info.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_reg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_get_save_loc.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_init_local.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_init_remote.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_is_signal_frame.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_regname.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_resume.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_set_caching_policy.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_set_fpreg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_set_reg.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@$(DEPDIR)/unw_step.Plo@am__quote@
 
 distclean-depend:
 	-rm -rf $(DEPDIR)
@@ -509,383 +464,383 @@ unw_regname.lo: ia64/unw_regname.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_regname.lo `test -f ia64/unw_regname.c || echo '$(srcdir)/'`ia64/unw_regname.c
 
-init.o: ia64/init.c
-@AMDEP_TRUE@	source='ia64/init.c' object='init.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/init.Po' tmpdepfile='$(DEPDIR)/init.TPo' @AMDEPBACKSLASH@
+Ginit.o: ia64/Ginit.c
+@AMDEP_TRUE@	source='ia64/Ginit.c' object='Ginit.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit.Po' tmpdepfile='$(DEPDIR)/Ginit.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o init.o `test -f ia64/init.c || echo '$(srcdir)/'`ia64/init.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit.o `test -f ia64/Ginit.c || echo '$(srcdir)/'`ia64/Ginit.c
 
-init.obj: ia64/init.c
-@AMDEP_TRUE@	source='ia64/init.c' object='init.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/init.Po' tmpdepfile='$(DEPDIR)/init.TPo' @AMDEPBACKSLASH@
+Ginit.obj: ia64/Ginit.c
+@AMDEP_TRUE@	source='ia64/Ginit.c' object='Ginit.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit.Po' tmpdepfile='$(DEPDIR)/Ginit.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o init.obj `cygpath -w ia64/init.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit.obj `cygpath -w ia64/Ginit.c`
 
-init.lo: ia64/init.c
-@AMDEP_TRUE@	source='ia64/init.c' object='init.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/init.Plo' tmpdepfile='$(DEPDIR)/init.TPlo' @AMDEPBACKSLASH@
+Ginit.lo: ia64/Ginit.c
+@AMDEP_TRUE@	source='ia64/Ginit.c' object='Ginit.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit.Plo' tmpdepfile='$(DEPDIR)/Ginit.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o init.lo `test -f ia64/init.c || echo '$(srcdir)/'`ia64/init.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit.lo `test -f ia64/Ginit.c || echo '$(srcdir)/'`ia64/Ginit.c
 
-parser.o: ia64/parser.c
-@AMDEP_TRUE@	source='ia64/parser.c' object='parser.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/parser.Po' tmpdepfile='$(DEPDIR)/parser.TPo' @AMDEPBACKSLASH@
+Gparser.o: ia64/Gparser.c
+@AMDEP_TRUE@	source='ia64/Gparser.c' object='Gparser.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gparser.Po' tmpdepfile='$(DEPDIR)/Gparser.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parser.o `test -f ia64/parser.c || echo '$(srcdir)/'`ia64/parser.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gparser.o `test -f ia64/Gparser.c || echo '$(srcdir)/'`ia64/Gparser.c
 
-parser.obj: ia64/parser.c
-@AMDEP_TRUE@	source='ia64/parser.c' object='parser.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/parser.Po' tmpdepfile='$(DEPDIR)/parser.TPo' @AMDEPBACKSLASH@
+Gparser.obj: ia64/Gparser.c
+@AMDEP_TRUE@	source='ia64/Gparser.c' object='Gparser.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gparser.Po' tmpdepfile='$(DEPDIR)/Gparser.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parser.obj `cygpath -w ia64/parser.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gparser.obj `cygpath -w ia64/Gparser.c`
 
-parser.lo: ia64/parser.c
-@AMDEP_TRUE@	source='ia64/parser.c' object='parser.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/parser.Plo' tmpdepfile='$(DEPDIR)/parser.TPlo' @AMDEPBACKSLASH@
+Gparser.lo: ia64/Gparser.c
+@AMDEP_TRUE@	source='ia64/Gparser.c' object='Gparser.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gparser.Plo' tmpdepfile='$(DEPDIR)/Gparser.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o parser.lo `test -f ia64/parser.c || echo '$(srcdir)/'`ia64/parser.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gparser.lo `test -f ia64/Gparser.c || echo '$(srcdir)/'`ia64/Gparser.c
 
-regs.o: ia64/regs.c
-@AMDEP_TRUE@	source='ia64/regs.c' object='regs.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regs.Po' tmpdepfile='$(DEPDIR)/regs.TPo' @AMDEPBACKSLASH@
+Gregs.o: ia64/Gregs.c
+@AMDEP_TRUE@	source='ia64/Gregs.c' object='Gregs.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs.Po' tmpdepfile='$(DEPDIR)/Gregs.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regs.o `test -f ia64/regs.c || echo '$(srcdir)/'`ia64/regs.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs.o `test -f ia64/Gregs.c || echo '$(srcdir)/'`ia64/Gregs.c
 
-regs.obj: ia64/regs.c
-@AMDEP_TRUE@	source='ia64/regs.c' object='regs.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regs.Po' tmpdepfile='$(DEPDIR)/regs.TPo' @AMDEPBACKSLASH@
+Gregs.obj: ia64/Gregs.c
+@AMDEP_TRUE@	source='ia64/Gregs.c' object='Gregs.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs.Po' tmpdepfile='$(DEPDIR)/Gregs.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regs.obj `cygpath -w ia64/regs.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs.obj `cygpath -w ia64/Gregs.c`
 
-regs.lo: ia64/regs.c
-@AMDEP_TRUE@	source='ia64/regs.c' object='regs.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/regs.Plo' tmpdepfile='$(DEPDIR)/regs.TPlo' @AMDEPBACKSLASH@
+Gregs.lo: ia64/Gregs.c
+@AMDEP_TRUE@	source='ia64/Gregs.c' object='Gregs.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs.Plo' tmpdepfile='$(DEPDIR)/Gregs.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o regs.lo `test -f ia64/regs.c || echo '$(srcdir)/'`ia64/regs.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs.lo `test -f ia64/Gregs.c || echo '$(srcdir)/'`ia64/Gregs.c
 
-script.o: ia64/script.c
-@AMDEP_TRUE@	source='ia64/script.c' object='script.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/script.Po' tmpdepfile='$(DEPDIR)/script.TPo' @AMDEPBACKSLASH@
+Gscript.o: ia64/Gscript.c
+@AMDEP_TRUE@	source='ia64/Gscript.c' object='Gscript.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gscript.Po' tmpdepfile='$(DEPDIR)/Gscript.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o script.o `test -f ia64/script.c || echo '$(srcdir)/'`ia64/script.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gscript.o `test -f ia64/Gscript.c || echo '$(srcdir)/'`ia64/Gscript.c
 
-script.obj: ia64/script.c
-@AMDEP_TRUE@	source='ia64/script.c' object='script.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/script.Po' tmpdepfile='$(DEPDIR)/script.TPo' @AMDEPBACKSLASH@
+Gscript.obj: ia64/Gscript.c
+@AMDEP_TRUE@	source='ia64/Gscript.c' object='Gscript.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gscript.Po' tmpdepfile='$(DEPDIR)/Gscript.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o script.obj `cygpath -w ia64/script.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gscript.obj `cygpath -w ia64/Gscript.c`
 
-script.lo: ia64/script.c
-@AMDEP_TRUE@	source='ia64/script.c' object='script.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/script.Plo' tmpdepfile='$(DEPDIR)/script.TPlo' @AMDEPBACKSLASH@
+Gscript.lo: ia64/Gscript.c
+@AMDEP_TRUE@	source='ia64/Gscript.c' object='Gscript.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gscript.Plo' tmpdepfile='$(DEPDIR)/Gscript.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o script.lo `test -f ia64/script.c || echo '$(srcdir)/'`ia64/script.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gscript.lo `test -f ia64/Gscript.c || echo '$(srcdir)/'`ia64/Gscript.c
 
-unw_create_addr_space.o: ia64/unw_create_addr_space.c
-@AMDEP_TRUE@	source='ia64/unw_create_addr_space.c' object='unw_create_addr_space.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_create_addr_space.TPo' @AMDEPBACKSLASH@
+Gcreate_addr_space.o: ia64/Gcreate_addr_space.c
+@AMDEP_TRUE@	source='ia64/Gcreate_addr_space.c' object='Gcreate_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space.Po' tmpdepfile='$(DEPDIR)/Gcreate_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_create_addr_space.o `test -f ia64/unw_create_addr_space.c || echo '$(srcdir)/'`ia64/unw_create_addr_space.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space.o `test -f ia64/Gcreate_addr_space.c || echo '$(srcdir)/'`ia64/Gcreate_addr_space.c
 
-unw_create_addr_space.obj: ia64/unw_create_addr_space.c
-@AMDEP_TRUE@	source='ia64/unw_create_addr_space.c' object='unw_create_addr_space.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_create_addr_space.TPo' @AMDEPBACKSLASH@
+Gcreate_addr_space.obj: ia64/Gcreate_addr_space.c
+@AMDEP_TRUE@	source='ia64/Gcreate_addr_space.c' object='Gcreate_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space.Po' tmpdepfile='$(DEPDIR)/Gcreate_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_create_addr_space.obj `cygpath -w ia64/unw_create_addr_space.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space.obj `cygpath -w ia64/Gcreate_addr_space.c`
 
-unw_create_addr_space.lo: ia64/unw_create_addr_space.c
-@AMDEP_TRUE@	source='ia64/unw_create_addr_space.c' object='unw_create_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_create_addr_space.Plo' tmpdepfile='$(DEPDIR)/unw_create_addr_space.TPlo' @AMDEPBACKSLASH@
+Gcreate_addr_space.lo: ia64/Gcreate_addr_space.c
+@AMDEP_TRUE@	source='ia64/Gcreate_addr_space.c' object='Gcreate_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gcreate_addr_space.Plo' tmpdepfile='$(DEPDIR)/Gcreate_addr_space.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_create_addr_space.lo `test -f ia64/unw_create_addr_space.c || echo '$(srcdir)/'`ia64/unw_create_addr_space.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gcreate_addr_space.lo `test -f ia64/Gcreate_addr_space.c || echo '$(srcdir)/'`ia64/Gcreate_addr_space.c
 
-unw_destroy_addr_space.o: ia64/unw_destroy_addr_space.c
-@AMDEP_TRUE@	source='ia64/unw_destroy_addr_space.c' object='unw_destroy_addr_space.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+Gdestroy_addr_space.o: ia64/Gdestroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Gdestroy_addr_space.c' object='Gdestroy_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gdestroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Gdestroy_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_destroy_addr_space.o `test -f ia64/unw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/unw_destroy_addr_space.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gdestroy_addr_space.o `test -f ia64/Gdestroy_addr_space.c || echo '$(srcdir)/'`ia64/Gdestroy_addr_space.c
 
-unw_destroy_addr_space.obj: ia64/unw_destroy_addr_space.c
-@AMDEP_TRUE@	source='ia64/unw_destroy_addr_space.c' object='unw_destroy_addr_space.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/unw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+Gdestroy_addr_space.obj: ia64/Gdestroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Gdestroy_addr_space.c' object='Gdestroy_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gdestroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Gdestroy_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_destroy_addr_space.obj `cygpath -w ia64/unw_destroy_addr_space.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gdestroy_addr_space.obj `cygpath -w ia64/Gdestroy_addr_space.c`
 
-unw_destroy_addr_space.lo: ia64/unw_destroy_addr_space.c
-@AMDEP_TRUE@	source='ia64/unw_destroy_addr_space.c' object='unw_destroy_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_destroy_addr_space.Plo' tmpdepfile='$(DEPDIR)/unw_destroy_addr_space.TPlo' @AMDEPBACKSLASH@
+Gdestroy_addr_space.lo: ia64/Gdestroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Gdestroy_addr_space.c' object='Gdestroy_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gdestroy_addr_space.Plo' tmpdepfile='$(DEPDIR)/Gdestroy_addr_space.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_destroy_addr_space.lo `test -f ia64/unw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/unw_destroy_addr_space.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gdestroy_addr_space.lo `test -f ia64/Gdestroy_addr_space.c || echo '$(srcdir)/'`ia64/Gdestroy_addr_space.c
 
-unw_find_dynamic_proc_info.o: ia64/unw_find_dynamic_proc_info.c
-@AMDEP_TRUE@	source='ia64/unw_find_dynamic_proc_info.c' object='unw_find_dynamic_proc_info.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_find_dynamic_proc_info.Po' tmpdepfile='$(DEPDIR)/unw_find_dynamic_proc_info.TPo' @AMDEPBACKSLASH@
+Gset_caching_policy.o: ia64/Gset_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Gset_caching_policy.c' object='Gset_caching_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_caching_policy.Po' tmpdepfile='$(DEPDIR)/Gset_caching_policy.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_find_dynamic_proc_info.o `test -f ia64/unw_find_dynamic_proc_info.c || echo '$(srcdir)/'`ia64/unw_find_dynamic_proc_info.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_caching_policy.o `test -f ia64/Gset_caching_policy.c || echo '$(srcdir)/'`ia64/Gset_caching_policy.c
 
-unw_find_dynamic_proc_info.obj: ia64/unw_find_dynamic_proc_info.c
-@AMDEP_TRUE@	source='ia64/unw_find_dynamic_proc_info.c' object='unw_find_dynamic_proc_info.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_find_dynamic_proc_info.Po' tmpdepfile='$(DEPDIR)/unw_find_dynamic_proc_info.TPo' @AMDEPBACKSLASH@
+Gset_caching_policy.obj: ia64/Gset_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Gset_caching_policy.c' object='Gset_caching_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_caching_policy.Po' tmpdepfile='$(DEPDIR)/Gset_caching_policy.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_find_dynamic_proc_info.obj `cygpath -w ia64/unw_find_dynamic_proc_info.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_caching_policy.obj `cygpath -w ia64/Gset_caching_policy.c`
 
-unw_find_dynamic_proc_info.lo: ia64/unw_find_dynamic_proc_info.c
-@AMDEP_TRUE@	source='ia64/unw_find_dynamic_proc_info.c' object='unw_find_dynamic_proc_info.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_find_dynamic_proc_info.Plo' tmpdepfile='$(DEPDIR)/unw_find_dynamic_proc_info.TPlo' @AMDEPBACKSLASH@
+Gset_caching_policy.lo: ia64/Gset_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Gset_caching_policy.c' object='Gset_caching_policy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_caching_policy.Plo' tmpdepfile='$(DEPDIR)/Gset_caching_policy.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_find_dynamic_proc_info.lo `test -f ia64/unw_find_dynamic_proc_info.c || echo '$(srcdir)/'`ia64/unw_find_dynamic_proc_info.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_caching_policy.lo `test -f ia64/Gset_caching_policy.c || echo '$(srcdir)/'`ia64/Gset_caching_policy.c
 
-unw_set_caching_policy.o: ia64/unw_set_caching_policy.c
-@AMDEP_TRUE@	source='ia64/unw_set_caching_policy.c' object='unw_set_caching_policy.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/unw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+Gflush_cache.o: ia64/Gflush_cache.c
+@AMDEP_TRUE@	source='ia64/Gflush_cache.c' object='Gflush_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gflush_cache.Po' tmpdepfile='$(DEPDIR)/Gflush_cache.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_caching_policy.o `test -f ia64/unw_set_caching_policy.c || echo '$(srcdir)/'`ia64/unw_set_caching_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gflush_cache.o `test -f ia64/Gflush_cache.c || echo '$(srcdir)/'`ia64/Gflush_cache.c
 
-unw_set_caching_policy.obj: ia64/unw_set_caching_policy.c
-@AMDEP_TRUE@	source='ia64/unw_set_caching_policy.c' object='unw_set_caching_policy.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/unw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+Gflush_cache.obj: ia64/Gflush_cache.c
+@AMDEP_TRUE@	source='ia64/Gflush_cache.c' object='Gflush_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gflush_cache.Po' tmpdepfile='$(DEPDIR)/Gflush_cache.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_caching_policy.obj `cygpath -w ia64/unw_set_caching_policy.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gflush_cache.obj `cygpath -w ia64/Gflush_cache.c`
 
-unw_set_caching_policy.lo: ia64/unw_set_caching_policy.c
-@AMDEP_TRUE@	source='ia64/unw_set_caching_policy.c' object='unw_set_caching_policy.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_caching_policy.Plo' tmpdepfile='$(DEPDIR)/unw_set_caching_policy.TPlo' @AMDEPBACKSLASH@
+Gflush_cache.lo: ia64/Gflush_cache.c
+@AMDEP_TRUE@	source='ia64/Gflush_cache.c' object='Gflush_cache.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gflush_cache.Plo' tmpdepfile='$(DEPDIR)/Gflush_cache.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_caching_policy.lo `test -f ia64/unw_set_caching_policy.c || echo '$(srcdir)/'`ia64/unw_set_caching_policy.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gflush_cache.lo `test -f ia64/Gflush_cache.c || echo '$(srcdir)/'`ia64/Gflush_cache.c
 
-unw_flush_cache.o: ia64/unw_flush_cache.c
-@AMDEP_TRUE@	source='ia64/unw_flush_cache.c' object='unw_flush_cache.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_flush_cache.Po' tmpdepfile='$(DEPDIR)/unw_flush_cache.TPo' @AMDEPBACKSLASH@
+Gget_accessors.o: ia64/Gget_accessors.c
+@AMDEP_TRUE@	source='ia64/Gget_accessors.c' object='Gget_accessors.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_accessors.Po' tmpdepfile='$(DEPDIR)/Gget_accessors.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_flush_cache.o `test -f ia64/unw_flush_cache.c || echo '$(srcdir)/'`ia64/unw_flush_cache.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_accessors.o `test -f ia64/Gget_accessors.c || echo '$(srcdir)/'`ia64/Gget_accessors.c
 
-unw_flush_cache.obj: ia64/unw_flush_cache.c
-@AMDEP_TRUE@	source='ia64/unw_flush_cache.c' object='unw_flush_cache.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_flush_cache.Po' tmpdepfile='$(DEPDIR)/unw_flush_cache.TPo' @AMDEPBACKSLASH@
+Gget_accessors.obj: ia64/Gget_accessors.c
+@AMDEP_TRUE@	source='ia64/Gget_accessors.c' object='Gget_accessors.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_accessors.Po' tmpdepfile='$(DEPDIR)/Gget_accessors.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_flush_cache.obj `cygpath -w ia64/unw_flush_cache.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_accessors.obj `cygpath -w ia64/Gget_accessors.c`
 
-unw_flush_cache.lo: ia64/unw_flush_cache.c
-@AMDEP_TRUE@	source='ia64/unw_flush_cache.c' object='unw_flush_cache.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_flush_cache.Plo' tmpdepfile='$(DEPDIR)/unw_flush_cache.TPlo' @AMDEPBACKSLASH@
+Gget_accessors.lo: ia64/Gget_accessors.c
+@AMDEP_TRUE@	source='ia64/Gget_accessors.c' object='Gget_accessors.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_accessors.Plo' tmpdepfile='$(DEPDIR)/Gget_accessors.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_flush_cache.lo `test -f ia64/unw_flush_cache.c || echo '$(srcdir)/'`ia64/unw_flush_cache.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_accessors.lo `test -f ia64/Gget_accessors.c || echo '$(srcdir)/'`ia64/Gget_accessors.c
 
-unw_get_accessors.o: ia64/unw_get_accessors.c
-@AMDEP_TRUE@	source='ia64/unw_get_accessors.c' object='unw_get_accessors.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_accessors.Po' tmpdepfile='$(DEPDIR)/unw_get_accessors.TPo' @AMDEPBACKSLASH@
+Gget_proc_info.o: ia64/Gget_proc_info.c
+@AMDEP_TRUE@	source='ia64/Gget_proc_info.c' object='Gget_proc_info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_accessors.o `test -f ia64/unw_get_accessors.c || echo '$(srcdir)/'`ia64/unw_get_accessors.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info.o `test -f ia64/Gget_proc_info.c || echo '$(srcdir)/'`ia64/Gget_proc_info.c
 
-unw_get_accessors.obj: ia64/unw_get_accessors.c
-@AMDEP_TRUE@	source='ia64/unw_get_accessors.c' object='unw_get_accessors.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_accessors.Po' tmpdepfile='$(DEPDIR)/unw_get_accessors.TPo' @AMDEPBACKSLASH@
+Gget_proc_info.obj: ia64/Gget_proc_info.c
+@AMDEP_TRUE@	source='ia64/Gget_proc_info.c' object='Gget_proc_info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info.Po' tmpdepfile='$(DEPDIR)/Gget_proc_info.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_accessors.obj `cygpath -w ia64/unw_get_accessors.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info.obj `cygpath -w ia64/Gget_proc_info.c`
 
-unw_get_accessors.lo: ia64/unw_get_accessors.c
-@AMDEP_TRUE@	source='ia64/unw_get_accessors.c' object='unw_get_accessors.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_accessors.Plo' tmpdepfile='$(DEPDIR)/unw_get_accessors.TPlo' @AMDEPBACKSLASH@
+Gget_proc_info.lo: ia64/Gget_proc_info.c
+@AMDEP_TRUE@	source='ia64/Gget_proc_info.c' object='Gget_proc_info.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_info.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_info.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_accessors.lo `test -f ia64/unw_get_accessors.c || echo '$(srcdir)/'`ia64/unw_get_accessors.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_info.lo `test -f ia64/Gget_proc_info.c || echo '$(srcdir)/'`ia64/Gget_proc_info.c
 
-unw_get_proc_info.o: ia64/unw_get_proc_info.c
-@AMDEP_TRUE@	source='ia64/unw_get_proc_info.c' object='unw_get_proc_info.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_proc_info.Po' tmpdepfile='$(DEPDIR)/unw_get_proc_info.TPo' @AMDEPBACKSLASH@
+Gget_proc_name.o: ia64/Gget_proc_name.c
+@AMDEP_TRUE@	source='ia64/Gget_proc_name.c' object='Gget_proc_name.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_proc_info.o `test -f ia64/unw_get_proc_info.c || echo '$(srcdir)/'`ia64/unw_get_proc_info.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name.o `test -f ia64/Gget_proc_name.c || echo '$(srcdir)/'`ia64/Gget_proc_name.c
 
-unw_get_proc_info.obj: ia64/unw_get_proc_info.c
-@AMDEP_TRUE@	source='ia64/unw_get_proc_info.c' object='unw_get_proc_info.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_proc_info.Po' tmpdepfile='$(DEPDIR)/unw_get_proc_info.TPo' @AMDEPBACKSLASH@
+Gget_proc_name.obj: ia64/Gget_proc_name.c
+@AMDEP_TRUE@	source='ia64/Gget_proc_name.c' object='Gget_proc_name.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name.Po' tmpdepfile='$(DEPDIR)/Gget_proc_name.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_proc_info.obj `cygpath -w ia64/unw_get_proc_info.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name.obj `cygpath -w ia64/Gget_proc_name.c`
 
-unw_get_proc_info.lo: ia64/unw_get_proc_info.c
-@AMDEP_TRUE@	source='ia64/unw_get_proc_info.c' object='unw_get_proc_info.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_proc_info.Plo' tmpdepfile='$(DEPDIR)/unw_get_proc_info.TPlo' @AMDEPBACKSLASH@
+Gget_proc_name.lo: ia64/Gget_proc_name.c
+@AMDEP_TRUE@	source='ia64/Gget_proc_name.c' object='Gget_proc_name.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_proc_name.Plo' tmpdepfile='$(DEPDIR)/Gget_proc_name.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_proc_info.lo `test -f ia64/unw_get_proc_info.c || echo '$(srcdir)/'`ia64/unw_get_proc_info.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_proc_name.lo `test -f ia64/Gget_proc_name.c || echo '$(srcdir)/'`ia64/Gget_proc_name.c
 
-unw_get_reg.o: ia64/unw_get_reg.c
-@AMDEP_TRUE@	source='ia64/unw_get_reg.c' object='unw_get_reg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_reg.Po' tmpdepfile='$(DEPDIR)/unw_get_reg.TPo' @AMDEPBACKSLASH@
+Gget_reg.o: ia64/Gget_reg.c
+@AMDEP_TRUE@	source='ia64/Gget_reg.c' object='Gget_reg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg.Po' tmpdepfile='$(DEPDIR)/Gget_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_reg.o `test -f ia64/unw_get_reg.c || echo '$(srcdir)/'`ia64/unw_get_reg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg.o `test -f ia64/Gget_reg.c || echo '$(srcdir)/'`ia64/Gget_reg.c
 
-unw_get_reg.obj: ia64/unw_get_reg.c
-@AMDEP_TRUE@	source='ia64/unw_get_reg.c' object='unw_get_reg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_reg.Po' tmpdepfile='$(DEPDIR)/unw_get_reg.TPo' @AMDEPBACKSLASH@
+Gget_reg.obj: ia64/Gget_reg.c
+@AMDEP_TRUE@	source='ia64/Gget_reg.c' object='Gget_reg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg.Po' tmpdepfile='$(DEPDIR)/Gget_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_reg.obj `cygpath -w ia64/unw_get_reg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg.obj `cygpath -w ia64/Gget_reg.c`
 
-unw_get_reg.lo: ia64/unw_get_reg.c
-@AMDEP_TRUE@	source='ia64/unw_get_reg.c' object='unw_get_reg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_reg.Plo' tmpdepfile='$(DEPDIR)/unw_get_reg.TPlo' @AMDEPBACKSLASH@
+Gget_reg.lo: ia64/Gget_reg.c
+@AMDEP_TRUE@	source='ia64/Gget_reg.c' object='Gget_reg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_reg.Plo' tmpdepfile='$(DEPDIR)/Gget_reg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_reg.lo `test -f ia64/unw_get_reg.c || echo '$(srcdir)/'`ia64/unw_get_reg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_reg.lo `test -f ia64/Gget_reg.c || echo '$(srcdir)/'`ia64/Gget_reg.c
 
-unw_get_fpreg.o: ia64/unw_get_fpreg.c
-@AMDEP_TRUE@	source='ia64/unw_get_fpreg.c' object='unw_get_fpreg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_fpreg.Po' tmpdepfile='$(DEPDIR)/unw_get_fpreg.TPo' @AMDEPBACKSLASH@
+Gget_fpreg.o: ia64/Gget_fpreg.c
+@AMDEP_TRUE@	source='ia64/Gget_fpreg.c' object='Gget_fpreg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_fpreg.Po' tmpdepfile='$(DEPDIR)/Gget_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_fpreg.o `test -f ia64/unw_get_fpreg.c || echo '$(srcdir)/'`ia64/unw_get_fpreg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_fpreg.o `test -f ia64/Gget_fpreg.c || echo '$(srcdir)/'`ia64/Gget_fpreg.c
 
-unw_get_fpreg.obj: ia64/unw_get_fpreg.c
-@AMDEP_TRUE@	source='ia64/unw_get_fpreg.c' object='unw_get_fpreg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_fpreg.Po' tmpdepfile='$(DEPDIR)/unw_get_fpreg.TPo' @AMDEPBACKSLASH@
+Gget_fpreg.obj: ia64/Gget_fpreg.c
+@AMDEP_TRUE@	source='ia64/Gget_fpreg.c' object='Gget_fpreg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_fpreg.Po' tmpdepfile='$(DEPDIR)/Gget_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_fpreg.obj `cygpath -w ia64/unw_get_fpreg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_fpreg.obj `cygpath -w ia64/Gget_fpreg.c`
 
-unw_get_fpreg.lo: ia64/unw_get_fpreg.c
-@AMDEP_TRUE@	source='ia64/unw_get_fpreg.c' object='unw_get_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_fpreg.Plo' tmpdepfile='$(DEPDIR)/unw_get_fpreg.TPlo' @AMDEPBACKSLASH@
+Gget_fpreg.lo: ia64/Gget_fpreg.c
+@AMDEP_TRUE@	source='ia64/Gget_fpreg.c' object='Gget_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_fpreg.Plo' tmpdepfile='$(DEPDIR)/Gget_fpreg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_fpreg.lo `test -f ia64/unw_get_fpreg.c || echo '$(srcdir)/'`ia64/unw_get_fpreg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_fpreg.lo `test -f ia64/Gget_fpreg.c || echo '$(srcdir)/'`ia64/Gget_fpreg.c
 
-unw_get_save_loc.o: ia64/unw_get_save_loc.c
-@AMDEP_TRUE@	source='ia64/unw_get_save_loc.c' object='unw_get_save_loc.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_save_loc.Po' tmpdepfile='$(DEPDIR)/unw_get_save_loc.TPo' @AMDEPBACKSLASH@
+Gget_save_loc.o: ia64/Gget_save_loc.c
+@AMDEP_TRUE@	source='ia64/Gget_save_loc.c' object='Gget_save_loc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_save_loc.Po' tmpdepfile='$(DEPDIR)/Gget_save_loc.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_save_loc.o `test -f ia64/unw_get_save_loc.c || echo '$(srcdir)/'`ia64/unw_get_save_loc.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_save_loc.o `test -f ia64/Gget_save_loc.c || echo '$(srcdir)/'`ia64/Gget_save_loc.c
 
-unw_get_save_loc.obj: ia64/unw_get_save_loc.c
-@AMDEP_TRUE@	source='ia64/unw_get_save_loc.c' object='unw_get_save_loc.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_save_loc.Po' tmpdepfile='$(DEPDIR)/unw_get_save_loc.TPo' @AMDEPBACKSLASH@
+Gget_save_loc.obj: ia64/Gget_save_loc.c
+@AMDEP_TRUE@	source='ia64/Gget_save_loc.c' object='Gget_save_loc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_save_loc.Po' tmpdepfile='$(DEPDIR)/Gget_save_loc.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_save_loc.obj `cygpath -w ia64/unw_get_save_loc.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_save_loc.obj `cygpath -w ia64/Gget_save_loc.c`
 
-unw_get_save_loc.lo: ia64/unw_get_save_loc.c
-@AMDEP_TRUE@	source='ia64/unw_get_save_loc.c' object='unw_get_save_loc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_get_save_loc.Plo' tmpdepfile='$(DEPDIR)/unw_get_save_loc.TPlo' @AMDEPBACKSLASH@
+Gget_save_loc.lo: ia64/Gget_save_loc.c
+@AMDEP_TRUE@	source='ia64/Gget_save_loc.c' object='Gget_save_loc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gget_save_loc.Plo' tmpdepfile='$(DEPDIR)/Gget_save_loc.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_get_save_loc.lo `test -f ia64/unw_get_save_loc.c || echo '$(srcdir)/'`ia64/unw_get_save_loc.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gget_save_loc.lo `test -f ia64/Gget_save_loc.c || echo '$(srcdir)/'`ia64/Gget_save_loc.c
 
-unw_is_signal_frame.o: ia64/unw_is_signal_frame.c
-@AMDEP_TRUE@	source='ia64/unw_is_signal_frame.c' object='unw_is_signal_frame.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_is_signal_frame.Po' tmpdepfile='$(DEPDIR)/unw_is_signal_frame.TPo' @AMDEPBACKSLASH@
+Gis_signal_frame.o: ia64/Gis_signal_frame.c
+@AMDEP_TRUE@	source='ia64/Gis_signal_frame.c' object='Gis_signal_frame.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame.Po' tmpdepfile='$(DEPDIR)/Gis_signal_frame.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_is_signal_frame.o `test -f ia64/unw_is_signal_frame.c || echo '$(srcdir)/'`ia64/unw_is_signal_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame.o `test -f ia64/Gis_signal_frame.c || echo '$(srcdir)/'`ia64/Gis_signal_frame.c
 
-unw_is_signal_frame.obj: ia64/unw_is_signal_frame.c
-@AMDEP_TRUE@	source='ia64/unw_is_signal_frame.c' object='unw_is_signal_frame.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_is_signal_frame.Po' tmpdepfile='$(DEPDIR)/unw_is_signal_frame.TPo' @AMDEPBACKSLASH@
+Gis_signal_frame.obj: ia64/Gis_signal_frame.c
+@AMDEP_TRUE@	source='ia64/Gis_signal_frame.c' object='Gis_signal_frame.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame.Po' tmpdepfile='$(DEPDIR)/Gis_signal_frame.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_is_signal_frame.obj `cygpath -w ia64/unw_is_signal_frame.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame.obj `cygpath -w ia64/Gis_signal_frame.c`
 
-unw_is_signal_frame.lo: ia64/unw_is_signal_frame.c
-@AMDEP_TRUE@	source='ia64/unw_is_signal_frame.c' object='unw_is_signal_frame.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_is_signal_frame.Plo' tmpdepfile='$(DEPDIR)/unw_is_signal_frame.TPlo' @AMDEPBACKSLASH@
+Gis_signal_frame.lo: ia64/Gis_signal_frame.c
+@AMDEP_TRUE@	source='ia64/Gis_signal_frame.c' object='Gis_signal_frame.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gis_signal_frame.Plo' tmpdepfile='$(DEPDIR)/Gis_signal_frame.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_is_signal_frame.lo `test -f ia64/unw_is_signal_frame.c || echo '$(srcdir)/'`ia64/unw_is_signal_frame.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gis_signal_frame.lo `test -f ia64/Gis_signal_frame.c || echo '$(srcdir)/'`ia64/Gis_signal_frame.c
 
-unw_resume.o: ia64/unw_resume.c
-@AMDEP_TRUE@	source='ia64/unw_resume.c' object='unw_resume.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_resume.Po' tmpdepfile='$(DEPDIR)/unw_resume.TPo' @AMDEPBACKSLASH@
+Gresume.o: ia64/Gresume.c
+@AMDEP_TRUE@	source='ia64/Gresume.c' object='Gresume.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume.Po' tmpdepfile='$(DEPDIR)/Gresume.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_resume.o `test -f ia64/unw_resume.c || echo '$(srcdir)/'`ia64/unw_resume.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume.o `test -f ia64/Gresume.c || echo '$(srcdir)/'`ia64/Gresume.c
 
-unw_resume.obj: ia64/unw_resume.c
-@AMDEP_TRUE@	source='ia64/unw_resume.c' object='unw_resume.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_resume.Po' tmpdepfile='$(DEPDIR)/unw_resume.TPo' @AMDEPBACKSLASH@
+Gresume.obj: ia64/Gresume.c
+@AMDEP_TRUE@	source='ia64/Gresume.c' object='Gresume.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume.Po' tmpdepfile='$(DEPDIR)/Gresume.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_resume.obj `cygpath -w ia64/unw_resume.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume.obj `cygpath -w ia64/Gresume.c`
 
-unw_resume.lo: ia64/unw_resume.c
-@AMDEP_TRUE@	source='ia64/unw_resume.c' object='unw_resume.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_resume.Plo' tmpdepfile='$(DEPDIR)/unw_resume.TPlo' @AMDEPBACKSLASH@
+Gresume.lo: ia64/Gresume.c
+@AMDEP_TRUE@	source='ia64/Gresume.c' object='Gresume.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gresume.Plo' tmpdepfile='$(DEPDIR)/Gresume.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_resume.lo `test -f ia64/unw_resume.c || echo '$(srcdir)/'`ia64/unw_resume.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gresume.lo `test -f ia64/Gresume.c || echo '$(srcdir)/'`ia64/Gresume.c
 
-unw_set_reg.o: ia64/unw_set_reg.c
-@AMDEP_TRUE@	source='ia64/unw_set_reg.c' object='unw_set_reg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_reg.Po' tmpdepfile='$(DEPDIR)/unw_set_reg.TPo' @AMDEPBACKSLASH@
+Gset_reg.o: ia64/Gset_reg.c
+@AMDEP_TRUE@	source='ia64/Gset_reg.c' object='Gset_reg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg.Po' tmpdepfile='$(DEPDIR)/Gset_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_reg.o `test -f ia64/unw_set_reg.c || echo '$(srcdir)/'`ia64/unw_set_reg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg.o `test -f ia64/Gset_reg.c || echo '$(srcdir)/'`ia64/Gset_reg.c
 
-unw_set_reg.obj: ia64/unw_set_reg.c
-@AMDEP_TRUE@	source='ia64/unw_set_reg.c' object='unw_set_reg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_reg.Po' tmpdepfile='$(DEPDIR)/unw_set_reg.TPo' @AMDEPBACKSLASH@
+Gset_reg.obj: ia64/Gset_reg.c
+@AMDEP_TRUE@	source='ia64/Gset_reg.c' object='Gset_reg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg.Po' tmpdepfile='$(DEPDIR)/Gset_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_reg.obj `cygpath -w ia64/unw_set_reg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg.obj `cygpath -w ia64/Gset_reg.c`
 
-unw_set_reg.lo: ia64/unw_set_reg.c
-@AMDEP_TRUE@	source='ia64/unw_set_reg.c' object='unw_set_reg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_reg.Plo' tmpdepfile='$(DEPDIR)/unw_set_reg.TPlo' @AMDEPBACKSLASH@
+Gset_reg.lo: ia64/Gset_reg.c
+@AMDEP_TRUE@	source='ia64/Gset_reg.c' object='Gset_reg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_reg.Plo' tmpdepfile='$(DEPDIR)/Gset_reg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_reg.lo `test -f ia64/unw_set_reg.c || echo '$(srcdir)/'`ia64/unw_set_reg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_reg.lo `test -f ia64/Gset_reg.c || echo '$(srcdir)/'`ia64/Gset_reg.c
 
-unw_set_fpreg.o: ia64/unw_set_fpreg.c
-@AMDEP_TRUE@	source='ia64/unw_set_fpreg.c' object='unw_set_fpreg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_fpreg.Po' tmpdepfile='$(DEPDIR)/unw_set_fpreg.TPo' @AMDEPBACKSLASH@
+Gset_fpreg.o: ia64/Gset_fpreg.c
+@AMDEP_TRUE@	source='ia64/Gset_fpreg.c' object='Gset_fpreg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_fpreg.Po' tmpdepfile='$(DEPDIR)/Gset_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_fpreg.o `test -f ia64/unw_set_fpreg.c || echo '$(srcdir)/'`ia64/unw_set_fpreg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_fpreg.o `test -f ia64/Gset_fpreg.c || echo '$(srcdir)/'`ia64/Gset_fpreg.c
 
-unw_set_fpreg.obj: ia64/unw_set_fpreg.c
-@AMDEP_TRUE@	source='ia64/unw_set_fpreg.c' object='unw_set_fpreg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_fpreg.Po' tmpdepfile='$(DEPDIR)/unw_set_fpreg.TPo' @AMDEPBACKSLASH@
+Gset_fpreg.obj: ia64/Gset_fpreg.c
+@AMDEP_TRUE@	source='ia64/Gset_fpreg.c' object='Gset_fpreg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_fpreg.Po' tmpdepfile='$(DEPDIR)/Gset_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_fpreg.obj `cygpath -w ia64/unw_set_fpreg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_fpreg.obj `cygpath -w ia64/Gset_fpreg.c`
 
-unw_set_fpreg.lo: ia64/unw_set_fpreg.c
-@AMDEP_TRUE@	source='ia64/unw_set_fpreg.c' object='unw_set_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_set_fpreg.Plo' tmpdepfile='$(DEPDIR)/unw_set_fpreg.TPlo' @AMDEPBACKSLASH@
+Gset_fpreg.lo: ia64/Gset_fpreg.c
+@AMDEP_TRUE@	source='ia64/Gset_fpreg.c' object='Gset_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gset_fpreg.Plo' tmpdepfile='$(DEPDIR)/Gset_fpreg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_set_fpreg.lo `test -f ia64/unw_set_fpreg.c || echo '$(srcdir)/'`ia64/unw_set_fpreg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gset_fpreg.lo `test -f ia64/Gset_fpreg.c || echo '$(srcdir)/'`ia64/Gset_fpreg.c
 
-unw_init_local.o: ia64/unw_init_local.c
-@AMDEP_TRUE@	source='ia64/unw_init_local.c' object='unw_init_local.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_init_local.Po' tmpdepfile='$(DEPDIR)/unw_init_local.TPo' @AMDEPBACKSLASH@
+Ginit_local.o: ia64/Ginit_local.c
+@AMDEP_TRUE@	source='ia64/Ginit_local.c' object='Ginit_local.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local.Po' tmpdepfile='$(DEPDIR)/Ginit_local.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_init_local.o `test -f ia64/unw_init_local.c || echo '$(srcdir)/'`ia64/unw_init_local.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local.o `test -f ia64/Ginit_local.c || echo '$(srcdir)/'`ia64/Ginit_local.c
 
-unw_init_local.obj: ia64/unw_init_local.c
-@AMDEP_TRUE@	source='ia64/unw_init_local.c' object='unw_init_local.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_init_local.Po' tmpdepfile='$(DEPDIR)/unw_init_local.TPo' @AMDEPBACKSLASH@
+Ginit_local.obj: ia64/Ginit_local.c
+@AMDEP_TRUE@	source='ia64/Ginit_local.c' object='Ginit_local.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local.Po' tmpdepfile='$(DEPDIR)/Ginit_local.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_init_local.obj `cygpath -w ia64/unw_init_local.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local.obj `cygpath -w ia64/Ginit_local.c`
 
-unw_init_local.lo: ia64/unw_init_local.c
-@AMDEP_TRUE@	source='ia64/unw_init_local.c' object='unw_init_local.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_init_local.Plo' tmpdepfile='$(DEPDIR)/unw_init_local.TPlo' @AMDEPBACKSLASH@
+Ginit_local.lo: ia64/Ginit_local.c
+@AMDEP_TRUE@	source='ia64/Ginit_local.c' object='Ginit_local.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_local.Plo' tmpdepfile='$(DEPDIR)/Ginit_local.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_init_local.lo `test -f ia64/unw_init_local.c || echo '$(srcdir)/'`ia64/unw_init_local.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_local.lo `test -f ia64/Ginit_local.c || echo '$(srcdir)/'`ia64/Ginit_local.c
 
-unw_init_remote.o: ia64/unw_init_remote.c
-@AMDEP_TRUE@	source='ia64/unw_init_remote.c' object='unw_init_remote.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_init_remote.Po' tmpdepfile='$(DEPDIR)/unw_init_remote.TPo' @AMDEPBACKSLASH@
+Ginit_remote.o: ia64/Ginit_remote.c
+@AMDEP_TRUE@	source='ia64/Ginit_remote.c' object='Ginit_remote.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote.Po' tmpdepfile='$(DEPDIR)/Ginit_remote.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_init_remote.o `test -f ia64/unw_init_remote.c || echo '$(srcdir)/'`ia64/unw_init_remote.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote.o `test -f ia64/Ginit_remote.c || echo '$(srcdir)/'`ia64/Ginit_remote.c
 
-unw_init_remote.obj: ia64/unw_init_remote.c
-@AMDEP_TRUE@	source='ia64/unw_init_remote.c' object='unw_init_remote.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_init_remote.Po' tmpdepfile='$(DEPDIR)/unw_init_remote.TPo' @AMDEPBACKSLASH@
+Ginit_remote.obj: ia64/Ginit_remote.c
+@AMDEP_TRUE@	source='ia64/Ginit_remote.c' object='Ginit_remote.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote.Po' tmpdepfile='$(DEPDIR)/Ginit_remote.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_init_remote.obj `cygpath -w ia64/unw_init_remote.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote.obj `cygpath -w ia64/Ginit_remote.c`
 
-unw_init_remote.lo: ia64/unw_init_remote.c
-@AMDEP_TRUE@	source='ia64/unw_init_remote.c' object='unw_init_remote.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_init_remote.Plo' tmpdepfile='$(DEPDIR)/unw_init_remote.TPlo' @AMDEPBACKSLASH@
+Ginit_remote.lo: ia64/Ginit_remote.c
+@AMDEP_TRUE@	source='ia64/Ginit_remote.c' object='Ginit_remote.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ginit_remote.Plo' tmpdepfile='$(DEPDIR)/Ginit_remote.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_init_remote.lo `test -f ia64/unw_init_remote.c || echo '$(srcdir)/'`ia64/unw_init_remote.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ginit_remote.lo `test -f ia64/Ginit_remote.c || echo '$(srcdir)/'`ia64/Ginit_remote.c
 
-unw_step.o: ia64/unw_step.c
-@AMDEP_TRUE@	source='ia64/unw_step.c' object='unw_step.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_step.Po' tmpdepfile='$(DEPDIR)/unw_step.TPo' @AMDEPBACKSLASH@
+Gstep.o: ia64/Gstep.c
+@AMDEP_TRUE@	source='ia64/Gstep.c' object='Gstep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep.Po' tmpdepfile='$(DEPDIR)/Gstep.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_step.o `test -f ia64/unw_step.c || echo '$(srcdir)/'`ia64/unw_step.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep.o `test -f ia64/Gstep.c || echo '$(srcdir)/'`ia64/Gstep.c
 
-unw_step.obj: ia64/unw_step.c
-@AMDEP_TRUE@	source='ia64/unw_step.c' object='unw_step.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_step.Po' tmpdepfile='$(DEPDIR)/unw_step.TPo' @AMDEPBACKSLASH@
+Gstep.obj: ia64/Gstep.c
+@AMDEP_TRUE@	source='ia64/Gstep.c' object='Gstep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep.Po' tmpdepfile='$(DEPDIR)/Gstep.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_step.obj `cygpath -w ia64/unw_step.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep.obj `cygpath -w ia64/Gstep.c`
 
-unw_step.lo: ia64/unw_step.c
-@AMDEP_TRUE@	source='ia64/unw_step.c' object='unw_step.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/unw_step.Plo' tmpdepfile='$(DEPDIR)/unw_step.TPlo' @AMDEPBACKSLASH@
+Gstep.lo: ia64/Gstep.c
+@AMDEP_TRUE@	source='ia64/Gstep.c' object='Gstep.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Gstep.Plo' tmpdepfile='$(DEPDIR)/Gstep.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o unw_step.lo `test -f ia64/unw_step.c || echo '$(srcdir)/'`ia64/unw_step.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gstep.lo `test -f ia64/Gstep.c || echo '$(srcdir)/'`ia64/Gstep.c
 
 Linit.o: ia64/Linit.c
 @AMDEP_TRUE@	source='ia64/Linit.c' object='Linit.o' libtool=no @AMDEPBACKSLASH@
@@ -959,311 +914,311 @@ Lscript.lo: ia64/Lscript.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lscript.lo `test -f ia64/Lscript.c || echo '$(srcdir)/'`ia64/Lscript.c
 
-Lunw_create_addr_space.o: ia64/Lunw_create_addr_space.c
-@AMDEP_TRUE@	source='ia64/Lunw_create_addr_space.c' object='Lunw_create_addr_space.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_create_addr_space.TPo' @AMDEPBACKSLASH@
+Lcreate_addr_space.o: ia64/Lcreate_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lcreate_addr_space.c' object='Lcreate_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space.Po' tmpdepfile='$(DEPDIR)/Lcreate_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_create_addr_space.o `test -f ia64/Lunw_create_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_create_addr_space.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space.o `test -f ia64/Lcreate_addr_space.c || echo '$(srcdir)/'`ia64/Lcreate_addr_space.c
 
-Lunw_create_addr_space.obj: ia64/Lunw_create_addr_space.c
-@AMDEP_TRUE@	source='ia64/Lunw_create_addr_space.c' object='Lunw_create_addr_space.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_create_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_create_addr_space.TPo' @AMDEPBACKSLASH@
+Lcreate_addr_space.obj: ia64/Lcreate_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lcreate_addr_space.c' object='Lcreate_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space.Po' tmpdepfile='$(DEPDIR)/Lcreate_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_create_addr_space.obj `cygpath -w ia64/Lunw_create_addr_space.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space.obj `cygpath -w ia64/Lcreate_addr_space.c`
 
-Lunw_create_addr_space.lo: ia64/Lunw_create_addr_space.c
-@AMDEP_TRUE@	source='ia64/Lunw_create_addr_space.c' object='Lunw_create_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_create_addr_space.Plo' tmpdepfile='$(DEPDIR)/Lunw_create_addr_space.TPlo' @AMDEPBACKSLASH@
+Lcreate_addr_space.lo: ia64/Lcreate_addr_space.c
+@AMDEP_TRUE@	source='ia64/Lcreate_addr_space.c' object='Lcreate_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space.Plo' tmpdepfile='$(DEPDIR)/Lcreate_addr_space.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_create_addr_space.lo `test -f ia64/Lunw_create_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_create_addr_space.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lcreate_addr_space.lo `test -f ia64/Lcreate_addr_space.c || echo '$(srcdir)/'`ia64/Lcreate_addr_space.c
 
-Lunw_destroy_addr_space.o: ia64/Lunw_destroy_addr_space.c
-@AMDEP_TRUE@	source='ia64/Lunw_destroy_addr_space.c' object='Lunw_destroy_addr_space.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+Ldestroy_addr_space.o: ia64/Ldestroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Ldestroy_addr_space.c' object='Ldestroy_addr_space.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ldestroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Ldestroy_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_destroy_addr_space.o `test -f ia64/Lunw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_destroy_addr_space.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ldestroy_addr_space.o `test -f ia64/Ldestroy_addr_space.c || echo '$(srcdir)/'`ia64/Ldestroy_addr_space.c
 
-Lunw_destroy_addr_space.obj: ia64/Lunw_destroy_addr_space.c
-@AMDEP_TRUE@	source='ia64/Lunw_destroy_addr_space.c' object='Lunw_destroy_addr_space.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_destroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Lunw_destroy_addr_space.TPo' @AMDEPBACKSLASH@
+Ldestroy_addr_space.obj: ia64/Ldestroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Ldestroy_addr_space.c' object='Ldestroy_addr_space.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ldestroy_addr_space.Po' tmpdepfile='$(DEPDIR)/Ldestroy_addr_space.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_destroy_addr_space.obj `cygpath -w ia64/Lunw_destroy_addr_space.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ldestroy_addr_space.obj `cygpath -w ia64/Ldestroy_addr_space.c`
 
-Lunw_destroy_addr_space.lo: ia64/Lunw_destroy_addr_space.c
-@AMDEP_TRUE@	source='ia64/Lunw_destroy_addr_space.c' object='Lunw_destroy_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_destroy_addr_space.Plo' tmpdepfile='$(DEPDIR)/Lunw_destroy_addr_space.TPlo' @AMDEPBACKSLASH@
+Ldestroy_addr_space.lo: ia64/Ldestroy_addr_space.c
+@AMDEP_TRUE@	source='ia64/Ldestroy_addr_space.c' object='Ldestroy_addr_space.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Ldestroy_addr_space.Plo' tmpdepfile='$(DEPDIR)/Ldestroy_addr_space.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_destroy_addr_space.lo `test -f ia64/Lunw_destroy_addr_space.c || echo '$(srcdir)/'`ia64/Lunw_destroy_addr_space.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Ldestroy_addr_space.lo `test -f ia64/Ldestroy_addr_space.c || echo '$(srcdir)/'`ia64/Ldestroy_addr_space.c
 
-Lunw_find_dynamic_proc_info.o: ia64/Lunw_find_dynamic_proc_info.c
-@AMDEP_TRUE@	source='ia64/Lunw_find_dynamic_proc_info.c' object='Lunw_find_dynamic_proc_info.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_find_dynamic_proc_info.Po' tmpdepfile='$(DEPDIR)/Lunw_find_dynamic_proc_info.TPo' @AMDEPBACKSLASH@
+Lset_caching_policy.o: ia64/Lset_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Lset_caching_policy.c' object='Lset_caching_policy.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_caching_policy.Po' tmpdepfile='$(DEPDIR)/Lset_caching_policy.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_find_dynamic_proc_info.o `test -f ia64/Lunw_find_dynamic_proc_info.c || echo '$(srcdir)/'`ia64/Lunw_find_dynamic_proc_info.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_caching_policy.o `test -f ia64/Lset_caching_policy.c || echo '$(srcdir)/'`ia64/Lset_caching_policy.c
 
-Lunw_find_dynamic_proc_info.obj: ia64/Lunw_find_dynamic_proc_info.c
-@AMDEP_TRUE@	source='ia64/Lunw_find_dynamic_proc_info.c' object='Lunw_find_dynamic_proc_info.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_find_dynamic_proc_info.Po' tmpdepfile='$(DEPDIR)/Lunw_find_dynamic_proc_info.TPo' @AMDEPBACKSLASH@
+Lset_caching_policy.obj: ia64/Lset_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Lset_caching_policy.c' object='Lset_caching_policy.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_caching_policy.Po' tmpdepfile='$(DEPDIR)/Lset_caching_policy.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_find_dynamic_proc_info.obj `cygpath -w ia64/Lunw_find_dynamic_proc_info.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_caching_policy.obj `cygpath -w ia64/Lset_caching_policy.c`
 
-Lunw_find_dynamic_proc_info.lo: ia64/Lunw_find_dynamic_proc_info.c
-@AMDEP_TRUE@	source='ia64/Lunw_find_dynamic_proc_info.c' object='Lunw_find_dynamic_proc_info.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_find_dynamic_proc_info.Plo' tmpdepfile='$(DEPDIR)/Lunw_find_dynamic_proc_info.TPlo' @AMDEPBACKSLASH@
+Lset_caching_policy.lo: ia64/Lset_caching_policy.c
+@AMDEP_TRUE@	source='ia64/Lset_caching_policy.c' object='Lset_caching_policy.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_caching_policy.Plo' tmpdepfile='$(DEPDIR)/Lset_caching_policy.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_find_dynamic_proc_info.lo `test -f ia64/Lunw_find_dynamic_proc_info.c || echo '$(srcdir)/'`ia64/Lunw_find_dynamic_proc_info.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_caching_policy.lo `test -f ia64/Lset_caching_policy.c || echo '$(srcdir)/'`ia64/Lset_caching_policy.c
 
-Lunw_set_caching_policy.o: ia64/Lunw_set_caching_policy.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_caching_policy.c' object='Lunw_set_caching_policy.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/Lunw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+Lflush_cache.o: ia64/Lflush_cache.c
+@AMDEP_TRUE@	source='ia64/Lflush_cache.c' object='Lflush_cache.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lflush_cache.Po' tmpdepfile='$(DEPDIR)/Lflush_cache.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_caching_policy.o `test -f ia64/Lunw_set_caching_policy.c || echo '$(srcdir)/'`ia64/Lunw_set_caching_policy.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lflush_cache.o `test -f ia64/Lflush_cache.c || echo '$(srcdir)/'`ia64/Lflush_cache.c
 
-Lunw_set_caching_policy.obj: ia64/Lunw_set_caching_policy.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_caching_policy.c' object='Lunw_set_caching_policy.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_caching_policy.Po' tmpdepfile='$(DEPDIR)/Lunw_set_caching_policy.TPo' @AMDEPBACKSLASH@
+Lflush_cache.obj: ia64/Lflush_cache.c
+@AMDEP_TRUE@	source='ia64/Lflush_cache.c' object='Lflush_cache.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lflush_cache.Po' tmpdepfile='$(DEPDIR)/Lflush_cache.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_caching_policy.obj `cygpath -w ia64/Lunw_set_caching_policy.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lflush_cache.obj `cygpath -w ia64/Lflush_cache.c`
 
-Lunw_set_caching_policy.lo: ia64/Lunw_set_caching_policy.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_caching_policy.c' object='Lunw_set_caching_policy.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_caching_policy.Plo' tmpdepfile='$(DEPDIR)/Lunw_set_caching_policy.TPlo' @AMDEPBACKSLASH@
+Lflush_cache.lo: ia64/Lflush_cache.c
+@AMDEP_TRUE@	source='ia64/Lflush_cache.c' object='Lflush_cache.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lflush_cache.Plo' tmpdepfile='$(DEPDIR)/Lflush_cache.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_caching_policy.lo `test -f ia64/Lunw_set_caching_policy.c || echo '$(srcdir)/'`ia64/Lunw_set_caching_policy.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lflush_cache.lo `test -f ia64/Lflush_cache.c || echo '$(srcdir)/'`ia64/Lflush_cache.c
 
-Lunw_flush_cache.o: ia64/Lunw_flush_cache.c
-@AMDEP_TRUE@	source='ia64/Lunw_flush_cache.c' object='Lunw_flush_cache.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_flush_cache.Po' tmpdepfile='$(DEPDIR)/Lunw_flush_cache.TPo' @AMDEPBACKSLASH@
+Lget_accessors.o: ia64/Lget_accessors.c
+@AMDEP_TRUE@	source='ia64/Lget_accessors.c' object='Lget_accessors.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_accessors.Po' tmpdepfile='$(DEPDIR)/Lget_accessors.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_flush_cache.o `test -f ia64/Lunw_flush_cache.c || echo '$(srcdir)/'`ia64/Lunw_flush_cache.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_accessors.o `test -f ia64/Lget_accessors.c || echo '$(srcdir)/'`ia64/Lget_accessors.c
 
-Lunw_flush_cache.obj: ia64/Lunw_flush_cache.c
-@AMDEP_TRUE@	source='ia64/Lunw_flush_cache.c' object='Lunw_flush_cache.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_flush_cache.Po' tmpdepfile='$(DEPDIR)/Lunw_flush_cache.TPo' @AMDEPBACKSLASH@
+Lget_accessors.obj: ia64/Lget_accessors.c
+@AMDEP_TRUE@	source='ia64/Lget_accessors.c' object='Lget_accessors.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_accessors.Po' tmpdepfile='$(DEPDIR)/Lget_accessors.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_flush_cache.obj `cygpath -w ia64/Lunw_flush_cache.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_accessors.obj `cygpath -w ia64/Lget_accessors.c`
 
-Lunw_flush_cache.lo: ia64/Lunw_flush_cache.c
-@AMDEP_TRUE@	source='ia64/Lunw_flush_cache.c' object='Lunw_flush_cache.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_flush_cache.Plo' tmpdepfile='$(DEPDIR)/Lunw_flush_cache.TPlo' @AMDEPBACKSLASH@
+Lget_accessors.lo: ia64/Lget_accessors.c
+@AMDEP_TRUE@	source='ia64/Lget_accessors.c' object='Lget_accessors.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_accessors.Plo' tmpdepfile='$(DEPDIR)/Lget_accessors.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_flush_cache.lo `test -f ia64/Lunw_flush_cache.c || echo '$(srcdir)/'`ia64/Lunw_flush_cache.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_accessors.lo `test -f ia64/Lget_accessors.c || echo '$(srcdir)/'`ia64/Lget_accessors.c
 
-Lunw_get_accessors.o: ia64/Lunw_get_accessors.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_accessors.c' object='Lunw_get_accessors.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_accessors.Po' tmpdepfile='$(DEPDIR)/Lunw_get_accessors.TPo' @AMDEPBACKSLASH@
+Lget_proc_info.o: ia64/Lget_proc_info.c
+@AMDEP_TRUE@	source='ia64/Lget_proc_info.c' object='Lget_proc_info.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info.Po' tmpdepfile='$(DEPDIR)/Lget_proc_info.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_accessors.o `test -f ia64/Lunw_get_accessors.c || echo '$(srcdir)/'`ia64/Lunw_get_accessors.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info.o `test -f ia64/Lget_proc_info.c || echo '$(srcdir)/'`ia64/Lget_proc_info.c
 
-Lunw_get_accessors.obj: ia64/Lunw_get_accessors.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_accessors.c' object='Lunw_get_accessors.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_accessors.Po' tmpdepfile='$(DEPDIR)/Lunw_get_accessors.TPo' @AMDEPBACKSLASH@
+Lget_proc_info.obj: ia64/Lget_proc_info.c
+@AMDEP_TRUE@	source='ia64/Lget_proc_info.c' object='Lget_proc_info.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info.Po' tmpdepfile='$(DEPDIR)/Lget_proc_info.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_accessors.obj `cygpath -w ia64/Lunw_get_accessors.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info.obj `cygpath -w ia64/Lget_proc_info.c`
 
-Lunw_get_accessors.lo: ia64/Lunw_get_accessors.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_accessors.c' object='Lunw_get_accessors.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_accessors.Plo' tmpdepfile='$(DEPDIR)/Lunw_get_accessors.TPlo' @AMDEPBACKSLASH@
+Lget_proc_info.lo: ia64/Lget_proc_info.c
+@AMDEP_TRUE@	source='ia64/Lget_proc_info.c' object='Lget_proc_info.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_info.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_info.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_accessors.lo `test -f ia64/Lunw_get_accessors.c || echo '$(srcdir)/'`ia64/Lunw_get_accessors.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_info.lo `test -f ia64/Lget_proc_info.c || echo '$(srcdir)/'`ia64/Lget_proc_info.c
 
-Lunw_get_proc_info.o: ia64/Lunw_get_proc_info.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_proc_info.c' object='Lunw_get_proc_info.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_proc_info.Po' tmpdepfile='$(DEPDIR)/Lunw_get_proc_info.TPo' @AMDEPBACKSLASH@
+Lget_proc_name.o: ia64/Lget_proc_name.c
+@AMDEP_TRUE@	source='ia64/Lget_proc_name.c' object='Lget_proc_name.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name.Po' tmpdepfile='$(DEPDIR)/Lget_proc_name.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_proc_info.o `test -f ia64/Lunw_get_proc_info.c || echo '$(srcdir)/'`ia64/Lunw_get_proc_info.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name.o `test -f ia64/Lget_proc_name.c || echo '$(srcdir)/'`ia64/Lget_proc_name.c
 
-Lunw_get_proc_info.obj: ia64/Lunw_get_proc_info.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_proc_info.c' object='Lunw_get_proc_info.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_proc_info.Po' tmpdepfile='$(DEPDIR)/Lunw_get_proc_info.TPo' @AMDEPBACKSLASH@
+Lget_proc_name.obj: ia64/Lget_proc_name.c
+@AMDEP_TRUE@	source='ia64/Lget_proc_name.c' object='Lget_proc_name.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name.Po' tmpdepfile='$(DEPDIR)/Lget_proc_name.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_proc_info.obj `cygpath -w ia64/Lunw_get_proc_info.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name.obj `cygpath -w ia64/Lget_proc_name.c`
 
-Lunw_get_proc_info.lo: ia64/Lunw_get_proc_info.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_proc_info.c' object='Lunw_get_proc_info.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_proc_info.Plo' tmpdepfile='$(DEPDIR)/Lunw_get_proc_info.TPlo' @AMDEPBACKSLASH@
+Lget_proc_name.lo: ia64/Lget_proc_name.c
+@AMDEP_TRUE@	source='ia64/Lget_proc_name.c' object='Lget_proc_name.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_proc_name.Plo' tmpdepfile='$(DEPDIR)/Lget_proc_name.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_proc_info.lo `test -f ia64/Lunw_get_proc_info.c || echo '$(srcdir)/'`ia64/Lunw_get_proc_info.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_proc_name.lo `test -f ia64/Lget_proc_name.c || echo '$(srcdir)/'`ia64/Lget_proc_name.c
 
-Lunw_get_reg.o: ia64/Lunw_get_reg.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_reg.c' object='Lunw_get_reg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_reg.Po' tmpdepfile='$(DEPDIR)/Lunw_get_reg.TPo' @AMDEPBACKSLASH@
+Lget_reg.o: ia64/Lget_reg.c
+@AMDEP_TRUE@	source='ia64/Lget_reg.c' object='Lget_reg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg.Po' tmpdepfile='$(DEPDIR)/Lget_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_reg.o `test -f ia64/Lunw_get_reg.c || echo '$(srcdir)/'`ia64/Lunw_get_reg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg.o `test -f ia64/Lget_reg.c || echo '$(srcdir)/'`ia64/Lget_reg.c
 
-Lunw_get_reg.obj: ia64/Lunw_get_reg.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_reg.c' object='Lunw_get_reg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_reg.Po' tmpdepfile='$(DEPDIR)/Lunw_get_reg.TPo' @AMDEPBACKSLASH@
+Lget_reg.obj: ia64/Lget_reg.c
+@AMDEP_TRUE@	source='ia64/Lget_reg.c' object='Lget_reg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg.Po' tmpdepfile='$(DEPDIR)/Lget_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_reg.obj `cygpath -w ia64/Lunw_get_reg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg.obj `cygpath -w ia64/Lget_reg.c`
 
-Lunw_get_reg.lo: ia64/Lunw_get_reg.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_reg.c' object='Lunw_get_reg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_reg.Plo' tmpdepfile='$(DEPDIR)/Lunw_get_reg.TPlo' @AMDEPBACKSLASH@
+Lget_reg.lo: ia64/Lget_reg.c
+@AMDEP_TRUE@	source='ia64/Lget_reg.c' object='Lget_reg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_reg.Plo' tmpdepfile='$(DEPDIR)/Lget_reg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_reg.lo `test -f ia64/Lunw_get_reg.c || echo '$(srcdir)/'`ia64/Lunw_get_reg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_reg.lo `test -f ia64/Lget_reg.c || echo '$(srcdir)/'`ia64/Lget_reg.c
 
-Lunw_get_fpreg.o: ia64/Lunw_get_fpreg.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_fpreg.c' object='Lunw_get_fpreg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_fpreg.Po' tmpdepfile='$(DEPDIR)/Lunw_get_fpreg.TPo' @AMDEPBACKSLASH@
+Lget_fpreg.o: ia64/Lget_fpreg.c
+@AMDEP_TRUE@	source='ia64/Lget_fpreg.c' object='Lget_fpreg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_fpreg.Po' tmpdepfile='$(DEPDIR)/Lget_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_fpreg.o `test -f ia64/Lunw_get_fpreg.c || echo '$(srcdir)/'`ia64/Lunw_get_fpreg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_fpreg.o `test -f ia64/Lget_fpreg.c || echo '$(srcdir)/'`ia64/Lget_fpreg.c
 
-Lunw_get_fpreg.obj: ia64/Lunw_get_fpreg.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_fpreg.c' object='Lunw_get_fpreg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_fpreg.Po' tmpdepfile='$(DEPDIR)/Lunw_get_fpreg.TPo' @AMDEPBACKSLASH@
+Lget_fpreg.obj: ia64/Lget_fpreg.c
+@AMDEP_TRUE@	source='ia64/Lget_fpreg.c' object='Lget_fpreg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_fpreg.Po' tmpdepfile='$(DEPDIR)/Lget_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_fpreg.obj `cygpath -w ia64/Lunw_get_fpreg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_fpreg.obj `cygpath -w ia64/Lget_fpreg.c`
 
-Lunw_get_fpreg.lo: ia64/Lunw_get_fpreg.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_fpreg.c' object='Lunw_get_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_fpreg.Plo' tmpdepfile='$(DEPDIR)/Lunw_get_fpreg.TPlo' @AMDEPBACKSLASH@
+Lget_fpreg.lo: ia64/Lget_fpreg.c
+@AMDEP_TRUE@	source='ia64/Lget_fpreg.c' object='Lget_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_fpreg.Plo' tmpdepfile='$(DEPDIR)/Lget_fpreg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_fpreg.lo `test -f ia64/Lunw_get_fpreg.c || echo '$(srcdir)/'`ia64/Lunw_get_fpreg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_fpreg.lo `test -f ia64/Lget_fpreg.c || echo '$(srcdir)/'`ia64/Lget_fpreg.c
 
-Lunw_get_save_loc.o: ia64/Lunw_get_save_loc.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_save_loc.c' object='Lunw_get_save_loc.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_save_loc.Po' tmpdepfile='$(DEPDIR)/Lunw_get_save_loc.TPo' @AMDEPBACKSLASH@
+Lget_save_loc.o: ia64/Lget_save_loc.c
+@AMDEP_TRUE@	source='ia64/Lget_save_loc.c' object='Lget_save_loc.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_save_loc.Po' tmpdepfile='$(DEPDIR)/Lget_save_loc.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_save_loc.o `test -f ia64/Lunw_get_save_loc.c || echo '$(srcdir)/'`ia64/Lunw_get_save_loc.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_save_loc.o `test -f ia64/Lget_save_loc.c || echo '$(srcdir)/'`ia64/Lget_save_loc.c
 
-Lunw_get_save_loc.obj: ia64/Lunw_get_save_loc.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_save_loc.c' object='Lunw_get_save_loc.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_save_loc.Po' tmpdepfile='$(DEPDIR)/Lunw_get_save_loc.TPo' @AMDEPBACKSLASH@
+Lget_save_loc.obj: ia64/Lget_save_loc.c
+@AMDEP_TRUE@	source='ia64/Lget_save_loc.c' object='Lget_save_loc.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_save_loc.Po' tmpdepfile='$(DEPDIR)/Lget_save_loc.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_save_loc.obj `cygpath -w ia64/Lunw_get_save_loc.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_save_loc.obj `cygpath -w ia64/Lget_save_loc.c`
 
-Lunw_get_save_loc.lo: ia64/Lunw_get_save_loc.c
-@AMDEP_TRUE@	source='ia64/Lunw_get_save_loc.c' object='Lunw_get_save_loc.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_get_save_loc.Plo' tmpdepfile='$(DEPDIR)/Lunw_get_save_loc.TPlo' @AMDEPBACKSLASH@
+Lget_save_loc.lo: ia64/Lget_save_loc.c
+@AMDEP_TRUE@	source='ia64/Lget_save_loc.c' object='Lget_save_loc.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lget_save_loc.Plo' tmpdepfile='$(DEPDIR)/Lget_save_loc.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_get_save_loc.lo `test -f ia64/Lunw_get_save_loc.c || echo '$(srcdir)/'`ia64/Lunw_get_save_loc.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lget_save_loc.lo `test -f ia64/Lget_save_loc.c || echo '$(srcdir)/'`ia64/Lget_save_loc.c
 
-Lunw_is_signal_frame.o: ia64/Lunw_is_signal_frame.c
-@AMDEP_TRUE@	source='ia64/Lunw_is_signal_frame.c' object='Lunw_is_signal_frame.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_is_signal_frame.Po' tmpdepfile='$(DEPDIR)/Lunw_is_signal_frame.TPo' @AMDEPBACKSLASH@
+Lis_signal_frame.o: ia64/Lis_signal_frame.c
+@AMDEP_TRUE@	source='ia64/Lis_signal_frame.c' object='Lis_signal_frame.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lis_signal_frame.Po' tmpdepfile='$(DEPDIR)/Lis_signal_frame.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_is_signal_frame.o `test -f ia64/Lunw_is_signal_frame.c || echo '$(srcdir)/'`ia64/Lunw_is_signal_frame.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lis_signal_frame.o `test -f ia64/Lis_signal_frame.c || echo '$(srcdir)/'`ia64/Lis_signal_frame.c
 
-Lunw_is_signal_frame.obj: ia64/Lunw_is_signal_frame.c
-@AMDEP_TRUE@	source='ia64/Lunw_is_signal_frame.c' object='Lunw_is_signal_frame.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_is_signal_frame.Po' tmpdepfile='$(DEPDIR)/Lunw_is_signal_frame.TPo' @AMDEPBACKSLASH@
+Lis_signal_frame.obj: ia64/Lis_signal_frame.c
+@AMDEP_TRUE@	source='ia64/Lis_signal_frame.c' object='Lis_signal_frame.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lis_signal_frame.Po' tmpdepfile='$(DEPDIR)/Lis_signal_frame.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_is_signal_frame.obj `cygpath -w ia64/Lunw_is_signal_frame.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lis_signal_frame.obj `cygpath -w ia64/Lis_signal_frame.c`
 
-Lunw_is_signal_frame.lo: ia64/Lunw_is_signal_frame.c
-@AMDEP_TRUE@	source='ia64/Lunw_is_signal_frame.c' object='Lunw_is_signal_frame.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_is_signal_frame.Plo' tmpdepfile='$(DEPDIR)/Lunw_is_signal_frame.TPlo' @AMDEPBACKSLASH@
+Lis_signal_frame.lo: ia64/Lis_signal_frame.c
+@AMDEP_TRUE@	source='ia64/Lis_signal_frame.c' object='Lis_signal_frame.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lis_signal_frame.Plo' tmpdepfile='$(DEPDIR)/Lis_signal_frame.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_is_signal_frame.lo `test -f ia64/Lunw_is_signal_frame.c || echo '$(srcdir)/'`ia64/Lunw_is_signal_frame.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lis_signal_frame.lo `test -f ia64/Lis_signal_frame.c || echo '$(srcdir)/'`ia64/Lis_signal_frame.c
 
-Lunw_resume.o: ia64/Lunw_resume.c
-@AMDEP_TRUE@	source='ia64/Lunw_resume.c' object='Lunw_resume.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_resume.Po' tmpdepfile='$(DEPDIR)/Lunw_resume.TPo' @AMDEPBACKSLASH@
+Lresume.o: ia64/Lresume.c
+@AMDEP_TRUE@	source='ia64/Lresume.c' object='Lresume.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lresume.Po' tmpdepfile='$(DEPDIR)/Lresume.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_resume.o `test -f ia64/Lunw_resume.c || echo '$(srcdir)/'`ia64/Lunw_resume.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lresume.o `test -f ia64/Lresume.c || echo '$(srcdir)/'`ia64/Lresume.c
 
-Lunw_resume.obj: ia64/Lunw_resume.c
-@AMDEP_TRUE@	source='ia64/Lunw_resume.c' object='Lunw_resume.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_resume.Po' tmpdepfile='$(DEPDIR)/Lunw_resume.TPo' @AMDEPBACKSLASH@
+Lresume.obj: ia64/Lresume.c
+@AMDEP_TRUE@	source='ia64/Lresume.c' object='Lresume.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lresume.Po' tmpdepfile='$(DEPDIR)/Lresume.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_resume.obj `cygpath -w ia64/Lunw_resume.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lresume.obj `cygpath -w ia64/Lresume.c`
 
-Lunw_resume.lo: ia64/Lunw_resume.c
-@AMDEP_TRUE@	source='ia64/Lunw_resume.c' object='Lunw_resume.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_resume.Plo' tmpdepfile='$(DEPDIR)/Lunw_resume.TPlo' @AMDEPBACKSLASH@
+Lresume.lo: ia64/Lresume.c
+@AMDEP_TRUE@	source='ia64/Lresume.c' object='Lresume.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lresume.Plo' tmpdepfile='$(DEPDIR)/Lresume.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_resume.lo `test -f ia64/Lunw_resume.c || echo '$(srcdir)/'`ia64/Lunw_resume.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lresume.lo `test -f ia64/Lresume.c || echo '$(srcdir)/'`ia64/Lresume.c
 
-Lunw_set_reg.o: ia64/Lunw_set_reg.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_reg.c' object='Lunw_set_reg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_reg.Po' tmpdepfile='$(DEPDIR)/Lunw_set_reg.TPo' @AMDEPBACKSLASH@
+Lset_reg.o: ia64/Lset_reg.c
+@AMDEP_TRUE@	source='ia64/Lset_reg.c' object='Lset_reg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_reg.Po' tmpdepfile='$(DEPDIR)/Lset_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_reg.o `test -f ia64/Lunw_set_reg.c || echo '$(srcdir)/'`ia64/Lunw_set_reg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_reg.o `test -f ia64/Lset_reg.c || echo '$(srcdir)/'`ia64/Lset_reg.c
 
-Lunw_set_reg.obj: ia64/Lunw_set_reg.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_reg.c' object='Lunw_set_reg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_reg.Po' tmpdepfile='$(DEPDIR)/Lunw_set_reg.TPo' @AMDEPBACKSLASH@
+Lset_reg.obj: ia64/Lset_reg.c
+@AMDEP_TRUE@	source='ia64/Lset_reg.c' object='Lset_reg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_reg.Po' tmpdepfile='$(DEPDIR)/Lset_reg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_reg.obj `cygpath -w ia64/Lunw_set_reg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_reg.obj `cygpath -w ia64/Lset_reg.c`
 
-Lunw_set_reg.lo: ia64/Lunw_set_reg.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_reg.c' object='Lunw_set_reg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_reg.Plo' tmpdepfile='$(DEPDIR)/Lunw_set_reg.TPlo' @AMDEPBACKSLASH@
+Lset_reg.lo: ia64/Lset_reg.c
+@AMDEP_TRUE@	source='ia64/Lset_reg.c' object='Lset_reg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_reg.Plo' tmpdepfile='$(DEPDIR)/Lset_reg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_reg.lo `test -f ia64/Lunw_set_reg.c || echo '$(srcdir)/'`ia64/Lunw_set_reg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_reg.lo `test -f ia64/Lset_reg.c || echo '$(srcdir)/'`ia64/Lset_reg.c
 
-Lunw_set_fpreg.o: ia64/Lunw_set_fpreg.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_fpreg.c' object='Lunw_set_fpreg.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_fpreg.Po' tmpdepfile='$(DEPDIR)/Lunw_set_fpreg.TPo' @AMDEPBACKSLASH@
+Lset_fpreg.o: ia64/Lset_fpreg.c
+@AMDEP_TRUE@	source='ia64/Lset_fpreg.c' object='Lset_fpreg.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_fpreg.Po' tmpdepfile='$(DEPDIR)/Lset_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_fpreg.o `test -f ia64/Lunw_set_fpreg.c || echo '$(srcdir)/'`ia64/Lunw_set_fpreg.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_fpreg.o `test -f ia64/Lset_fpreg.c || echo '$(srcdir)/'`ia64/Lset_fpreg.c
 
-Lunw_set_fpreg.obj: ia64/Lunw_set_fpreg.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_fpreg.c' object='Lunw_set_fpreg.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_fpreg.Po' tmpdepfile='$(DEPDIR)/Lunw_set_fpreg.TPo' @AMDEPBACKSLASH@
+Lset_fpreg.obj: ia64/Lset_fpreg.c
+@AMDEP_TRUE@	source='ia64/Lset_fpreg.c' object='Lset_fpreg.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_fpreg.Po' tmpdepfile='$(DEPDIR)/Lset_fpreg.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_fpreg.obj `cygpath -w ia64/Lunw_set_fpreg.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_fpreg.obj `cygpath -w ia64/Lset_fpreg.c`
 
-Lunw_set_fpreg.lo: ia64/Lunw_set_fpreg.c
-@AMDEP_TRUE@	source='ia64/Lunw_set_fpreg.c' object='Lunw_set_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_set_fpreg.Plo' tmpdepfile='$(DEPDIR)/Lunw_set_fpreg.TPlo' @AMDEPBACKSLASH@
+Lset_fpreg.lo: ia64/Lset_fpreg.c
+@AMDEP_TRUE@	source='ia64/Lset_fpreg.c' object='Lset_fpreg.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lset_fpreg.Plo' tmpdepfile='$(DEPDIR)/Lset_fpreg.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_set_fpreg.lo `test -f ia64/Lunw_set_fpreg.c || echo '$(srcdir)/'`ia64/Lunw_set_fpreg.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lset_fpreg.lo `test -f ia64/Lset_fpreg.c || echo '$(srcdir)/'`ia64/Lset_fpreg.c
 
-Lunw_init_local.o: ia64/Lunw_init_local.c
-@AMDEP_TRUE@	source='ia64/Lunw_init_local.c' object='Lunw_init_local.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_init_local.Po' tmpdepfile='$(DEPDIR)/Lunw_init_local.TPo' @AMDEPBACKSLASH@
+Linit_local.o: ia64/Linit_local.c
+@AMDEP_TRUE@	source='ia64/Linit_local.c' object='Linit_local.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local.Po' tmpdepfile='$(DEPDIR)/Linit_local.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_init_local.o `test -f ia64/Lunw_init_local.c || echo '$(srcdir)/'`ia64/Lunw_init_local.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local.o `test -f ia64/Linit_local.c || echo '$(srcdir)/'`ia64/Linit_local.c
 
-Lunw_init_local.obj: ia64/Lunw_init_local.c
-@AMDEP_TRUE@	source='ia64/Lunw_init_local.c' object='Lunw_init_local.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_init_local.Po' tmpdepfile='$(DEPDIR)/Lunw_init_local.TPo' @AMDEPBACKSLASH@
+Linit_local.obj: ia64/Linit_local.c
+@AMDEP_TRUE@	source='ia64/Linit_local.c' object='Linit_local.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local.Po' tmpdepfile='$(DEPDIR)/Linit_local.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_init_local.obj `cygpath -w ia64/Lunw_init_local.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local.obj `cygpath -w ia64/Linit_local.c`
 
-Lunw_init_local.lo: ia64/Lunw_init_local.c
-@AMDEP_TRUE@	source='ia64/Lunw_init_local.c' object='Lunw_init_local.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_init_local.Plo' tmpdepfile='$(DEPDIR)/Lunw_init_local.TPlo' @AMDEPBACKSLASH@
+Linit_local.lo: ia64/Linit_local.c
+@AMDEP_TRUE@	source='ia64/Linit_local.c' object='Linit_local.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_local.Plo' tmpdepfile='$(DEPDIR)/Linit_local.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_init_local.lo `test -f ia64/Lunw_init_local.c || echo '$(srcdir)/'`ia64/Lunw_init_local.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_local.lo `test -f ia64/Linit_local.c || echo '$(srcdir)/'`ia64/Linit_local.c
 
-Lunw_init_remote.o: ia64/Lunw_init_remote.c
-@AMDEP_TRUE@	source='ia64/Lunw_init_remote.c' object='Lunw_init_remote.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_init_remote.Po' tmpdepfile='$(DEPDIR)/Lunw_init_remote.TPo' @AMDEPBACKSLASH@
+Linit_remote.o: ia64/Linit_remote.c
+@AMDEP_TRUE@	source='ia64/Linit_remote.c' object='Linit_remote.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_remote.Po' tmpdepfile='$(DEPDIR)/Linit_remote.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_init_remote.o `test -f ia64/Lunw_init_remote.c || echo '$(srcdir)/'`ia64/Lunw_init_remote.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_remote.o `test -f ia64/Linit_remote.c || echo '$(srcdir)/'`ia64/Linit_remote.c
 
-Lunw_init_remote.obj: ia64/Lunw_init_remote.c
-@AMDEP_TRUE@	source='ia64/Lunw_init_remote.c' object='Lunw_init_remote.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_init_remote.Po' tmpdepfile='$(DEPDIR)/Lunw_init_remote.TPo' @AMDEPBACKSLASH@
+Linit_remote.obj: ia64/Linit_remote.c
+@AMDEP_TRUE@	source='ia64/Linit_remote.c' object='Linit_remote.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_remote.Po' tmpdepfile='$(DEPDIR)/Linit_remote.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_init_remote.obj `cygpath -w ia64/Lunw_init_remote.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_remote.obj `cygpath -w ia64/Linit_remote.c`
 
-Lunw_init_remote.lo: ia64/Lunw_init_remote.c
-@AMDEP_TRUE@	source='ia64/Lunw_init_remote.c' object='Lunw_init_remote.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_init_remote.Plo' tmpdepfile='$(DEPDIR)/Lunw_init_remote.TPlo' @AMDEPBACKSLASH@
+Linit_remote.lo: ia64/Linit_remote.c
+@AMDEP_TRUE@	source='ia64/Linit_remote.c' object='Linit_remote.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Linit_remote.Plo' tmpdepfile='$(DEPDIR)/Linit_remote.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_init_remote.lo `test -f ia64/Lunw_init_remote.c || echo '$(srcdir)/'`ia64/Lunw_init_remote.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Linit_remote.lo `test -f ia64/Linit_remote.c || echo '$(srcdir)/'`ia64/Linit_remote.c
 
-Lunw_step.o: ia64/Lunw_step.c
-@AMDEP_TRUE@	source='ia64/Lunw_step.c' object='Lunw_step.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_step.Po' tmpdepfile='$(DEPDIR)/Lunw_step.TPo' @AMDEPBACKSLASH@
+Lstep.o: ia64/Lstep.c
+@AMDEP_TRUE@	source='ia64/Lstep.c' object='Lstep.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep.Po' tmpdepfile='$(DEPDIR)/Lstep.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_step.o `test -f ia64/Lunw_step.c || echo '$(srcdir)/'`ia64/Lunw_step.c
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep.o `test -f ia64/Lstep.c || echo '$(srcdir)/'`ia64/Lstep.c
 
-Lunw_step.obj: ia64/Lunw_step.c
-@AMDEP_TRUE@	source='ia64/Lunw_step.c' object='Lunw_step.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_step.Po' tmpdepfile='$(DEPDIR)/Lunw_step.TPo' @AMDEPBACKSLASH@
+Lstep.obj: ia64/Lstep.c
+@AMDEP_TRUE@	source='ia64/Lstep.c' object='Lstep.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep.Po' tmpdepfile='$(DEPDIR)/Lstep.TPo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_step.obj `cygpath -w ia64/Lunw_step.c`
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep.obj `cygpath -w ia64/Lstep.c`
 
-Lunw_step.lo: ia64/Lunw_step.c
-@AMDEP_TRUE@	source='ia64/Lunw_step.c' object='Lunw_step.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/Lunw_step.Plo' tmpdepfile='$(DEPDIR)/Lunw_step.TPlo' @AMDEPBACKSLASH@
+Lstep.lo: ia64/Lstep.c
+@AMDEP_TRUE@	source='ia64/Lstep.c' object='Lstep.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lstep.Plo' tmpdepfile='$(DEPDIR)/Lstep.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lunw_step.lo `test -f ia64/Lunw_step.c || echo '$(srcdir)/'`ia64/Lunw_step.c
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep.lo `test -f ia64/Lstep.c || echo '$(srcdir)/'`ia64/Lstep.c
 CCDEPMODE = @CCDEPMODE@
 uninstall-info-am:
 
@@ -1404,6 +1359,7 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES
 
 
+# Nothing special.
 #
 # This is not ideal, but I know of no other way to install an
 # alias for a library.

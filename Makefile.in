@@ -87,14 +87,16 @@ install_sh = @install_sh@
 @ARCH_IA32_TRUE@@ARCH_IA64_FALSE@include_HEADERS_tdep = include/libunwind-ia32.h
 @ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
 
-include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h
+include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
+	include/libunwind-dynamic.h
+
 
 @REMOTE_ONLY_TRUE@include_HEADERS = $(include_HEADERS_common)
 @REMOTE_ONLY_FALSE@include_HEADERS = $(include_HEADERS_common) include/libunwind.h
 
 SUBDIRS = src tests doc
 
-EXTRA_DIST = include/libunwind-ia64.h
+EXTRA_DIST = include/libunwind-ia64.h include/ia64/script.h
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
@@ -110,7 +112,7 @@ RECURSIVE_TARGETS = info-recursive dvi-recursive install-info-recursive \
 	uninstall-recursive check-recursive installcheck-recursive
 DIST_COMMON = README $(include_HEADERS) ./include/config.h.in \
 	./include/stamp-h.in AUTHORS COPYING ChangeLog INSTALL \
-	Makefile.am Makefile.in NEWS acinclude.m4 aclocal.m4 \
+	Makefile.am Makefile.in NEWS TODO acinclude.m4 aclocal.m4 \
 	aux/config.guess aux/config.sub aux/depcomp aux/install-sh \
 	aux/ltconfig aux/ltmain.sh aux/missing aux/mkinstalldirs \
 	configure configure.in
@@ -289,7 +291,7 @@ GZIP_ENV = --best
 distdir: $(DISTFILES)
 	-chmod -R a+w $(distdir) >/dev/null 2>&1; rm -rf $(distdir)
 	mkdir $(distdir)
-	$(mkinstalldirs) $(distdir)/./include $(distdir)/aux $(distdir)/include
+	$(mkinstalldirs) $(distdir)/./include $(distdir)/aux $(distdir)/include $(distdir)/include/ia64
 	@for file in $(DISTFILES); do \
 	  if test -f $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \

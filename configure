@@ -4183,10 +4183,9 @@ fi
 
 if test x$target_arch != x$build_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
-else
-            ac_config_links="$ac_config_links include/libunwind.h:include/libunwind-$target_arch.h"
-
 fi
+                    ac_config_links="$ac_config_links include/libunwind.h:include/libunwind-$target_arch.h include/tdep.h:include/tdep-$target_arch.h"
+
 
 # Check whether --enable-debug or --disable-debug was given.
 if test "${enable_debug+set}" = set; then
@@ -4769,6 +4768,7 @@ do
   "tests/Makefile" ) CONFIG_FILES="$CONFIG_FILES tests/Makefile" ;;
   "doc/Makefile" ) CONFIG_FILES="$CONFIG_FILES doc/Makefile" ;;
   "include/libunwind.h" ) CONFIG_LINKS="$CONFIG_LINKS include/libunwind.h:include/libunwind-$target_arch.h" ;;
+  "include/tdep.h" ) CONFIG_LINKS="$CONFIG_LINKS include/tdep.h:include/tdep-$target_arch.h" ;;
   "default-1" ) CONFIG_COMMANDS="$CONFIG_COMMANDS default-1" ;;
   "include/config.h" ) CONFIG_HEADERS="$CONFIG_HEADERS include/config.h" ;;
   *) { { echo "$as_me:$LINENO: error: invalid argument: $ac_config_target" >&5
