@@ -325,13 +325,17 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
 	}
       else if (reg >= 32)
 	{
+	  struct rbs_area *rbs;
+	  unw_word_t reg_addr = IA64_GET_ADDR (reg_loc);
+
 	  /* NaT bit is saved in a stacked register.  */
-	  reg = rotate_gr (c, reg);
-	  ret = ia64_get_stacked (c, reg, &reg_loc, &nat_loc);
-	  if (ret < 0)
-	    return ret;
 	  assert (!IA64_IS_REG_LOC (reg_loc));
-	  mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (reg_loc));
+
+	  rbs = rbs_find (c, reg_addr);
+	  if (!rbs)
+	    return -UNW_EBADREG;
+	  nat_loc = rbs_get_rnat_loc (rbs, reg_addr);
+	  mask = (unw_word_t) 1 << ia64_rse_slot_num (reg_addr);
 	}
       else
 	{
