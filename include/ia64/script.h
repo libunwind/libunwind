@@ -31,32 +31,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef unsigned char unw_hash_index_t;
 
-enum ia64_script_insn_opcode
-  {
-    IA64_INSN_SET,		/* s[dst] = val */
-    IA64_INSN_SET_REG,		/* s[dst] = REG(val) */
-    IA64_INSN_ADD_PSP,		/* s[dst] = (s.psp + val) */
-    IA64_INSN_ADD_SP,		/* s[dst] = (s.sp + val) */
-    IA64_INSN_MOVE,		/* s[dst] = s[val] */
-    IA64_INSN_MOVE_STACKED,	/* s[dst] = ia64_rse_skip(*s.bsp_loc, val) */
-    IA64_INSN_MOVE_SCRATCH,	/* s[dst] = scratch reg "val" */
-    IA64_INSN_SETNAT_MEMSTK,	/* s[dst].nat.type = s.pri_unat_loc | MEMSTK */
-    IA64_INSN_INC_PSP,		/* psp += val */
-    IA64_INSN_LOAD_PSP		/* psp = *psp_loc */
-  };
-
 struct ia64_script_insn
   {
-    unsigned int opc;
+    unsigned int opc;		/* see enum ia64_script_insn_opcode */
     unsigned int dst;
     unw_word_t val;
   };
 
-/* Preserved general static registers (r4-r7) give rise to two script
-   instructions; everything else yields at most one instruction; at
-   the end of the script, the psp gets popped, accounting for one more
-   instruction.  */
-#define IA64_MAX_SCRIPT_LEN	(IA64_NUM_PREGS + 5)
+/* Updating each preserved register may result in one script
+   instruction each.  At the end of the script, psp gets popped,
+   accounting for one more instruction.  */
+#define IA64_MAX_SCRIPT_LEN	(IA64_NUM_PREGS + 1)
 
 struct ia64_script
   {
