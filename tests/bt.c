@@ -40,11 +40,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static void
 do_backtrace (void)
 {
+  char buf[512], name[256];
+  unw_word_t ip, sp, off;
   unw_cursor_t cursor;
   unw_proc_info_t pi;
-  unw_word_t ip, sp;
   unw_context_t uc;
-  char buf[512];
   int ret;
 
   unw_getcontext (&uc);
@@ -55,7 +55,14 @@ do_backtrace (void)
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
       unw_get_reg (&cursor, UNW_REG_SP, &sp);
-      unw_get_proc_name (&cursor, buf, sizeof (buf));
+      buf[0] = '\0';
+      if (unw_get_proc_name (&cursor, name, sizeof (name), &off) == 0)
+	{
+	  if (off)
+	    snprintf (buf, sizeof (buf), "<%s+0x%lx>", name, off);
+	  else
+	    snprintf (buf, sizeof (buf), "<%s>", name);
+	}
       printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
       unw_get_proc_info (&cursor, &pi);
