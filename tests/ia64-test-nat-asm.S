@@ -104,7 +104,7 @@ save_static_to_fr:
 	.save rp, loc1
 	mov loc1 = rp
 	.fframe 16
-	.spillpsp f2, 16
+	.spillpsp f2, 0
 	stf.spill [sp] = f2, -16
 	.spillreg r4, f2
 	setf.sig f2 = r4
@@ -184,7 +184,7 @@ save_static_to_mem:
 	mov loc2 = ar.unat
 
 	.fframe 16
-	.spillpsp r4, 16
+	.spillpsp r4, 0
 	st8.spill [sp] = r4, -16
 
 	.spillreg r5, r4
@@ -221,7 +221,7 @@ save_static_to_mem2:
 	mov loc2 = ar.unat
 
 	.fframe 16
-	.spillpsp r6, 16
+	.spillpsp r6, 0
 	st8.spill [sp] = r6, -16;;
 	.save @priunat, loc3
 	mov loc3 = ar.unat
@@ -259,10 +259,10 @@ save_static_to_mem3:
 
 	add r2 = 8, sp
 	.fframe 16
-	.spillpsp r6, 16
+	.spillpsp r6, 0
 	st8.spill [sp] = r6, -16;;
 	mov r3 = ar.unat;;
-	.savepsp @priunat, 8
+	.savepsp @priunat, -8
 	st8 [r2] = r3
 	mov ar.unat = 0			// trash ar.unat
 
@@ -301,12 +301,12 @@ save_static_to_mem4:
 
 	add r2 = 8, sp
 	.fframe 16
-	.spillpsp r6, 16
+	.spillpsp r6, 0
 	st8.spill [sp] = r6, -16;;
 	.save @priunat, r3
 	mov r3 = ar.unat;;
 	mov ar.unat = 0			// trash ar.unat
-	.savepsp @priunat, 8
+	.savepsp @priunat, -8
 	st8 [r2] = r3
 	mov r3 = r0			// trash register pri UNaT location
 	.body
@@ -344,11 +344,11 @@ save_static_to_mem5:
 
 	add r2 = 8, sp
 	.fframe 16
-	.spillpsp r6, 16
+	.spillpsp r6, 0
 	st8.spill [sp] = r6, -16;;
 	mov r3 = ar.unat;;
 	mov ar.unat = 0			// trash ar.unat
-	.savepsp @priunat, 8
+	.savepsp @priunat, -8
 	st8 [r2] = r3
 	.save @priunat, loc3
 	mov loc3 = r3
