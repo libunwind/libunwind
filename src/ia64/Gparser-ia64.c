@@ -738,8 +738,7 @@ lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
       break;
 
     default:
-      dprintf ("unwind.%s: invalid register number %d\n",
-	       __FUNCTION__, regnum);
+      dprintf ("%s: invalid register number %d\n", __FUNCTION__, regnum);
       return NULL;
     }
   return sr->curr.reg + preg;
@@ -804,7 +803,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		where = IA64_WHERE_BR;
 	      else
 		{
-		  dprintf ("unwind.%s: can't save to register number %d\n",
+		  dprintf ("%s: can't save to register number %d\n",
 			   __FUNCTION__, (int) op->reg);
 		  return -UNW_EBADREG;
 		}
@@ -834,7 +833,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		{
 		  if (val & 0xf)
 		    {
-		      dprintf ("unwind.%s: frame-size %ld not an integer "
+		      dprintf ("%s: frame-size %ld not an integer "
 			       "multiple of 16\n",
 			       __FUNCTION__, (long) op->val);
 		      return -UNW_EINVAL;
@@ -843,7 +842,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		}
 	      else
 		{
-		  dprintf ("unwind.%s: can only ADD to stack-pointer\n",
+		  dprintf ("%s: can only ADD to stack-pointer\n",
 			   __FUNCTION__);
 		  return -UNW_EBADREG;
 		}
