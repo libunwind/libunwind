@@ -39,6 +39,7 @@ struct ia64_global_unwind_state unw =
       "pri_unat_gr", "pri_unat_mem", "psp", "bsp", "bspstore",
       "ar.pfs", "ar.rnat", "rp",
       "r4", "r5", "r6", "r7",
+      "nat4", "nat5", "nat6", "nat7",
       "ar.unat", "pr", "ar.lc", "ar.fpsr",
       "b1", "b2", "b3", "b4", "b5",
       "f2", "f3", "f4", "f5",
