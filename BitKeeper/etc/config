@@ -91,3 +91,4 @@ license:
 # If you want no compression, set this to "none".
 # 
 compression: gzip
+logging_ask:no
