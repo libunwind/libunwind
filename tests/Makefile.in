@@ -95,21 +95,31 @@ install_sh = @install_sh@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
 noinst_PROGRAMS_common = 
+check_PROGRAMS_common = 
+check_SCRIPTS_common = 
 
-@REMOTE_ONLY_TRUE@TESTS_cdep = 
-@REMOTE_ONLY_FALSE@TESTS_cdep = Gtest-exc Ltest-exc Gtest-resume-sig Ltest-resume-sig \
-@REMOTE_ONLY_FALSE@		Gtest-dyn1 Ltest-dyn1 test-setjmp test-ptrace
+@REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
+@REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = 
+@REMOTE_ONLY_TRUE@check_PROGRAMS_cdep = 
+@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-resume-sig Ltest-resume-sig \
+@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1 test-setjmp test-ptrace
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 @REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = bt test-init test-varargs
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-sig
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@TESTS_arch = Gia64-test-stack Lia64-test-stack \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@		Gia64-test-rbs Lia64-test-rbs
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_SCRIPTS_arch = run-ia64-test-dyn1
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS_arch = Gia64-test-stack Lia64-test-stack	\
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-rbs Lia64-test-rbs
 
 
-TESTS = $(TESTS_arch) $(TESTS_cdep)
+check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
+		 $(check_PROGRAMS_arch)
 
-check_PROGRAMS = $(TESTS)
+check_SCRIPTS = $(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
+		$(check_SCRIPTS_arch)
+
+
+TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
@@ -119,6 +129,7 @@ Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S
 Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S
+ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S
 
 LDADD = ../src/libunwind-$(arch).la
 
@@ -137,19 +148,18 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-setjmp$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-ptrace$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@check_PROGRAMS =
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS = \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-stack$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-stack$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-rbs$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-rbs$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gtest-exc$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS = Gtest-exc$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-exc$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gtest-resume-sig$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-resume-sig$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gtest-dyn1$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-dyn1$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-setjmp$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-ptrace$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-ptrace$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-stack$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-stack$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-rbs$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Lia64-test-rbs$(EXEEXT)
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@noinst_PROGRAMS =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
@@ -158,7 +168,8 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS = bt$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-init$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) \
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-sig$(EXEEXT)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-sig$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-dyn1$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 
 am_Gia64_test_rbs_OBJECTS = Gia64-test-rbs.$(OBJEXT) \
@@ -220,6 +231,12 @@ bt_OBJECTS = bt.$(OBJEXT)
 bt_LDADD = $(LDADD)
 bt_DEPENDENCIES = ../src/libunwind-$(arch).la
 bt_LDFLAGS =
+am_ia64_test_dyn1_OBJECTS = ia64-test-dyn1.$(OBJEXT) \
+	ia64-dyn-asm.$(OBJEXT)
+ia64_test_dyn1_OBJECTS = $(am_ia64_test_dyn1_OBJECTS)
+ia64_test_dyn1_LDADD = $(LDADD)
+ia64_test_dyn1_DEPENDENCIES = ../src/libunwind-$(arch).la
+ia64_test_dyn1_LDFLAGS =
 ia64_test_sig_SOURCES = ia64-test-sig.c
 ia64_test_sig_OBJECTS = ia64-test-sig.$(OBJEXT)
 ia64_test_sig_LDADD = $(LDADD)
@@ -260,6 +277,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lia64-test-stack.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Ltest-dyn1.Po ./$(DEPDIR)/Ltest-exc.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Ltest-resume-sig.Po ./$(DEPDIR)/bt.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/ia64-test-dyn1.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ia64-test-sig.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-init.Po ./$(DEPDIR)/test-ptrace.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-setjmp.Po \
@@ -279,10 +297,10 @@ DIST_SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) \
 	Gtest-dyn1.c Gtest-exc.c Gtest-resume-sig.c \
 	$(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) \
 	Ltest-dyn1.c Ltest-exc.c Ltest-resume-sig.c bt.c \
-	ia64-test-sig.c test-init.c test-ptrace.c test-setjmp.c \
-	test-varargs.c
+	$(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c \
+	test-ptrace.c test-setjmp.c test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gtest-dyn1.c Gtest-exc.c Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Ltest-dyn1.c Ltest-exc.c Ltest-resume-sig.c bt.c ia64-test-sig.c test-init.c test-ptrace.c test-setjmp.c test-varargs.c
+SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gtest-dyn1.c Gtest-exc.c Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Ltest-dyn1.c Ltest-exc.c Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-init.c test-ptrace.c test-setjmp.c test-varargs.c
 
 all: all-am
 
@@ -340,6 +358,9 @@ Ltest-resume-sig$(EXEEXT): $(Ltest_resume_sig_OBJECTS) $(Ltest_resume_sig_DEPEND
 bt$(EXEEXT): $(bt_OBJECTS) $(bt_DEPENDENCIES) 
 	@rm -f bt$(EXEEXT)
 	$(LINK) $(bt_LDFLAGS) $(bt_OBJECTS) $(bt_LDADD) $(LIBS)
+ia64-test-dyn1$(EXEEXT): $(ia64_test_dyn1_OBJECTS) $(ia64_test_dyn1_DEPENDENCIES) 
+	@rm -f ia64-test-dyn1$(EXEEXT)
+	$(LINK) $(ia64_test_dyn1_LDFLAGS) $(ia64_test_dyn1_OBJECTS) $(ia64_test_dyn1_LDADD) $(LIBS)
 ia64-test-sig$(EXEEXT): $(ia64_test_sig_OBJECTS) $(ia64_test_sig_DEPENDENCIES) 
 	@rm -f ia64-test-sig$(EXEEXT)
 	$(LINK) $(ia64_test_sig_LDFLAGS) $(ia64_test_sig_OBJECTS) $(ia64_test_sig_LDADD) $(LIBS)
@@ -373,6 +394,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-exc.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Ltest-resume-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/bt.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ptrace.Po@am__quote@
@@ -537,7 +559,7 @@ distdir: $(DISTFILES)
 	  fi; \
 	done
 check-am: all-am
-	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS)
+	$(MAKE) $(AM_MAKEFLAGS) $(check_PROGRAMS) $(check_SCRIPTS)
 	$(MAKE) $(AM_MAKEFLAGS) check-TESTS
 check: check-am
 all-am: Makefile $(PROGRAMS)

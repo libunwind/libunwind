@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Jan 27 23:19:42 PST 2003
+.\" Manual page created with latex2man on Wed Feb 26 20:56:57 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-PTRACE" "3" "27 January 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-PTRACE" "3" "26 February 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 libunwind\-ptrace \-\- ptrace() support in libunwind 
@@ -67,6 +67,14 @@ _UPT_access_fpreg(unw_addr_space_t,
 unw_regnum_t,
 unw_fpreg_t *,
 int,
+void *);
+.br
+int
+_UPT_get_proc_name(unw_addr_space_t,
+unw_word_t,
+char *,
+size_t,
+unw_word_t *,
 void *);
 .br
 .PP

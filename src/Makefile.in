@@ -104,7 +104,7 @@ SETJMP_SO_VERSION = 0:0:0
 @REMOTE_ONLY_FALSE@	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 @REMOTE_ONLY_FALSE@	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
 @REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-@REMOTE_ONLY_FALSE@	_UPT_reg_offset.c
+@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.c _UPT_reg_offset.c
 
 
 @REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind-setjmp.la
@@ -236,7 +236,8 @@ libunwind_hppa_la_LIBADD =
 @REMOTE_ONLY_FALSE@	_UPT_create.lo _UPT_destroy.lo \
 @REMOTE_ONLY_FALSE@	_UPT_find_proc_info.lo \
 @REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.lo \
-@REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo _UPT_reg_offset.lo
+@REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo \
+@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.lo _UPT_reg_offset.lo
 @OS_LINUX_TRUE@am__objects_2 = os-linux.lo
 am__objects_3 = $(am__objects_1) $(am__objects_2) backtrace.lo \
 	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
@@ -397,6 +398,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_destroy.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_find_proc_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_get_dyn_info_list_addr.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_get_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_put_unwind_info.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_reg_offset.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/backtrace.Plo \
@@ -667,6 +669,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_destroy.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_find_proc_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_get_dyn_info_list_addr.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_get_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_put_unwind_info.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_reg_offset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
