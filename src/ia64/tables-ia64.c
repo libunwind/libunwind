@@ -10,6 +10,9 @@ This file is part of libunwind.  */
 
 #include <assert.h>
 #include <stdlib.h>
+#ifdef HAVE_IA64INTRIN_H
+# include <ia64intrin.h>
+#endif
 
 #include "unwind_i.h"
 
@@ -286,6 +289,19 @@ _Uia64_get_kernel_table (unw_dyn_info_t *di)
   return 0;
 }
 
+static inline unsigned long
+current_gp (void)
+{
+#ifdef __GNUC__
+      register unsigned long gp __asm__("gp");
+      return gp;
+#elif HAVE_IA64INTRIN_H
+      return __getReg(_IA64_REG_GP);
+#else
+# error Implement me.
+#endif
+}
+
 static int
 callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
@@ -340,12 +356,9 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	  }
     }
   else
-    {
-      /* Otherwise this is a static executable with no _DYNAMIC.
-	 The gp is constant program-wide.  */
-      register unsigned long gp __asm__("gp");
-      di->gp = gp;
-    }
+    /* Otherwise this is a static executable with no _DYNAMIC.
+       The gp is constant program-wide.  */
+    di->gp = current_gp();
   di->format = UNW_INFO_FORMAT_TABLE;
   di->start_ip = p_text->p_vaddr + load_base;
   di->end_ip = p_text->p_vaddr + load_base + p_text->p_memsz;
