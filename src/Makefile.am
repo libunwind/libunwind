@@ -56,31 +56,49 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/Lresume-ia64.c ia64/Lset_reg-ia64.c ia64/Lset_fpreg-ia64.c	      \
 	ia64/Linit_local-ia64.c ia64/Linit_remote-ia64.c ia64/Lstep-ia64.c
 
+libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
+	hppa/flush_cache-hppa.c hppa/get_accessors-hppa.c		\
+	hppa/global-hppa.c hppa/tables-hppa.c				\
+	hppa/init.h hppa/unwind_i.h					\
+									\
+	hppa/Gget_reg-hppa.c hppa/Gget_proc_name-hppa.c			\
+	hppa/Ginit-hppa.c hppa/Ginit_local-hppa.c			\
+	hppa/Gget_proc_info-hppa.c hppa/Gregs-hppa.c hppa/Gstep-hppa.c	\
+									\
+	hppa/Lget_reg-hppa.c hppa/Lget_proc_name-hppa.c			\
+	hppa/Linit-hppa.c hppa/Linit_local-hppa.c			\
+	hppa/Lget_proc_info-hppa.c hppa/Lregs-hppa.c hppa/Lstep-hppa.c
+
+libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
+	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
+	x86/tables-x86.c						\
+	x86/init.h x86/unwind_i.h					\
+									\
+	x86/Gget_reg-x86.c x86/Gget_proc_name-x86.c x86/Ginit-x86.c	\
+	x86/Ginit_local-x86.c x86/Gget_proc_info-x86.c x86/Gregs-x86.c	\
+	x86/Gstep-x86.c							\
+									\
+	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
+	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
+	x86/Lstep-x86.c
+
 if ARCH_IA64
  lib_LTLIBRARIES = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
 else
+if ARCH_HPPA
+ lib_LTLIBRARIES = libunwind-hppa.la
+ libunwind_hppa_la_SOURCES = $(libunwind_la_SOURCES_hppa)
+ libunwind_hppa_la_LDFLAGS = -version-info $(SOVERSION)
+else
 if ARCH_X86
-
-libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		   \
-	x86/tables-x86.c x86/global-x86.c				   \
-									   \
-	x86/Gflush_cache-x86.c x86/Gget_accessors-x86.c x86/Gget_reg-x86.c \
-	x86/Gget_proc_name.c x86/Ginit-x86.c x86/Ginit_local-x86.c	   \
-	x86/Gget_proc_info.c x86/Gregs.c				   \
-	x86/Gstep-x86.c							   \
-									   \
-	x86/Lflush_cache-x86.c x86/Lget_accessors-x86.c x86/Lget_reg-x86.c \
-	x86/Lget_proc_name.c x86/Linit-x86.c x86/Linit_local-x86.c	   \
-	x86/Lget_proc_info.c x86/Gregs.c				   \
-	x86/Lstep-x86.c
-
  lib_LTLIBRARIES = libunwind-x86.la
  libunwind_x86_la_SOURCES = $(libunwind_la_SOURCES_x86)
  libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
-endif
-endif
+endif # ARCH_X86
+endif # ARCH_HPPA
+endif # ARCH_IA64
 
 # XXX Need to create symlinks from libunwind-ia64.so to libunwind.so
 # XXX end libunwind-ia64.a to libunwind.a
