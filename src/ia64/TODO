@@ -11,6 +11,10 @@
 
 - API for dynamically generated code and redirection
 
+- to test:
+	o verify correctness of spill-area layout
+	o verify working of frgr_mem descriptor (especially for f16-f31)
+
 + multi-architecture support?
 + debuggers need additional frame info:
 	- ability to determine first non-prologue instruction
