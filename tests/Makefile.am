@@ -18,16 +18,17 @@ else
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
  check_SCRIPTS_arch =	run-ia64-test-dyn1
- check_PROGRAMS_arch =	Gia64-test-stack Lia64-test-stack	\
-			Gia64-test-nat Lia64-test-nat		\
-			Gia64-test-rbs Lia64-test-rbs
+ check_PROGRAMS_arch =	Gia64-test-stack Lia64-test-stack		\
+			Gia64-test-nat Lia64-test-nat			\
+			Gia64-test-rbs Lia64-test-rbs			\
+			Gia64-test-readonly Lia64-test-readonly
 endif
  check_SCRIPTS_cdep =	run-ptrace-mapper
- check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	 \
-			Gtest-concurrent Ltest-concurrent		 \
-			Gtest-resume-sig Ltest-resume-sig		 \
-			Gtest-dyn1 Ltest-dyn1				 \
-			test-async-sig test-flush-cache test-mem	 \
+ check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	\
+			Gtest-concurrent Ltest-concurrent		\
+			Gtest-resume-sig Ltest-resume-sig		\
+			Gtest-dyn1 Ltest-dyn1				\
+			test-async-sig test-flush-cache test-mem	\
 			test-setjmp test-ptrace
  noinst_PROGRAMS_cdep = bt forker mapper test-varargs Gperf-simple Lperf-simple
 
@@ -52,6 +53,8 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 
+Lia64_test_readonly_SOURCES = Lia64-test-readonly.c ia64-test-readonly-asm.S
+Gia64_test_readonly_SOURCES = Gia64-test-readonly.c ia64-test-readonly-asm.S
 Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S \
 				ia64-test-stack.h
 Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
