@@ -24,6 +24,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <assert.h>
+#include <stddef.h>
 
 #include "offsets.h"
 #include "regs.h"
@@ -281,7 +282,11 @@ access_nat (struct cursor *c, ia64_loc_t loc, ia64_loc_t reg_loc,
 
   if (IA64_IS_MEMSTK_NAT (loc))
     {
-      nat_loc = IA64_LOC_ADDR (IA64_GET_ADDR (loc), 0);
+      nat_loc = loc;
+      if (IA64_IS_NULL_LOC (nat_loc))
+	/* There was no primary UNaT, implying that the NaT bits are
+	   still in ar.unat.  This can happen for leaf-routines.  */
+	nat_loc = c->loc[IA64_REG_UNAT];
       assert (!IA64_IS_REG_LOC (reg_loc));
       mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (reg_loc));
     }
