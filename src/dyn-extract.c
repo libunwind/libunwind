@@ -39,7 +39,9 @@ unwi_extract_dynamic_proc_info (unw_addr_space_t as, unw_word_t ip,
     {
     case UNW_INFO_FORMAT_DYNAMIC:
       pi->handler = di->u.pi.handler;
+      pi->lsda = 0;
       pi->flags = di->u.pi.flags;
+      pi->unwind_info_size = 0;
       if (need_unwind_info)
 	pi->unwind_info = di;
       else
