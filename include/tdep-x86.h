@@ -47,6 +47,17 @@ struct unw_addr_space
 struct cursor
   {
     struct dwarf_cursor dwarf;		/* must be first */
+
+    /* Format of sigcontext structure and address at which it is
+       stored: */
+    enum
+      {
+	X86_SCF_NONE,			/* no signal frame encountered */
+	X86_SCF_LINUX_SIGFRAME,		/* classic x86 sigcontext */
+	X86_SCF_LINUX_RT_SIGFRAME	/* POSIX ucontext_t */
+      }
+    sigcontext_format;
+    unw_word_t sigcontext_addr;
   };
 
 #define DWARF_GET_LOC(l)	((l).val)
@@ -71,11 +82,11 @@ dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 }
 
 static inline int
-dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
+dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *(unw_fpreg_t *) DWARF_GET_LOC (loc) = *val;
+  *(unw_fpreg_t *) DWARF_GET_LOC (loc) = val;
   return 0;
 }
 
@@ -114,19 +125,31 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 {
+  if (DWARF_IS_NULL_LOC (loc))
+    return -UNW_EBADREG;
+
+# warning fix me
   abort ();
 }
 
 static inline int
 dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 {
+  if (DWARF_IS_NULL_LOC (loc))
+    return -UNW_EBADREG;
+
+# warning fix me
   abort ();
 }
 
 static inline int
 dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
+  if (DWARF_IS_NULL_LOC (loc))
+    return -UNW_EBADREG;
+
   if (DWARF_IS_FP_LOC (loc))
+#   warning fix me
     abort ();
 
   if (DWARF_IS_REG_LOC (loc))
@@ -140,7 +163,11 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 static inline int
 dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 {
+  if (DWARF_IS_NULL_LOC (loc))
+    return -UNW_EBADREG;
+
   if (DWARF_IS_FP_LOC (loc))
+#   warning fix me
     abort ();
 
   if (DWARF_IS_REG_LOC (loc))
@@ -153,14 +180,26 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 #endif /* !UNW_LOCAL_ONLY */
 
+#define tdep_needs_initialization	UNW_OBJ(needs_initialization)
+#define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
 #define tdep_search_unwind_table	dwarf_search_unwind_table
 #define tdep_find_proc_info		dwarf_find_proc_info
 #define tdep_put_unwind_info		dwarf_put_unwind_info
-#define tdep_uc_addr(uc,reg)		UNW_ARCH_OBJ(uc_addr)(uc,reg)
-#define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
-								     d, e)
+#define tdep_uc_addr			UNW_ARCH_OBJ(uc_addr)
+#define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
+#define tdep_access_reg			UNW_OBJ(access_reg)
+#define tdep_access_fpreg		UNW_OBJ(access_fpreg)
+
+#define tdep_get_as(c)			((c)->dwarf.as)
+#define tdep_get_as_arg(c)		((c)->dwarf.as_arg)
+#define tdep_get_ip(c)			((c)->dwarf.ip)
+#define tdep_big_endian(as)		0
+
+extern int tdep_needs_initialization;
+
+extern void tdep_init (void);
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);
@@ -169,5 +208,9 @@ extern void tdep_put_unwind_info (unw_addr_space_t as,
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff);
+extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
+			    unw_word_t *valp, int write);
+extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
+			      unw_fpreg_t *valp, int write);
 
 #endif /* TDEP_X86_H */
