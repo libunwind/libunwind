@@ -104,7 +104,8 @@ typedef unw_tdep_fpreg_t unw_fpreg_t;
 
 typedef struct unw_addr_space *unw_addr_space_t;
 
-/* This bit is set to indicate */
+/* Each target may define it's own set of flags, but bits 0-15 are
+   reserved for general libunwind-use.  */
 #define UNW_PI_FLAG_FIRST_TDEP_BIT	16
 
 typedef struct unw_proc_info
