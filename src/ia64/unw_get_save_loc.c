@@ -49,7 +49,8 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	  else if (reg >= 4 && reg <= 7)
 	    {
 #ifdef UNW_LOCAL_ONLY
-	      loc = c->uc->uc_mcontext.sc_nat;
+	      ucontext_t *uc = c->as_arg;
+	      loc = uc->uc_mcontext.sc_nat;
 #else
 	      loc = IA64_REG_LOC (c, UNW_IA64_NAT + reg);
 #endif
