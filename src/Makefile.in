@@ -716,24 +716,24 @@ lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
 
 AM_CPPFLAGS = -I$(top_srcdir)/include/$(arch) -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
-EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h	\
-		$(libunwind_la_SOURCES_hppa)		\
-		$(libunwind_la_SOURCES_ia64)		\
-		$(libunwind_la_SOURCES_x86)		\
-		$(libunwind_la_SOURCES_os_linux)	\
-		$(libunwind_la_SOURCES_os_hpux)		\
-		$(libunwind_la_SOURCES_common)		\
-		$(libunwind_la_SOURCES_local)		\
-		$(libunwind_la_SOURCES_generic)		\
-		$(libunwind_hppa_la_SOURCES_hppa)	\
-		$(libunwind_ia64_la_SOURCES_ia64)	\
-		$(libunwind_x86_la_SOURCES_x86)		\
-		$(libunwind_x86_64_la_SOURCES_x86_64)	\
-		$(libunwind_ptrace_a_SOURCES)		\
-		$(libunwind_setjmp_la_SOURCES_common)	\
-		$(libunwind_setjmp_la_SOURCES_hppa)	\
-		$(libunwind_setjmp_la_SOURCES_ia64)	\
-		$(libunwind_setjmp_la_SOURCES_x86)	\
+EXTRA_DIST = elfxx.h elfxx.c unwind/unwind-internal.h	\
+		$(libunwind_la_SOURCES_hppa)			\
+		$(libunwind_la_SOURCES_ia64)			\
+		$(libunwind_la_SOURCES_x86)			\
+		$(libunwind_la_SOURCES_os_linux)		\
+		$(libunwind_la_SOURCES_os_hpux)			\
+		$(libunwind_la_SOURCES_common)			\
+		$(libunwind_la_SOURCES_local)			\
+		$(libunwind_la_SOURCES_generic)			\
+		$(libunwind_hppa_la_SOURCES_hppa)		\
+		$(libunwind_ia64_la_SOURCES_ia64)		\
+		$(libunwind_x86_la_SOURCES_x86)			\
+		$(libunwind_x86_64_la_SOURCES_x86_64)		\
+		$(libunwind_ptrace_a_SOURCES)			\
+		$(libunwind_setjmp_la_SOURCES_common)		\
+		$(libunwind_setjmp_la_SOURCES_hppa)		\
+		$(libunwind_setjmp_la_SOURCES_ia64)		\
+		$(libunwind_setjmp_la_SOURCES_x86)		\
 		$(libunwind_setjmp_la_SOURCES_x86_64)
 
 all: $(BUILT_SOURCES)
