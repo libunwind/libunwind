@@ -1,18 +1,0 @@
--*-Mode: outline-*-
-
-* News for v0.2:
-
-** Automated configuration/build with autoconf and automake.
-** Added support for building libunwind as a shared library.
-** Added support for remote unwinding.
-** Added support for cross-building.
-
-
-* News for v0.1:
-
-** Added support for exception handling.
-
-
-* News for v0.0:
-
-** It's a brand new package.
