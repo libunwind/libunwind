@@ -24,13 +24,12 @@ License.  */
 #ifndef unwind_i_h
 #define unwind_i_h
 
-#define IA64_UNW_SCRIPT_CACHE
-
 #include <memory.h>
 #include <stdint.h>
 
 #include <libunwind-ia64.h>
 
+#include "config.h"
 #include "mempool.h"
 
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
@@ -151,15 +150,11 @@ struct ia64_cursor
     unw_word_t eh_args[4];	/* exception handler arguments */
     unw_word_t sigcontext_loc;	/* location of sigcontext or NULL */
 
-#ifdef IA64_UNW_SCRIPT_CACHE
     short hint;
     short prev_script;
-#endif
 };
 
-#ifdef IA64_UNW_SCRIPT_CACHE
-# include "script.h"
-#endif
+#include "script.h"
 
 /* Bits 0 to 2 of an location are used to encode its type:
 
@@ -441,16 +436,8 @@ struct ia64_global_unwind_state
     struct mempool state_record_pool;
     struct mempool labeled_state_pool;
 
-#ifdef IA64_UNW_SCRIPT_CACHE
-    unsigned short lru_head;	/* index of lead-recently used script */
-    unsigned short lru_tail;	/* index of most-recently used script */
-
-    /* hash table that maps instruction pointer to script index: */
-    unsigned short hash[IA64_UNW_HASH_SIZE];
-
-    /* script cache: */
-    struct ia64_script cache[IA64_UNW_CACHE_SIZE];
-#endif
+    u_int32_t cache_generation;
+    struct ia64_script_cache global_cache;
 
 # if IA64_UNW_DEBUG
     long debug_level;
@@ -497,6 +484,8 @@ struct ia64_global_unwind_state
 #define ia64_create_state_record	UNW_OBJ(create_state_record)
 #define ia64_free_state_record		UNW_OBJ(free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(find_save_locs)
+#define ia64_per_thread_cache		UNW_OBJ(per_thread_cache)
+#define ia64_script_cache_init		UNW_OBJ(script_cache_init)
 #define ia64_init			UNW_OBJ(init)
 #define ia64_access_reg			UNW_OBJ(access_reg)
 #define ia64_access_fpreg		UNW_OBJ(access_fpreg)
@@ -510,6 +499,7 @@ extern int ia64_create_state_record (struct ia64_cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
 extern int ia64_find_save_locs (struct ia64_cursor *c);
+extern void ia64_script_cache_init (struct ia64_script_cache *cache);
 extern void ia64_init (void);
 extern int ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
