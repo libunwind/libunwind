@@ -40,11 +40,11 @@ License.  */
 # error You need GLIBC 2.2.4 or later on IA-64 Linux
 #endif
 
-#if 0
+#ifdef HAVE_GETUNWIND
 
 extern unsigned long getunwind (void *buf, size_t len);
 
-#else
+#else /* HAVE_GETUNWIND */
 
 /* XXX fix me */
 
@@ -61,7 +61,7 @@ getunwind (void *buf, size_t len)
   return syscall (SYS_getunwind, buf, len);
 }
 
-#endif
+#endif /* HAVE_GETUNWIND */
 
 static int
 get_kernel_table (void *ptr)
@@ -187,7 +187,7 @@ _Uia64_glibc_acquire_unwind_info (unw_word_t ip, void *info, void *arg)
 {
   ((unw_ia64_table_t *) info)->segbase = ip;	/* this is cheap... */
 
-  if (dl_iterate_phdr (callback, info) >= 0)
+  if (dl_iterate_phdr (callback, info) > 0)
     return 0;
 
   return get_kernel_table (info);
