@@ -32,11 +32,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "tdep.h"
 #include "os-linux.h"
 
-/* Here, it doesn't matter whether we include elf64.h or elf32.h.
-   Both define "struct elf_image" and elf_map_image() in an identical
-   fashion.  */
-#include "elf64.h"
-
 HIDDEN int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 		    unsigned long *segbase, unsigned long *mapoff)
