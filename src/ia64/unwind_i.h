@@ -398,9 +398,9 @@ extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
 extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
-extern void ia64_install_cursor (struct cursor *c, unw_word_t pri_unat,
-				 unw_word_t *extra)
-	__attribute__ ((noreturn));
+extern NORETURN void ia64_install_cursor (struct cursor *c,
+					  unw_word_t pri_unat,
+					  unw_word_t *extra);
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
 extern int rbs_switch (struct cursor *c,
