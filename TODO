@@ -1,7 +1,3 @@
-- man-page for _U_dyn_cancel()
-- man-page for _U_dyn_register()
-- man-page for unw_is_fpreg()
-
 Testing:
 	- ensure that saving r4-r7 in a stacked register properly preserves
 	  the NaT bit, even in the face of register-rotation
@@ -12,6 +8,9 @@ Testing:
 
 === taken care of:
 
++ man-page for unw_is_fpreg()
++ man-page for _U_dyn_cancel()
++ man-page for _U_dyn_register()
 + global data is not protected by a lock; causes problems if two threads
   call ia64_init() at almost the same time
 + cache the value of *cfm_loc; each rotate_FOO() call needs it!
