@@ -86,6 +86,9 @@ update_frame_state (struct ia64_cursor *c)
       debug (1, "%s: rejecting bad ip=0x%lx\n",  __FUNCTION__, (long) c->ip);
       return -UNW_EINVALIDIP;
     }
+  if (ip == 0)
+    /* end of frame-chain reached */
+    return 0;
 
   pr = c->pr;
   c->sp = c->psp;
@@ -105,7 +108,7 @@ update_frame_state (struct ia64_cursor *c)
   if (ret < 0)
     return ret;
 
-  return ia64_get_proc_info (c);
+  return ia64_make_proc_info (c);
 }
 
 
