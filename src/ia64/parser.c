@@ -28,19 +28,12 @@ License.  */
 
 #include "unwind_i.h"
 
-struct ia64_labeled_state {
-	struct ia64_labeled_state *next;	/* next label (or NULL) */
-	unsigned long label;			/* label for this state */
-	struct ia64_reg_state saved_state;
-};
-
 typedef unsigned long unw_word;
 
-/* XXX fix these to use private allocator: */
-#define alloc_reg_state()	(malloc (sizeof(struct ia64_state_record)))
-#define free_reg_state(usr)	(free (usr))
-#define alloc_labeled_state()	(malloc (sizeof(struct ia64_labeled_state)))
-#define free_labeled_state(usr)	(free (usr))
+#define alloc_reg_state()	(mempool_alloc (&unw.state_record_pool))
+#define free_reg_state(rs)	(mempool_free (&unw.state_record_pool, rs))
+#define alloc_labeled_state()	(mempool_alloc (&unw.labeled_state_pool))
+#define free_labeled_state(s)	(mempool_free (&unw.labeled_state_pool, s))
 
 /* Routines to manipulate the state stack.  */
 
@@ -177,8 +170,8 @@ alloc_spill_area (unsigned long *offp, unsigned long regsize,
       if (reg->where == IA64_WHERE_SPILL_HOME)
 	{
 	  reg->where = IA64_WHERE_PSPREL;
-	  reg->val = 0x10 - *offp;
-	  *offp += regsize;
+	  *offp -= regsize;
+	  reg->val = *offp;
 	}
     }
 }
@@ -375,7 +368,8 @@ desc_frgr_mem (unsigned char grmask, unw_word frmask,
     {
       if ((frmask & 1) != 0)
 	{
-	  set_reg (sr->curr.reg + IA64_REG_F2 + i, IA64_WHERE_SPILL_HOME,
+	  int base = (i < 4) ? IA64_REG_F2 : IA64_REG_F16 - 4;
+	  set_reg (sr->curr.reg + base + i, IA64_WHERE_SPILL_HOME,
 		   sr->region_start + sr->region_len - 1, 0);
 	  sr->any_spills = 1;
 	}
@@ -744,8 +738,7 @@ get_proc_info (struct ia64_cursor *c)
       segbase = info.segbase;
       len = info.length;
 
-      /* XXX avoid malloc: */
-      table = malloc (sizeof (struct ia64_unwind_table));
+      table = mempool_alloc (&unw.unwind_table_pool);
       if (!table)
 	{
 	  dprintf ("%s: out of memory\n", __FUNCTION__);
