@@ -25,12 +25,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-static inline int
+static inline ALWAYS_INLINE int
 common_init (struct cursor *c)
 {
   unw_word_t bspstore;
   uint8_t *natp;
-  int i, ret;
+  int ret;
 
   if (c->as->caching_policy != UNW_CACHE_NONE)
     /* ensure cache doesn't have any stale contents: */
@@ -69,8 +69,22 @@ common_init (struct cursor *c)
   c->loc[IA64_REG_F3] = IA64_FPREG_LOC (c, UNW_IA64_FR + 3);
   c->loc[IA64_REG_F4] = IA64_FPREG_LOC (c, UNW_IA64_FR + 4);
   c->loc[IA64_REG_F5] = IA64_FPREG_LOC (c, UNW_IA64_FR + 5);
-  for (i = IA64_REG_F16; i <= IA64_REG_F31; ++i)
-    c->loc[i] = IA64_FPREG_LOC (c, UNW_IA64_FR + 16 + (i - IA64_REG_F16));
+  c->loc[IA64_REG_F16] = IA64_FPREG_LOC (c, UNW_IA64_FR + 16);
+  c->loc[IA64_REG_F17] = IA64_FPREG_LOC (c, UNW_IA64_FR + 17);
+  c->loc[IA64_REG_F18] = IA64_FPREG_LOC (c, UNW_IA64_FR + 18);
+  c->loc[IA64_REG_F19] = IA64_FPREG_LOC (c, UNW_IA64_FR + 19);
+  c->loc[IA64_REG_F20] = IA64_FPREG_LOC (c, UNW_IA64_FR + 20);
+  c->loc[IA64_REG_F21] = IA64_FPREG_LOC (c, UNW_IA64_FR + 21);
+  c->loc[IA64_REG_F22] = IA64_FPREG_LOC (c, UNW_IA64_FR + 22);
+  c->loc[IA64_REG_F23] = IA64_FPREG_LOC (c, UNW_IA64_FR + 23);
+  c->loc[IA64_REG_F24] = IA64_FPREG_LOC (c, UNW_IA64_FR + 24);
+  c->loc[IA64_REG_F25] = IA64_FPREG_LOC (c, UNW_IA64_FR + 25);
+  c->loc[IA64_REG_F26] = IA64_FPREG_LOC (c, UNW_IA64_FR + 26);
+  c->loc[IA64_REG_F27] = IA64_FPREG_LOC (c, UNW_IA64_FR + 27);
+  c->loc[IA64_REG_F28] = IA64_FPREG_LOC (c, UNW_IA64_FR + 28);
+  c->loc[IA64_REG_F29] = IA64_FPREG_LOC (c, UNW_IA64_FR + 29);
+  c->loc[IA64_REG_F30] = IA64_FPREG_LOC (c, UNW_IA64_FR + 30);
+  c->loc[IA64_REG_F31] = IA64_FPREG_LOC (c, UNW_IA64_FR + 31);
 
   ret = ia64_get (c, c->loc[IA64_REG_IP], &c->ip);
   if (ret < 0)
