@@ -70,6 +70,28 @@ _longjmp (jmp_buf env, int val)
 
 	if (bsp != wp[JB_BSP])
 	  continue;
+
+	if (unlikely (sol == 0))
+	  {
+	    unw_word_t prev_sp;
+	    unw_cursor_t tmp = c;
+
+	    /* The caller of {sig,}setjmp() cannot have a NULL-frame.
+	       If we see a NULL-frame, we haven't reached the right
+	       target yet.  To have a NULL-frame, the number of locals
+	       must be zero and the stack-frame must also be
+	       empty.  */
+
+	    if (unw_step (&tmp) < 0)
+	      abort ();
+
+	    if (unw_get_reg (&tmp, UNW_REG_SP, &prev_sp) < 0)
+	      abort ();
+
+	    if (sp == prev_sp)
+	      /* got a NULL-frame; keep looking... */
+	      continue;
+	  }
       }
 #endif
 

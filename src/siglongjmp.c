@@ -73,6 +73,28 @@ siglongjmp (sigjmp_buf env, int val)
 
 	if (bsp != wp[JB_BSP])
 	  continue;
+
+	if (unlikely (sol == 0))
+	  {
+	    unw_word_t prev_sp;
+	    unw_cursor_t tmp = c;
+
+	    /* The caller of {sig,}setjmp() cannot have a NULL-frame.
+	       If we see a NULL-frame, we haven't reached the right
+	       target yet.  To have a NULL-frame, the number of locals
+	       must be zero and the stack-frame must also be
+	       empty.  */
+
+	    if (unw_step (&tmp) < 0)
+	      abort ();
+
+	    if (unw_get_reg (&tmp, UNW_REG_SP, &prev_sp) < 0)
+	      abort ();
+
+	    if (sp == prev_sp)
+	      /* got a NULL-frame; keep looking... */
+	      continue;
+	  }
       }
 #endif
 
@@ -84,13 +106,13 @@ siglongjmp (sigjmp_buf env, int val)
       cont = &_UI_longjmp_cont;
 
 #if UNW_TARGET_IA64
-      /* On ia64 we cannot call sigprocmask() at _UI_siglongjmp_cont()
-	 because the signal may have switched stacks and the old
-	 stack's register-backing store may have overflown, leaving us
-	 no space to allocate the stacked registers needed to call
-	 sigprocmask().  Fortunately, we can just let unw_resume()
-	 (via sigreturn) take care of restoring the signal-mask.
-	 That's faster anyhow.
+      /* On ia64 we cannot always call sigprocmask() at
+	 _UI_siglongjmp_cont() because the signal may have switched
+	 stacks and the old stack's register-backing store may have
+	 overflown, leaving us no space to allocate the stacked
+	 registers needed to call sigprocmask().  Fortunately, we can
+	 just let unw_resume() (via sigreturn) take care of restoring
+	 the signal-mask.  That's faster anyhow.
 
          XXX We probably should do the analogous on all architectures.  */
       if (((struct cursor *) &c)->sigcontext_addr)
