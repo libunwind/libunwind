@@ -35,8 +35,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "internal.h"
 #include "rse.h"
 
-#define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
-
 #define IA64_UNW_VER(x)			((x) >> 48)
 #define IA64_UNW_FLAG_MASK		0x0000ffff00000000
 #define IA64_UNW_FLAG_OSMASK		0x0000f00000000000
@@ -48,24 +46,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "tdep.h"
 
-/* Bits 0 to 2 of an location are used to encode its type:
-
+/* Bits 0 and 1 of an location are used to encode its type:
 	bit 0: set if location uses floating-point format.
-	bit 1: set if location is a NaT bit on memory stack
-	bit 2: set if location is a register (not needed for local-only).  */
+	bit 1: set if location is a NaT bit on memory stack.  */
 
 #define IA64_LOC_TYPE_FP		(1 << 0)
 #define IA64_LOC_TYPE_MEMSTK_NAT	(1 << 1)
-#define IA64_LOC_TYPE_REG		(1 << 2)
-
-#define IA64_LOC(l,t)		(((l) << 3) | (t))
-
-#define IA64_GET_LOC(l)		((l) >> 3)
-#define IA64_MASK_LOC_TYPE(l)	((l) & ~0x7)
-#define IA64_IS_FP_LOC(loc)	(((loc) & IA64_LOC_TYPE_FP) != 0)
-#define IA64_IS_MEMSTK_NAT(loc)	(((loc) & IA64_LOC_TYPE_MEMSTK_NAT) != 0)
 
 #ifdef UNW_LOCAL_ONLY
+
+#define IA64_LOC_REG(r,t)	(((r) << 2) | (t))
+#define IA64_LOC_ADDR(a,t)	(((a) & ~0x3) | (t))
+#define IA64_LOC_UC_ADDR(a,t)	IA64_LOC_ADDR(a, t)
+#define IA64_NULL_LOC		(0)
+
+#define IA64_GET_REG(l)		((l) >> 2)
+#define IA64_GET_ADDR(l)	((l) & ~0x3)
+#define IA64_IS_NULL_LOC(l)	((l) == 0)
+#define IA64_IS_FP_LOC(l)	(((l) & IA64_LOC_TYPE_FP) != 0)
+#define IA64_IS_MEMSTK_NAT(l)	(((l) & IA64_LOC_TYPE_MEMSTK_NAT) != 0)
+#define IA64_IS_REG_LOC(l)	0
+#define IA64_IS_UC_LOC(l)	0
 
 #define IA64_REG_LOC(c,r)	((unw_word_t) tdep_uc_addr((c)->as_arg, (r)))
 #define IA64_FPREG_LOC(c,r)						 \
@@ -88,7 +89,7 @@ ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
       return -UNW_EBADREG;
     }
-  *val = *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc);
+  *val = *(unw_fpreg_t *) IA64_GET_ADDR (loc);
   return 0;
 }
 
@@ -100,7 +101,7 @@ ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
       return -UNW_EBADREG;
     }
-  *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(loc) = val;
+  *(unw_fpreg_t *) IA64_GET_ADDR (loc) = val;
   return 0;
 }
 
@@ -112,7 +113,7 @@ ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
       return -UNW_EBADREG;
     }
-  *val = *(unw_word_t *) IA64_MASK_LOC_TYPE(loc);
+  *val = *(unw_word_t *) IA64_GET_ADDR (loc);
   return 0;
 }
 
@@ -124,16 +125,37 @@ ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
       debug (150, "%s: access to unsaved register\n", __FUNCTION__);
       return -UNW_EBADREG;
     }
-  *(unw_word_t *) IA64_MASK_LOC_TYPE(loc) = (val);
+  *(unw_word_t *) IA64_GET_ADDR (loc) = (val);
   return 0;
 }
 
 #else /* !UNW_LOCAL_ONLY */
 
-#define IA64_IS_REG_LOC(r)	(((r) & IA64_LOC_TYPE_REG) != 0)
-#define IA64_REG_LOC(c,r)	IA64_LOC((r), IA64_LOC_TYPE_REG)
-#define IA64_FPREG_LOC(c,r)	IA64_LOC((r), (IA64_LOC_TYPE_REG	\
-					       | IA64_LOC_TYPE_FP))
+/* Bits 0 and 1 of the second word (w1) of a location are used
+   to further distinguish what location we're dealing with:
+
+   	bit 0: set if the location is a register
+	bit 1: set of the location is accessed via uc_access(3)  */
+#define IA64_LOC_TYPE_REG	(1 << 0)
+#define IA64_LOC_TYPE_UC	(1 << 1)
+
+#define IA64_LOC_REG(r,t)	((ia64_loc_t) { ((r) << 2) | (t),	\
+						IA64_LOC_TYPE_REG })
+#define IA64_LOC_ADDR(a,t)	((ia64_loc_t) { ((a) & ~0x3) | (t), 0 })
+#define IA64_LOC_UC_ADDR(a,t)	((ia64_loc_t) { ((a) & ~0x3) | (t),	\
+						IA64_LOC_TYPE_UC })
+#define IA64_NULL_LOC		((ia64_loc_t) { 0, 0 })
+
+#define IA64_GET_REG(l)		((l).w0 >> 2)
+#define IA64_GET_ADDR(l)	((l).w0 & ~0x3)
+#define IA64_IS_NULL_LOC(l)	(((l).w0 | (l).w1) == 0)
+#define IA64_IS_FP_LOC(l)	(((l).w0 & IA64_LOC_TYPE_FP) != 0)
+#define IA64_IS_MEMSTK_NAT(l)	(((l).w0 & IA64_LOC_TYPE_MEMSTK_NAT) != 0)
+#define IA64_IS_REG_LOC(l)	(((l).w1 & IA64_LOC_TYPE_REG) != 0)
+#define IA64_IS_UC_LOC(l)	(((l).w1 & IA64_LOC_TYPE_UC) != 0)
+
+#define IA64_REG_LOC(c,r)	IA64_LOC_REG ((r), 0)
+#define IA64_FPREG_LOC(c,r)	IA64_LOC_REG ((r), IA64_LOC_TYPE_FP)
 
 # define ia64_find_proc_info(c,ip,n)					\
 	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (n),	\
@@ -142,40 +164,42 @@ ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 	(*(c)->as->acc.put_unwind_info)((c)->as, (pi), (c)->as_arg)
 
 static inline int
-ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
+ia64_getfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t *val)
 {
+  unw_word_t addr;
   int ret;
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (c->as, IA64_GET_LOC (loc),
+    return (*c->as->acc.access_fpreg) (c->as, IA64_GET_REG (loc),
 				       val, 0, c->as_arg);
 
-  loc = IA64_MASK_LOC_TYPE(loc);
-  ret = (*c->as->acc.access_mem) (c->as, loc + 0, &val->raw.bits[0], 0,
+  addr = IA64_GET_ADDR (loc);
+  ret = (*c->as->acc.access_mem) (c->as, addr + 0, &val->raw.bits[0], 0,
 				  c->as_arg);
   if (ret < 0)
     return ret;
 
-  return (*c->as->acc.access_mem) (c->as, loc + 8, &val->raw.bits[1], 0,
+  return (*c->as->acc.access_mem) (c->as, addr + 8, &val->raw.bits[1], 0,
 				   c->as_arg);
 }
 
 static inline int
-ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
+ia64_putfp (struct cursor *c, ia64_loc_t loc, unw_fpreg_t val)
 {
+  unw_word_t addr;
   int ret;
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (c->as, IA64_GET_LOC (loc), &val, 1,
+    return (*c->as->acc.access_fpreg) (c->as, IA64_GET_REG (loc), &val, 1,
 				       c->as_arg);
 
-  loc = IA64_MASK_LOC_TYPE(loc);
-  ret = (*c->as->acc.access_mem) (c->as, loc + 0, &val.raw.bits[0], 1,
+  addr = IA64_GET_ADDR (loc);
+  ret = (*c->as->acc.access_mem) (c->as, addr + 0, &val.raw.bits[0], 1,
 				  c->as_arg);
   if (ret < 0)
     return ret;
 
-  return (*c->as->acc.access_mem) (c->as, loc + 8, &val.raw.bits[1], 1,
+  return (*c->as->acc.access_mem) (c->as, addr + 8, &val.raw.bits[1], 1,
 				   c->as_arg);
 }
 
@@ -185,7 +209,7 @@ ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
    the significand bits.  */
 
 static inline int
-ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
+ia64_get (struct cursor *c, ia64_loc_t loc, unw_word_t *val)
 {
   if (IA64_IS_FP_LOC (loc))
     {
@@ -204,14 +228,15 @@ ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
     }
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg)(c->as, IA64_GET_LOC (loc), val, 0,
+    return (*c->as->acc.access_reg)(c->as, IA64_GET_REG (loc), val, 0,
 				    c->as_arg);
   else
-    return (*c->as->acc.access_mem)(c->as, loc, val, 0, c->as_arg);
+    return (*c->as->acc.access_mem)(c->as, IA64_GET_ADDR (loc), val, 0,
+				    c->as_arg);
 }
 
 static inline int
-ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
+ia64_put (struct cursor *c, ia64_loc_t loc, unw_word_t val)
 {
   if (IA64_IS_FP_LOC (loc))
     {
@@ -226,10 +251,11 @@ ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
     }
 
   if (IA64_IS_REG_LOC (loc))
-    return (*c->as->acc.access_reg)(c->as, IA64_GET_LOC (loc), &val, 1,
+    return (*c->as->acc.access_reg)(c->as, IA64_GET_REG (loc), &val, 1,
 				    c->as_arg);
   else
-    return (*c->as->acc.access_mem)(c->as, loc, &val, 1, c->as_arg);
+    return (*c->as->acc.access_mem)(c->as, IA64_GET_ADDR (loc), &val, 1,
+				    c->as_arg);
 }
 
 #endif /* !UNW_LOCAL_ONLY */
@@ -282,9 +308,9 @@ struct ia64_state_record
     unsigned int done : 1;		/* are we done scanning descriptors? */
     unsigned int any_spills : 1;	/* got any register spills? */
     unsigned int in_body : 1;		/* are we inside prologue or body? */
-    unsigned int is_signal_frame : 1;
-
     uint8_t *imask;		/* imask of spill_mask record or NULL */
+    uint16_t abi_marker;
+
     unw_word_t pr_val;		/* predicate values */
     unw_word_t pr_mask;		/* predicate mask */
 
@@ -321,10 +347,11 @@ struct ia64_labeled_state
 #define ia64_scratch_loc		UNW_OBJ(scratch_loc)
 #define ia64_local_resume		UNW_OBJ(local_resume)
 #define ia64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
+#define ia64_strloc			UNW_OBJ(strloc)
+#define rbs_switch			UNW_OBJ(rbs_switch)
+#define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
+#define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
 #define ia64_init			UNW_ARCH_OBJ(init)
-#define rbs_switch			UNW_ARCH_OBJ(rbs_switch)
-#define rbs_find_stacked		UNW_ARCH_OBJ(rbs_find_stacked)
-#define rbs_cover_and_flush		UNW_ARCH_OBJ(rbs_cover_and_flush)
 
 extern int ia64_make_proc_info (struct cursor *c);
 extern int ia64_create_state_record (struct cursor *c,
@@ -338,19 +365,22 @@ extern int ia64_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
-extern unw_word_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
+extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
-extern void _Uia64_install_context (struct cursor *c, unw_word_t pri_unat,
-				    unw_word_t *extra)
+extern void _Uia64_install_cursor (struct cursor *c, unw_word_t pri_unat,
+				   unw_word_t *extra)
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
 extern int rbs_switch (struct cursor *c,
 		       unw_word_t saved_bsp, unw_word_t saved_bspstore,
-		       unw_word_t saved_rnat_loc);
+		       ia64_loc_t saved_rnat_loc);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
-			     unw_word_t *locp, unw_word_t *rnat_locp);
+			     ia64_loc_t *locp, ia64_loc_t *rnat_locp);
 extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs);
+
+/* Warning: ia64_strloc() is for debugging only and it is NOT re-entrant! */
+extern const char *ia64_strloc (ia64_loc_t loc);
 
 /* Return true if BSP points to a word that's stored on register
    backing-store RBS.  */
@@ -368,27 +398,50 @@ rbs_contains (struct rbs_area *rbs, unw_word_t bsp)
   return result;
 }
 
+static ia64_loc_t
+rbs_get_rnat_loc (struct rbs_area *rbs, unw_word_t bsp)
+{
+  unw_word_t rnat_addr = ia64_rse_rnat_addr (bsp);
+  ia64_loc_t rnat_loc;
+
+  if (rbs_contains (rbs, rnat_addr))
+    {
+      if (IA64_IS_UC_LOC (rbs->rnat_loc))
+	rnat_loc = IA64_LOC_UC_ADDR (rnat_addr, 0);
+      else
+	rnat_loc = IA64_LOC_ADDR (rnat_addr, 0);
+    }
+  else
+    rnat_loc = rbs->rnat_loc;
+  return rnat_loc;
+}
+
+static ia64_loc_t
+rbs_loc (struct rbs_area *rbs, unw_word_t bsp)
+{
+  if (IA64_IS_UC_LOC (rbs->rnat_loc))
+    return IA64_LOC_UC_ADDR (bsp, 0);
+  else
+    return IA64_LOC_ADDR (bsp, 0);
+}
+
 static inline int
 ia64_get_stacked (struct cursor *c, unw_word_t reg,
-		  unw_word_t *locp, unw_word_t *rnat_locp)
+		  ia64_loc_t *locp, ia64_loc_t *rnat_locp)
 {
   struct rbs_area *rbs = c->rbs_area + c->rbs_curr;
-  unw_word_t loc, regs_to_skip = reg - 32;
+  unw_word_t addr, regs_to_skip = reg - 32;
   int ret = 0;
 
   assert (reg >= 32 && reg < 128);
 
-  loc = ia64_rse_skip_regs (c->bsp, regs_to_skip);
+  addr = ia64_rse_skip_regs (c->bsp, regs_to_skip);
   if (locp)
-    *locp = loc;
+    *locp = rbs_loc (rbs, addr);
   if (rnat_locp)
-    {
-      *rnat_locp = ia64_rse_rnat_addr (loc);
-      if (!rbs_contains (rbs, *rnat_locp))
-	*rnat_locp = rbs->rnat_loc;
-    }
+    *rnat_locp = rbs_get_rnat_loc (rbs, addr);
 
-  if (!rbs_contains (rbs, loc))
+  if (!rbs_contains (rbs, addr))
     ret = rbs_find_stacked (c, regs_to_skip, locp, rnat_locp);
   return ret;
 }
