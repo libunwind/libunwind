@@ -28,7 +28,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "offsets.h"
 #include "regs.h"
-#include "rse.h"
 #include "unwind_i.h"
 
 static inline ia64_loc_t

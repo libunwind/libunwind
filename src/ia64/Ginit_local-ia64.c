@@ -27,7 +27,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 
 #include "init.h"
-#include "rse.h"
 #include "unwind_i.h"
 
 #ifdef UNW_REMOTE_ONLY

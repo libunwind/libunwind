@@ -25,7 +25,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "offsets.h"
 #include "regs.h"
-#include "rse.h"
 #include "unwind_i.h"
 
 enum ia64_script_insn_opcode
