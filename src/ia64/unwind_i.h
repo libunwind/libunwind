@@ -21,6 +21,9 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
+#ifndef unwind_i_h
+#define unwind_i_h
+
 #define IA64_UNW_SCRIPT_CACHE
 
 #include <memory.h>
@@ -38,7 +41,10 @@ License.  */
 
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 
-#define IA64_UNW_DEBUG	1
+#ifdef DEBUG
+# define IA64_UNW_DEBUG	1
+#endif
+
 #define IA64_UNW_STATS	0
 
 #if IA64_UNW_DEBUG
@@ -156,7 +162,7 @@ struct ia64_cursor
 
 	bit 0: set if location uses floating-point format.
 	bit 1: set if location is a NaT bit on memory stack
-	bit 2: set if location is a register.  */
+	bit 2: set if location is a register (not needed for local-only).  */
 
 #define IA64_LOC_TYPE_FP		(1 << 0)
 #define IA64_LOC_TYPE_MEMSTK_NAT	(1 << 1)
@@ -168,30 +174,34 @@ struct ia64_cursor
 #define IA64_MASK_LOC_TYPE(l)	((l) & ~0x7)
 #define IA64_IS_FP_LOC(loc)	(((loc) & IA64_LOC_TYPE_FP) != 0)
 #define IA64_IS_MEMSTK_NAT(loc)	(((loc) & IA64_LOC_TYPE_MEMSTK_NAT) != 0)
-#define IA64_IS_REG_LOC(r)	(((r) & IA64_LOC_TYPE_REG) != 0)
-
-#define IA64_REG_LOC(r)		IA64_LOC((r), IA64_LOC_TYPE_REG)
-#define IA64_FPREG_LOC(r)	IA64_LOC((r), (IA64_LOC_TYPE_REG \
-					       | IA64_LOC_TYPE_FP))
-
-#if 0
-#define IA64_FP_LOC(l)		((l) | 0x1)
-#define IA64_NAT_TYPE_LOC(t,l)	((l) | ((t) << 2))
-#define IA64_GET_REG_LOC(r)	((r) >> 3)
-#define IA64_GET_NAT_LOC(loc)	((loc) >> 3)
-#endif
 
 #ifdef UNW_LOCAL_ONLY
 
-  extern int ia64_acquire_unwind_info (unw_word_t, void *);
-  extern int ia64_release_unwind_info (void *);
-# define ia64_acquire_unwind_info(c,ip,i)	\
-	ia64_acquire_unwind_info((ip), (i))
-# define ia64_release_unwind_info(c,ip,i)	\
-	ia64_release_unwind_info((i))
-# define ia64_get(c,l,v)	(*(v) = *(unw_word_t *) (l), 0)
+extern void *_U_ia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
+
+#define IA64_REG_LOC(c,r)	((unw_word_t) _U_ia64_uc_addr((c)->uc, (r)))
+#define IA64_FPREG_LOC(c,r)						\
+	((unw_word_t) _U_ia64_uc_addr((c)->uc, (r)) | IA64_LOC_TYPE_FP)
+
+# define ia64_acquire_unwind_info(c,ip,i)			\
+	_U_ia64_glibc_acquire_unwind_info((ip), (i), (c)->uc)
+# define ia64_release_unwind_info(c,ip,i)			\
+	_U_ia64_glibc_release_unwind_info((i), (c)->uc)
+# define ia64_get(c,l,v)					\
+	(*(v) = *(unw_word_t *) IA64_MASK_LOC_TYPE(l), 0)
+# define ia64_put(c,l,v)					\
+	(*(unw_word_t *) IA64_MASK_LOC_TYPE(l) = (v), 0)
+# define ia64_getfp(c,l,v)					\
+	(*(v) = *(unw_fpreg_t *) IA64_MASK_LOC_TYPE(l), 0)
+# define ia64_putfp(c,l,v)					\
+	(*(unw_fpreg_t *) IA64_MASK_LOC_TYPE(l) = (v), 0)
 
 #else /* !UNW_LOCAL_ONLY */
+
+#define IA64_IS_REG_LOC(r)	(((r) & IA64_LOC_TYPE_REG) != 0)
+#define IA64_REG_LOC(c,r)	IA64_LOC((r), IA64_LOC_TYPE_REG)
+#define IA64_FPREG_LOC(c,r)	IA64_LOC((r), (IA64_LOC_TYPE_REG \
+					       | IA64_LOC_TYPE_FP))
 
 # define ia64_acquire_unwind_info(c,ip,i) \
 	(*(c)->acc.acquire_unwind_info)((ip), (i), (c)->acc.arg)
@@ -441,11 +451,10 @@ struct ia64_global_unwind_state
 #define ia64_free_state_record		UNW_OBJ(ia64_free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(ia64_find_save_locs)
 #define ia64_init			UNW_OBJ(ia64_init)
-#define ia64_glibc_acquire_unwind_info	UNW_OBJ(ia64_glibc_acquire_unwind_info)
-#define ia64_glibc_release_unwind_info	UNW_OBJ(ia64_glibc_release_unwind_info)
 #define ia64_access_reg			UNW_OBJ(ia64_access_reg)
 #define ia64_access_fpreg		UNW_OBJ(ia64_access_fpreg)
 #define ia64_scratch_loc		UNW_OBJ(ia64_scratch_loc)
+#define ia64_local_resume		UNW_OBJ(ia64_local_resume)
 
 extern struct ia64_global_unwind_state unw;
 
@@ -455,9 +464,6 @@ extern int ia64_create_state_record (struct ia64_cursor *c,
 extern int ia64_free_state_record (struct ia64_state_record *sr);
 extern int ia64_find_save_locs (struct ia64_cursor *c);
 extern void ia64_init (void);
-extern int ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info,
-					   void *arg);
-extern int ia64_glibc_release_unwind_info (void *info, void *arg);
 extern int ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int ia64_access_fpreg (struct ia64_cursor *c, unw_regnum_t reg,
@@ -466,7 +472,12 @@ extern unw_word_t ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg);
 
 extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
 				    long r17, long r18)
-		   __attribute__ ((noreturn));
+	__attribute__ ((noreturn));
+extern int ia64_local_resume (unw_cursor_t *cursor, void *arg);
+
+extern int _U_ia64_glibc_acquire_unwind_info (unw_word_t ip, void *info,
+					      void *arg);
+extern int _U_ia64_glibc_release_unwind_info (void *info, void *arg);
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
@@ -478,3 +489,5 @@ extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
 # define IA64_SC_FLAG_IN_SYSCALL	(1 << IA64_SC_FLAG_IN_SYSCALL_BIT)
 # define IA64_SC_FLAG_FPH_VALID		(1 << IA64_SC_FLAG_FPH_VALID_BIT)
 #endif
+
+#endif /* unwind_i_h */
