@@ -120,14 +120,14 @@ SETJMP_SO_VERSION = 0:0:0
 
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os = os-linux.h os-linux.c
 
-libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
-	$(libunwind_la_SOURCES_os)				\
-	backtrace.c get_proc_name.c				\
-	dyn-extract.c dyn-remote.c				\
-	mi-init.c						\
-	mempool.c						\
-	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
-	Lfind_dynamic_proc_info.c Lput_dynamic_unwind_info.c
+libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
+	$(libunwind_la_SOURCES_os)					      \
+	backtrace.c							      \
+	dyn-extract.c dyn-remote.c					      \
+	mi-init.c							      \
+	mempool.c							      \
+	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
+	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c
 
 
 
@@ -239,10 +239,10 @@ libunwind_hppa_la_LIBADD =
 @REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo _UPT_reg_offset.lo
 @OS_LINUX_TRUE@am__objects_2 = os-linux.lo
 am__objects_3 = $(am__objects_1) $(am__objects_2) backtrace.lo \
-	get_proc_name.lo dyn-extract.lo dyn-remote.lo mi-init.lo \
-	mempool.lo Gfind_dynamic_proc_info.lo \
+	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
+	Gfind_dynamic_proc_info.lo Gget_proc_name.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
-	Lput_dynamic_unwind_info.lo
+	Lget_proc_name.lo Lput_dynamic_unwind_info.lo
 am__objects_4 = $(am__objects_3) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
@@ -329,6 +329,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Gget_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_reg-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_reg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gget_reg-x86.Plo \
@@ -363,6 +364,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lget_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_reg-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_reg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lget_reg-x86.Plo \
@@ -408,7 +410,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/get_accessors-x86.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/get_proc_name.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/global-x86.Plo ./$(DEPDIR)/longjmp.Plo \
@@ -598,6 +599,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_reg-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_reg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gget_reg-x86.Plo@am__quote@
@@ -632,6 +634,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_reg-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_reg-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lget_reg-x86.Plo@am__quote@
@@ -678,7 +681,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_accessors-x86.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/get_proc_name.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/global-x86.Plo@am__quote@
