@@ -38,7 +38,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	elf64.c elf64.h							      \
-	ia64/_Uia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
+	ia64/_Uia64_install_context.S					      \
+	ia64/global-ia64.c ia64/global-asm-ia64.S ia64/rbs-ia64.c	      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
@@ -75,17 +76,19 @@ libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		\
 	hppa/Lget_proc_info-hppa.c hppa/Lregs-hppa.c hppa/Lstep-hppa.c
 
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
+	elf32.c elf32.h							\
+									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
 	x86/tables-x86.c						\
 	x86/init.h x86/unwind_i.h					\
 									\
 	x86/Gget_reg-x86.c x86/Gget_proc_name-x86.c x86/Ginit-x86.c	\
 	x86/Ginit_local-x86.c x86/Gget_proc_info-x86.c x86/Gregs-x86.c	\
-	x86/Gstep-x86.c							\
+	x86/Gresume-x86.c x86/Gstep-x86.c				\
 									\
 	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
 	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
-	x86/Lstep-x86.c
+	x86/Lresume-x86.c x86/Lstep-x86.c
 
 if REMOTE_ONLY
 libunwind_la_SOURCES_cdep = $(libunwind_la_SOURCES_remote)
