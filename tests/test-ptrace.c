@@ -59,7 +59,7 @@ do_backtrace (pid_t target_pid)
     {
       unw_get_reg (&c, UNW_REG_IP, &ip);
       unw_get_reg (&c, UNW_REG_SP, &sp);
-      unw_get_proc_name (&c, buf, sizeof (buf));
+      unw_get_proc_name (&c, buf, sizeof (buf), NULL);
 
       printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
