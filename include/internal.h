@@ -81,6 +81,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define dprintf(format...) \
     fprintf (stderr, format)
 # ifdef __GNUC__
+#  undef inline
 #  define inline	__attribute__ ((unused))
 # endif
 #else
@@ -103,21 +104,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define mutex_lock(l)	(pthread_mutex_lock ? pthread_mutex_lock (l) : 0)
 #define mutex_unlock(l)	(pthread_mutex_unlock ? pthread_mutex_unlock (l) : 0)
 
-#ifdef HAVE_IA64INTRIN_H
+#ifdef HAVE_ATOMIC_OPS_H
+# include <atomic_ops.h>
+# define cmpxchg_ptr(_ptr,_o,_n)	AO_compare_and_swap((AO_T *)_ptr, \
+							    (AO_T) (_o),  \
+							    (AO_T) (_n))
+# define fetch_and_add1(_ptr)		AO_fetch_and_add1(_ptr)
 # define HAVE_CMPXCHG
-# include <ia64intrin.h>
+# define HAVE_FETCH_AND_ADD1
+#else
+# ifdef HAVE_IA64INTRIN_H
+#  include <ia64intrin.h>
   /*
    * ecc v7.0 is broken: it's missing __sync_val_compare_and_swap()
    * even though the ia64 ABI requires it.  Work around it:
    */
-# ifndef __sync_val_compare_and_swap
-#  define __sync_val_compare_and_swap(x,y,z)		\
+#  ifndef __sync_val_compare_and_swap
+#   define __sync_val_compare_and_swap(x,y,z)				\
 	_InterlockedCompareExchange64_rel(x,y,z)
-# endif
+#  endif
 
-# define cmpxchg_ptr(_ptr,_o,_n)					\
+#  define cmpxchg_ptr(_ptr,_o,_n)					\
 	((void *) __sync_val_compare_and_swap((volatile long *) (_ptr),	\
-					      (long) (_o), (long) (_n)))
+					      (long) (_o), (long) (_n))	\
+	 != (_o))
+#  define fetch_and_add1(_ptr)		__sync_fetch_and_add(_ptr, 1)
+#  define HAVE_CMPXCHG
+#  define HAVE_FETCH_AND_ADD1
+# endif
 #endif
 
 #define UNWI_OBJ(fn)	  UNW_PASTE(UNW_PREFIX,UNW_PASTE(I,fn))
