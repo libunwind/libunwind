@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Mon Mar 31 14:25:06 PST 2003
+.\" Manual page created with latex2man on Tue Jan 20 16:44:37 PST 2004
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_IS\\_FPREG" "3" "31 March 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_IS\\_FPREG" "3" "20 January 2004" "Programming Library " "Programming Library "
 .SH NAME
 unw_is_fpreg
 \-\- check if a register is a floating\-point register 
@@ -33,6 +33,9 @@ The unw_is_fpreg()
 routine checks whether register number 
 reg
 is a floating\-point register. 
+.PP
+This routine is normally implemented as a macro and applications 
+should not attempt to take its address. 
 .PP
 .SH RETURN VALUE
 
