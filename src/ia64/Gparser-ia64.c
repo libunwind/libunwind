@@ -949,16 +949,24 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
   sr->when_target = (3 * ((ip & ~(unw_word_t) 0xf) - c->pi.start_ip) / 16
 		     + (ip & 0xf));
 
-  if (c->pi.format == UNW_INFO_FORMAT_TABLE)
+  switch (c->pi.format)
     {
+    case UNW_INFO_FORMAT_TABLE:
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
       dp = c->pi.unwind_info;
       desc_end = dp + c->pi.unwind_info_size;
       while (!sr->done && dp < desc_end)
 	dp = unw_decode (dp, sr->in_body, sr);
       ret = 0;
+      break;
+
+    case UNW_INFO_FORMAT_DYNAMIC:
+      ret = parse_dynamic (c, sr);
+      break;
+
+    default:
+      ret = -UNW_EINVAL;
     }
-  else
-    ret = parse_dynamic (c, sr);
 
   put_unwind_info (c, &c->pi);
 
