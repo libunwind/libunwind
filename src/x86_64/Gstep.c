@@ -35,34 +35,59 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret, i;
 
-  /* Only attempt DWARF based unwinding since DWARF frame info is
-     always expected to be there. With the exception of signal frames. */
+  /* Try DWARF-based unwinding... */
+  ret = dwarf_step (&c->dwarf);
 
-  if (!unw_is_signal_frame (cursor))
+  if (unlikely (ret == -UNW_ESTOPUNWIND))
+    return ret;
+
+  if (likely (ret >= 0))
     {
-      if ((ret = dwarf_step (&c->dwarf)) < 0)
-        {
-          Debug(1, "dwarf step failed\n");
-          return ret;
-        }
+      /* x86_64 ABI specifies that end of call-chain is marked with a
+	 NULL RBP.  */
+      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+	c->dwarf.ip = 0;
     }
   else
     {
+      /* DWARF failed, let's see if we can follow the frame-chain
+	 or skip over the signal trampoline.  */
       struct dwarf_loc rbp_loc, rsp_loc, rip_loc;
-      unw_word_t ucontext = c->dwarf.cfa;
 
-      Debug(1, "signal frame, skip over trampoline\n");
+      Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
-      c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
-      c->sigcontext_addr = c->dwarf.cfa;
+      if (unw_is_signal_frame (cursor))
+	{
+	  unw_word_t ucontext = c->dwarf.cfa;
 
-      rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
-      rbp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
-      rip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
+	  Debug(1, "signal frame, skip over trampoline\n");
 
-      ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
-      if (ret < 0)
-        return ret;
+	  c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+	  c->sigcontext_addr = c->dwarf.cfa;
+
+	  rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+	  rbp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
+	  rip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
+
+	  ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
+	  if (ret < 0)
+	    return ret;
+	}
+      else
+	{
+	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RBP], &c->dwarf.cfa);
+	  if (ret < 0)
+	    return ret;
+
+	  Debug (13, "[RBP=0x%Lx] = 0x%Lx\n",
+		 (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RBP]),
+		 (unsigned long long) c->dwarf.cfa);
+
+	  rbp_loc = DWARF_LOC (c->dwarf.cfa, 0);
+	  rsp_loc = DWARF_NULL_LOC;
+	  rip_loc = DWARF_LOC (c->dwarf.cfa + 8, 0);
+	  c->dwarf.cfa += 16;
+	}
 
       /* Mark all registers unsaved */
       for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
