@@ -29,13 +29,12 @@ SUBDIRS = src tests doc
 EXTRA_DIST = include/dwarf.h include/dwarf_i.h				\
 	include/internal.h include/mempool.h				\
 	include/remote.h						\
-	include/libunwind-ia64.h include/tdep-ia64.h include/ia64/rse.h	\
-	include/ia64/script.h						\
+	include/libunwind-ia64.h include/tdep-ia64.h			\
+	include/ia64/jmpbuf.h include/ia64/rse.h include/ia64/script.h	\
 	include/libunwind-hppa.h include/tdep-hppa.h			\
 	include/libunwind-x86.h include/tdep-x86.h			\
-	include/x86/dwarf-config.h					\
+	include/x86/jmpbuf.h include/x86/dwarf-config.h			\
 	include/libunwind-x86_64.h include/tdep-x86_64.h		\
-	include/x86/dwarf-config.h					\
-	include/x86_64/dwarf-config.h
+	include/x86_64/jmpbuf.h include/x86_64/dwarf-config.h
 
 DISTCLEANFILES = include/libunwind.h include/tdep.h
