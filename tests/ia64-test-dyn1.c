@@ -110,7 +110,8 @@ main (int argc, char **argv)
   if (argc != 1)
     verbose = 1;
 
-  add1 = create_func (&di0, "func_add1", func_add1, func_add1_end, NULL);
+  add1 = (long (*)(long))
+	  create_func (&di0, "func_add1", func_add1, func_add1_end, NULL);
 
   /* Describe the epilogue of func_add3: */
   i = 0;
@@ -180,9 +181,12 @@ main (int argc, char **argv)
   assert ((unsigned) i <= r->op_count);
 
   /* Create two functions which can share the region-list:  */
-  add3_0 = create_func (&di1, "func_add3/0", func_add3, func_add3_end, r_pro);
-  add3_1 = create_func (&di2, "func_add3/1", func_add3, func_add3_end, r_pro);
-  vframe = create_func (&di3, "func_vframe", func_vframe, func_vframe_end, r);
+  add3_0 = (long (*) (long))
+	  create_func (&di1, "func_add3/0", func_add3, func_add3_end, r_pro);
+  add3_1 = (long (*) (long, void *[]))
+	  create_func (&di2, "func_add3/1", func_add3, func_add3_end, r_pro);
+  vframe = (long (*) (long))
+	  create_func (&di3, "func_vframe", func_vframe, func_vframe_end, r);
 
   _U_dyn_register (&di1);
   _U_dyn_register (&di2);
