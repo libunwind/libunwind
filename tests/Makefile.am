@@ -8,7 +8,7 @@ if REMOTE_ONLY
 else
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig
- TESTS_arch = ia64-test-stack
+ TESTS_arch = ia64-test-rbs ia64-test-stack
 endif
  TESTS_cdep = test-dyn1 test-exc test-resume-sig test-setjmp test-ptrace
  noinst_PROGRAMS_cdep = bt test-init test-varargs
@@ -22,6 +22,7 @@ noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 
 ia64_test_stack_SOURCES = ia64-test-stack.c ia64-test-stack-asm.S
+ia64_test_rbs_SOURCES = ia64-test-rbs.c ia64-test-rbs-asm.S
 
 LDADD = ../src/libunwind-$(arch).la
 
