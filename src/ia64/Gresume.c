@@ -34,7 +34,8 @@ static inline int
 local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
 #if defined(__linux)
-  unw_word_t val, sol, sof, pri_unat, n, pfs;
+  unw_word_t dirty_partition[2048]; /* AR.RSC.LOADRS is a 14-bit field */
+  unw_word_t val, sol, sof, pri_unat, n, pfs, bspstore, dirty_rnat;
   struct cursor *c = (struct cursor *) cursor;
   struct
     {
@@ -49,7 +50,7 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       unw_word_t r18;
     }
   extra;
-  int ret;
+  int ret, dirty_size;
 # define GET_NAT(n)						\
   do								\
     {								\
@@ -105,7 +106,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       c->psp = c->sigcontext_addr - c->sigcontext_off;
 
       sof = (c->cfm & 0x7f);
-      rbs_cover_and_flush (c, sof);
+      if ((dirty_size = rbs_cover_and_flush (c, sof, dirty_partition,
+					     &dirty_rnat, &bspstore)) < 0)
+	return dirty_size;
 
       /* Clear the "in-syscall" flag, because in general we won't be
 	 returning to the interruption-point and we need all registers
@@ -135,7 +138,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       if ((ret = ia64_get (c, c->loc[IA64_REG_PFS], &pfs)) < 0)
 	return ret;
       sol = (pfs >> 7) & 0x7f;
-      rbs_cover_and_flush (c, sol);
+      if ((dirty_size = rbs_cover_and_flush (c, sol, dirty_partition,
+					     &dirty_rnat, &bspstore)) < 0)
+	return dirty_size;
 
       extra.r1 = c->pi.gp;
       extra.r15 = c->eh_args[0];
@@ -147,7 +152,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	     (long) extra.r17, (long) extra.r18);
     }
   Debug (8, "resuming at ip=%lx\n", (long) c->ip);
-  ia64_install_cursor (c, pri_unat, (unw_word_t *) &extra);
+  ia64_install_cursor (c, pri_unat, (unw_word_t *) &extra,
+		       bspstore, dirty_size, dirty_partition + dirty_size/8,
+		       dirty_rnat);
 #elif defined(__hpux)
   struct cursor *c = (struct cursor *) cursor;
 
