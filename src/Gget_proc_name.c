@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "internal.h"
 
-static int
+static inline int
 intern_string (unw_addr_space_t as, unw_accessors_t *a,
 	       unw_word_t addr, char *buf, size_t buf_len, void *arg)
 {
