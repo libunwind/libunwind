@@ -34,19 +34,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <asm/rse.h>
 
-//#define NUM_RUNS		1024
-#define NUM_RUNS		1
-//#define MAX_CHECKS		1024
-#define MAX_CHECKS		4
+#define NUM_RUNS		1024
+//#define NUM_RUNS		1
+#define MAX_CHECKS		1024
+//#define MAX_CHECKS		2
 #define MAX_VALUES_PER_FUNC	4
 
 #define panic(args...)							  \
-	do { fprintf (stderr, args); ++nerrors; } while (0)
+	do { printf (args); ++nerrors; } while (0)
 
 #define NELEMS(a)	((int) (sizeof (a) / sizeof ((a)[0])))
 
 typedef void save_func_t (void *funcs, unsigned long *vals);
 typedef unw_word_t *check_func_t (unw_cursor_t *c, unsigned long *vals);
+
+extern void flushrs (void);
 
 extern save_func_t save_static_to_stacked;
 static check_func_t check_static_to_stacked;
@@ -63,6 +65,9 @@ static check_func_t check_static_to_mem;
 extern save_func_t save_static_to_scratch;
 static check_func_t check_static_to_scratch;
 
+extern save_func_t rotate_regs;
+static check_func_t check_rotate_regs;
+
 static int verbose;
 static int nerrors;
 
@@ -78,14 +83,15 @@ static struct
   }
 all_funcs[] =
   {
-#if 0
     { save_static_to_stacked,	check_static_to_stacked },
-    { save_static_to_fr,	check_static_to_fr }
+#if 1
+    { save_static_to_fr,	check_static_to_fr },
+    { save_static_to_br,	check_static_to_br },
+    { save_static_to_mem,	check_static_to_mem },
+    { save_static_to_scratch,	check_static_to_scratch },
 #endif
-    { save_static_to_br,	check_static_to_br }
+    { rotate_regs,		check_rotate_regs },
 #if 0
-    { save_static_to_mem,	check_static_to_mem }
-    { save_static_to_scratch,	check_static_to_scratch }
 #endif
   };
 
@@ -98,12 +104,15 @@ sighandler (int signal, void *siginfo, void *context)
   long sof;
   int sp;
 
-  printf ("sighandler: got signal %d, sp=%p, nat=%lx\n",
-	  signal, &sp, uc->uc_mcontext.sc_nat);
+  if (verbose)
+    printf ("sighandler: signal %d sp=%p nat=%08lx pr=%lx\n",
+	    signal, &sp, uc->uc_mcontext.sc_nat, uc->uc_mcontext.sc_pr);
 
   sof = uc->uc_mcontext.sc_cfm & 0x7f;
   bsp = ia64_rse_skip_regs ((unsigned long *) uc->uc_mcontext.sc_ar_bsp,
 			    -sof);
+
+  flushrs ();
   arg0 = (save_func_t **) *bsp;
   bsp = ia64_rse_skip_regs (bsp, 1);
   arg1 = (unsigned long *) *bsp;
@@ -224,18 +233,11 @@ check_static_to_fr (unw_cursor_t *c, unw_word_t *vals)
 static unw_word_t *
 check_static_to_br (unw_cursor_t *c, unw_word_t *vals)
 {
-  unw_word_t r4, nat4, pr;
+  unw_word_t r4, nat4;
   int ret;
 
   if (verbose)
     printf ("  %s()\n", __FUNCTION__);
-
-  if ((ret = unw_get_reg (c, UNW_IA64_PR, &pr)) < 0)
-    panic ("%s: failed to read register pr, error=%d\n", __FUNCTION__, ret);
-
-  if (!(pr & 1))
-    /* r4 contained a NaT, so the routine didn't do anything.  */
-    return vals;
 
   vals -= 1;
 
@@ -353,6 +355,12 @@ check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
   return vals;
 }
 
+static unw_word_t *
+check_rotate_regs (unw_cursor_t *c, unw_word_t *vals)
+{
+  return vals;	/* nothing to do here... */
+}
+
 static void
 start_checks (void *funcs, unsigned long *vals)
 {
@@ -372,7 +380,7 @@ start_checks (void *funcs, unsigned long *vals)
 
   for (i = 0; i < num_checks; ++i)
     {
-      vals = (*checks[i]) (&c, vals);
+      vals = (*checks[num_checks - 1 - i]) (&c, vals);
 
       if ((ret = unw_step (&c)) < 0)
 	panic ("%s: unw_step (ret=%d)\n", __FUNCTION__, ret);
@@ -384,14 +392,22 @@ run_check (int test)
 {
   int index, i;
 
-  num_checks = (random () % MAX_CHECKS) + 1;
+  if (test == 1)
+    /* Make first test always go the full depth... */
+    num_checks = MAX_CHECKS;
+  else
+    num_checks = (random () % MAX_CHECKS) + 1;
 
   for (i = 0; i < num_checks * MAX_VALUES_PER_FUNC; ++i)
     values[i] = random ();
 
   for (i = 0; i < num_checks; ++i)
     {
-      index = random () % NELEMS (all_funcs);
+      if (test == 1)
+	/* Make first test once go through each test... */
+	index = i % NELEMS (all_funcs);
+      else
+	index = random () % NELEMS (all_funcs);
       funcs[i] = all_funcs[index].func;
       checks[i] = all_funcs[index].check;
     }
