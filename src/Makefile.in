@@ -95,32 +95,16 @@ install_sh = @install_sh@
 SOVERSION = 1:0:0		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
 
-EXTRA_DIST = elfxx.h elfxx.c
+libunwind_setjmp_la_SOURCES_local = longjmp.c siglongjmp.c
+libunwind_setjmp_la_SOURCES_local_ia64 = ia64/setjmp-ia64.S	\
+	ia64/sigsetjmp-ia64.S ia64/siglongjmp-ia64.S
 
-#	Nothing to do here....
-@REMOTE_ONLY_FALSE@libunwind_la_SOURCES_cdep = \
-@REMOTE_ONLY_FALSE@	_UPT_internal.h							     \
-@REMOTE_ONLY_FALSE@									     \
-@REMOTE_ONLY_FALSE@	dyn-cancel.c dyn-register.c					     \
-@REMOTE_ONLY_FALSE@									     \
-@REMOTE_ONLY_FALSE@	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
-@REMOTE_ONLY_FALSE@	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
-@REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
+libunwind_setjmp_la_SOURCES_local_hppa = setjmp.c sigsetjmp.c	\
+	hppa/siglongjmp-hppa.S
 
+libunwind_setjmp_la_SOURCES_local_x86 = setjmp.c sigsetjmp.c	\
+	x86/siglongjmp-x86.S
 
-@REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind-setjmp.la
-@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
-@REMOTE_ONLY_FALSE@libunwind_setjmp_la_LDFLAGS = -version-info $(SETJMP_SO_VERSION)
-@REMOTE_ONLY_FALSE@libunwind_setjmp_la_LIBADD = libunwind-$(arch).la
-
-@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp-ia64.S ia64/sigsetjmp-ia64.S \
-@REMOTE_ONLY_FALSE@				   ia64/siglongjmp-ia64.S
-
-@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_hppa = setjmp.c sigsetjmp.c hppa/siglongjmp-hppa.S
-@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_x86 = setjmp.c sigsetjmp.c x86/siglongjmp-x86.S
-
-@OS_LINUX_TRUE@libunwind_la_SOURCES_os = os-linux.h os-linux.c
 
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	$(libunwind_la_SOURCES_os)					      \
@@ -131,11 +115,20 @@ libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
 	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c
 
+libunwind_la_SOURCES_local = \
+	_UPT_internal.h							     \
+	dyn-cancel.c dyn-register.c					     \
+	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
+	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
+	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
+	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
+
+libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 
 
 #
 # Note: As of automake-1.6, there is a stupid limitation which requires
-#	that each filename is unique.  This prevents us from having, e.g.,
+#	that each filename be unique.  This prevents us from having, e.g.,
 #	ia64/tables.c and x86/tables.c.  The fix for now is to uglify the
 #	filenames by appending the arch-name (e.g., tables-ia64.c).  Oh, well.
 #
@@ -196,6 +189,21 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 	x86/Lstep-x86.c
 
 
+#	Nothing to do here....
+@REMOTE_ONLY_TRUE@libunwind_la_SOURCES_cdep = $(libunwind_la_SOURCES_remote)
+@REMOTE_ONLY_FALSE@libunwind_la_SOURCES_cdep = $(libunwind_la_SOURCES_local)
+
+@REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind-setjmp.la
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_common = $(libunwind_setjmp_la_SOURCES_local)
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_LDFLAGS = -version-info $(SETJMP_SO_VERSION)
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_LIBADD = libunwind-$(arch).la
+
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_ia64 = $(libunwind_setjmp_la_SOURCES_local_ia64)
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_hppa = $(libunwind_setjmp_la_SOURCES_local_hppa)
+@REMOTE_ONLY_FALSE@libunwind_setjmp_la_SOURCES_x86 = $(libunwind_setjmp_la_SOURCES_local_x86)
+
+@OS_LINUX_TRUE@libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
+
 @ARCH_IA64_TRUE@mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64
 @ARCH_IA64_TRUE@BUILT_SOURCES = cursor_i.h
@@ -222,6 +230,19 @@ lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
+
+EXTRA_DIST = elfxx.h elfxx.c					\
+		$(libunwind_la_SOURCES_hppa)			\
+		$(libunwind_la_SOURCES_ia64)			\
+		$(libunwind_la_SOURCES_x86)			\
+		$(libunwind_la_SOURCES_os_linux)		\
+		$(libunwind_la_SOURCES_local)			\
+		$(libunwind_la_SOURCES_remote)			\
+		$(libunwind_setjmp_la_SOURCES_local)		\
+		$(libunwind_setjmp_la_SOURCES_local_hppa)	\
+		$(libunwind_setjmp_la_SOURCES_local_ia64)	\
+		$(libunwind_setjmp_la_SOURCES_local_x86)
+
 subdir = src
 mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
@@ -229,22 +250,21 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libunwind_hppa_la_LIBADD =
-@REMOTE_ONLY_FALSE@am__objects_1 = dyn-cancel.lo dyn-register.lo \
-@REMOTE_ONLY_FALSE@	_UPT_accessors.lo _UPT_access_fpreg.lo \
-@REMOTE_ONLY_FALSE@	_UPT_access_mem.lo _UPT_access_reg.lo \
-@REMOTE_ONLY_FALSE@	_UPT_create.lo _UPT_destroy.lo \
-@REMOTE_ONLY_FALSE@	_UPT_find_proc_info.lo \
-@REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.lo \
-@REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo \
-@REMOTE_ONLY_FALSE@	_UPT_get_proc_name.lo _UPT_reg_offset.lo \
-@REMOTE_ONLY_FALSE@	_UPT_resume.lo
-@OS_LINUX_TRUE@am__objects_2 = os-linux.lo
-am__objects_3 = $(am__objects_1) $(am__objects_2) backtrace.lo \
+am__objects_2 = dyn-cancel.lo dyn-register.lo _UPT_accessors.lo \
+	_UPT_access_fpreg.lo _UPT_access_mem.lo _UPT_access_reg.lo \
+	_UPT_create.lo _UPT_destroy.lo _UPT_find_proc_info.lo \
+	_UPT_get_dyn_info_list_addr.lo _UPT_put_unwind_info.lo \
+	_UPT_get_proc_name.lo _UPT_reg_offset.lo _UPT_resume.lo
+@REMOTE_ONLY_TRUE@am__objects_3 = $(am__objects_1)
+@REMOTE_ONLY_FALSE@am__objects_3 = $(am__objects_2)
+am__objects_4 = os-linux.lo
+@OS_LINUX_TRUE@am__objects_5 = $(am__objects_4)
+am__objects_6 = $(am__objects_3) $(am__objects_5) backtrace.lo \
 	dyn-extract.lo dyn-remote.lo mi-init.lo mempool.lo \
 	Gfind_dynamic_proc_info.lo Gget_proc_name.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
 	Lget_proc_name.lo Lput_dynamic_unwind_info.lo
-am__objects_4 = $(am__objects_3) flush_cache-hppa.lo \
+am__objects_7 = $(am__objects_6) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
 	Ginit_local-hppa.lo Gget_proc_info-hppa.lo Gregs-hppa.lo \
@@ -252,10 +272,10 @@ am__objects_4 = $(am__objects_3) flush_cache-hppa.lo \
 	Linit-hppa.lo Linit_local-hppa.lo Lget_proc_info-hppa.lo \
 	Lregs-hppa.lo Lstep-hppa.lo
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_hppa_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_4)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_7)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-am__objects_5 = $(am__objects_3) elf64.lo _Uia64_install_context.lo \
+am__objects_8 = $(am__objects_6) elf64.lo _Uia64_install_context.lo \
 	global-ia64.lo rbs-ia64.lo tables-ia64.lo get_accessors-ia64.lo \
 	flush_cache-ia64.lo set_caching_policy-ia64.lo regname-ia64.lo \
 	Ginit-ia64.lo Gparser-ia64.lo Gregs-ia64.lo Gscript-ia64.lo \
@@ -271,29 +291,30 @@ am__objects_5 = $(am__objects_3) elf64.lo _Uia64_install_context.lo \
 	Lget_save_loc-ia64.lo Lis_signal_frame-ia64.lo Lresume-ia64.lo \
 	Lset_reg-ia64.lo Lset_fpreg-ia64.lo Linit_local-ia64.lo \
 	Linit_remote-ia64.lo Lstep-ia64.lo
-@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_5)
+@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_8)
 libunwind_ia64_la_OBJECTS = $(am_libunwind_ia64_la_OBJECTS)
 @REMOTE_ONLY_TRUE@libunwind_setjmp_la_DEPENDENCIES =
 @REMOTE_ONLY_FALSE@libunwind_setjmp_la_DEPENDENCIES = \
 @REMOTE_ONLY_FALSE@	libunwind-$(arch).la
-@REMOTE_ONLY_FALSE@am__objects_6 = longjmp.lo siglongjmp.lo
-@REMOTE_ONLY_FALSE@am__objects_7 = setjmp.lo sigsetjmp.lo \
-@REMOTE_ONLY_FALSE@	siglongjmp-x86.lo
-@REMOTE_ONLY_FALSE@am__objects_8 = setjmp.lo sigsetjmp.lo \
-@REMOTE_ONLY_FALSE@	siglongjmp-hppa.lo
-@REMOTE_ONLY_FALSE@am__objects_9 = setjmp-ia64.lo sigsetjmp-ia64.lo \
-@REMOTE_ONLY_FALSE@	siglongjmp-ia64.lo
+am__objects_9 = longjmp.lo siglongjmp.lo
+@REMOTE_ONLY_FALSE@am__objects_10 = $(am__objects_9)
+am__objects_11 = setjmp.lo sigsetjmp.lo siglongjmp-x86.lo
+@REMOTE_ONLY_FALSE@am__objects_12 = $(am__objects_11)
+am__objects_13 = setjmp.lo sigsetjmp.lo siglongjmp-hppa.lo
+@REMOTE_ONLY_FALSE@am__objects_14 = $(am__objects_13)
+am__objects_15 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
+@REMOTE_ONLY_FALSE@am__objects_16 = $(am__objects_15)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_setjmp_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_6) \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_7)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_10) \
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_12)
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_setjmp_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_6) \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_8)
-@ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_6) \
-@ARCH_IA64_TRUE@	$(am__objects_9)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_10) \
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_14)
+@ARCH_IA64_TRUE@am_libunwind_setjmp_la_OBJECTS = $(am__objects_10) \
+@ARCH_IA64_TRUE@	$(am__objects_16)
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 libunwind_x86_la_LIBADD =
-am__objects_10 = $(am__objects_3) flush_cache-x86.lo \
+am__objects_17 = $(am__objects_6) flush_cache-x86.lo \
 	get_accessors-x86.lo global-x86.lo tables-x86.lo \
 	Gget_reg-x86.lo Gget_proc_name-x86.lo Ginit-x86.lo \
 	Ginit_local-x86.lo Gget_proc_info-x86.lo Gregs-x86.lo \
@@ -301,7 +322,7 @@ am__objects_10 = $(am__objects_3) flush_cache-x86.lo \
 	Linit_local-x86.lo Lget_proc_info-x86.lo Lregs-x86.lo \
 	Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_10)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_17)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = mk_cursor_i-ia64$(EXEEXT)
 @ARCH_IA64_FALSE@noinst_PROGRAMS =
@@ -2280,6 +2301,7 @@ top_distdir = ..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
+	$(mkinstalldirs) $(distdir)/hppa $(distdir)/ia64 $(distdir)/x86
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \
@@ -2385,7 +2407,6 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	mostlyclean-generic mostlyclean-libtool tags uninstall \
 	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES
 
-
 @REMOTE_ONLY_TRUE@install-exec-hook:
 #
 # This is not ideal, but I know of no other way to install an
@@ -2395,7 +2416,7 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 @REMOTE_ONLY_FALSE@	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind.a
 @REMOTE_ONLY_FALSE@	$(LN_S) -f libunwind-$(arch).so $(DESTDIR)$(libdir)/libunwind.so
 @ARCH_IA64_TRUE@cursor_i.h: mk_cursor_i-ia64
-@ARCH_IA64_TRUE@	mk_cursor_i-ia64 > $@
+@ARCH_IA64_TRUE@	./mk_cursor_i-ia64 > $@
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
