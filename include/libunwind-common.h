@@ -118,6 +118,8 @@ typedef union
   }
 unw_fpreg_t;
 
+typedef struct unw_addr_space *unw_addr_space_t;
+
 /* These are backend callback routines that provide access to the
    state of a "remote" process.  This can be used, for example, to
    unwind another process through the ptrace() interface.  */
@@ -140,8 +142,6 @@ typedef struct unw_accessors
 			 void *arg);
 
     int (*resume) (unw_cursor_t *c, void *arg);
-
-    void *arg;		/* application-specific data */
   }
 unw_accessors_t;
 
@@ -168,8 +168,13 @@ unw_save_loc_t;
 
 /* These routines work both for local and remote unwinding.  */
 
+extern unw_addr_space_t UNW_OBJ(local_addr_space);
+
+extern unw_addr_space_t UNW_OBJ(create_addr_space) (unw_accessors_t *a);
+extern void UNW_OBJ(destroy_addr_space) (unw_addr_space_t as);
 extern int UNW_OBJ(init_local) (unw_cursor_t *c, ucontext_t *u);
-extern int UNW_OBJ(init_remote) (unw_cursor_t *c, unw_accessors_t *a);
+extern int UNW_OBJ(init_remote) (unw_cursor_t *c, unw_addr_space_t as,
+				 void *as_arg);
 extern int UNW_OBJ(step) (unw_cursor_t *c);
 extern int UNW_OBJ(resume) (unw_cursor_t *c);
 extern int UNW_OBJ(get_reg) (unw_cursor_t *c, int regnum, unw_word_t *valp);
@@ -181,59 +186,87 @@ extern int UNW_OBJ(get_save_loc) (unw_cursor_t *c, int regnum,
 extern int UNW_OBJ(is_signal_frame) (unw_cursor_t *c);
 extern const char *UNW_OBJ(regname) (int regnum);
 
+#define unw_local_addr_space		UNW_OBJ(local_addr_space)
+
+/* Create a new address space (in addition to the default
+   local_addr_space).
+   This routine is NOT signal-safe.  */
+#define unw_create_addr_space(a)	UNW_OBJ(create_addr_space)(a)
+
+/* Destroy an address space.
+   This routine is NOT signal-safe.  */
+#define unw_destroy_addr_space(as)	UNW_OBJ(destroy_addr_space)(as)
+
 /* Initialize cursor C such that unwinding starts at the point
    represented by the context U.  Returns zero on success, negative
-   value on failure.  */
+   value on failure.
+   This routine is signal-safe.  */
 #define unw_init_local(c,u)	UNW_OBJ(init_local)(c, u)
 
 /* Initialize cursor C such that it accesses the unwind target through
-   accessors A.  */
-#define unw_init_remote(c,a)	UNW_OBJ(init_remote)(c, a)
+   accessors A.
+   This routine is signal-safe.  */
+#define unw_init_remote(c,a,arg) UNW_OBJ(init_remote)(c, a, arg)
 
 /* Move cursor up by one step (up meaning toward earlier, less deeply
    nested frames).  Returns positive number if there are more frames
    to unwind, 0 if last frame has been reached, negative number in
-   case of an error.  */
+   case of an error.
+   This routine is signal-safe.  */
 #define unw_step(c)		UNW_OBJ(step)(c)
 
-/* Resume execution at the point identified by the cursor.  */
+/* Resume execution at the point identified by the cursor.
+   This routine is signal-safe.  */
 #define unw_resume(c)		UNW_OBJ(resume)(c)
 
 /* Register accessor routines.  Return zero on success, negative value
-   on failure.  */
+   on failure.
+   These routines are signal-safe.  */
 #define unw_get_reg(c,r,v)	UNW_OBJ(get_reg)(c,r,v)
 #define unw_set_reg(c,r,v)	UNW_OBJ(set_reg)(c,r,v)
 
 /* Floating-point accessor routines.  Return zero on success, negative
-   value on failure.  */
+   value on failure.
+   These routines are signal-safe.  */
 #define unw_get_fpreg(c,r,v)	UNW_OBJ(get_fpreg)(c,r,v)
 #define unw_set_fpreg(c,r,v)	UNW_OBJ(set_fpreg)(c,r,v)
 
+/* Get the save-location of register R.
+   This routine is signal-safe.  */
 #define unw_get_save_loc(c,r,l)	UNW_OBJ(get_save_loc)(c,r,l)
 
 /* Return 1 if register number R is a floating-point register, zero
-   otherwise.  */
+   otherwise.
+   This routine is signal-safe.  */
 #define unw_is_fpreg(r)		unw_tdep_is_fpreg(r)
 
-/* Returns non-zero value if the cursor points to a signal frame.  */
+/* Returns non-zero value if the cursor points to a signal frame.
+   This routine is signal-safe.  */
 #define unw_is_signal_frame(c)	UNW_OBJ(is_signal_frame)(c)
 
 /* Returns the canonical register name of register R.  R must be in
    the range from 0 to UNW_REG_LAST.  Like all other unwind routines,
    this one is re-entrant (i.e., the returned string must be a string
-   constant.  */
+   constant.
+   This routine is signal-safe.  */
 #define unw_regname(r)		UNW_OBJ(regname)(r)
 
-/* Sets the caching policy.  Caching can be disabled completely by
-   setting the policy to UNW_CACHE_NONE.  With UNW_CACHE_GLOBAL, there
-   is a single cache that is shared across all threads.  With
-   UNW_CACHE_PER_THREAD, each thread gets its own cache, which can
-   improve performance thanks to less locking and better locality.  By
-   default, UNW_CACHE_GLOBAL is in effect.  */
-#define unw_set_caching_policy(p)	UNW_OBJ(set_caching_policy)(p)
+/* Sets the caching policy of address space AS.  Caching can be
+   disabled completely by setting the policy to UNW_CACHE_NONE.  With
+   UNW_CACHE_GLOBAL, there is a single cache that is shared across all
+   threads.  With UNW_CACHE_PER_THREAD, each thread gets its own
+   cache, which can improve performance thanks to less locking and
+   better locality.  By default, UNW_CACHE_GLOBAL is in effect.
+   This routine is NOT signal-safe.  */
+#define unw_set_caching_policy(as, p)	UNW_OBJ(set_caching_policy)(as, p)
 
 /* Flush all caches (global, per-thread, or any other caches that
-   might exist).  This function must be called if any of unwind
-   information might have changed (e.g., because a library might have
-   been removed via a call to dlclose()).  */
-#define unw_flush_cache()	UNW_OBJ(flush_cache)()
+   might exist) in address-space AS of information at least relating
+   to the address-range LO to HI (non-inclusive).  LO and HI are only
+   a performance hint and the function is allowed to over-flush (i.e.,
+   flush more than the requested address-range).  Furthermore, if LO
+   and HI are both 0, the entire address-range is flushed.  This
+   function must be called if any of unwind information might have
+   changed (e.g., because a library might have been removed via a call
+   to dlclose()).  This routine is signal-safe.  */
+#define unw_flush_cache(as,lo,hi)	UNW_OBJ(flush_cache)(as, lo, hi)
