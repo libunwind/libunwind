@@ -1,3 +1,4 @@
+#include <assert.h>
 #include <libunwind.h>
 #include <unistd.h>
 #include <signal.h>
@@ -110,6 +111,7 @@ main (int argc, char **argv)
   long (*vframe) (long);
   void *flist[2];
   long ret;
+  int i;
 
   signal (SIGUSR1, SIG_IGN);
   signal (SIGUSR2, SIG_IGN);
@@ -120,62 +122,71 @@ main (int argc, char **argv)
   add1 = create_func (&di0, "func_add1", func_add1, func_add1_end, NULL);
 
   /* Describe the epilogue of func_add3: */
+  i = 0;
   r_epi = alloca (_U_dyn_region_info_size (5));
+  r_epi->op_count = 5;
   r_epi->next = NULL;
   r_epi->insn_count = -9;
-  r_epi->op_count = 2;
-  _U_dyn_op_pop_frames (&r_epi->op[0],
+  _U_dyn_op_pop_frames (&r_epi->op[i++],
 			_U_QP_TRUE, /* when=*/ 5, /* num_frames=*/ 1);
-  _U_dyn_op_stop (&r_epi->op[1]);
+  _U_dyn_op_stop (&r_epi->op[i++]);
+  assert (i <= r_epi->op_count);
 
   /* Describe the prologue of func_add3: */
+  i = 0;
   r_pro = alloca (_U_dyn_region_info_size (4));
+  r_pro->op_count = 4;
   r_pro->next = r_epi;
   r_pro->insn_count = 8;
-  r_pro->op_count = 4;
-  _U_dyn_op_save_reg (&r_pro->op[0], _U_QP_TRUE, /* when=*/ 0,
+  _U_dyn_op_save_reg (&r_pro->op[i++], _U_QP_TRUE, /* when=*/ 0,
 		      /* reg=*/ UNW_IA64_AR_PFS, /* dst=*/ UNW_IA64_GR + 34);
-  _U_dyn_op_add (&r_pro->op[1], _U_QP_TRUE, /* when=*/ 2,
+  _U_dyn_op_add (&r_pro->op[i++], _U_QP_TRUE, /* when=*/ 2,
 		 /* reg= */ UNW_IA64_SP, /* val=*/ -16);
-  _U_dyn_op_save_reg (&r_pro->op[2], _U_QP_TRUE, /* when=*/ 4,
+  _U_dyn_op_save_reg (&r_pro->op[i++], _U_QP_TRUE, /* when=*/ 4,
 		      /* reg=*/ UNW_IA64_RP, /* dst=*/ UNW_IA64_GR + 3);
-  _U_dyn_op_spill_sp_rel (&r_pro->op[3], _U_QP_TRUE, /* when=*/ 7,
+  _U_dyn_op_spill_sp_rel (&r_pro->op[i++], _U_QP_TRUE, /* when=*/ 7,
 		      /* reg=*/ UNW_IA64_RP, /* off=*/ 16);
+  assert (i <= r_pro->op_count);
 
   /* Create regions for func_vframe: */
+  i = 0;
   r = alloca (_U_dyn_region_info_size (16));
+  r->op_count = 16;
   r->next = NULL;
   r->insn_count = 4;
-  r->op_count = 0;
-  _U_dyn_op_label_state (&r->op[r->op_count++], /* label=*/ 100402);
-  _U_dyn_op_pop_frames (&r->op[r->op_count++], _U_QP_TRUE, /* when=*/ 3,
-			/* num_frames=*/ 1);
-  _U_dyn_op_stop (&r->op[r->op_count++]);
+  _U_dyn_op_label_state (&r->op[i++], /* label=*/ 100402);
+  _U_dyn_op_pop_frames (&r->op[i++], _U_QP_TRUE, /* when=*/ 3, /* frames=*/ 1);
+  _U_dyn_op_stop (&r->op[i++]);
+  assert (i <= r->op_count);
 
+  i = 0;
   rtmp = r;
   r = alloca (_U_dyn_region_info_size (16));
+  r->op_count = 16;
   r->next = rtmp;
   r->insn_count = 16;
-  r->op_count = 0;
-  _U_dyn_op_save_reg (&r->op[r->op_count++], _U_QP_TRUE, /* when=*/ 8,
+  _U_dyn_op_save_reg (&r->op[i++], _U_QP_TRUE, /* when=*/ 8,
 		      /* reg=*/ UNW_IA64_RP, /* dst=*/ UNW_IA64_GR + 3);
-  _U_dyn_op_pop_frames (&r->op[r->op_count++], _U_QP_TRUE, /* when=*/ 10,
+  _U_dyn_op_pop_frames (&r->op[i++], _U_QP_TRUE, /* when=*/ 10,
 			/* num_frames=*/ 1);
-  _U_dyn_op_stop (&r->op[r->op_count++]);
+  _U_dyn_op_stop (&r->op[i++]);
+  assert (i <= r->op_count);
 
+  i = 0;
   rtmp = r;
   r = alloca (_U_dyn_region_info_size (16));
+  r->op_count = 16;
   r->next = rtmp;
   r->insn_count = 5;
-  r->op_count = 0;
-  _U_dyn_op_save_reg (&r->op[r->op_count++], _U_QP_TRUE, /* when=*/ 1,
+  _U_dyn_op_save_reg (&r->op[i++], _U_QP_TRUE, /* when=*/ 1,
 			  /* reg=*/ UNW_IA64_RP, /* dst=*/ UNW_IA64_GR + 33);
-  _U_dyn_op_save_reg (&r->op[r->op_count++], _U_QP_TRUE, /* when=*/ 2,
+  _U_dyn_op_save_reg (&r->op[i++], _U_QP_TRUE, /* when=*/ 2,
 			  /* reg=*/ UNW_IA64_SP, /* dst=*/ UNW_IA64_GR + 34);
-  _U_dyn_op_spill_fp_rel (&r->op[r->op_count++], _U_QP_TRUE, /* when=*/ 4,
+  _U_dyn_op_spill_fp_rel (&r->op[i++], _U_QP_TRUE, /* when=*/ 4,
 			  /* reg=*/ UNW_IA64_AR_PFS, /* off=*/ 16);
-  _U_dyn_op_label_state (&r->op[r->op_count++], /* label=*/ 100402);
-  _U_dyn_op_stop (&r->op[r->op_count++]);
+  _U_dyn_op_label_state (&r->op[i++], /* label=*/ 100402);
+  _U_dyn_op_stop (&r->op[i++]);
+  assert (i <= r->op_count);
 
   /* Create two functions which can share the region-list:  */
   add3_0 = create_func (&di1, "func_add3/0", func_add3, func_add3_end, r_pro);
