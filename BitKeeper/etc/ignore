@@ -36,3 +36,6 @@ src/ia64/Lunw_step.c~
 src/ia64/init.h~
 src/ia64/shared.c~
 src/ia64/regs.h~
+src/ia64/unw_get_fpreg.c~
+src/ia64/unw_get_save_loc.c~
+src/ia64/unw_set_fpreg.c~
