@@ -31,13 +31,10 @@ License.  */
 unw_word_t
 ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg)
 {
-  unw_word_t loc;
+  unw_word_t loc = c->sigcontext_loc;
 
-  if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+  if (loc)
     {
-      if (ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &loc) < 0)
-	return 0;
-
       switch (reg)
 	{
 	case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
@@ -202,12 +199,9 @@ access_nat (struct ia64_cursor *c, unw_word_t loc, unw_word_t reg_loc,
       else
 	{
 	  /* NaT bit is saved in a scratch register.  */
-	  if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+	  sc_addr = c->sigcontext_loc;
+	  if (sc_addr)
 	    {
-	      ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &sc_addr);
-	      if (ret < 0)
-		return ret;
-
 	      nat_loc = sc_addr + SIGCONTEXT_NAT_OFF;
 	      mask = (unw_word_t) 1 << reg;
 	    }
@@ -314,11 +308,15 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
       reg = rotate_gr (c, reg - UNW_IA64_GR) + UNW_IA64_GR;
+      if (reg < 0)
+	return -UNW_EBADREG;
       loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_GR + 32));
       break;
 
     case UNW_IA64_NAT + 32 ... UNW_IA64_NAT + 127:	/* stacked reg */
       reg = rotate_gr (c, reg - UNW_IA64_NAT) + UNW_IA64_NAT;
+      if (reg < 0)
+	return -UNW_EBADREG;
       loc = ia64_rse_skip_regs (c->bsp, reg - (UNW_IA64_NAT + 32));
       nat_loc = ia64_rse_rnat_addr (loc);
       if (nat_loc > c->rbs_top)
@@ -362,7 +360,7 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
     case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
       loc = ia64_scratch_loc (c, reg);
-      if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+      if (c->sigcontext_loc)
 	{
 	  mask = (unw_word_t) 1 << (reg - UNW_IA64_NAT);
 
@@ -385,7 +383,7 @@ ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_IA64_GR + 15 ... UNW_IA64_GR + 18:
-      if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+      if (c->sigcontext_loc)
 	loc = ia64_scratch_loc (c, reg);
       else
 	{
@@ -462,11 +460,9 @@ ia64_access_fpreg (struct ia64_cursor *c, int reg, unw_fpreg_t *valp,
       break;
 
     case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-      if (c->pi.flags & IA64_FLAG_SIGTRAMP)
+      loc = c->sigcontext_loc;
+      if (loc)
 	{
-	  ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &loc);
-	  if (ret < 0)
-	    return ret;
 	  ret = ia64_get (c, loc + SIGCONTEXT_FLAGS_OFF, &flags);
 	  if (ret < 0)
 	    return ret;
