@@ -23,3 +23,15 @@ libunwind-0.2.tar.gz
 src/Makefile-orig
 src/Makefile.in
 tests/Makefile.in
+src/ia64/Linit.c~
+src/ia64/Lscript.c~
+src/ia64/Lregs.c~
+src/ia64/Lparser.c~
+src/ia64/Lunw_get_reg.c~
+src/ia64/Lunw_init_local.c~
+src/ia64/Lunw_init_remote.c~
+src/ia64/Lunw_resume.c~
+src/ia64/Lunw_set_reg.c~
+src/ia64/Lunw_step.c~
+src/ia64/init.h~
+src/ia64/shared.c~
