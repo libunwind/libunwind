@@ -692,7 +692,7 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
 #define UNW_DEC_RESTORE_P(f,p,t,a,arg)		desc_restore_p(p,t,a,arg)
 #define UNW_DEC_RESTORE(f,t,a,arg)		desc_restore_p(0,t,a,arg)
 
-#include "unwind_decoder.c"
+#include "unwind_decoder.h"
 
 static inline const struct ia64_unwind_table_entry *
 lookup (struct ia64_unwind_table *table, unw_word_t rel_ip)
