@@ -214,7 +214,7 @@ extern int UNW_ARCH_OBJ(set_caching_policy)(unw_addr_space_t as,
 					    unw_caching_policy_t policy);
 extern const char *UNW_ARCH_OBJ(regname) (int regnum);
 
-extern int UNW_OBJ(init_local) (unw_cursor_t *c, ucontext_t *u);
+extern int UNW_OBJ(init_local) (unw_cursor_t *c, unw_context_t *u);
 extern int UNW_OBJ(init_remote) (unw_cursor_t *c, unw_addr_space_t as,
 				 void *as_arg);
 extern int UNW_OBJ(step) (unw_cursor_t *c);
