@@ -106,8 +106,10 @@ common_init (struct ia64_cursor *c)
     }
 #endif
   c->sigcontext_loc = 0;
+  c->is_signal_frame = 0;
 
   c->hint = 0;
   c->prev_script = 0;
-  return ia64_make_proc_info (c);
+  c->pi_valid = 0;
+  return 0;
 }
