@@ -59,7 +59,7 @@ enum
   }
 trace_mode = SYSCALL;
 
-#define panic(args...)					\
+#define panic(args...)						\
 	do { fprintf (stderr, args); ++nerrors; } while (0)
 
 static unw_addr_space_t as;
@@ -70,7 +70,7 @@ do_backtrace (pid_t target_pid)
 {
   int n = 0, ret;
   unw_proc_info_t pi;
-  unw_word_t ip, sp;
+  unw_word_t ip, sp, start_ip;
   unw_cursor_t c;
   char buf[512];
 
@@ -83,6 +83,9 @@ do_backtrace (pid_t target_pid)
       if ((ret = unw_get_reg (&c, UNW_REG_IP, &ip)) < 0
 	  || (ret = unw_get_reg (&c, UNW_REG_SP, &sp)) < 0)
 	panic ("unw_get_reg/unw_get_proc_name() failed: ret=%d\n", ret);
+
+      if (n == 0)
+	start_ip = ip;
 
       buf[0] = '\0';
       if (print_names)
@@ -115,8 +118,8 @@ do_backtrace (pid_t target_pid)
       if (ret < 0)
 	{
 	  unw_get_reg (&c, UNW_REG_IP, &ip);
-	  panic ("FAILURE: unw_step() returned %d for ip=%lx\n",
-		 ret, (long) ip);
+	  panic ("FAILURE: unw_step() returned %d for ip=%lx (start ip=%lx)\n",
+		 ret, (long) ip, (long) start_ip);
 	}
 
       if (++n > 32)
@@ -162,7 +165,8 @@ main (int argc, char **argv)
 	else if (strcmp (argv[optind], "-s") == 0)
 	  ++optind, trace_mode = SYSCALL;	/* backtrace at each syscall */
 	else if (strcmp (argv[optind], "-t") == 0)
-	  /* Execute until syscall(-1), then backtrace at each insn.  */
+	  /* Execute until raise(SIGUSR1), then backtrace at each insn
+	     until raise(SIGUSR2).  */
 	  ++optind, trace_mode = TRIGGER;
 	else if (strcmp (argv[optind], "-c") == 0)
 	  /* Enable caching of unwind-info.  */
