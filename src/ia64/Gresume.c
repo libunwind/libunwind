@@ -257,7 +257,7 @@ unw_resume (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
 
-  Debug (2, "(cursor=%p)\n", c);
+  Debug (1, "(cursor=%p)\n", c);
 
 #ifdef UNW_LOCAL_ONLY
   return local_resume (c->as, cursor, c->as_arg);

@@ -37,7 +37,7 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
   if (tdep_needs_initialization)
     tdep_init ();
 
-  Debug (2, "(cursor=%p)\n", c);
+  Debug (1, "(cursor=%p)\n", c);
 
   if (as == unw_local_addr_space)
     /* This special-casing is unfortunate and shouldn't be needed;

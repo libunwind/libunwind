@@ -144,7 +144,7 @@ unw_resume (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret;
 
-  Debug (2, "(cursor=%p)\n", c);
+  Debug (1, "(cursor=%p)\n", c);
 
   if ((ret = establish_machine_state (c)) < 0)
     return ret;

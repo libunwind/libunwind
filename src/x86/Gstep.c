@@ -32,7 +32,7 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret, i;
 
-  Debug (2, "(cursor=%p)\n", c);
+  Debug (1, "(cursor=%p)\n", c);
 
   /* Try DWARF-based unwinding... */
   ret = dwarf_step (&c->dwarf);

@@ -333,7 +333,7 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret;
 
-  Debug (2, "(cursor=%p)\n", c);
+  Debug (1, "(cursor=%p)\n", c);
 
   ret = ia64_find_save_locs (c);
   if (ret < 0)
