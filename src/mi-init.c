@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
+   Copyright (C) 2002-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -33,6 +33,16 @@ HIDDEN sigset_t unwi_full_sigmask;
 static const char rcsid[] UNUSED =
   "$Id: " PACKAGE_STRING " --- report bugs to " PACKAGE_BUGREPORT " $";
 
+#if UNW_DEBUG
+
+/* Must not be declared HIDDEN/PROTECTED because libunwind.so and
+   libunwind-PLATFORM.so will both define their own copies of this
+   variable and we want to use only one or the other when both
+   libraries are loaded.  */
+long unwi_debug_level;
+
+#endif /* UNW_DEBUG */
+
 HIDDEN void
 mi_init (void)
 {
@@ -41,9 +51,9 @@ mi_init (void)
   const char *str = getenv ("UNW_DEBUG_LEVEL");
 
   if (str)
-    tdep_debug_level = atoi (str);
+    unwi_debug_level = atoi (str);
 
-  if (tdep_debug_level > 0)
+  if (unwi_debug_level > 0)
     {
       setbuf (stdout, NULL);
       setbuf (stderr, NULL);
