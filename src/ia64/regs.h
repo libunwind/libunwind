@@ -14,7 +14,7 @@ rotate_gr (struct cursor *c, int reg)
   rrb_gr = (c->cfm >> 18) & 0x7f;
 
   if ((unsigned) (reg - 32) > sof)
-    return -1;		/* not a valid stacked register number */
+    return reg;		/* not a valid stacked register: just return original value */
   else if ((unsigned) (reg - 32) > sor)
     preg = reg;		/* register not part of the rotating partition */
   else
