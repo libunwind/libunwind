@@ -33,7 +33,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "config.h"
 #include "internal.h"
-#include "mempool.h"
 
 #define struct_offset(str,fld)	((char *)&((str *)NULL)->fld - (char *) 0)
 
@@ -46,77 +45,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
 
-#ifdef DEBUG
-# define IA64_UNW_DEBUG	1
-#endif
-
-#define IA64_UNW_STATS	0
-
-#if IA64_UNW_DEBUG
-# include <stdio.h>
-# define debug(level,format...)	\
-	do { if (unw.debug_level > level) printf (format); } while (0)
-# define dprintf(format...) \
-	printf (format)
-# define inline	__attribute__ ((unused))
-#else
-# define debug(level,format...)
-# define dprintf(format...)
-#endif
-
-#if IA64_UNW_STATS
-# define STAT(x...)	x
-#else
-# define STAT(x...)
-#endif
-
 #include "tdep.h"
-
-struct ia64_cursor
-  {
-    void *as_arg;		/* argument to address-space callbacks */
-    unw_addr_space_t as;	/* reference to per-address-space info */
-
-    /* IP and predicate cache (these are always equal to the values
-       stored in ip_loc and pr_loc, respectively).  */
-    unw_word_t ip;		/* instruction pointer value */
-    unw_word_t pr;		/* current predicate values */
-
-    /* current frame info: */
-    unw_word_t bsp;		/* backing store pointer value */
-    unw_word_t sp;		/* stack pointer value */
-    unw_word_t psp;		/* previous sp value */
-    unw_word_t cfm_loc;		/* cfm save location (or NULL) */
-    unw_word_t rbs_top;		/* address of end of register backing store */
-    unw_word_t top_rnat_loc;	/* location of final (topmost) RNaT word */
-
-    /* preserved state: */
-    unw_word_t bsp_loc;		/* previous bsp save location */
-    unw_word_t bspstore_loc;
-    unw_word_t pfs_loc;
-    unw_word_t rnat_loc;
-    unw_word_t ip_loc;
-    unw_word_t pri_unat_loc;
-    unw_word_t unat_loc;
-    unw_word_t pr_loc;
-    unw_word_t lc_loc;
-    unw_word_t fpsr_loc;
-    unw_word_t r4_loc, r5_loc, r6_loc, r7_loc;
-    unw_word_t nat4_loc, nat5_loc, nat6_loc, nat7_loc;
-    unw_word_t b1_loc, b2_loc, b3_loc, b4_loc, b5_loc;
-    unw_word_t f2_loc, f3_loc, f4_loc, f5_loc, fr_loc[16];
-
-    unw_word_t eh_args[4];	/* exception handler arguments */
-    unw_word_t sigcontext_loc;	/* location of sigcontext or NULL */
-    unw_word_t is_signal_frame;	/* is this a signal trampoline frame? */
-
-    short hint;
-    short prev_script;
-
-    int pi_valid : 1;		/* is proc_info valid? */
-    int pi_is_dynamic : 1;	/* proc_info found via dynamic proc info? */
-    unw_proc_info_t pi;		/* info about current procedure */
-};
 
 /* Bits 0 to 2 of an location are used to encode its type:
 
@@ -137,23 +66,21 @@ struct ia64_cursor
 
 #ifdef UNW_LOCAL_ONLY
 
-extern void *_Uia64_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
+#define IA64_REG_LOC(c,r)	((unw_word_t) tdep_uc_addr((c)->as_arg, (r)))
+#define IA64_FPREG_LOC(c,r)						 \
+	((unw_word_t) tdep_uc_addr((c)->as_arg, (r)) | IA64_LOC_TYPE_FP)
 
-#define IA64_REG_LOC(c,r)	((unw_word_t) _Uia64_uc_addr((c)->as_arg, (r)))
-#define IA64_FPREG_LOC(c,r)						   \
-	((unw_word_t) _Uia64_uc_addr((c)->as_arg, (r)) | IA64_LOC_TYPE_FP)
-
-# define ia64_find_proc_info(c,ip,n)					 \
-	_Uia64_find_proc_info(unw_local_addr_space, (ip), &(c)->pi, (n), \
-			      (c)->as_arg)
+# define ia64_find_proc_info(c,ip,n)					\
+	tdep_find_proc_info(unw_local_addr_space, (ip), &(c)->pi, (n),	\
+			    (c)->as_arg)
 # define ia64_put_unwind_info(c, pi)	do { ; } while (0)
 
 /* Note: the register accessors (ia64_{get,set}{,fp}()) must check for
-   NULL locations because _Uia64_uc_addr() returns NULL for unsaved
+   NULL locations because tdep_uc_addr() returns NULL for unsaved
    registers.  */
 
 static inline int
-ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
+ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 {
   if (!loc)
     return -1;
@@ -162,7 +89,7 @@ ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
 }
 
 static inline int
-ia64_putfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t val)
+ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 {
   if (!loc)
     return -1;
@@ -171,7 +98,7 @@ ia64_putfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t val)
 }
 
 static inline int
-ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
+ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 {
   if (!loc)
     return -1;
@@ -180,7 +107,7 @@ ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
 }
 
 static inline int
-ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
+ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 {
   if (!loc)
     return -1;
@@ -202,7 +129,7 @@ ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
 	(*(c)->as->acc.put_unwind_info)((c)->as, (pi), (c)->as_arg)
 
 static inline int
-ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
+ia64_getfp (struct cursor *c, unw_word_t loc, unw_fpreg_t *val)
 {
   int ret;
 
@@ -221,7 +148,7 @@ ia64_getfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t *val)
 }
 
 static inline int
-ia64_putfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t val)
+ia64_putfp (struct cursor *c, unw_word_t loc, unw_fpreg_t val)
 {
   int ret;
 
@@ -245,7 +172,7 @@ ia64_putfp (struct ia64_cursor *c, unw_word_t loc, unw_fpreg_t val)
    the significand bits.  */
 
 static inline int
-ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
+ia64_get (struct cursor *c, unw_word_t loc, unw_word_t *val)
 {
   if (IA64_IS_FP_LOC (loc))
     {
@@ -271,7 +198,7 @@ ia64_get (struct ia64_cursor *c, unw_word_t loc, unw_word_t *val)
 }
 
 static inline int
-ia64_put (struct ia64_cursor *c, unw_word_t loc, unw_word_t val)
+ia64_put (struct cursor *c, unw_word_t loc, unw_word_t val)
 {
   if (IA64_IS_FP_LOC (loc))
     {
@@ -369,104 +296,38 @@ struct ia64_labeled_state
     struct ia64_reg_state saved_state;
   };
 
-struct ia64_global_unwind_state
-  {
-    int first_time;
-
-    /* Table of registers that prologues can save (and order in which
-       they're saved).  */
-    const unsigned char save_order[8];
-
-    /* Maps a preserved register index (preg_index) to corresponding
-       ucontext_t offset.  */
-    unsigned short uc_off[sizeof(unw_cursor_t) / 8];
-
-    /* Index into unw_cursor_t for preserved register i */
-    unsigned short preg_index[IA64_NUM_PREGS];
-
-    unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
-    unw_fpreg_t nat_val_be, int_val_le, int_val_be;
-
-    struct mempool state_record_pool;
-    struct mempool labeled_state_pool;
-
-# if IA64_UNW_DEBUG
-    long debug_level;
-    const char *preg_name[IA64_NUM_PREGS];
-# endif
-# if IA64_UNW_STATS
-    struct
-      {
-	struct
-          {
-	    int lookups;
-	    int hinted_hits;
-	    int normal_hits;
-	    int collision_chain_traversals;
-          }
-	cache;
-	struct
-          {
-	    unsigned long build_time;
-	    unsigned long run_time;
-	    unsigned long parse_time;
-	    int builds;
-	    int news;
-	    int collisions;
-	    int runs;
-          }
-	script;
-	struct
-          {
-	    unsigned long init_time;
-	    unsigned long unwind_time;
-	    int inits;
-	    int unwinds;
-          }
-	api;
-     }
-    stat;
-# endif /* IA64_UNW_STATS */
-  };
-
 /* Convenience macros: */
-#define unw				UNW_OBJ(data)
 #define ia64_make_proc_info		UNW_OBJ(make_proc_info)
 #define ia64_create_state_record	UNW_OBJ(create_state_record)
 #define ia64_free_state_record		UNW_OBJ(free_state_record)
 #define ia64_find_save_locs		UNW_OBJ(find_save_locs)
 #define ia64_per_thread_cache		UNW_OBJ(per_thread_cache)
 #define ia64_script_cache_init		UNW_OBJ(script_cache_init)
-#define ia64_init			UNW_OBJ(init)
 #define ia64_access_reg			UNW_OBJ(access_reg)
 #define ia64_access_fpreg		UNW_OBJ(access_fpreg)
 #define ia64_scratch_loc		UNW_OBJ(scratch_loc)
 #define ia64_local_resume		UNW_OBJ(local_resume)
+#define ia64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
+#define ia64_init			UNW_ARCH_OBJ(init)
 
-extern struct ia64_global_unwind_state unw;
-
-extern int ia64_make_proc_info (struct ia64_cursor *c);
-extern int ia64_create_state_record (struct ia64_cursor *c,
+extern int ia64_make_proc_info (struct cursor *c);
+extern int ia64_create_state_record (struct cursor *c,
 				     struct ia64_state_record *sr);
 extern int ia64_free_state_record (struct ia64_state_record *sr);
-extern int ia64_find_save_locs (struct ia64_cursor *c);
+extern int ia64_find_save_locs (struct cursor *c);
 extern void ia64_script_cache_init (struct ia64_script_cache *cache);
 extern void ia64_init (void);
-extern int ia64_access_reg (struct ia64_cursor *c, unw_regnum_t reg,
+extern int ia64_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
-extern int ia64_access_fpreg (struct ia64_cursor *c, unw_regnum_t reg,
+extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
-extern unw_word_t ia64_scratch_loc (struct ia64_cursor *c, unw_regnum_t reg);
+extern unw_word_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
 extern void __ia64_install_context (const ucontext_t *ucp, long r15, long r16,
 				    long r17, long r18)
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
-
-extern int _Uia64_find_proc_info (unw_addr_space_t as, unw_word_t ip,
-				  unw_proc_info_t *pi, int need_unwind_info,
-				  void *arg);
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
