@@ -2,11 +2,14 @@ SOVERSION=1:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 
 if REMOTE_ONLY
-# Nothing special.
+install-exec-hook:
+#	Nothing to do here....
 else
 
 libunwind_la_SOURCES_cdep =						     \
 	_UPT_internal.h							     \
+									     \
+	dyn-cancel.c dyn-register.c					     \
 									     \
 	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
@@ -39,8 +42,7 @@ endif
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
 	$(libunwind_la_SOURCES_os)				\
 	backtrace.c get_proc_name.c				\
-	dyn-cancel.c dyn-extract.c dyn-register.c		\
-	dyn-remote.c						\
+	dyn-extract.c dyn-remote.c				\
 	mi-init.c						\
 	mempool.c						\
 	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
