@@ -35,11 +35,27 @@ Note that the data-structures declared here server a dual purpose:
 when a program registers a dynamically generated procedure, it uses
 these structures directly.  On the other hand, with remote-unwinding,
 the data-structures are read from the remote process's memory and
-translated into internalized versions.  Because of this, care needs to
-be taken when choosing the types of structure members: use a pointer
-only if the member can be translated into an internalized equivalent
-(such as a string).  Similarly, for members that need to hold an
-address in the unwindee, unw_word_t needs to be used.  */
+translated into internalized versions.  To facilitate remote-access,
+the following rules should be followed in declaring these structures:
+
+ (1) Declare a member as a pointer only if the the information the
+     member points to needs to be internalized as well (e.g., a
+     string representing a procedure name should be declared as
+     "const char *", but the instruction pointer should be declared
+     as unw_word_t).
+
+ (2) Provide sufficient padding to ensure that no implicit padding
+     will be needed on any of the supported target architectures.  For
+     the time being, padding data structures with the assumption that
+     sizeof (unw_word_t) == 8 should be sufficient.  (Note: it's not
+     impossible to internalize structures with internal padding, but
+     it does make the process a bit harder).
+
+ (3) Don't declare members that contain bitfields or floating-point
+     values.
+
+ (4) Don't declare members with enumeration types.  Declare them as
+     int32_t instead.  */
 
 typedef enum
   {
@@ -55,12 +71,18 @@ typedef enum
   }
 unw_dyn_operation_t;
 
+typedef enum
+  {
+    UNW_INFO_FORMAT_DYNAMIC,	/* unw_dyn_proc_info_t */
+    UNW_INFO_FORMAT_TABLE	/* unw_dyn_table_t */
+  }
+unw_dyn_info_format_t;
+
 typedef struct unw_dyn_op
   {
-    uint16_t tag;			/* what operation? */
+    int8_t tag;				/* what operation? */
+    int8_t qp;				/* qualifying predicate register */
     int16_t reg;			/* what register */
-    int16_t qp;				/* qualifying predicate register */
-    int16_t pad0;
     int32_t when;			/* when does it take effect? */
     unw_word_t val;			/* auxiliary value */
   }
@@ -77,34 +99,33 @@ unw_dyn_region_info_t;
 
 typedef struct unw_dyn_proc_info
   {
-    const char *name;		/* unique & human-readable procedure name */
+    unw_word_t name_ptr;	/* address of human-readable procedure name */
     unw_word_t handler;		/* address of personality routine */
     uint32_t flags;
+    int32_t pad0;
     unw_dyn_region_info_t *regions;
   }
 unw_dyn_proc_info_t;
 
 typedef struct unw_dyn_table_info
   {
-    const char *name;		/* table name (e.g., name of library) */
+    unw_word_t name_ptr;	/* addr. of table name (e.g., library name) */
     unw_word_t segbase;		/* segment base */
-    unw_word_t table_size;
-    void *table_data;
+    unw_word_t table_len;	/* must be a multiple of sizeof(unw_word_t)! */
+    unw_word_t *table_data;
   }
 unw_dyn_table_info_t;
 
 typedef struct unw_dyn_info
   {
-    struct unw_dyn_info *next;	/* linked list of dyn-info structures */
+    /* doubly-linked list of dyn-info structures: */
+    struct unw_dyn_info *next;
+    struct unw_dyn_info *prev;
     unw_word_t start_ip;	/* first IP covered by this entry */
     unw_word_t end_ip;		/* first IP NOT covered by this entry */
     unw_word_t gp;		/* global-pointer in effect for this entry */
-    enum
-      {
-	UNW_INFO_FORMAT_DYNAMIC,	/* unw_dyn_proc_info_t */
-	UNW_INFO_FORMAT_TABLE		/* unw_dyn_table_t */
-      }
-    format;
+    int32_t format;		/* real type: unw_dyn_info_format_t */
+    int32_t pad;
     union
       {
 	unw_dyn_proc_info_t pi;
@@ -116,7 +137,8 @@ unw_dyn_info_t;
 
 typedef struct unw_dyn_info_list
   {
-    unsigned long generation;
+    uint32_t version;
+    uint32_t generation;
     unw_dyn_info_t *first;
   }
 unw_dyn_info_list_t;
@@ -129,11 +151,11 @@ unw_dyn_info_list_t;
 
 /* Register the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
-extern int _U_dyn_register (unw_dyn_info_t *di);
+extern void _U_dyn_register (unw_dyn_info_t *di);
 
 /* Cancel the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
-extern int _U_dyn_cancel (unw_dyn_info_t *di);
+extern void _U_dyn_cancel (unw_dyn_info_t *di);
 
 
 /* Convenience routines.  */
