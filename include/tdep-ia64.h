@@ -81,9 +81,11 @@ struct cursor
     void *as_arg;		/* argument to address-space callbacks */
     unw_addr_space_t as;	/* reference to per-address-space info */
 
-    /* IP and predicate cache (these are always equal to the values
-       stored in ip_loc and pr_loc, respectively).  */
+    /* IP, CFM, and predicate cache (these are always equal to the
+       values stored in ip_loc, cfm_loc, and pr_loc,
+       respectively).  */
     unw_word_t ip;		/* instruction pointer value */
+    unw_word_t cfm;		/* current frame mask */
     unw_word_t pr;		/* current predicate values */
 
     /* current frame info: */
