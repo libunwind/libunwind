@@ -23,109 +23,155 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef LIBUNWIND_DYNAMIC_H
-#define LIBUNWIND_DYNAMIC_H
-
 /* This file defines the runtime-support routines for dynamically
-   generated code.  Even though it is implemented as part of
-   libunwind, it is logically separate from the interface to perform
-   the actual unwinding.  In particular, this interface is always used
-   in the context of the unwind target, whereas the rest of the unwind
-   API is used in context of the process that is doing the unwind
-   (which may be a debugger running on another machine, for
-   example).  */
+generated code.  Even though it is implemented as part of libunwind,
+it is logically separate from the interface to perform the actual
+unwinding.  In particular, this interface is always used in the
+context of the unwind target, whereas the rest of the unwind API is
+used in context of the process that is doing the unwind (which may be
+a debugger running on another machine, for example).
+
+Note that the data-structures declared here server a dual purpose:
+when a program registers a dynamically generated procedure, it uses
+these structures directly.  On the other hand, with remote-unwinding,
+the data-structures are read from the remote process's memory and
+translated into internalized versions.  Because of this, care needs to
+be taken when choosing the types of structure members: use a pointer
+only if the member can be translated into an internalized equivalent
+(such as a string).  Similarly, for members that need to hold an
+address in the unwindee, unw_word_t needs to be used.  */
 
 typedef enum
   {
-    UNW_OP_SAVE_REG,		/* save register to another register */
-    UNW_OP_SPILL_FP_REL,	/* frame-pointer-relative register spill */
-    UNW_OP_SPILL_SP_REL,	/* stack-pointer-relative register spill */
-    UNW_OP_ADD,			/* add constant value to a register */
-    UNW_OP_POP_STACK,		/* drop one or more stack frames */
-    UNW_OP_LABEL_STATE,		/* name the current state */
-    UNW_OP_COPY_STATE,		/* set the region's entry-state */
-    UNW_OP_ALIAS,		/* get unwind info from an alias */
-    UNW_OP_STOP			/* end-of-unwind-info marker */
+    UNW_DYN_STOP = 0,		/* end-of-unwind-info marker */
+    UNW_DYN_SAVE_REG,		/* save register to another register */
+    UNW_DYN_SPILL_FP_REL,	/* frame-pointer-relative register spill */
+    UNW_DYN_SPILL_SP_REL,	/* stack-pointer-relative register spill */
+    UNW_DYN_ADD,		/* add constant value to a register */
+    UNW_DYN_POP_FRAMES,		/* drop one or more stack frames */
+    UNW_DYN_LABEL_STATE,	/* name the current state */
+    UNW_DYN_COPY_STATE,		/* set the region's entry-state */
+    UNW_DYN_ALIAS		/* get unwind info from an alias */
   }
-unw_operator_t;
+unw_dyn_operation_t;
 
-typedef struct unw_proc_info
+typedef struct unw_dyn_op
   {
-    unsigned long private[4];	/* reserved for use by libunwind */
-    void *proc_start;		/* first text-address of procedure */
-    void *proc_end;		/* first text-address beyond the procedure */
-    unsigned long flags;
-    const char *proc_name;	/* unique & human-readable procedure name */
-    void *creator_hook;		/* hook for whoever created this procedure */
-    unsigned long reserved[7];	/* reserved for future extensions */
+    uint16_t tag;			/* what operation? */
+    int16_t reg;			/* what register */
+    int16_t qp;				/* qualifying predicate register */
+    int16_t pad0;
+    int32_t when;			/* when does it take effect? */
+    unw_word_t val;			/* auxiliary value */
   }
-unw_proc_info_t;
+unw_dyn_op_t;
 
-typedef struct unw_region_info
+typedef struct unw_dyn_region_info
   {
-    struct unw_region_info *next;	/* NULL-terminated list of regions */
-    void *creator_hook;
-    unsigned int insn_count;		/* region length (# of instructions) */
-    unsigned int op_count;		/* length of op-array */
-    unsigned long reserved[5];
-    struct unw_op_t
+    struct unw_dyn_region_info *next;	/* linked list of regions */
+    uint32_t insn_count;		/* region length (# of instructions) */
+    uint32_t op_count;			/* length of op-array */
+    unw_dyn_op_t op[1];			/* variable-length op-array */
+  }
+unw_dyn_region_info_t;
+
+typedef struct unw_dyn_proc_info
+  {
+    const char *name;		/* unique & human-readable procedure name */
+    unw_word_t handler;		/* address of personality routine */
+    uint32_t flags;
+    unw_dyn_region_info_t *regions;
+  }
+unw_dyn_proc_info_t;
+
+typedef struct unw_dyn_table_info
+  {
+    const char *name;		/* table name (e.g., name of library) */
+    unw_word_t segbase;		/* segment base */
+    unw_word_t table_size;
+    void *table_data;
+  }
+unw_dyn_table_info_t;
+
+typedef struct unw_dyn_info
+  {
+    struct unw_dyn_info *next;	/* linked list of dyn-info structures */
+    unw_word_t start_ip;	/* first IP covered by this entry */
+    unw_word_t end_ip;		/* first IP NOT covered by this entry */
+    unw_word_t gp;		/* global-pointer in effect for this entry */
+    enum
       {
-	unsigned int tag : 16;		/* what operation? */
-	unsigned int reg : 16;		/* what register */
-	unsigned int when : 32;		/* when does it take effect? */
-	unsigned long val;		/* auxiliary value */
+	UNW_INFO_FORMAT_DYNAMIC,	/* unw_dyn_proc_info_t */
+	UNW_INFO_FORMAT_TABLE		/* unw_dyn_table_t */
       }
-    op[1];
+    format;
+    union
+      {
+	unw_dyn_proc_info_t pi;
+	unw_dyn_table_info_t ti;
+      }
+    u;
   }
-unw_region_info_t;
+unw_dyn_info_t;
 
-/* Return the size (in bytes) of an unw_region_info_t structure that can
+typedef struct unw_dyn_info_list
+  {
+    unsigned long generation;
+    unw_dyn_info_t *first;
+  }
+unw_dyn_info_list_t;
+
+/* Return the size (in bytes) of an unw_dyn_region_info_t structure that can
    hold OP_COUNT ops.  */
-#define unw_region_info_size(op_count)					   \
-	(sizeof (unw_region_info_t)					   \
-	 + (op_count > 0) ? ((op_count) - 1) * sizeof (struct unw_op) : 0)
+#define _U_dyn_region_info_size(op_count)				   \
+	(sizeof (unw_dyn_region_info_t)					   \
+	 + (op_count > 0) ? ((op_count) - 1) * sizeof (unw_dyn_op_t) : 0)
 
 /* Register the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
-extern int unw_register_proc (unw_proc_info_t *proc);
+extern int _U_dyn_register (unw_dyn_info_t *di);
 
 /* Cancel the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
-extern int unw_cancel_proc (unw_proc_info_t *proc);
+extern int _U_dyn_cancel (unw_dyn_info_t *di);
 
 
 /* Convenience routines.  */
 
-#define unw_op(tag, when, reg, val)		\
-	(struct unw_op_t) {			\
-	  .tag	= (tag),			\
-	  .when	= (when),			\
-	  .reg	= (reg),			\
-	  .val	= (val)				\
-	}
+#define _U_dyn_op(_t, _q, _w, _r, _v)		\
+	((unw_dyn_op_t) {			\
+	  .tag	= (_t),				\
+	  .qp	= (_q),				\
+	  .when	= (_w),				\
+	  .reg	= (_r),				\
+	  .val	= (_v)				\
+	})
 
-#define unw_op_save_reg(op, when, reg, dst)			\
-	unw_op(UNW_OP_SAVE_REG, (when), (reg), (dst))
+#define _U_dyn_op_save_reg(op, qp, when, reg, dst)			\
+	(*(op) = _U_dyn_op (UNW_DYN_SAVE_REG, (qp), (when), (reg), (dst)))
 
-#define unw_op_spill_fp_rel(when, reg, offset)			\
-	unw_op(UNW_OP_SPILL_FP_REL, (when), (reg), (offset))
+#define _U_dyn_op_spill_fp_rel(op, qp, when, reg, offset)		\
+	(*(op) = _U_dyn_op (UNW_DYN_SPILL_FP_REL, (qp), (when), (reg),	\
+			    (offset)))
 
-#define unw_op_spill_sp_rel(when, reg, offset)			\
-	unw_op(UNW_OP_SPILL_SP_REL, (when), (reg), (offset))
+#define _U_dyn_op_spill_sp_rel(op, qp, when, reg, offset)		\
+	(*(op) = _U_dyn_op (UNW_DYN_SPILL_SP_REL, (qp), (when), (reg),	\
+			    (offset)))
 
-#define unw_op_add(when, reg, value)				\
-	unw_op(UNW_OP_ADD, (when), (reg), (value))
+#define _U_dyn_op_add(op, qp, when, reg, value)				\
+	(*(op) = _U_dyn_op (UNW_DYN_ADD, (qp), (when), (reg), (value)))
 
-#define unw_op_pop_stack(op, num_frames)			\
-	unw_op(UNW_OP_POP_STACK, (when), 0, (num_frames))
+#define _U_dyn_op_pop_frames(op, qp, when, num_frames)			\
+	(*(op) = _U_dyn_op (UNW_DYN_POP_frames, (qp), (when), 0, (num_frames)))
 
-#define unw_op_label_state(op, when, label)			\
-	unw_op(UNW_OP_LABEL_STATE, (when), 0, (label))
+#define _U_dyn_op_label_state(op, qp, when, label)			\
+	(*(op) = _U_dyn_op (UNW_DYN_LABEL_STATE, (qp), (when), 0, (label)))
 
-#define unw_op_copy_state(op, when, label)			\
-	unw_op(UNW_OP_COPY_STATE, (when), 0, (label))
+#define _U_dyn_op_copy_state(op, qp, when, label)			\
+	(*(op) = _U_dyn_op (UNW_DYN_COPY_STATE, (qp), (when), 0, (label)))
 
-#define unw_op_alias(op, when, delta)				\
-	unw_op(UNW_OP_ALIAS, (when), 0, (label))
+#define _U_dyn_op_alias(op, qp, when, addr)				\
+	(*(op) = _U_dyn_op (UNW_DYN_ALIAS, (qp), (when), 0, (addr)))
 
-#endif /* LIBUNWIND_DYNAMIC_H */
+#define _U_dyn_op_stop(op)						\
+	((op)->tag = UNW_DYN_STOP)
