@@ -32,7 +32,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind.h>
 
-#include <asm/rse.h>
+#ifdef HAVE_SYS_UC_ACCESS_H
+# include <sys/uc_access.h>
+#endif
+
+#include "ia64/rse.h"
 
 #define NUM_RUNS		1024
 //#define NUM_RUNS		1
@@ -42,8 +46,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define panic(args...)							  \
 	do { printf (args); ++nerrors; } while (0)
-
-#define NELEMS(a)	((int) (sizeof (a) / sizeof ((a)[0])))
 
 typedef void save_func_t (void *funcs, unsigned long *vals);
 typedef unw_word_t *check_func_t (unw_cursor_t *c, unsigned long *vals);
@@ -96,19 +98,15 @@ static struct
 all_funcs[] =
   {
     { save_static_to_stacked,	check_static_to_stacked },
-#if 1
     { save_static_to_fr,	check_static_to_fr },
     { save_static_to_br,	check_static_to_br },
     { save_static_to_mem,	check_static_to_mem },
     { save_static_to_mem2,	check_static_to_mem2 },
-#endif
     { save_static_to_mem3,	check_static_to_mem3 },
     { save_static_to_mem4,	check_static_to_mem4 },
     { save_static_to_mem5,	check_static_to_mem5 },
-#if 1
     { save_static_to_scratch,	check_static_to_scratch },
     { rotate_regs,		check_rotate_regs },
-#endif
   };
 
 void
@@ -117,26 +115,53 @@ sighandler (int signal, void *siginfo, void *context)
   unsigned long *bsp, *arg1;
   save_func_t **arg0;
   ucontext_t *uc = context;
-  long sof;
-  int sp;
 
-  if (verbose)
-    printf ("sighandler: signal %d sp=%p nat=%08lx pr=%lx\n",
-	    signal, &sp, uc->uc_mcontext.sc_nat, uc->uc_mcontext.sc_pr);
+#if defined(__linux)
+  {
+    long sof;
+    int sp;
 
-  sof = uc->uc_mcontext.sc_cfm & 0x7f;
-  bsp = ia64_rse_skip_regs ((unsigned long *) uc->uc_mcontext.sc_ar_bsp,
-			    -sof);
+    if (verbose)
+      printf ("sighandler: signal %d sp=%p nat=%08lx pr=%lx\n",
+	      signal, &sp, uc->uc_mcontext.sc_nat, uc->uc_mcontext.sc_pr);
+    sof = uc->uc_mcontext.sc_cfm & 0x7f;
+    bsp = ia64_rse_skip_regs ((unsigned long *) uc->uc_mcontext.sc_ar_bsp,
+			      -sof);
+  }
+#elif defined(__hpux)
+  if (__uc_get_ar (uc, UNW_IA64_AR_BSP - UNW_IA64_AR, &bsp) != 0)
+    {
+      panic ("%s: reading of ar.bsp failed, errno=%d", __FUNCTION__, errno);
+      return;
+    }
+#endif
 
   flushrs ();
   arg0 = (save_func_t **) *bsp;
-  bsp = ia64_rse_skip_regs (bsp, 1);
+  bsp = (unsigned long *) ia64_rse_skip_regs ((uint64_t) bsp, 1);
   arg1 = (unsigned long *) *bsp;
 
   (*arg0[0]) (arg0 + 1, arg1);
 
   /* skip over the instruction which triggered sighandler() */
+#if defined(__linux)
   ++uc->uc_mcontext.sc_ip;
+#elif defined(HAVE_SYS_UC_ACCESS_H)
+  {
+    unsigned long ip;
+
+    if (__uc_get_ip (uc, &ip) != 0)
+      {
+	panic ("%s: reading of ip failed, errno=%d", __FUNCTION__, errno);
+	return;
+      }
+    if (__uc_set_ip (uc, ip) != 0)
+      {
+	panic ("%s: writing of ip failed, errno=%d", __FUNCTION__, errno);
+	return;
+      }
+  }
+#endif
 }
 
 static void
@@ -146,7 +171,7 @@ enable_sighandler (void)
 
   memset (&act, 0, sizeof (act));
   act.sa_handler = (void (*)(int)) sighandler;
-  act.sa_flags = SA_SIGINFO | SA_NOMASK;
+  act.sa_flags = SA_SIGINFO | SA_NODEFER;
   if (sigaction (SIGSEGV, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
 }
@@ -158,7 +183,7 @@ disable_sighandler (void)
 
   memset (&act, 0, sizeof (act));
   act.sa_handler = SIG_DFL;
-  act.sa_flags = SA_SIGINFO | SA_NOMASK;
+  act.sa_flags = SA_SIGINFO | SA_NODEFER;
   if (sigaction (SIGSEGV, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
 }
