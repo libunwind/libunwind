@@ -28,12 +28,21 @@ License.  */
 
 #include "unwind_i.h"
 
+struct ia64_labeled_state {
+	struct ia64_labeled_state *next;	/* next label (or NULL) */
+	unsigned long label;			/* label for this state */
+	struct ia64_reg_state saved_state;
+};
+
 typedef unsigned long unw_word;
 
+/* XXX fix these to use private allocator: */
 #define alloc_reg_state()	(malloc (sizeof(struct ia64_state_record)))
 #define free_reg_state(usr)	(free (usr))
+#define alloc_labeled_state()	(malloc (sizeof(struct ia64_labeled_state)))
+#define free_labeled_state(usr)	(free (usr))
 
-/* Unwind decoder routines */
+/* Routines to manipulate the state stack.  */
 
 static inline void
 push (struct ia64_state_record *sr)
@@ -47,24 +56,63 @@ push (struct ia64_state_record *sr)
       return;
     }
   memcpy (rs, &sr->curr, sizeof (*rs));
-  rs->next = sr->stack;
-  sr->stack = rs;
+  sr->curr.next = rs;
 }
 
 static void
 pop (struct ia64_state_record *sr)
 {
-  struct ia64_reg_state *rs;
+  struct ia64_reg_state *rs = sr->curr.next;
 
-  if (!sr->stack)
+  if (!rs)
     {
       fprintf (stderr, "unwind: stack underflow!\n");
       return;
     }
-  rs = sr->stack;
-  sr->stack = rs->next;
+  memcpy (&sr->curr, rs, sizeof (*rs));
   free_reg_state (rs);
 }
+
+/* Make a copy of the state stack.  Non-recursive to avoid stack overflows.  */
+static struct ia64_reg_state *
+dup_state_stack (struct ia64_reg_state *rs)
+{
+  struct ia64_reg_state *copy, *prev = NULL, *first = NULL;
+
+  while (rs)
+    {
+      copy = alloc_reg_state ();
+      if (!copy)
+	{
+	  fprintf (stderr, "unwind.dup_state_stack: out of memory\n");
+	  return NULL;
+	}
+      memcpy (copy, rs, sizeof (*copy));
+      if (first)
+	prev->next = copy;
+      else
+	first = copy;
+      rs = rs->next;
+      prev = copy;
+    }
+  return first;
+}
+
+/* Free all stacked register states (but not RS itself).  */
+static void
+free_state_stack (struct ia64_reg_state *rs)
+{
+  struct ia64_reg_state *p, *next;
+
+  for (p = rs->next; p != NULL; p = next)
+    {
+      next = p->next;
+      free_reg_state (p);
+    }
+  rs->next = NULL;
+}
+
+/* Unwind decoder routines */
 
 static enum ia64_pregnum __attribute__ ((const))
 decode_abreg (unsigned char abreg, int memory)
@@ -229,7 +277,7 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
   sr->first_region = 0;
 
   /* check if we're done: */
-  if (body && sr->when_target < sr->region_start + sr->region_len)
+  if (sr->when_target < sr->region_start + sr->region_len)
     {
       sr->done = 1;
       return;
@@ -463,37 +511,42 @@ desc_epilogue (unw_word t, unw_word ecount, struct ia64_state_record *sr)
 static inline void
 desc_copy_state (unw_word label, struct ia64_state_record *sr)
 {
-  struct ia64_reg_state *rs;
+  struct ia64_labeled_state *ls;
 
-  for (rs = sr->reg_state_list; rs; rs = rs->next)
+  for (ls = sr->labeled_states; ls; ls = ls->next)
     {
-      if (rs->label == label)
+      if (ls->label == label)
 	{
-	  memcpy (&sr->curr, rs, sizeof (sr->curr));
+	  free_state_stack (&sr->curr);
+	  memcpy (&sr->curr, &ls->saved_state, sizeof (sr->curr));
+	  sr->curr.next = dup_state_stack (ls->saved_state.next);
 	  return;
 	}
     }
-  fprintf (stderr, "unwind: failed to find state labelled 0x%lx\n", label);
+  fprintf (stderr, "unwind: failed to find state labeled 0x%lx\n", label);
 }
 
 static inline void
 desc_label_state (unw_word label, struct ia64_state_record *sr)
 {
-  struct ia64_reg_state *rs;
+  struct ia64_labeled_state *ls;
 
-  rs = alloc_reg_state ();
-  if (!rs)
+  ls = alloc_labeled_state ();
+  if (!ls)
     {
-      fprintf (stderr, "unwind: cannot stack!\n");
+      fprintf (stderr, "unwind.desc_label_state(): out of memory\n");
       return;
     }
-  memcpy (rs, &sr->curr, sizeof (*rs));
-  rs->label = label;
-  rs->next = sr->reg_state_list;
-  sr->reg_state_list = rs;
+  ls->label = label;
+  memcpy (&ls->saved_state, &sr->curr, sizeof (ls->saved_state));
+  ls->saved_state.next = dup_state_stack (sr->curr.next);
+
+  /* insert into list of labeled states: */
+  ls->next = sr->labeled_states;
+  sr->labeled_states = ls;
 }
 
-/** General descriptors.  */
+/* General descriptors.  */
 
 static inline int
 desc_is_active (unsigned char qp, unw_word t, struct ia64_state_record *sr)
@@ -651,7 +704,7 @@ lookup (struct ia64_unwind_table *table, unw_word_t rel_ip)
   for (lo = 0, hi = table->info.length; lo < hi;)
     {
       mid = (lo + hi) / 2;
-      e = &table->info.array[mid];
+      e = (struct ia64_unwind_table_entry *) table->info.array + mid;
       if (rel_ip < e->start_offset)
 	hi = mid;
       else if (rel_ip >= e->end_offset)
@@ -659,6 +712,8 @@ lookup (struct ia64_unwind_table *table, unw_word_t rel_ip)
       else
 	break;
     }
+  if (rel_ip < e->start_offset || rel_ip >= e->end_offset)
+    return NULL;
   return e;
 }
 
@@ -677,7 +732,7 @@ get_proc_info (struct ia64_cursor *c)
   /* search the kernels and the modules' unwind tables for IP: */
 
   for (table = unw.tables; table; table = table->next)
-    if (ip >= table->start && ip < table->end)
+    if (ip >= table->info.start && ip < table->info.end)
       break;
 
   if (!table)
@@ -694,22 +749,23 @@ get_proc_info (struct ia64_cursor *c)
       if (!table)
 	{
 	  dprintf ("%s: out of memory\n", __FUNCTION__);
-	  return -1;
+	  return -UNW_ENOMEM;
 	}
-      memset (table, 0, sizeof (*table));
       table->info = info;
-      table->start = segbase + table->info.array[0].start_offset;
-      table->end   = segbase + table->info.array[len - 1].end_offset;
-
       /* XXX LOCK { */
       table->next = unw.tables;
       unw.tables = table;
       /* XXX LOCK } */
     }
 
-  assert (ip >= table->start && ip < table->end);
+  assert (ip >= table->info.start && ip < table->info.end);
 
   e = lookup (table, ip - table->info.segbase);
+  if (!e)
+    {
+      memset (&c->pi, 0, sizeof (c->pi));
+      return 0;
+    }
 
   hdr = *(uint64_t *) (table->info.unwind_info_base + e->info_offset);
   dp = (uint8_t *) (table->info.unwind_info_base + e->info_offset + 8);
@@ -721,7 +777,9 @@ get_proc_info (struct ia64_cursor *c)
   c->pi.pers_addr = (uint64_t *) desc_end;
   c->pi.desc = dp;
 
-  /* XXX Perhaps check UNW_VER / UNW_FLAG_OSMASK ? */
+  if (IA64_UNW_VER (hdr) != 1)
+    return -UNW_EBADVERSION;
+
   if (IA64_UNW_FLAG_EHANDLER (hdr) | IA64_UNW_FLAG_UHANDLER (hdr))
     c->pi.flags |= IA64_FLAG_HAS_HANDLER;
 
@@ -752,7 +810,7 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
     {
       /* No info, return default unwinder (leaf proc, no mem stack, no
          saved regs).  */
-      dprintf ("unwind: no unwind info for ip=0x%lx\n", ip);
+      dprintf ("unwind: no unwind info for ip=0x%lx\n", (long) ip);
       sr->curr.reg[IA64_REG_RP].where = IA64_WHERE_BR;
       sr->curr.reg[IA64_REG_RP].when = -1;
       sr->curr.reg[IA64_REG_RP].val = 0;
@@ -800,7 +858,7 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
   if (unw.debug_level > 0)
     {
       printf ("unwind: state record for func 0x%lx, t=%u:\n",
-	      c->pi.proc_start, sr->when_target);
+	      (long) c->pi.proc_start, sr->when_target);
       for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
 	{
 	  if (r->where != IA64_WHERE_NONE || r->when != IA64_WHEN_NEVER)
@@ -809,22 +867,23 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
 	      switch (r->where)
 		{
 		case IA64_WHERE_GR:
-		  printf ("r%lu", r->val);
+		  printf ("r%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_FR:
-		  printf ("f%lu", r->val);
+		  printf ("f%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_BR:
-		  printf ("b%lu", r->val);
+		  printf ("b%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_SPREL:
-		  printf ("[sp+0x%lx]", r->val);
+		  printf ("[sp+0x%lx]", (long) r->val);
 		  break;
 		case IA64_WHERE_PSPREL:
-		  printf ("[psp+0x%lx]", r->val);
+		  printf ("[psp+0x%lx]", (long) r->val);
 		  break;
 		case IA64_WHERE_NONE:
-		  printf ("%s+0x%lx", unw.preg_name[r - sr->curr.reg], r->val);
+		  printf ("%s+0x%lx",
+			  unw.preg_name[r - sr->curr.reg], (long) r->val);
 		  break;
 		default:
 		  printf ("BADWHERE(%d)", r->where);
@@ -841,18 +900,18 @@ ia64_create_state_record (struct ia64_cursor *c, struct ia64_state_record *sr)
 int
 ia64_free_state_record (struct ia64_state_record *sr)
 {
-  struct ia64_reg_state *rs, *next;
+  struct ia64_labeled_state *ls, *next;
 
-  /* free labelled register states & stack: */
+  /* free labeled register states & stack: */
 
   STAT(parse_start = ia64_get_itc ());
-  for (rs = sr->reg_state_list; rs; rs = next)
+  for (ls = sr->labeled_states; ls; ls = next)
     {
-      next = rs->next;
-      free_reg_state (rs);
+      next = ls->next;
+      free_state_stack (&ls->saved_state);
+      free_labeled_state (ls);
     }
-  while (sr->stack)
-    pop (sr);
+  free_state_stack (&sr->curr);
 
   STAT(unw.stat.script.parse_time += ia64_get_itc () - parse_start);
   return 0;
