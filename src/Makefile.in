@@ -87,6 +87,7 @@ F77 = @F77@
 GCJ = @GCJ@
 GCJFLAGS = @GCJFLAGS@
 INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
+LDFLAGS_STATIC_LIBCXA = @LDFLAGS_STATIC_LIBCXA@
 LIBTOOL = @LIBTOOL@
 LN_S = @LN_S@
 MAINT = @MAINT@
@@ -100,8 +101,16 @@ am__include = @am__include@
 am__quote = @am__quote@
 arch = @arch@
 install_sh = @install_sh@
-SOVERSION = 2:0:1		# See comments at end of file.
+SOVERSION = 3:0:2		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
+#
+# Don't link with standard libraries, because those may mention
+# libunwind already.
+#
+COMMON_SO_LDFLAGS = -XCClinker -nostartfiles	\
+			-XCClinker -nostdlib		\
+			$(LDFLAGS_STATIC_LIBCXA)
+
 
 @REMOTE_ONLY_TRUE@LIBRARIES_cdep = 
 @REMOTE_ONLY_FALSE@LIBRARIES_cdep = libunwind-ptrace.a
@@ -120,8 +129,10 @@ libunwind_ptrace_a_SOURCES = \
 
 
 ### libunwind-setjmp:
-libunwind_setjmp_la_LDFLAGS = -version-info $(SETJMP_SO_VERSION)
-libunwind_setjmp_la_LIBADD = libunwind-$(arch).la
+libunwind_setjmp_la_LDFLAGS = $(COMMON_SO_LDFLAGS)		     \
+					  -version-info $(SETJMP_SO_VERSION)
+
+libunwind_setjmp_la_LIBADD = libunwind-$(arch).la -lc
 libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
 libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp-ia64.S		\
 					  ia64/sigsetjmp-ia64.S		\
@@ -212,6 +223,9 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		   \
 									   \
 	elf64.c elf64.h							   \
 									   \
+	/* blech, needed for Intel C++ 8.0 compatibility */ 		   \
+	mi/_ReadULEB.c mi/_ReadSLEB.c					   \
+									   \
 	ia64/dyn_info_list-ia64.S ia64/getcontext-ia64.S		   \
 									   \
 	ia64/Lcreate_addr_space-ia64.c					   \
@@ -300,8 +314,8 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_hppa)
 @ARCH_IA64_TRUE@libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
 @ARCH_IA64_TRUE@libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
-@ARCH_IA64_TRUE@libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_LIBADD = libunwind.la
+@ARCH_IA64_TRUE@libunwind_ia64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_LIBADD = libunwind.la -lc
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_setjmp_la_SOURCES = $(libunwind_setjmp_la_SOURCES_common) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@				  $(libunwind_setjmp_la_SOURCES_x86)
 
@@ -312,13 +326,14 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 @ARCH_IA64_TRUE@				  $(libunwind_setjmp_la_SOURCES_ia64)
 
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_SOURCES = $(libunwind_hppa_la_SOURCES_hppa)
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_LDFLAGS = -version-info $(SOVERSION)
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_LIBADD = libunwind.la
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@libunwind_hppa_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@libunwind_hppa_la_LIBADD = libunwind.la -lc
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LDFLAGS = -version-info $(SOVERSION)
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_LIBADD = libunwind.la
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_LIBADD = libunwind.la -lc
 
-libunwind_la_LDFLAGS = -XCClinker -nostartfiles	-version-info $(SOVERSION)
+libunwind_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+libunwind_la_LIBADD = -lc
 
 lib_LIBRARIES = $(LIBRARIES_cdep)
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
@@ -440,7 +455,7 @@ am__objects_16 = $(am__objects_14) $(am__objects_7) $(am__objects_15) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_16)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
-libunwind_la_LIBADD =
+libunwind_la_DEPENDENCIES =
 am__objects_17 = backtrace.lo dyn-cancel.lo dyn-info-list.lo \
 	dyn-register.lo Ldyn-extract.lo Lfind_dynamic_proc_info.lo \
 	Lget_accessors.lo Lget_proc_info_by_ip.lo Lget_proc_name.lo \
@@ -466,10 +481,10 @@ am__objects_20 = $(am__objects_5) global-hppa.lo tables-hppa.lo \
 	Linit_local-hppa.lo Lget_proc_info-hppa.lo Lregs-hppa.lo \
 	Lstep-hppa.lo
 am__objects_21 = $(am__objects_6) $(am__objects_17) elf64.lo \
-	dyn_info_list-ia64.lo getcontext-ia64.lo \
-	Lcreate_addr_space-ia64.lo Lget_proc_info-ia64.lo \
-	Lget_save_loc-ia64.lo Lglobal-ia64.lo Linit-ia64.lo \
-	Linit_local-ia64.lo Linit_remote-ia64.lo \
+	_ReadULEB.lo _ReadSLEB.lo dyn_info_list-ia64.lo \
+	getcontext-ia64.lo Lcreate_addr_space-ia64.lo \
+	Lget_proc_info-ia64.lo Lget_save_loc-ia64.lo Lglobal-ia64.lo \
+	Linit-ia64.lo Linit_local-ia64.lo Linit_remote-ia64.lo \
 	Linstall_cursor-ia64.lo Lis_signal_frame-ia64.lo \
 	Lparser-ia64.lo Lrbs-ia64.lo Lregs-ia64.lo Lresume-ia64.lo \
 	Lscript-ia64.lo Lstep-ia64.lo Ltables-ia64.lo
@@ -618,6 +633,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Resume.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Resume_or_Rethrow.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/SetGR.Plo ./$(DEPDIR)/SetIP.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_ReadSLEB.Plo ./$(DEPDIR)/_ReadULEB.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_access_fpreg.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_access_mem.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/_UPT_access_reg.Po \
@@ -882,6 +898,8 @@ Linit_local-hppa.lo: hppa/Linit_local-hppa.c
 Lget_proc_info-hppa.lo: hppa/Lget_proc_info-hppa.c
 Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
+_ReadULEB.lo: mi/_ReadULEB.c
+_ReadSLEB.lo: mi/_ReadSLEB.c
 dyn_info_list-ia64.lo: ia64/dyn_info_list-ia64.S
 getcontext-ia64.lo: ia64/getcontext-ia64.S
 Lcreate_addr_space-ia64.lo: ia64/Lcreate_addr_space-ia64.c
@@ -1043,6 +1061,8 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Resume_or_Rethrow.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SetGR.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/SetIP.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_ReadSLEB.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_ReadULEB.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_access_fpreg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_access_mem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_access_reg.Po@am__quote@
@@ -3512,6 +3532,42 @@ Lstep-hppa.lo: hppa/Lstep-hppa.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lstep-hppa.lo `test -f 'hppa/Lstep-hppa.c' || echo '$(srcdir)/'`hppa/Lstep-hppa.c
 
+_ReadULEB.o: mi/_ReadULEB.c
+@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Po' tmpdepfile='$(DEPDIR)/_ReadULEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.o `test -f 'mi/_ReadULEB.c' || echo '$(srcdir)/'`mi/_ReadULEB.c
+
+_ReadULEB.obj: mi/_ReadULEB.c
+@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Po' tmpdepfile='$(DEPDIR)/_ReadULEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.obj `cygpath -w mi/_ReadULEB.c`
+
+_ReadULEB.lo: mi/_ReadULEB.c
+@AMDEP_TRUE@	source='mi/_ReadULEB.c' object='_ReadULEB.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadULEB.Plo' tmpdepfile='$(DEPDIR)/_ReadULEB.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadULEB.lo `test -f 'mi/_ReadULEB.c' || echo '$(srcdir)/'`mi/_ReadULEB.c
+
+_ReadSLEB.o: mi/_ReadSLEB.c
+@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Po' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.o `test -f 'mi/_ReadSLEB.c' || echo '$(srcdir)/'`mi/_ReadSLEB.c
+
+_ReadSLEB.obj: mi/_ReadSLEB.c
+@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Po' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.obj `cygpath -w mi/_ReadSLEB.c`
+
+_ReadSLEB.lo: mi/_ReadSLEB.c
+@AMDEP_TRUE@	source='mi/_ReadSLEB.c' object='_ReadSLEB.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/_ReadSLEB.Plo' tmpdepfile='$(DEPDIR)/_ReadSLEB.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o _ReadSLEB.lo `test -f 'mi/_ReadSLEB.c' || echo '$(srcdir)/'`mi/_ReadSLEB.c
+
 Lcreate_addr_space-ia64.o: ia64/Lcreate_addr_space-ia64.c
 @AMDEP_TRUE@	source='ia64/Lcreate_addr_space-ia64.c' object='Lcreate_addr_space-ia64.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lcreate_addr_space-ia64.Po' tmpdepfile='$(DEPDIR)/Lcreate_addr_space-ia64.TPo' @AMDEPBACKSLASH@
@@ -3870,7 +3926,7 @@ top_distdir = ..
 distdir = $(top_distdir)/$(PACKAGE)-$(VERSION)
 
 distdir: $(DISTFILES)
-	$(mkinstalldirs) $(distdir)/dwarf $(distdir)/hppa $(distdir)/ia64 $(distdir)/mi $(distdir)/ptrace $(distdir)/unwind $(distdir)/x86
+	$(mkinstalldirs) $(distdir)/ $(distdir)/dwarf $(distdir)/hppa $(distdir)/ia64 $(distdir)/mi $(distdir)/ptrace $(distdir)/unwind $(distdir)/x86
 	@list='$(DISTFILES)'; for file in $$list; do \
 	  if test -f $$file || test -d $$file; then d=.; else d=$(srcdir); fi; \
 	  dir=`echo "$$file" | sed -e 's,/[^/]*$$,,'`; \

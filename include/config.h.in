@@ -15,6 +15,9 @@
 /* Define to 1 if you have the `dl_iterate_phdr' function. */
 #undef HAVE_DL_ITERATE_PHDR
 
+/* Define to 1 if you have the `dl_phdr_removals_counter' function. */
+#undef HAVE_DL_PHDR_REMOVALS_COUNTER
+
 /* Define to 1 if you have the <endian.h> header file. */
 #undef HAVE_ENDIAN_H
 
