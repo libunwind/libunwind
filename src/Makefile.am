@@ -81,14 +81,20 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
 	x86/tables-x86.c						\
-	x86/init.h x86/unwind_i.h					\
+	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
 									\
+	x86/Gcreate_addr_space-x86.c					\
 	x86/Gget_reg-x86.c x86/Gget_proc_name-x86.c x86/Ginit-x86.c	\
-	x86/Ginit_local-x86.c x86/Gget_proc_info-x86.c x86/Gregs-x86.c	\
+	x86/Ginit_local-x86.c x86/Ginit_remote-x86.c			\
+	x86/Gis_signal_frame-x86.c					\
+	x86/Gget_proc_info-x86.c x86/Gregs-x86.c			\
 	x86/Gresume-x86.c x86/Gset_reg-x86.c x86/Gstep-x86.c		\
 									\
+	x86/Lcreate_addr_space-x86.c					\
 	x86/Lget_reg-x86.c x86/Lget_proc_name-x86.c x86/Linit-x86.c	\
-	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
+	x86/Linit_local-x86.c x86/Linit_remote-x86.c			\
+	x86/Lis_signal_frame-x86.c					\
+	x86/Lget_proc_info-x86.c x86/Lregs-x86.c			\
 	x86/Lresume-x86.c x86/Lset_reg-x86.c x86/Lstep-x86.c
 
 if REMOTE_ONLY
