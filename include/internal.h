@@ -30,6 +30,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "config.h"
 #endif
 
+#ifdef HAVE___THREAD
+  /* For now, turn off per-thread caching.  It uses up too much TLS
+     memory per thread even when the thread never uses libunwind at
+     all.  */
+# undef HAVE___THREAD
+#endif
+
 /* Platform-independent libunwind-internal declarations.  */
 
 #include <sys/types.h>	/* HP-UX needs this before include of pthread.h */
@@ -54,8 +61,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef __GNUC__
 # define UNUSED		__attribute__((unused))
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
+#  define ALWAYS_INLINE	__attribute__((always_inline))
 #  define HIDDEN	__attribute__((visibility ("hidden")))
 # else
+#  define ALWAYS_INLINE
 #  define HIDDEN
 # endif
 # if (__GNUC__ >= 3)
@@ -66,6 +75,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #  define unlikely(x)	(x)
 # endif
 #else
+# define ALWAYS_INLINE
 # define UNUSED
 # define HIDDEN
 # define likely(x)	(x)
