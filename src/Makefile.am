@@ -100,7 +100,7 @@ dwarf_SOURCES_generic =							\
 
 # The list of files that go both into libunwind and libunwind-ia64:
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
-	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		    \
+	ia64/init.h ia64/offsets.h ia64/regs.h				    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
 	ia64/regname-ia64.c
 
