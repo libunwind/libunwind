@@ -16,7 +16,7 @@ libunwind_la_SOURCES_cdep =						     \
 	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
 	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-	_UPT_get_proc_name.c _UPT_reg_offset.c
+	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
 
 lib_LTLIBRARIES_cdep		= libunwind-setjmp.la
 libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
@@ -141,9 +141,6 @@ endif # ARCH_HPPA
 endif # ARCH_IA64
 
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
-
-# XXX Need to create symlinks from libunwind-ia64.so to libunwind.so
-# XXX end libunwind-ia64.a to libunwind.a
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
