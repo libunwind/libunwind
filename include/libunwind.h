@@ -24,6 +24,8 @@ License.  */
 #ifndef LIBUNWIND_H
 #define LIBUNWIND_H
 
+#include <stdint.h>
+
 #include "libunwind-config.h"
 
 #ifdef UNW_LOCAL_ONLY
@@ -36,13 +38,13 @@ License.  */
 #define UNW_PASTE(x,y)	UNW_PASTE2(x,y)
 #define UNW_OBJ(fn)	UNW_PASTE(UNW_PREFIX, fn)
 
-typedef unsigned long unw_word_t;
-
 #if defined(UNW_TARGET_IA64)
 # include "libunwind-ia64.h"
 #else
 # error Sorry, target architecture is not yet supported.
 #endif
+
+typedef unw_tdep_word_t unw_word_t;
 
 /* This needs to be big enough to accommodate the unwind state of any
    architecture, while leaving some slack for future expansion.
@@ -61,7 +63,10 @@ typedef enum
     UNW_EREADONLYREG,		/* attempt to write read-only register */
     UNW_ESTOPUNWIND,		/* stop unwinding */
     UNW_EINVALIDIP,		/* invalid IP */
-    UNW_EBADFRAME		/* bad frame */
+    UNW_EBADFRAME,		/* bad frame */
+    UNW_EINVAL,			/* unsupported operation */
+    UNW_EBADVERSION,		/* unwind info has unsupported version */
+    UNW_ENOINFO			/* no unwind info found */
   }
 unw_error_t;
 
@@ -74,11 +79,11 @@ unw_error_t;
    last valid register index is given by UNW_REG_LAST.  */
 typedef enum
   {
-    UNW_REG_IP = -1,		/* (rw) instruction pointer (pc) */
-    UNW_REG_SP = -2,		/* (ro) stack pointer */
-    UNW_REG_PROC_START = -3,	/* (ro) starting addr. of procedure */
-    UNW_REG_HANDLER = -4,	/* (ro) addr. of "personality routine" */
-    UNW_REG_LSDA = -5,		/* (ro) addr. of language-specific data area */
+    UNW_REG_IP = UNW_TDEP_IP,		/* (rw) instruction pointer (pc) */
+    UNW_REG_SP = UNW_TDEP_SP,		/* (ro) stack pointer */
+    UNW_REG_PROC_START = UNW_TDEP_PROC_START,	/* (ro) proc startaddr */
+    UNW_REG_HANDLER = UNW_TDEP_HANDLER,	/* (ro) addr. of personality routine */
+    UNW_REG_LSDA = UNW_TDEP_LSDA,	/* (ro) addr. of lang.-specific data */
     UNW_REG_LAST = UNW_TDEP_LAST_REG
   }
 unw_frame_regnum_t;
@@ -111,7 +116,7 @@ typedef unw_tdep_context_t unw_context_t;
    only through the "raw.bits" member. */
 typedef union
   {
-    struct { unsigned long bits[1]; } raw;
+    struct { unw_word_t bits[1]; } raw;
     long double dummy;	/* dummy to force 16-byte alignment */
   }
 unw_fpreg_t;
