@@ -261,6 +261,7 @@ typedef struct dwarf_cursor
 
     unsigned int pi_valid :1;	/* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
+    unsigned int cfa_is_sp :1;	/* TRUE if stack-pointer is CFA */
     unw_proc_info_t pi;		/* info about current procedure */
   }
 dwarf_cursor_t;
