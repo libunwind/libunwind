@@ -122,7 +122,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	default:
 	  break;
 	}
-      shdr = (Elf64_Shdr *) (((char *) shdr) + ehdr->e_shentsize);
+      shdr = (ElfW (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
   if (min_dist >= ei->size)
     return -UNW_ENOINFO;		/* not found */
@@ -152,7 +152,7 @@ elfW (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
     return ret;
 
   ehdr = ei.image;
-  phdr = (Elf64_Phdr *) ((char *) ei.image + ehdr->e_phoff);
+  phdr = (ElfW (Phdr) *) ((char *) ei.image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD && phdr[i].p_offset == mapoff)
