@@ -85,9 +85,11 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 	      if (ret < 0)
 		return ret;
 	    }
+#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
 	  else if (c->sigcontext_addr)
 	    /* NaT bit is saved in a sigcontext.  */
 	    loc = IA64_LOC_ADDR (c->sigcontext_addr + LINUX_SC_NAT_OFF, 0);
+#endif
 	}
       break;
 
