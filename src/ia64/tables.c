@@ -150,6 +150,60 @@ tdep_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
     }
 }
 
+unw_word_t
+_Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
+		      unw_word_t segbase, void *arg)
+{
+  unw_word_t hdr_addr, info_addr, hdr, directives, pers, cookie, off;
+  unw_accessors_t *a = unw_get_accessors (as);
+  struct ia64_table_entry *tab = table;
+  int ret;
+
+  if (table_size < sizeof (struct ia64_table_entry))
+    return 0;
+
+  if (tab[0].start_offset != tab[0].end_offset)
+    /* dyn-list entry cover a zero-length "procedure" and should be
+       first entry (note: technically a binary could contain code
+       below the segment base, but this doesn't happen for normal
+       binaries and certainly doesn't happen when libunwind is a
+       separate shared object.  For weird cases, the application may
+       have to provide its own (slower) version of this routine.  */
+    return 0;
+
+  hdr_addr = tab[0].info_offset + segbase;
+  info_addr = hdr_addr + 8;
+
+  /* read the header word: */
+  ret = (*a->access_mem) (as, hdr_addr, &hdr, 0, arg);
+  if (ret < 0)
+    return ret;
+
+  if (IA64_UNW_VER (hdr) != 1
+      || IA64_UNW_FLAG_EHANDLER (hdr) || IA64_UNW_FLAG_UHANDLER (hdr))
+    /* dyn-list entry must be version 1 and doesn't have ehandler
+       or uhandler */
+    return 0;
+
+  if (IA64_UNW_LENGTH (hdr) != 1)
+    /* dyn-list entry must consist of a single word of NOP directives */
+    return 0;
+
+  if (((ret = (*a->access_mem) (as, info_addr, &directives, 0, arg)) < 0)
+      || ((ret = (*a->access_mem) (as, info_addr + 0x08, &pers, 0, arg)) < 0)
+      || ((ret = (*a->access_mem) (as, info_addr + 0x10, &cookie, 0, arg)) < 0)
+      || ((ret = (*a->access_mem) (as, info_addr + 0x10, &off, 0, arg)) < 0))
+    return 0;
+
+  if (directives != 0 || pers != 0
+      || (!as->big_endian && cookie != 0x7473696c2d6e7964)
+      || ( as->big_endian && cookie != 0x64796e2d6c697374))
+    return 0;
+
+  /* OK, we ran the gauntlet and found it: */
+  return off + segbase;
+}
+
 #ifndef UNW_REMOTE_ONLY
 
 #include <link.h>
