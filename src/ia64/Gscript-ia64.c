@@ -29,7 +29,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 #ifdef HAVE___THREAD
-static __thread struct ia64_script_cache ia64_per_thread_cache;
+static __thread struct ia64_script_cache ia64_per_thread_cache =
+  {
+#ifdef HAVE_ATOMIC_OPS_H
+    .busy = AO_TS_INITIALIZER
+#else
+    .lock = PTHREAD_MUTEX_INITIALIZER
+#endif
+  };
 #endif
 
 static inline unw_hash_index_t
@@ -73,20 +80,25 @@ get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
   struct ia64_script_cache *cache = &as->global_cache;
   unw_caching_policy_t caching = as->caching_policy;
 
+  if (caching == UNW_CACHE_NONE)
+    return NULL;
+
 #ifdef HAVE___THREAD
   if (as->caching_policy == UNW_CACHE_PER_THREAD)
     cache = &ia64_per_thread_cache;
 #endif
 
-  if (likely (caching != UNW_CACHE_NONE))
+#ifdef HAVE_ATOMIC_OPS_H
+  if (AO_test_and_set (&cache->busy) == AO_TS_SET)
+    return NULL;
+#else
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, saved_sigmaskp);
+  if (likely (caching == UNW_CACHE_GLOBAL))
     {
-      sigprocmask (SIG_SETMASK, &unwi_full_sigmask, saved_sigmaskp);
-      if (likely (caching == UNW_CACHE_GLOBAL))
-	{
-	  debug (200, "%s: acquiring lock\n", __FUNCTION__);
-	  mutex_lock (&cache->lock);
-	}
+      debug (200, "%s: acquiring lock\n", __FUNCTION__);
+      mutex_lock (&cache->lock);
     }
+#endif
 
   if (as->cache_generation != cache->generation)
     {
@@ -102,13 +114,16 @@ put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
 {
   unw_caching_policy_t caching = as->caching_policy;
 
-  if (likely (caching != UNW_CACHE_NONE))
-    {
-      debug (200, "%s: unmasking signals/releasing lock\n", __FUNCTION__);
-      if (likely (caching == UNW_CACHE_GLOBAL))
-	mutex_unlock (&cache->lock);
-      sigprocmask (SIG_SETMASK, saved_sigmaskp, NULL);
-    }
+  assert (caching != UNW_CACHE_NONE);
+
+  debug (200, "%s: unmasking signals/releasing lock\n", __FUNCTION__);
+#ifdef HAVE_ATOMIC_OPS_H
+  AO_CLEAR (&cache->busy);
+#else
+  if (likely (caching == UNW_CACHE_GLOBAL))
+    mutex_unlock (&cache->lock);
+  sigprocmask (SIG_SETMASK, saved_sigmaskp, NULL);
+#endif
 }
 
 static struct ia64_script *
@@ -152,6 +167,8 @@ ia64_get_cached_proc_info (struct cursor *c)
   sigset_t saved_sigmask;
 
   cache = get_script_cache (c->as, &saved_sigmask);
+  if (!cache)
+    return -UNW_ENOINFO;	/* cache is busy */
   {
     script = script_lookup (cache, c);
     if (script)
@@ -159,6 +176,15 @@ ia64_get_cached_proc_info (struct cursor *c)
   }
   put_script_cache (c->as, cache, &saved_sigmask);
   return script ? 0 : -UNW_ENOINFO;
+}
+
+static inline void
+script_init (struct ia64_script *script, unw_word_t ip)
+{
+  script->ip = ip;
+  script->hint = 0;
+  script->count = 0;
+  script->abi_marker = 0;
 }
 
 static inline struct ia64_script *
@@ -206,10 +232,7 @@ script_new (struct ia64_script_cache *cache, unw_word_t ip)
   script->coll_chain = cache->hash[index];
   cache->hash[index] = script - cache->buckets;
 
-  script->ip = ip;
-  script->hint = 0;
-  script->count = 0;
-  script->abi_marker = 0;
+  script_init (script, ip);
   return script;
 }
 
@@ -497,6 +520,26 @@ run_script (struct ia64_script *script, struct cursor *c)
   return 0;
 }
 
+static int
+uncached_find_save_locs (struct cursor *c)
+{
+  struct ia64_script script;
+  int ret = 0;
+
+  if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
+    return ret;
+
+  script_init (&script, c->ip);
+  if ((ret = build_script (c, &script)) < 0)
+    {
+      if (ret != -UNW_ESTOPUNWIND)
+	dprintf ("%s: failed to build unwind script for ip %lx\n",
+		 __FUNCTION__, (long) c->ip);
+      return ret;
+    }
+  return run_script (&script, c);
+}
+
 HIDDEN int
 ia64_find_save_locs (struct cursor *c)
 {
@@ -505,29 +548,16 @@ ia64_find_save_locs (struct cursor *c)
   sigset_t saved_sigmask;
   int ret = 0;
 
-  if (unlikely (c->as->caching_policy == UNW_CACHE_NONE))
-    {
-      struct ia64_script tmp_script;
-
-      if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
-	return ret;
-
-      script = &tmp_script;
-      script->ip = c->ip;
-      script->hint = 0;
-      script->count = 0;
-      if ((ret = build_script (c, script)) < 0)
-	{
-	  if (ret != -UNW_ESTOPUNWIND)
-	    dprintf ("%s: failed to build unwind script for ip %lx\n",
-		     __FUNCTION__, (long) c->ip);
-	  return ret;
-	}
-      run_script (script, c);
-      return 0;
-    }
+  if (c->as->caching_policy == UNW_CACHE_NONE)
+    return uncached_find_save_locs (c);
 
   cache = get_script_cache (c->as, &saved_sigmask);
+  if (!cache)
+    {
+      debug (125, "%s: contention on script-cached; doing uncached lookup\n",
+	     __FUNCTION__);
+      return uncached_find_save_locs (c);
+    }
   {
     script = script_lookup (cache, c);
     debug (125, "%s: ip %lx %s in script cache\n",
@@ -559,16 +589,9 @@ ia64_find_save_locs (struct cursor *c)
 	goto out;
       }
 
-    run_script (script, c);
+    ret = run_script (script, c);
   }
  out:
   put_script_cache (c->as, cache, &saved_sigmask);
   return ret;
-}
-
-HIDDEN void
-ia64_script_cache_init (struct ia64_script_cache *cache)
-{
-  mutex_init (&cache->lock);
-  flush_script_cache (cache);
 }
