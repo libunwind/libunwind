@@ -505,45 +505,52 @@ ia64_find_save_locs (struct cursor *c)
   sigset_t saved_sigmask;
   int ret = 0;
 
+  if (unlikely (c->as->caching_policy == UNW_CACHE_NONE))
+    {
+      struct ia64_script tmp_script;
+
+      if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
+	return ret;
+
+      script = &tmp_script;
+      script->ip = c->ip;
+      script->hint = 0;
+      script->count = 0;
+      if ((ret = build_script (c, script)) < 0)
+	{
+	  if (ret != -UNW_ESTOPUNWIND)
+	    dprintf ("%s: failed to build unwind script for ip %lx\n",
+		     __FUNCTION__, (long) c->ip);
+	  return ret;
+	}
+      run_script (script, c);
+      return 0;
+    }
+
   cache = get_script_cache (c->as, &saved_sigmask);
   {
-    if (c->as->caching_policy == UNW_CACHE_NONE)
+    script = script_lookup (cache, c);
+    debug (125, "%s: ip %lx %s in script cache\n",
+	   __FUNCTION__, (long) c->ip, script ? "hit" : "missed");
+    if (!script)
       {
-	struct ia64_script tmp_script;
-
 	if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
 	  goto out;
 
-	script = &tmp_script;
-	script->ip = c->ip;
-	script->hint = 0;
-	script->count = 0;
-	ret = build_script (c, script);
-      }
-    else
-      {
-	script = script_lookup (cache, c);
-	debug (125, "%s: ip %lx %s in script cache\n",
-	       __FUNCTION__, (long) c->ip, script ? "hit" : "missed");
+	script = script_new (cache, c->ip);
 	if (!script)
 	  {
-	    if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
-	      goto out;
-
-	    script = script_new (cache, c->ip);
-	    if (!script)
-	      {
-		dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
-		ret = -UNW_EUNSPEC;
-		goto out;
-	      }
-	    cache->buckets[c->prev_script].hint = script - cache->buckets;
-
-	    ret = build_script (c, script);
+	    dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
+	    ret = -UNW_EUNSPEC;
+	    goto out;
 	  }
-	c->hint = script->hint;
-	c->prev_script = script - cache->buckets;
+	cache->buckets[c->prev_script].hint = script - cache->buckets;
+
+	ret = build_script (c, script);
       }
+    c->hint = script->hint;
+    c->prev_script = script - cache->buckets;
+
     if (ret < 0)
       {
 	if (ret != -UNW_ESTOPUNWIND)
