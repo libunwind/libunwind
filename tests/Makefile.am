@@ -26,13 +26,14 @@ if ARCH_IA64
 			ia64-test-setjmp ia64-test-sig
 endif
  check_SCRIPTS_cdep =	run-ptrace-mapper
- check_PROGRAMS_cdep =	Gtest-exc Ltest-exc Gtest-init Ltest-init	  \
-			Gtest-concurrent Ltest-concurrent		  \
-			Gtest-resume-sig Ltest-resume-sig		  \
-			Gtest-dyn1 Ltest-dyn1				  \
-			test-async-sig test-flush-cache test-init-remote  \
+ check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
+			Gtest-init Ltest-init				 \
+			Gtest-concurrent Ltest-concurrent		 \
+			Gtest-resume-sig Ltest-resume-sig		 \
+			Gtest-dyn1 Ltest-dyn1				 \
+			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace
- noinst_PROGRAMS_cdep = bt forker mapper test-varargs Gperf-simple Lperf-simple
+ noinst_PROGRAMS_cdep = forker mapper test-varargs Gperf-simple Lperf-simple
 
 perf: perf-startup Gperf-simple Lperf-simple
 	@echo "########## Basic performance of generic libunwind:"
