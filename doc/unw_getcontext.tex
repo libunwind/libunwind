@@ -23,6 +23,9 @@ platform-specific, but, in general, at least all preserved
 (``callee-saved'') and all frame-related registers, such as the
 stack-pointer, will be stored.
 
+This routine is normally implemented as a macro and applications
+should not attempt to take its address.
+
 \section{Return Value}
 
 On successful completion, \Func{unw\_getcontext}() returns 0.
