@@ -183,7 +183,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 	elf32.c elf32.h							\
 									\
 	x86/flush_cache-x86.c x86/get_accessors-x86.c x86/global-x86.c	\
-	x86/tables-x86.c						\
+	x86/tables-x86.c x86/set_caching_policy-x86.c			\
 	x86/init.h x86/unwind_i.h x86/regname-x86.c			\
 									\
 	x86/Gcreate_addr_space-x86.c					\
@@ -333,7 +333,8 @@ am__objects_16 = setjmp-ia64.lo sigsetjmp-ia64.lo siglongjmp-ia64.lo
 libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 libunwind_x86_la_LIBADD =
 am__objects_18 = $(am__objects_7) elf32.lo flush_cache-x86.lo \
-	get_accessors-x86.lo global-x86.lo tables-x86.lo regname-x86.lo \
+	get_accessors-x86.lo global-x86.lo tables-x86.lo \
+	set_caching_policy-x86.lo regname-x86.lo \
 	Gcreate_addr_space-x86.lo Gget_reg-x86.lo Gget_proc_name-x86.lo \
 	Ginit-x86.lo Ginit_local-x86.lo Ginit_remote-x86.lo \
 	Gis_signal_frame-x86.lo Gget_proc_info-x86.lo Gregs-x86.lo \
@@ -486,6 +487,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-ia64.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/setjmp.Plo ./$(DEPDIR)/siglongjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/sigsetjmp.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/tables-hppa.Plo \
@@ -626,6 +628,7 @@ flush_cache-x86.lo: x86/flush_cache-x86.c
 get_accessors-x86.lo: x86/get_accessors-x86.c
 global-x86.lo: x86/global-x86.c
 tables-x86.lo: x86/tables-x86.c
+set_caching_policy-x86.lo: x86/set_caching_policy-x86.c
 regname-x86.lo: x86/regname-x86.c
 Gcreate_addr_space-x86.lo: x86/Gcreate_addr_space-x86.c
 Gget_reg-x86.lo: x86/Gget_reg-x86.c
@@ -795,6 +798,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-ia64.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/setjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/siglongjmp.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/sigsetjmp.Plo@am__quote@
@@ -2091,6 +2095,24 @@ tables-x86.lo: x86/tables-x86.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/tables-x86.Plo' tmpdepfile='$(DEPDIR)/tables-x86.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o tables-x86.lo `test -f 'x86/tables-x86.c' || echo '$(srcdir)/'`x86/tables-x86.c
+
+set_caching_policy-x86.o: x86/set_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/set_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/set_caching_policy-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_caching_policy-x86.o `test -f 'x86/set_caching_policy-x86.c' || echo '$(srcdir)/'`x86/set_caching_policy-x86.c
+
+set_caching_policy-x86.obj: x86/set_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/set_caching_policy-x86.Po' tmpdepfile='$(DEPDIR)/set_caching_policy-x86.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_caching_policy-x86.obj `cygpath -w x86/set_caching_policy-x86.c`
+
+set_caching_policy-x86.lo: x86/set_caching_policy-x86.c
+@AMDEP_TRUE@	source='x86/set_caching_policy-x86.c' object='set_caching_policy-x86.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/set_caching_policy-x86.Plo' tmpdepfile='$(DEPDIR)/set_caching_policy-x86.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o set_caching_policy-x86.lo `test -f 'x86/set_caching_policy-x86.c' || echo '$(srcdir)/'`x86/set_caching_policy-x86.c
 
 regname-x86.o: x86/regname-x86.c
 @AMDEP_TRUE@	source='x86/regname-x86.c' object='regname-x86.o' libtool=no @AMDEPBACKSLASH@
