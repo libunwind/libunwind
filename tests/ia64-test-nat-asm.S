@@ -25,17 +25,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 	.text
 
-#define CALL_NEXT(gp_save_reg)						\
-	ld8 r2 = [in0], 8;;	/* read the next function pointer */	\
+#define CALL_NEXT_PTR(gp_save_reg, arg0, arg1)				\
+	ld8 r2 = [arg0], 8;;	/* read the next function pointer */	\
 	ld8 r3 = [r2], 8;;	/* read the function's entry-point */	\
 	ld8 r2 = [r2];;		/* read the function's gp */		\
 	mov b6 = r3;							\
 	mov gp_save_reg = gp;						\
-	mov out0 = in0;							\
-	mov out1 = in1;							\
+	mov out0 = arg0;						\
+	mov out1 = arg1;						\
 	mov gp = r2;							\
 	br.call.sptk.many rp = b6;;					\
 	mov gp = gp_save_reg
+
+#define CALL_NEXT(gp_save_reg)	CALL_NEXT_PTR(gp_save_reg, in0, in1)
 
 #define LOAD_VAL(reg)				\
 	ld8 reg = [in1], 8;;			\
@@ -250,6 +252,11 @@ save_static_to_scratch:
 	br.ret.sptk.many rp
 	.endp save_static_to_scratch
 
+	/* Rotate registers a bit in a vain attempt to sow some confusion.
+	   Care must be taken not to write any rotating general register
+	   after rotation, because we keep the preserved state
+	   there... */
+
 	.global rotate_regs
 	.proc rotate_regs
 rotate_regs:
@@ -263,19 +270,18 @@ rotate_regs:
 	mov loc2 = pr
 	.save ar.lc, loc3
 	mov loc3 = ar.lc
-
-	mov r8 = in0
-	mov r9 = in1
+	.spillreg r4, loc4
+	mov loc4 = r4
 
 	ld8 r2 = [in1], 8;;
+	mov r8 = in0
+	mov r9 = in1
 	and r2 = 127, r2;;
 	mov ar.ec = 0
 	mov ar.lc = r2;;
 1:	br.ctop.dptk.few 1b;;
 
-	mov in0 = r8
-	mov in1 = r9;;
-	CALL_NEXT(loc4)
+	CALL_NEXT_PTR(r4, r8, r9)
 
 	clrrrb
 
@@ -283,6 +289,7 @@ rotate_regs:
 	mov rp = loc1
 	mov pr = loc2, -1
 	mov ar.lc = loc3
+	mov r4 = loc4
 	br.ret.sptk.many rp
 
 	.endp rotate_regs
