@@ -28,13 +28,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
+#ifdef __ia64__
+# include <asm/ptrace_offsets.h>
+#endif
+
 int nerrors;
 int verbose = 1;
+
+enum
+  {
+    INSTRUCTION,
+    SYSCALL,
+    TRIGGER
+  }
+trace_mode = SYSCALL;
 
 #define panic(args...)					\
 	do { fprintf (stderr, args); ++nerrors; } while (0)
@@ -45,11 +58,11 @@ static struct UPT_info *ui;
 void
 do_backtrace (pid_t target_pid)
 {
+  int ret;
   unw_proc_info_t pi;
   unw_word_t ip, sp;
   unw_cursor_t c;
   char buf[512];
-  int ret;
 
   ret = unw_init_remote (&c, as, ui);
   if (ret < 0)
@@ -97,7 +110,7 @@ do_backtrace (pid_t target_pid)
 int
 main (int argc, char **argv)
 {
-  int status, pid, state = 1;
+  int syscall_number, status, pid, optind = 1, state = 1;
   pid_t target_pid;
 
   as = unw_create_addr_space (&_UPT_accessors, 0);
@@ -112,6 +125,18 @@ main (int argc, char **argv)
       verbose = 0;
       argv = args;
     }
+  else if (argc > 1)
+    {
+      if (strcmp (argv[optind], "-v") == 0)
+	++optind, verbose = 1;
+      if (strcmp (argv[optind], "-i") == 0)
+	++optind, trace_mode = INSTRUCTION;	/* backtrace at each insn */
+      else if (strcmp (argv[optind], "-s") == 0)
+	++optind, trace_mode = SYSCALL;		/* backtrace at each syscall */
+      else if (strcmp (argv[optind], "-t") == 0)
+	/* Execute until syscall(-1), then backtrace at each insn.  */
+	++optind, trace_mode = TRIGGER;
+    }
 
   target_pid = fork ();
   if (!target_pid)
@@ -122,7 +147,7 @@ main (int argc, char **argv)
 	dup2 (open ("/dev/null", O_WRONLY), 1);
 
       ptrace (PTRACE_TRACEME, 0, 0, 0);
-      execve (argv[1], argv + 1, environ);
+      execve (argv[optind], argv + optind, environ);
       _exit (-1);
     }
 
@@ -153,16 +178,38 @@ main (int argc, char **argv)
 	    panic ("child got signal %d\n", WSTOPSIG (status));
 	}
 
-#if 1
-      if (!state)
-	do_backtrace (target_pid);
+      if (trace_mode == SYSCALL || trace_mode == TRIGGER)
+	{
+	  if (!state)
+	    {
+	      if (trace_mode == SYSCALL)
+		do_backtrace (target_pid);
+	    }
+	  else
+	    {
+	      errno = 0;
+	      syscall_number = ptrace (PTRACE_PEEKUSER, target_pid, PT_R15, 0);
+	      if (errno != 0)
+		syscall_number = 0;
 
-      state ^= 1;
-      ptrace (PTRACE_SYSCALL, target_pid, 0, 0);		/* continue */
-#else
-      do_backtrace (target_pid);
-      ptrace (PTRACE_SINGLESTEP, target_pid, 0, 0);		/* continue */
-#endif
+	      printf ("syscall = %d\n", syscall_number);
+
+	      if (trace_mode == TRIGGER && syscall_number == -1)
+		{
+		  trace_mode = INSTRUCTION;
+		  goto do_insn;
+		}
+	    }
+
+	  state ^= 1;
+	  ptrace (PTRACE_SYSCALL, target_pid, 0, 0);		/* continue */
+	}
+      else
+	{
+	  do_backtrace (target_pid);
+	do_insn:
+	  ptrace (PTRACE_SINGLESTEP, target_pid, 0, 0);		/* continue */
+	}
     }
 
   _UPT_destroy (ui);
