@@ -7,7 +7,8 @@ Testing:
 	  the NaT bit, even in the face of register-rotation
 	- ensure that IA64_INSN_MOVE_STACKED works correctly in the face of
 	  register rotation
-	- test with Intel compiler
+	- on Linux, test access to f32-f127 in a signal handler (e.g., verify
+	  that fph partition gets initialized properly)
 
 === taken care of:
 
@@ -52,3 +53,4 @@ Testing:
 + man-page for unw_set_reg()
 + man-page for unw_get_fpreg()
 + man-page for unw_set_fpreg()
++ test with Intel compiler
