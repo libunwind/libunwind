@@ -1,0 +1,25 @@
+-*-Mode: outline-*-
+
+* News for v0.2:
+
+** Automated configuration/build with autoconf and automake.
+** Added support for building libunwind as a shared library.
+** Added support for remote unwinding.
+** Added support for cross-building.
+** Added two new routines to the API:
+	- unw_is_fpreg()
+	- unw_get_save_loc()
+** Added multi-architecture supports (lets a single application use
+   the unwind libraries for multiple target architectures; this is useful,
+   e.g., useful for building a debugger that can support multiple targets
+   such as ia32, ia64, etc.)
+
+
+* News for v0.1:
+
+** Added support for exception handling.
+
+
+* News for v0.0:
+
+** It's a brand new package.

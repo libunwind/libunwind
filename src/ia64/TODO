@@ -1,7 +1,5 @@
 - what's the byte-order of [gs]et_{fp,}reg?
 
-- multi-architecture support?
-
 - locking
 
 - memory allocation
@@ -13,6 +11,7 @@
 
 - API for dynamically generated code and redirection
 
++ multi-architecture support?
 + debuggers need additional frame info:
 	- ability to determine first non-prologue instruction
 	  (gdb calls this skip_prologue) => this doesn't really
