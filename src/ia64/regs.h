@@ -6,7 +6,7 @@
 static inline int
 rotate_gr (struct ia64_cursor *c, int reg)
 {
-  unsigned int rrb_gr, sor;
+  unsigned int rrb_gr, sor, sof;
   unw_word_t cfm;
   int preg, ret;
 
@@ -14,10 +14,13 @@ rotate_gr (struct ia64_cursor *c, int reg)
   if (ret < 0)
     return ret;
 
+  sof = (cfm & 0x7f);
   sor = 8 * ((cfm >> 14) & 0xf);
   rrb_gr = (cfm >> 18) & 0x7f;
 
-  if ((unsigned) (reg - 32) > sor)
+  if ((unsigned) (reg - 32) > sof)
+    return -1;		/* not a valid stacked register number */
+  else if ((unsigned) (reg - 32) > sor)
     preg = reg;		/* register not part of the rotating partition */
   else
     {
