@@ -46,7 +46,7 @@ create_func (unw_dyn_info_t *di, const char *name, long (*func) (),
   len = (uintptr_t) end - GET_ENTRY (func) + EXTRA;
   mem = malloc (len);
   if (verbose)
-    printf ("%s: cloning %s at %p (%Zu bytes)\n",
+    printf ("%s: cloning %s at %p (%zu bytes)\n",
 	    __FUNCTION__, name, mem, len);
   memend = (char *) mem + len;
 
