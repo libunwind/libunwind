@@ -74,7 +74,7 @@ test_setjmp (void)
 
       raise_longjmp (jbuf, 0, i + 1);
 
-      fprintf (stderr, "%s: raise_longjmp() returned unexpected\n",
+      fprintf (stderr, "%s: raise_longjmp() returned unexpectedly\n",
 	       __FUNCTION__);
       ++nerrors;
     }
@@ -118,7 +118,7 @@ test_sigsetjmp (void)
 
       raise_siglongjmp (jbuf, 0, i + 1);
 
-      fprintf (stderr, "%s: raise_siglongjmp() returned unexpected\n",
+      fprintf (stderr, "%s: raise_siglongjmp() returned unexpectedly\n",
 	       __FUNCTION__);
       ++nerrors;
     }
@@ -131,7 +131,11 @@ sighandler (int signal)
     printf ("%s: got signal %d\n", __FUNCTION__, signal);
 
   sigprocmask (SIG_BLOCK, NULL, (sigset_t *) &sigset4);
+  if (verbose)
+    printf ("%s: back from sigprocmask\n", __FUNCTION__);
+
   siglongjmp (sigjbuf, 1);
+  printf ("%s: siglongjmp() returned unexpectedly!\n", __FUNCTION__);
 }
 
 int
@@ -212,7 +216,7 @@ main (int argc, char **argv)
 	  ++nerrors;
 	}
       else if (verbose)
-	printf ("OK: siglongjmp() leaves signal mask along when asked to\n");
+	printf ("OK: siglongjmp() leaves signal mask alone when asked to\n");
     }
   else
     {
@@ -258,7 +262,7 @@ main (int argc, char **argv)
 	  ++nerrors;
 	}
       else if (verbose)
-	printf ("OK: siglongjmp() leaves signal mask along when asked to\n");
+	printf ("OK: siglongjmp() leaves signal mask alone when asked to\n");
     }
   else
     {
