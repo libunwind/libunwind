@@ -52,7 +52,7 @@ push (struct ia64_state_record *sr)
   rs = alloc_reg_state ();
   if (!rs)
     {
-      fprintf (stderr, "unwind: cannot stack reg state!\n");
+      fprintf (stderr, "libunwind: cannot stack reg state!\n");
       return;
     }
   memcpy (rs, &sr->curr, sizeof (*rs));
@@ -66,7 +66,7 @@ pop (struct ia64_state_record *sr)
 
   if (!rs)
     {
-      fprintf (stderr, "unwind: stack underflow!\n");
+      fprintf (stderr, "libunwind: stack underflow!\n");
       return;
     }
   memcpy (&sr->curr, rs, sizeof (*rs));
@@ -152,7 +152,7 @@ decode_abreg (unsigned char abreg, int memory)
     default:
       break;
     }
-  dprintf ("unwind: bad abreg=0x%x\n", abreg);
+  dprintf ("libunwind: bad abreg=0x%x\n", abreg);
   return IA64_REG_LC;
 }
 
@@ -198,7 +198,7 @@ spill_next_when (struct ia64_reg_info **regp, struct ia64_reg_info *lim,
 	  return;
 	}
     }
-  dprintf ("unwind: excess spill!\n");
+  dprintf ("libunwind: excess spill!\n");
 }
 
 static inline void
@@ -269,7 +269,7 @@ static void
 desc_prologue (int body, unw_word rlen, unsigned char mask,
 	       unsigned char grsave, struct ia64_state_record *sr)
 {
-  int i;
+  int i, region_start;
 
   if (!(sr->in_body || sr->first_region))
     finish_prologue (sr);
@@ -282,20 +282,21 @@ desc_prologue (int body, unw_word rlen, unsigned char mask,
       return;
     }
 
+  region_start = sr->region_start + sr->region_len;
+
   for (i = 0; i < sr->epilogue_count; ++i)
     pop (sr);
   sr->epilogue_count = 0;
   sr->epilogue_start = IA64_WHEN_NEVER;
 
-  if (!body)
-    push (sr);
-
-  sr->region_start += sr->region_len;
+  sr->region_start = region_start;
   sr->region_len = rlen;
   sr->in_body = body;
 
   if (!body)
     {
+      push (sr);
+
       if (mask)
 	for (i = 0; i < 4; ++i)
 	  {
@@ -320,7 +321,8 @@ desc_abi (unsigned char abi, unsigned char context,
   if (abi == 0 && context == 's')
     sr->is_signal_frame = 1;
   else
-    dprintf ("unwind: ignoring unwabi(abi=0x%x,context=0x%x)\n", abi, context);
+    dprintf ("libunwind: ignoring unwabi(abi=0x%x,context=0x%x)\n",
+	     abi, context);
 }
 
 static inline void
@@ -524,7 +526,7 @@ desc_copy_state (unw_word label, struct ia64_state_record *sr)
 	  return;
 	}
     }
-  fprintf (stderr, "unwind: failed to find state labeled 0x%lx\n", label);
+  fprintf (stderr, "libunwind: failed to find state labeled 0x%lx\n", label);
 }
 
 static inline void
@@ -630,7 +632,8 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
   r->val = 4 * spoff;
 }
 
-#define UNW_DEC_BAD_CODE(code)			fprintf (stderr, "unwind: unknown code 0x%02x\n", code);
+#define UNW_DEC_BAD_CODE(code)						\
+	fprintf (stderr, "libunwind: unknown code 0x%02x\n", code)
 
 /* Register names.  */
 #define UNW_REG_BSP		IA64_REG_BSP
@@ -756,14 +759,28 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
   unw_word_t val, new_ip;
   enum ia64_where where;
   unw_dyn_op_t *op;
-  int32_t when;
+  int32_t when, len;
   int8_t qp;
   int memory;
 
   for (r = proc->regions; r; r = r->next)
     {
+      len = r->insn_count;
+      if (len < 0)
+	{
+	  if (r->next)
+	    {
+	      debug (10, "libunwind: negative region length allowed in last "
+		     "region only!");
+	      return -UNW_EINVAL;
+	    }
+	  len = -len;
+	  /* hack old region info to set the start where we need it: */
+	  sr->region_start = (di->end_ip - di->start_ip) / 0x10 * 3 - len;
+	  sr->region_len = 0;
+	}
       /* all regions are treated as prologue regions: */
-      desc_prologue (0, r->insn_count, 0, 0, sr);
+      desc_prologue (0, len, 0, 0, sr);
 
       for (op = r->op; 1; ++op)
 	{
@@ -976,7 +993,8 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
       && sr->when_target > sr->curr.reg[IA64_REG_BSPSTORE].when
       && sr->when_target > sr->curr.reg[IA64_REG_RNAT].when)
   {
-      debug (10, "unwind: func 0x%lx may switch the register-backing-store\n",
+      debug (10,
+	     "libunwind: func 0x%lx may switch the register-backing-store\n",
 	     c->pi.start_ip);
       c->pi.flags |= UNW_PI_FLAG_IA64_RBS_SWITCH;
     }
@@ -984,7 +1002,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
 #if UNW_DEBUG
   if (unw.debug_level > 0)
     {
-      dprintf ("unwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
+      dprintf ("libunwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
 	       (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
       for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
 	{
