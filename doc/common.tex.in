@@ -1,0 +1,8 @@
+\setVersion{@VERSION@}
+
+\newcommand{\Lt}{\symbol{"3C}}
+\newcommand{\Gt}{\symbol{"3E}}
+\newcommand{\Type}[1]{\File{#1}}        % see libunwind.trans
+\newcommand{\Func}[1]{\Prog{#1}}        % see libunwind.trans
+\newcommand{\Var}[1]{\Prog{#1}}         % see libunwind.trans
+\newcommand{\Const}[1]{\File{#1}}       % see libunwind.trans
