@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define offsetof(type,field)	((char *) &((type *) 0)->field - (char *) 0)
 
-struct
+static struct
   {
     const char name[256];
     unsigned long value;
