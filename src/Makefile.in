@@ -365,7 +365,7 @@ EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h	\
 		$(libunwind_setjmp_la_SOURCES_x86)
 
 subdir = src
-mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES =
 LIBRARIES = $(lib_LIBRARIES)
@@ -529,7 +529,7 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
+depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Backtrace.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/DeleteException.Plo \

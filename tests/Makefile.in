@@ -177,7 +177,7 @@ Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 test_async_sig_LDADD = $(LIBUNWIND) -lpthread
 subdir = tests
-mkinstalldirs = $(SHELL) $(top_srcdir)/aux/mkinstalldirs
+mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = check-namespace.sh
 @ARCH_IA64_FALSE@@REMOTE_ONLY_TRUE@check_PROGRAMS = \
@@ -423,7 +423,7 @@ DEFAULT_INCLUDES =  -I. -I$(srcdir) -I$(top_builddir)/include
 CPPFLAGS = @CPPFLAGS@
 LDFLAGS = @LDFLAGS@
 LIBS = @LIBS@
-depcomp = $(SHELL) $(top_srcdir)/aux/depcomp
+depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
 @AMDEP_TRUE@DEP_FILES = ./$(DEPDIR)/Gia64-test-nat.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/Gia64-test-rbs.Po \
