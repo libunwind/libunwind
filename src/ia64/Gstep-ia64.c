@@ -38,12 +38,14 @@ check_rbs_switch (struct cursor *c)
     {
       /* Got ourselves a frame that has saved ar.bspstore, ar.bsp,
 	 and ar.rnat, so we're all set for rbs-switching:  */
-      if ((ret = ia64_get (c, c->bsp_loc, &saved_bsp)) < 0
-	  || (ret = ia64_get (c, c->bspstore_loc, &saved_bspstore)))
+      if ((ret = ia64_get (c, c->loc[IA64_REG_BSP], &saved_bsp)) < 0
+	  || (ret = ia64_get (c, c->loc[IA64_REG_BSPSTORE], &saved_bspstore)))
 	return ret;
     }
-  else if (c->is_signal_frame
-	   && c->bsp_loc == c->sigcontext_loc + SIGCONTEXT_AR_BSP_OFF)
+  else if (c->abi_marker == ABI_MARKER_LINUX_SIGTRAMP
+	   && !IA64_IS_REG_LOC (c->loc[IA64_REG_BSP])
+	   && (IA64_GET_ADDR (c->loc[IA64_REG_BSP])
+	       == c->sigcontext_addr + LINUX_SC_AR_BSP_OFF))
     {
       /* When Linux delivers a signal on an alternate stack, it
 	 does things a bit differently from what the unwind
@@ -57,9 +59,11 @@ check_rbs_switch (struct cursor *c)
 	 not equal to the saved value, then we know for sure that
 	 we're past the point where the backing store has been
 	 switched (and before the point where it's restored).  */
-      if ((ret = ia64_get (c, c->sigcontext_loc + SIGCONTEXT_AR_BSP_OFF,
+      if ((ret = ia64_get (c, IA64_LOC_ADDR (c->sigcontext_addr
+					     + LINUX_SC_AR_BSP_OFF, 0),
 			   &saved_bsp) < 0)
-	  || (ret = ia64_get (c, c->sigcontext_loc + SIGCONTEXT_LOADRS_OFF,
+	  || (ret = ia64_get (c, IA64_LOC_ADDR (c->sigcontext_addr
+						+ LINUX_SC_LOADRS_OFF, 0),
 			      &loadrs) < 0))
 	return ret;
       loadrs >>= 16;
@@ -70,7 +74,7 @@ check_rbs_switch (struct cursor *c)
   if (saved_bsp == c->bsp)
     return 0;
 
-  return rbs_switch (c, saved_bsp, saved_bspstore, c->rnat_loc);
+  return rbs_switch (c, saved_bsp, saved_bspstore, c->loc[IA64_REG_RNAT]);
 }
 
 static inline int
@@ -86,7 +90,7 @@ update_frame_state (struct cursor *c)
   /* Update the IP cache (do this first: if we reach the end of the
      frame-chain, the rest of the info may not be valid/useful
      anymore. */
-  ret = ia64_get (c, c->ip_loc, &ip);
+  ret = ia64_get (c, c->loc[IA64_REG_IP], &ip);
   if (ret < 0)
     return ret;
   c->ip = ip;
@@ -101,62 +105,80 @@ update_frame_state (struct cursor *c)
     /* end of frame-chain reached */
     return 0;
 
-  c->cfm_loc = c->pfs_loc;
+  c->cfm_loc = c->loc[IA64_REG_PFS];
   /* update the CFM cache: */
   ret = ia64_get (c, c->cfm_loc, &c->cfm);
   if (ret < 0)
     return ret;
 
   num_regs = 0;
-  if (c->is_signal_frame)
+  if (c->abi_marker)
     {
-      /* Caveat: #ifdef __hpux is wrong here.  The code below is just
-         a placeholder until HP-UX is fully supported.  Once this gets
-         fixed, we need to check the unwind cursor to see if the
-         target is running HP-UX or Linux.  We can infer that from the
-         .unwabi directive associated with a signal trampoline.  */
-#ifdef __hpux
-      /* HP-UX passes the address of ucontext_t in r32: */
-      ret = ia64_get_stacked (c, 32, &c->sigcontext_loc, NULL);
-#else
-      ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &c->sigcontext_loc);
-#endif
-      debug (100, "%s: sigcontext_loc=%lx (ret=%d)\n",
-	     __FUNCTION__, c->sigcontext_loc, ret);
-      if (ret < 0)
-	return ret;
-
-      c->sigcontext_off = c->sigcontext_loc - c->sp;
-
-      if (c->ip_loc == c->sigcontext_loc + SIGCONTEXT_BR_OFF + 0*8)
+      switch (c->abi_marker)
 	{
-	  /* Earlier kernels (before 2.4.19 and 2.5.10) had buggy
-	     unwind info for sigtramp.  Fix it up here.  */
-	  c->ip_loc  = (c->sigcontext_loc + SIGCONTEXT_IP_OFF);
-	  c->cfm_loc = (c->sigcontext_loc + SIGCONTEXT_CFM_OFF);
-	  /* update the IP cache: */
-	  ret = ia64_get (c, c->ip_loc, &ip);
-	  if (ret < 0)
+#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
+	case ABI_MARKER_LINUX_SIGTRAMP:
+	  if ((ret = ia64_get (c, IA64_LOC_ADDR (c->sp + 0x10
+						 + LINUX_SIGFRAME_ARG2_OFF, 0),
+			       &c->sigcontext_addr)) < 0)
 	    return ret;
-	  c->ip = ip;
-	  if (ip == 0)
-	    /* end of frame-chain reached */
-	    return 0;
-	  /* update the CFM cache: */
-	  ret = ia64_get (c, c->cfm_loc, &c->cfm);
-	  if (ret < 0)
-	    return ret;
+
+	  if (!IA64_IS_REG_LOC (c->loc[IA64_REG_IP])
+	      && (IA64_GET_ADDR (c->loc[IA64_REG_IP])
+		  == c->sigcontext_addr + LINUX_SC_BR_OFF + 0*8))
+	    {
+	      /* Linux kernels before 2.4.19 and 2.5.10 had buggy
+		 unwind info for sigtramp.  Fix it up here.  */
+	      c->loc[IA64_REG_IP]  = IA64_LOC_ADDR (c->sigcontext_addr
+						    + LINUX_SC_IP_OFF, 0);
+	      c->cfm_loc = IA64_LOC_ADDR (c->sigcontext_addr
+					  + LINUX_SC_CFM_OFF, 0);
+	      /* update the IP cache: */
+	      if ((ret = ia64_get (c, c->loc[IA64_REG_IP], &ip)) < 0)
+		return ret;
+	      c->ip = ip;
+	      if (ip == 0)
+		/* end of frame-chain reached */
+		return 0;
+	      /* update the CFM cache: */
+	      if ((ret = ia64_get (c, c->cfm_loc, &c->cfm)) < 0)
+		return ret;
+	    }
+
+	  /* do what can't be described by unwind directives: */
+	  c->loc[IA64_REG_PFS] = IA64_LOC_ADDR (c->sigcontext_addr
+						+ LINUX_SC_AR_PFS_OFF, 0);
+	  break;
+#endif
+
+#if !defined(UNW_LOCAL_ONLY) || defined(__hpux)
+	case ABI_MARKER_HP_UX_SIGTRAMP:
+	  {
+	    ia64_loc_t sc_loc;
+
+	    /* HP-UX passes the address of ucontext_t in r32: */
+	    if ((ret = ia64_get_stacked (c, 32, &sc_loc, NULL)) < 0)
+	      return ret;
+	    c->sigcontext_addr = IA64_GET_ADDR (sc_loc);
+	  }
+	  break;
+#endif
+
+	default:
+	  debug (1, "%s: unknown ABI marker: ABI=%u, context=%u\n",
+		 __FUNCTION__, c->abi_marker >> 8, c->abi_marker & 0xff);
+	  return -UNW_EINVAL;
 	}
+      debug (100, "%s: sigcontext_addr=%lx (ret=%d)\n",
+	     __FUNCTION__, c->sigcontext_addr, ret);
 
-      /* do what can't be described by unwind directives: */
-      c->pfs_loc = (c->sigcontext_loc + SIGCONTEXT_AR_PFS_OFF);
-
+      c->sigcontext_off = c->sigcontext_addr - c->sp;
       num_regs = c->cfm & 0x7f;		/* size of frame */
     }
   else
     num_regs = (c->cfm >> 7) & 0x7f;	/* size of locals */
 
-  if (c->bsp_loc)
+  if (!IA64_IS_NULL_LOC (c->loc[IA64_REG_BSP]))
     {
       ret = check_rbs_switch (c);
       if (ret < 0)
@@ -167,7 +189,7 @@ update_frame_state (struct cursor *c)
 
   pr = c->pr;
   c->sp = c->psp;
-  c->is_signal_frame = 0;
+  c->abi_marker = 0;
 
   if (c->ip == prev_ip && c->sp == prev_sp && c->bsp == prev_bsp)
     {
@@ -177,10 +199,10 @@ update_frame_state (struct cursor *c)
     }
 
   /* as we unwind, the saved ar.unat becomes the primary unat: */
-  c->pri_unat_loc = c->unat_loc;
+  c->loc[IA64_REG_PRI_UNAT_MEM] = c->loc[IA64_REG_UNAT];
 
   /* restore the predicates: */
-  ret = ia64_get (c, c->pr_loc, &c->pr);
+  ret = ia64_get (c, c->loc[IA64_REG_PR], &c->pr);
   if (ret < 0)
     return ret;
 
