@@ -18,6 +18,7 @@ if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-sig ia64-test-dyn1
  check_SCRIPTS_arch =	run-ia64-test-dyn1
  check_PROGRAMS_arch =	Gia64-test-stack Lia64-test-stack	\
+			Gia64-test-nat Lia64-test-nat		\
 			Gia64-test-rbs Lia64-test-rbs
 endif
  check_SCRIPTS_cdep =
@@ -55,6 +56,8 @@ Gia64_test_stack_SOURCES = Gia64-test-stack.c ia64-test-stack-asm.S \
 				ia64-test-stack.h
 Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
+Lia64_test_nat_SOURCES = Lia64-test-nat.c ia64-test-nat-asm.S
+Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
