@@ -27,6 +27,8 @@ License.  */
     Copyright (C) 2000, 2001 Free Software Foundation, Inc.
 	Contributed by Richard Henderson <rth@cygnus.com>.  */
 
+#ifndef UNW_REMOTE_ONLY
+
 #include <link.h>
 #include <stddef.h>
 #include <stdlib.h>
@@ -74,16 +76,17 @@ get_kernel_table (void *ptr)
   ktab = malloc (size);
   if (!ktab)
     {
-      dprintf (__FILE__".%s: failed to allocated %Zu bytes",
+      dprintf (__FILE__".%s: failed to allocate %Zu bytes",
 	       __FUNCTION__, size);
-      return -1;
+      return -UNW_ENOMEM;
     }
   getunwind (ktab, size);
 
   /* Determine length of kernel's unwind table.  */
   for (etab = ktab; etab->start_offset; ++etab);
 
-  if (info->segbase < ktab->start_offset || info->segbase >= ktab->end_offset)
+  if (info->segbase < ktab[0].start_offset
+      || info->segbase >= etab[-1].end_offset)
     {
       free (ktab);
       return -1;
@@ -92,6 +95,8 @@ get_kernel_table (void *ptr)
   info->name = "<kernel>";
   info->gp = 0;
   info->segbase = 0;
+  info->start = ktab[0].start_offset;
+  info->end = etab[-1].end_offset;
   info->length = etab - ktab;
   info->array = ktab;
   info->unwind_info_base = (const u_int8_t *) ktab;
@@ -106,9 +111,9 @@ static int
 callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
   unw_ia64_table_t *data = ptr;
-  const Elf64_Phdr *phdr, *p_unwind, *p_dynamic;
-  long n, match;
-  Elf64_Addr load_base, segbase;
+  const Elf64_Phdr *phdr, *p_unwind, *p_dynamic, *p_text;
+  long n;
+  Elf64_Addr load_base;
 
   /* Make sure struct dl_phdr_info is at least as big as we need.  */
   if (size < offsetof (struct dl_phdr_info, dlpi_phnum)
@@ -117,12 +122,11 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   debug (100, "unwind: checking `%s'\n", info->dlpi_name);
 
-  match = 0;
   phdr = info->dlpi_phdr;
   load_base = info->dlpi_addr;
+  p_text = NULL;
   p_unwind = NULL;
   p_dynamic = NULL;
-  segbase = ~(Elf64_Addr) 0;
 
   /* See if PC falls into one of the loaded segments.  Find the unwind
      segment at the same time.  */
@@ -132,16 +136,14 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	{
 	  Elf64_Addr vaddr = phdr->p_vaddr + load_base;
 	  if (data->segbase >= vaddr && data->segbase < vaddr + phdr->p_memsz)
-	    match = 1;
-	  if (vaddr < segbase)
-	    segbase = vaddr;
+	    p_text = phdr;
 	}
       else if (phdr->p_type == PT_IA_64_UNWIND)
 	p_unwind = phdr;
       else if (phdr->p_type == PT_DYNAMIC)
 	p_dynamic = phdr;
     }
-  if (!match || !p_unwind)
+  if (!p_text || !p_unwind)
     return 0;
 
   if (p_dynamic)
@@ -166,10 +168,12 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
     }
   data->name = info->dlpi_name;
   data->array
-    = (const struct ia64_unwind_table_entry *) (p_unwind->p_vaddr + load_base);
+    = (struct ia64_unwind_table_entry *) (p_unwind->p_vaddr + load_base);
   data->length = p_unwind->p_memsz / sizeof (struct ia64_unwind_table_entry);
-  data->segbase = segbase;
-  data->unwind_info_base = (const u_int8_t *) segbase;
+  data->segbase = p_text->p_vaddr + load_base;
+  data->start = p_text->p_vaddr + load_base;
+  data->end = p_text->p_vaddr + load_base + p_text->p_memsz;
+  data->unwind_info_base = (const u_int8_t *) data->segbase;
 
   debug (100, "unwind: found table `%s': segbase=%lx, length=%lu, gp=%lx, "
 	 "array=%p\n", data->name, data->segbase, data->length, data->gp,
@@ -195,3 +199,5 @@ ia64_glibc_release_unwind_info (void *info, void *arg)
   /* nothing to do */
   return 0;
 }
+
+#endif /* !UNW_REMOTE_ONLY */
