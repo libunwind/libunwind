@@ -28,7 +28,6 @@ libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia32)
 endif
 endif
 
-if REMOTE_ONLY
 if ARCH_IA64
  lib_LTLIBRARIES = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES)
@@ -38,9 +37,9 @@ if ARCH_IA32
  libunwind_ia32_la_SOURCES = $(libunwind_la_SOURCES)
 endif
 endif
-else
- lib_LTLIBRARIES = libunwind.la
-endif
+
+# XXX Need to create symlinks from libunwind-ia64.so to libunwind.so
+# XXX end libunwind-ia64.a to libunwind.a
 
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
