@@ -53,10 +53,13 @@ initial state:
 		  the call site was reached
 
 
-	Problem: there is some procedure info that needs to be obtained
-		for the new "ip" which is contained in the unwind
-		descriptors.  Specifically, the following is needed:
+	Note that there is some procedure info that needs to be obtained
+	for the new "ip" which is contained in the unwind descriptors.
+	Specifically, the following is needed:
 
 			- procedure's start address
 			- personality address
 			- pointer to language-specific data area
+
+	This info is stored in a separate proc_info structure and needs
+	to be obtained right after running the unwind script for func.
