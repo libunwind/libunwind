@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -49,17 +49,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/types.h>
 
-#define IPREFIX			UNW_PASTE(_UI,UNW_TARGET)
-#define sos_alloc(s)		UNW_PASTE(IPREFIX, _sos_alloc)(s)
-#define sos_free(p)		UNW_PASTE(IPREFIX, _sos_free)(p)
-#define mempool_init(p,s,r)	UNW_PASTE(IPREFIX, _mempool_init)(p,s,r)
-#define mempool_alloc(p)	UNW_PASTE(IPREFIX, _mempool_alloc)(p)
-#define mempool_free(p,o)	UNW_PASTE(IPREFIX, _mempool_free)(p,o)
+#include "internal.h"
+
+#define sos_alloc(s)		UNWI_ARCH_OBJ(_sos_alloc)(s)
+#define mempool_init(p,s,r)	UNWI_ARCH_OBJ(_mempool_init)(p,s,r)
+#define mempool_alloc(p)	UNWI_ARCH_OBJ(_mempool_alloc)(p)
+#define mempool_free(p,o)	UNWI_ARCH_OBJ(_mempool_free)(p,o)
 
 /* The mempool structure should be treated as an opaque object.  It's
    declared here only to enable static allocation of mempools.  */
 struct mempool
   {
+    pthread_mutex_t lock;
     size_t obj_size;		/* object size (rounded up for alignment) */
     unsigned int reserve;	/* minimum (desired) size of the free-list */
     size_t chunk_size;		/* allocation granularity */
@@ -72,9 +73,9 @@ struct mempool
   };
 
 /* Emergency allocation for one-time stuff that doesn't fit the memory
-   pool model.  */
+   pool model.  A limited amount of memory is available in this
+   fashion and once allocated, there is no way to free it.  */
 extern void *sos_alloc (size_t size);
-extern void sos_free (void *ptr);
 
 /* Initialize POOL for an object size of OBJECT_SIZE bytes.  RESERVE
    is the number of objects that should be reserved for use under
