@@ -1010,7 +1010,7 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
     }
  out:
 #if UNW_DEBUG
-  if (tdep_debug_level > 0)
+  if (unwi_debug_level > 0)
     {
       dprintf ("libunwind: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
 	       (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
