@@ -7,7 +7,8 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		   \
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h ia64/script.h	   \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		   \
 									   \
-	ia64/__ia64_install_context.S ia64/shared.c ia64/tables-glibc.c	   \
+	ia64/__ia64_install_context.S ia64/tables-glibc.c		   \
+	ia64/unw_regname.c						   \
 									   \
 	ia64/init.c ia64/parser.c ia64/regs.c ia64/script.c		   \
 	ia64/unw_get_reg.c ia64/unw_get_fpreg.c ia64/unw_get_save_loc.c	   \
