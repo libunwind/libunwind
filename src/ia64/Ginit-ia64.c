@@ -419,6 +419,38 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
 #endif /* !HAVE_SYS_UC_ACCESS_H */
 
+static int
+get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
+		      char *buf, size_t buf_len, unw_word_t *offp,
+		      void *arg)
+{
+  return _Uelf64_get_proc_name (getpid (), ip, buf, buf_len, offp);
+}
+
+HIDDEN void
+ia64_local_addr_space_init (void)
+{
+  memset (&local_addr_space, 0, sizeof (local_addr_space));
+  ia64_script_cache_init (&local_addr_space.global_cache);
+  local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
+#if defined(__linux)
+  local_addr_space.abi = ABI_LINUX;
+#elif defined(__hpux)
+  local_addr_space.abi = ABI_HPUX;
+#endif
+  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
+  local_addr_space.acc.find_proc_info = UNW_ARCH_OBJ (find_proc_info);
+  local_addr_space.acc.put_unwind_info = put_unwind_info;
+  local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
+  local_addr_space.acc.access_mem = access_mem;
+  local_addr_space.acc.access_reg = access_reg;
+  local_addr_space.acc.access_fpreg = access_fpreg;
+  local_addr_space.acc.resume = ia64_local_resume;
+  local_addr_space.acc.get_proc_name = get_static_proc_name;
+}
+
+#endif /* !UNW_REMOTE_ONLY */
+
 HIDDEN int
 ia64_uc_access_reg (struct cursor *c, ia64_loc_t loc, unw_word_t *valp,
 		    int write)
@@ -543,35 +575,3 @@ ia64_uc_access_fpreg (struct cursor *c, ia64_loc_t loc, unw_fpreg_t *valp,
   return -UNW_EINVAL;
 #endif /* !HAVE_SYS_UC_ACCESS_H */
 }
-
-static int
-get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
-		      char *buf, size_t buf_len, unw_word_t *offp,
-		      void *arg)
-{
-  return _Uelf64_get_proc_name (getpid (), ip, buf, buf_len, offp);
-}
-
-HIDDEN void
-ia64_local_addr_space_init (void)
-{
-  memset (&local_addr_space, 0, sizeof (local_addr_space));
-  ia64_script_cache_init (&local_addr_space.global_cache);
-  local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
-#if defined(__linux)
-  local_addr_space.abi = ABI_LINUX;
-#elif defined(__hpux)
-  local_addr_space.abi = ABI_HPUX;
-#endif
-  local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
-  local_addr_space.acc.find_proc_info = UNW_ARCH_OBJ (find_proc_info);
-  local_addr_space.acc.put_unwind_info = put_unwind_info;
-  local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
-  local_addr_space.acc.access_mem = access_mem;
-  local_addr_space.acc.access_reg = access_reg;
-  local_addr_space.acc.access_fpreg = access_fpreg;
-  local_addr_space.acc.resume = ia64_local_resume;
-  local_addr_space.acc.get_proc_name = get_static_proc_name;
-}
-
-#endif /* !UNW_REMOTE_ONLY */
