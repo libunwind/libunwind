@@ -94,10 +94,21 @@ arch = @arch@
 install_sh = @install_sh@
 SOVERSION = 1:0:0		# See comments at end of file.
 
-libunwind_la_SOURCES_common = \
+
+# Nothing special.
+@REMOTE_ONLY_FALSE@libunwind_la_SOURCES_cdep = \
+@REMOTE_ONLY_FALSE@	_UPT_internal.h							     \
+@REMOTE_ONLY_FALSE@									     \
+@REMOTE_ONLY_FALSE@	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
+@REMOTE_ONLY_FALSE@	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
+@REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
+@REMOTE_ONLY_FALSE@	_UPT_reg_offset.c
+
+
+libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
 	backtrace.c get_proc_name.c				\
 	dyn-cancel.c dyn-extract.c dyn-register.c		\
-	dyn-remote.c					 	\
+	dyn-remote.c						\
 	mi-init.c						\
 	mempool.c						\
 	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
@@ -112,7 +123,7 @@ libunwind_la_SOURCES_common = \
 #	filenames by appending the arch-name (e.g., tables-ia64.c).  Oh, well.
 #
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
-	ia64/ia64-init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	ia64/__ia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
@@ -188,12 +199,18 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libunwind_hppa_la_LIBADD =
-am__objects_1 = backtrace.lo get_proc_name.lo dyn-cancel.lo \
-	dyn-extract.lo dyn-register.lo dyn-remote.lo mi-init.lo \
-	mempool.lo Gfind_dynamic_proc_info.lo \
+@REMOTE_ONLY_FALSE@am__objects_1 = _UPT_accessors.lo \
+@REMOTE_ONLY_FALSE@	_UPT_access_fpreg.lo _UPT_access_mem.lo \
+@REMOTE_ONLY_FALSE@	_UPT_access_reg.lo _UPT_create.lo \
+@REMOTE_ONLY_FALSE@	_UPT_destroy.lo _UPT_find_proc_info.lo \
+@REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.lo \
+@REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo _UPT_reg_offset.lo
+am__objects_2 = $(am__objects_1) backtrace.lo get_proc_name.lo \
+	dyn-cancel.lo dyn-extract.lo dyn-register.lo dyn-remote.lo \
+	mi-init.lo mempool.lo Gfind_dynamic_proc_info.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
 	Lput_dynamic_unwind_info.lo
-am__objects_2 = $(am__objects_1) flush_cache-hppa.lo \
+am__objects_3 = $(am__objects_2) flush_cache-hppa.lo \
 	get_accessors-hppa.lo global-hppa.lo tables-hppa.lo \
 	Gget_reg-hppa.lo Gget_proc_name-hppa.lo Ginit-hppa.lo \
 	Ginit_local-hppa.lo Gget_proc_info-hppa.lo Gregs-hppa.lo \
@@ -201,10 +218,10 @@ am__objects_2 = $(am__objects_1) flush_cache-hppa.lo \
 	Linit-hppa.lo Linit_local-hppa.lo Lget_proc_info-hppa.lo \
 	Lregs-hppa.lo Lstep-hppa.lo
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@am_libunwind_hppa_la_OBJECTS = \
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_2)
+@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_3)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-am__objects_3 = $(am__objects_1) __ia64_install_context.lo \
+am__objects_4 = $(am__objects_2) __ia64_install_context.lo \
 	global-ia64.lo rbs-ia64.lo tables-ia64.lo get_accessors-ia64.lo \
 	flush_cache-ia64.lo set_caching_policy-ia64.lo regname-ia64.lo \
 	Ginit-ia64.lo Gparser-ia64.lo Gregs-ia64.lo Gscript-ia64.lo \
@@ -220,17 +237,17 @@ am__objects_3 = $(am__objects_1) __ia64_install_context.lo \
 	Lget_save_loc-ia64.lo Lis_signal_frame-ia64.lo Lresume-ia64.lo \
 	Lset_reg-ia64.lo Lset_fpreg-ia64.lo Linit_local-ia64.lo \
 	Linit_remote-ia64.lo Lstep-ia64.lo
-@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_3)
+@ARCH_IA64_TRUE@am_libunwind_ia64_la_OBJECTS = $(am__objects_4)
 libunwind_ia64_la_OBJECTS = $(am_libunwind_ia64_la_OBJECTS)
 libunwind_x86_la_LIBADD =
-am__objects_4 = $(am__objects_1) flush_cache-x86.lo get_accessors-x86.lo \
+am__objects_5 = $(am__objects_2) flush_cache-x86.lo get_accessors-x86.lo \
 	global-x86.lo tables-x86.lo Gget_reg-x86.lo \
 	Gget_proc_name-x86.lo Ginit-x86.lo Ginit_local-x86.lo \
 	Gget_proc_info-x86.lo Gregs-x86.lo Gstep-x86.lo Lget_reg-x86.lo \
 	Lget_proc_name-x86.lo Linit-x86.lo Linit_local-x86.lo \
 	Lget_proc_info-x86.lo Lregs-x86.lo Lstep-x86.lo
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@am_libunwind_x86_la_OBJECTS = \
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_4)
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(am__objects_5)
 libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 
 DEFS = @DEFS@
@@ -307,7 +324,18 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lset_reg-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lstep-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lstep-ia64.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/Lstep-x86.Plo ./$(DEPDIR)/backtrace.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lstep-x86.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_access_fpreg.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_access_mem.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_access_reg.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_accessors.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_create.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_destroy.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_find_proc_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_get_dyn_info_list_addr.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_put_unwind_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/_UPT_reg_offset.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/backtrace.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-cancel.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-extract.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/dyn-register.Plo \
@@ -542,6 +570,16 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lstep-x86.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_access_fpreg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_access_mem.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_access_reg.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_accessors.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_create.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_destroy.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_find_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_get_dyn_info_list_addr.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_put_unwind_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/_UPT_reg_offset.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/backtrace.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-cancel.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/dyn-extract.Plo@am__quote@
@@ -2184,7 +2222,6 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES
 
 
-# Nothing special.
 #
 # This is not ideal, but I know of no other way to install an
 # alias for a library.
