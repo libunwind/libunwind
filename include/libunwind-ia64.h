@@ -69,42 +69,13 @@ typedef enum
     UNW_IA64_BSP,
     UNW_IA64_IP,
     UNW_IA64_SP,
-    UNW_IA64_PROC_START,
-    UNW_IA64_HANDLER,
-    UNW_IA64_LSDA,
 
-    UNW_TDEP_LAST_REG = UNW_IA64_LSDA,
+    UNW_TDEP_LAST_REG = UNW_IA64_SP,
 
     UNW_TDEP_IP = UNW_IA64_IP,
-    UNW_TDEP_SP = UNW_IA64_SP,
-    UNW_TDEP_PROC_START = UNW_IA64_PROC_START,
-    UNW_TDEP_HANDLER = UNW_IA64_HANDLER,
-    UNW_TDEP_LSDA = UNW_IA64_LSDA,
+    UNW_TDEP_SP = UNW_IA64_SP
   }
 ia64_regnum_t;
-
-/* Info needed for a single IA-64 unwind.  A pointer to this structure
-   is expected in the acquire/release callbacks of the unwind
-   accessors.  */
-typedef struct unw_ia64_table
-  {
-    const char *name;		/* table name (or NULL if none) */
-    unw_tdep_word_t segbase;	/* base for offsets in the unwind table */
-    unw_tdep_word_t start;	/* starting IP covered by table */
-    unw_tdep_word_t end;	/* first IP _not_ covered table */
-    unw_tdep_word_t gp;		/* global pointer for this load-module */
-    unw_tdep_word_t length;	/* number of entries in unwind table array */
-
-    /* Pointer to local copy of the unwind descriptor table: */
-    void *array;
-
-    /* Local copy of the unwind descriptor information.  This is
-       initialized such that adding the unwind entry's info_offset
-       yields the address at which the corresponding descriptors can
-       be found.  */
-    const unsigned char *unwind_info_base;
-  }
-unw_ia64_table_t;
 
 typedef struct unw_tdep_save_loc
   {
@@ -127,5 +98,9 @@ typedef ucontext_t unw_tdep_context_t;
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_IA64_FR) < 128)
 
 #include "libunwind-common.h"
+
+/* Platforms that support UNW_INFO_FORMAT_TABLE need to define this.  */
+#define unw_sysdep_search_unwind_table(a,b,c,d,e)	\
+	_Uia64_search_unwind_table(a,b,c,d,e)
 
 #endif /* LIBUNWIND_H */
