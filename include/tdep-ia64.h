@@ -94,7 +94,7 @@ struct unw_addr_space
     int abi;	/* abi < 0 => unknown, 0 => SysV, 1 => HP-UX, 2 => Windows */
     unw_caching_policy_t caching_policy;
 #ifdef HAVE_ATOMIC_OPS_H
-    AO_T cache_generation;
+    AO_t cache_generation;
 #else
     uint32_t cache_generation;
 #endif
