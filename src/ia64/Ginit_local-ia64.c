@@ -47,10 +47,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   unw_word_t sol;
 
   if (unw.needs_initialization)
-    {
-      unw.needs_initialization = 0;
-      ia64_init ();
-    }
+    ia64_init ();
 
 #ifdef __hpux
   {
