@@ -50,6 +50,8 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 
   ui->checked_dyn_info_list_addr = 1;
 
+  debug (100, "%s: looking for dyn_info list\n", __FUNCTION__);
+
 #if UNW_TARGET_IA64
   maps_init (&mi, ui->pid);
   while (maps_next (&mi, &lo, &hi, &off, path))
@@ -60,15 +62,21 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
       if (elf_map_image (&ui->ei, path) < 0)
 	return -UNW_ENOINFO;
 
+      debug (100, "%s: checking object %s\n", __FUNCTION__, path);
+
       di = _UPTi_find_unwind_table (ui, as, path, lo, off);
       if (di)
 	{
 	  res = _Uia64_find_dyn_list (as, di->u.ti.table_data,
 				      (di->u.ti.table_len
 				       * sizeof (di->u.ti.table_data[0])),
-				      di->u.ti.segbase, arg);
-	  if (res && ++count == 0)
-	    ui->dyn_info_list_addr = *dil_addr = res;
+				      di->u.ti.segbase, di->gp, arg);
+	  if (res && count++ == 0)
+	    {
+	      debug (100, "%s: dyn_info_list_addr = 0x%lx\n",
+		     __FUNCTION__, (long) res);
+	      ui->dyn_info_list_addr = *dil_addr = res;
+	    }
 	}
     }
   maps_close (&mi);
