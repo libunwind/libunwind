@@ -76,7 +76,7 @@ check_rbs_switch (struct cursor *c)
 static inline int
 update_frame_state (struct cursor *c)
 {
-  unw_word_t prev_ip, prev_sp, prev_bsp, ip, pr, num_regs, cfm;
+  unw_word_t prev_ip, prev_sp, prev_bsp, ip, pr, num_regs;
   int ret;
 
   prev_ip = c->ip;
@@ -84,6 +84,10 @@ update_frame_state (struct cursor *c)
   prev_bsp = c->bsp;
 
   c->cfm_loc = c->pfs_loc;
+  /* update the CFM cache: */
+  ret = ia64_get (c, c->cfm_loc, &c->cfm);
+  if (ret < 0)
+    return ret;
 
   num_regs = 0;
   if (c->is_signal_frame)
@@ -102,24 +106,19 @@ update_frame_state (struct cursor *c)
 	     unwind info for sigtramp.  Fix it up here.  */
 	  c->ip_loc  = (c->sigcontext_loc + SIGCONTEXT_IP_OFF);
 	  c->cfm_loc = (c->sigcontext_loc + SIGCONTEXT_CFM_OFF);
+	  /* update the CFM cache: */
+	  ret = ia64_get (c, c->cfm_loc, &c->cfm);
+	  if (ret < 0)
+	    return ret;
 	}
 
       /* do what can't be described by unwind directives: */
       c->pfs_loc = (c->sigcontext_loc + SIGCONTEXT_AR_PFS_OFF);
 
-      ret = ia64_get (c, c->cfm_loc, &cfm);
-      if (ret < 0)
-	return ret;
-
-      num_regs = cfm & 0x7f;		/* size of frame */
+      num_regs = c->cfm & 0x7f;		/* size of frame */
     }
   else
-    {
-      ret = ia64_get (c, c->cfm_loc, &cfm);
-      if (ret < 0)
-	return ret;
-      num_regs = (cfm >> 7) & 0x7f;	/* size of locals */
-    }
+    num_regs = (c->cfm >> 7) & 0x7f;	/* size of locals */
 
   if (c->bsp_loc)
     {
