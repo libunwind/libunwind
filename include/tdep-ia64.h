@@ -155,6 +155,7 @@ struct ia64_global_unwind_state
     /* Index into unw_cursor_t for preserved register i */
     unsigned short preg_index[IA64_NUM_PREGS];
 
+    unw_word_t r0;
     unw_fpreg_t f0, f1_le, f1_be, nat_val_le;
     unw_fpreg_t nat_val_be, int_val_le, int_val_be;
 
