@@ -106,9 +106,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_unlock
 
-#define mutex_init(l)	(pthread_mutex_init ? pthread_mutex_init ((l), 0) : 0)
-#define mutex_lock(l)	(pthread_mutex_lock ? pthread_mutex_lock (l) : 0)
-#define mutex_unlock(l)	(pthread_mutex_unlock ? pthread_mutex_unlock (l) : 0)
+#define mutex_init(l)							\
+	(pthread_mutex_init != 0 ? pthread_mutex_init ((l), 0) : 0)
+#define mutex_lock(l)							\
+	(pthread_mutex_lock != 0 ? pthread_mutex_lock (l) : 0)
+#define mutex_unlock(l)							\
+	(pthread_mutex_unlock != 0 ? pthread_mutex_unlock (l) : 0)
 
 #ifdef HAVE_ATOMIC_OPS_H
 # include <atomic_ops.h>
