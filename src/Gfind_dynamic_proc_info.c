@@ -2,6 +2,8 @@
 
 #include "internal.h"
 
+#ifndef UNW_REMOTE_ONLY
+
 static inline int
 local_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 		      unw_proc_info_t *pi,
@@ -15,6 +17,8 @@ local_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 					     arg);
   return -UNW_ENOINFO;
 }
+
+#endif /* UNW_REMOTE_ONLY */
 
 static inline int
 remote_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
