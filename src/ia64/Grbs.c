@@ -47,7 +47,7 @@ rbs_switch (struct cursor *c,
   struct rbs_area *rbs = &c->rbs_area[c->rbs_curr];
   unw_word_t lo, ndirty;
 
-  Debug (10, "(left=%u, curr=%u)", c->rbs_left_edge, c->rbs_curr);
+  Debug (10, "(left=%u, curr=%u)\n", c->rbs_left_edge, c->rbs_curr);
 
   /* Calculate address "lo" at which the backing store starts:  */
   ndirty = ia64_rse_num_regs (saved_bspstore, saved_bsp);
@@ -59,7 +59,7 @@ rbs_switch (struct cursor *c,
      track it and we can simply overwrite it... */
   if (rbs->size)
     {
-      Debug (10, "inner=[0x%lx-0x%lx)",
+      Debug (10, "inner=[0x%lx-0x%lx)\n",
 	     (long) (rbs->end - rbs->size), (long) rbs->end);
 
       c->rbs_curr = (c->rbs_curr + 1) % NELEMS (c->rbs_area);
