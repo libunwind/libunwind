@@ -30,22 +30,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    expansion.  */
 #define DWARF_NUM_PRESERVED_REGS	17
 
+#define DWARF_REGNUM_MAP_LENGTH		19
+
 /* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
 #define dwarf_is_big_endian(addr_space)	0
 
 /* Convert a pointer to a dwarf_cursor structure to a pointer to
    unw_cursor_t.  */
 #define dwarf_to_cursor(c)	((unw_cursor_t *) (c))
-
-extern uint8_t dwarf_to_unw_regnum_map[19];
-
-static inline unw_regnum_t
-dwarf_to_unw_regnum (unw_word_t regnum)
-{
-  if (regnum <= NELEMS (dwarf_to_unw_regnum_map))
-    return dwarf_to_unw_regnum_map[regnum];
-  return 0;
-}
 
 typedef struct dwarf_loc
   {
