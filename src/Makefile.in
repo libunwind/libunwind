@@ -95,10 +95,11 @@ install_sh = @install_sh@
 SOVERSION = 1:0:0		# See comments at end of file.
 SETJMP_SO_VERSION = 0:0:0
 
-
-# Nothing special.
+#	Nothing to do here....
 @REMOTE_ONLY_FALSE@libunwind_la_SOURCES_cdep = \
 @REMOTE_ONLY_FALSE@	_UPT_internal.h							     \
+@REMOTE_ONLY_FALSE@									     \
+@REMOTE_ONLY_FALSE@	dyn-cancel.c dyn-register.c					     \
 @REMOTE_ONLY_FALSE@									     \
 @REMOTE_ONLY_FALSE@	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
 @REMOTE_ONLY_FALSE@	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
@@ -122,8 +123,7 @@ SETJMP_SO_VERSION = 0:0:0
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)	\
 	$(libunwind_la_SOURCES_os)				\
 	backtrace.c get_proc_name.c				\
-	dyn-cancel.c dyn-extract.c dyn-register.c		\
-	dyn-remote.c						\
+	dyn-extract.c dyn-remote.c				\
 	mi-init.c						\
 	mempool.c						\
 	Gfind_dynamic_proc_info.c Gput_dynamic_unwind_info.c	\
@@ -141,7 +141,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/init.h ia64/offsets.h ia64/regs.h ia64/rse.h		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
-	elf64.c								      \
+	elf64.c elf64.h							      \
 	ia64/_Uia64_install_context.S ia64/global-ia64.c ia64/rbs-ia64.c      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
@@ -230,16 +230,17 @@ CONFIG_CLEAN_FILES =
 LTLIBRARIES = $(lib_LTLIBRARIES)
 
 libunwind_hppa_la_LIBADD =
-@REMOTE_ONLY_FALSE@am__objects_1 = _UPT_accessors.lo \
-@REMOTE_ONLY_FALSE@	_UPT_access_fpreg.lo _UPT_access_mem.lo \
-@REMOTE_ONLY_FALSE@	_UPT_access_reg.lo _UPT_create.lo \
-@REMOTE_ONLY_FALSE@	_UPT_destroy.lo _UPT_find_proc_info.lo \
+@REMOTE_ONLY_FALSE@am__objects_1 = dyn-cancel.lo dyn-register.lo \
+@REMOTE_ONLY_FALSE@	_UPT_accessors.lo _UPT_access_fpreg.lo \
+@REMOTE_ONLY_FALSE@	_UPT_access_mem.lo _UPT_access_reg.lo \
+@REMOTE_ONLY_FALSE@	_UPT_create.lo _UPT_destroy.lo \
+@REMOTE_ONLY_FALSE@	_UPT_find_proc_info.lo \
 @REMOTE_ONLY_FALSE@	_UPT_get_dyn_info_list_addr.lo \
 @REMOTE_ONLY_FALSE@	_UPT_put_unwind_info.lo _UPT_reg_offset.lo
 @OS_LINUX_TRUE@am__objects_2 = os-linux.lo
 am__objects_3 = $(am__objects_1) $(am__objects_2) backtrace.lo \
-	get_proc_name.lo dyn-cancel.lo dyn-extract.lo dyn-register.lo \
-	dyn-remote.lo mi-init.lo mempool.lo Gfind_dynamic_proc_info.lo \
+	get_proc_name.lo dyn-extract.lo dyn-remote.lo mi-init.lo \
+	mempool.lo Gfind_dynamic_proc_info.lo \
 	Gput_dynamic_unwind_info.lo Lfind_dynamic_proc_info.lo \
 	Lput_dynamic_unwind_info.lo
 am__objects_4 = $(am__objects_3) flush_cache-hppa.lo \
@@ -2377,6 +2378,8 @@ uninstall-am: uninstall-info-am uninstall-libLTLIBRARIES
 	mostlyclean-generic mostlyclean-libtool tags uninstall \
 	uninstall-am uninstall-info-am uninstall-libLTLIBRARIES
 
+
+@REMOTE_ONLY_TRUE@install-exec-hook:
 #
 # This is not ideal, but I know of no other way to install an
 # alias for a library.

@@ -464,7 +464,7 @@ ac_includes_default="\
 # include <unistd.h>
 #endif"
 
-ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE LN_S ECHO RANLIB ac_ct_RANLIB CPP EGREP LIBTOOL LIBOBJS CCAS CCASFLAGS REMOTE_ONLY_TRUE REMOTE_ONLY_FALSE ARCH_IA64_TRUE ARCH_IA64_FALSE ARCH_HPPA_TRUE ARCH_HPPA_FALSE ARCH_X86_TRUE ARCH_X86_FALSE OS_LINUX_TRUE OS_LINUX_FALSE arch ARCH LTLIBOBJS'
+ac_subst_vars='SHELL PATH_SEPARATOR PACKAGE_NAME PACKAGE_TARNAME PACKAGE_VERSION PACKAGE_STRING PACKAGE_BUGREPORT exec_prefix prefix program_transform_name bindir sbindir libexecdir datadir sysconfdir sharedstatedir localstatedir libdir includedir oldincludedir infodir mandir build_alias host_alias target_alias DEFS ECHO_C ECHO_N ECHO_T LIBS build build_cpu build_vendor build_os host host_cpu host_vendor host_os target target_cpu target_vendor target_os INSTALL_PROGRAM INSTALL_SCRIPT INSTALL_DATA PACKAGE VERSION ACLOCAL AUTOCONF AUTOMAKE AUTOHEADER MAKEINFO AMTAR install_sh STRIP ac_ct_STRIP INSTALL_STRIP_PROGRAM AWK SET_MAKE MAINTAINER_MODE_TRUE MAINTAINER_MODE_FALSE MAINT CC CFLAGS LDFLAGS CPPFLAGS ac_ct_CC EXEEXT OBJEXT DEPDIR am__include am__quote AMDEP_TRUE AMDEP_FALSE AMDEPBACKSLASH CCDEPMODE LN_S ECHO RANLIB ac_ct_RANLIB CPP EGREP LIBTOOL CCAS CCASFLAGS LIBOBJS REMOTE_ONLY_TRUE REMOTE_ONLY_FALSE ARCH_IA64_TRUE ARCH_IA64_FALSE ARCH_HPPA_TRUE ARCH_HPPA_FALSE ARCH_X86_TRUE ARCH_X86_FALSE OS_LINUX_TRUE OS_LINUX_FALSE arch ARCH LTLIBOBJS'
 ac_subst_files=''
 
 # Initialize some variables set by options.
@@ -1742,7 +1742,7 @@ fi
 
 # Define the identity of the package.
  PACKAGE=libunwind
- VERSION=0.2-pre5
+ VERSION=0.3
 
 
 cat >>confdefs.h <<_ACEOF
@@ -7648,6 +7648,13 @@ LIBTOOL='$(SHELL) $(top_builddir)/libtool'
 # Prevent multiple expansion
 
 
+# By default we simply use the C compiler to build assembly code.
+
+: ${CCAS='$(CC)'}
+# Set ASFLAGS if not already set.
+: ${CCASFLAGS='$(CFLAGS)'}
+
+
 
 
 echo "$as_me:$LINENO: checking for ANSI C header files" >&5
@@ -7790,7 +7797,8 @@ _ACEOF
 fi
 
 
-for ac_header in unistd.h
+
+for ac_header in unistd.h ia64intrin.h
 do
 as_ac_Header=`echo "ac_cv_header_$ac_header" | $as_tr_sh`
 if eval "test \"\${$as_ac_Header+set}\" = set"; then
@@ -8299,14 +8307,6 @@ fi
 done
 
 
-# By default we simply use the C compiler to build assembly code.
-
-: ${CCAS='$(CC)'}
-# Set ASFLAGS if not already set.
-: ${CCASFLAGS='$(CFLAGS)'}
-
-
-
 get_arch() {
  case "$1" in
   i?86) echo x86;;
@@ -8421,11 +8421,12 @@ if test x$enable_debug = xyes; then
 else
   CPPFLAGS="${CPPFLAGS} -DNDEBUG"
 fi
-ASFLAGS="${ASFLAGS} ${CPPFLAGS}"
 
 if test x$GCC = xyes; then
   CFLAGS="${CFLAGS} -Wall -Wsign-compare"
 fi
+
+CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 
 arch="$target_arch"
 ARCH=`echo $target_arch | tr a-z A-Z`
@@ -9146,9 +9147,9 @@ s,@ac_ct_RANLIB@,$ac_ct_RANLIB,;t t
 s,@CPP@,$CPP,;t t
 s,@EGREP@,$EGREP,;t t
 s,@LIBTOOL@,$LIBTOOL,;t t
-s,@LIBOBJS@,$LIBOBJS,;t t
 s,@CCAS@,$CCAS,;t t
 s,@CCASFLAGS@,$CCASFLAGS,;t t
+s,@LIBOBJS@,$LIBOBJS,;t t
 s,@REMOTE_ONLY_TRUE@,$REMOTE_ONLY_TRUE,;t t
 s,@REMOTE_ONLY_FALSE@,$REMOTE_ONLY_FALSE,;t t
 s,@ARCH_IA64_TRUE@,$ARCH_IA64_TRUE,;t t
