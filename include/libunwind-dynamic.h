@@ -91,7 +91,7 @@ unw_dyn_op_t;
 typedef struct unw_dyn_region_info
   {
     struct unw_dyn_region_info *next;	/* linked list of regions */
-    uint32_t insn_count;		/* region length (# of instructions) */
+    int32_t insn_count;			/* region length (# of instructions) */
     uint32_t op_count;			/* length of op-array */
     unw_dyn_op_t op[1];			/* variable-length op-array */
   }
