@@ -78,7 +78,7 @@ ia64_init (void)
 
   mi_init ();
 
-  mempool_init (&unw.state_record_pool, sizeof (struct ia64_state_record), 0);
+  mempool_init (&unw.reg_state_pool, sizeof (struct ia64_reg_state), 0);
   mempool_init (&unw.labeled_state_pool,
 		sizeof (struct ia64_labeled_state), 0);
 
