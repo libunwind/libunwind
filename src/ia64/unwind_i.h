@@ -351,9 +351,13 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
 
   *locp = loc = ia64_rse_skip_regs (c->bsp, regs_to_skip);
   if (rnat_locp)
-    *rnat_locp = ia64_rse_rnat_addr (loc);
+    {
+      *rnat_locp = ia64_rse_rnat_addr (loc);
+      if (*rnat_locp >= rbs->end)
+	*rnat_locp = rbs->rnat_loc;
+    }
 
-  if (unlikely (loc >= rbs->end))
+  if (loc >= rbs->end)
     ret = rbs_find_stacked (c, regs_to_skip, locp, rnat_locp);
   return ret;
 }
