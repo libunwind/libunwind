@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -31,22 +31,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <signal.h>
 #include <stdlib.h>
 
+#include "jmpbuf.h"
+
 #if UNW_TARGET_IA64
 # include "ia64/rse.h"
-  /* chosen for compatibility with libc; NPTL peeks at SP and BSP: */
-# define JB_SP	0
-# define JB_RP	8
-# define JB_BSP	17
-#else
-# define JB_SP	0
-# define JB_RP	1
 #endif
 
 void
 _longjmp (jmp_buf env, int val)
 {
-  extern int _UI_siglongjmp_cont;
-  sigset_t current_mask;
+  extern int _UI_longjmp_cont;
   unw_context_t uc;
   unw_cursor_t c;
   unw_word_t sp;
@@ -81,27 +75,13 @@ _longjmp (jmp_buf env, int val)
 
       /* found the right frame: */
 
-      if (sigprocmask (SIG_BLOCK, NULL, &current_mask) < 0)
-	abort ();
-
       if (UNW_NUM_EH_REGS >= 4)
 	{
 	  if (unw_set_reg (&c, UNW_REG_EH + 0, wp[JB_RP]) < 0
 	      || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
-	      || unw_set_reg (&c, UNW_REG_EH + 2,
-			      ((unw_word_t *) &current_mask)[0]) < 0
 	      || unw_set_reg (&c, UNW_REG_IP,
-			      (unw_word_t) &_UI_siglongjmp_cont))
+			      (unw_word_t) &_UI_longjmp_cont))
 	    abort ();
-
-	  if (_NSIG > 8 * sizeof (unw_word_t))
-	    {
-	      if (_NSIG > 16 * sizeof (unw_word_t))
-		abort ();
-	      if (unw_set_reg (&c, UNW_REG_EH + 3,
-			       ((unw_word_t *) &current_mask)[1]) < 0)
-		abort ();
-	    }
 	}
       else
 	abort ();
