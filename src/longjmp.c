@@ -72,30 +72,32 @@ _longjmp (jmp_buf env, int val)
       }
 #endif
 
-
       /* found the right frame: */
 
       if (sigprocmask (SIG_BLOCK, NULL, &current_mask) < 0)
 	abort ();
 
-      assert (UNW_NUM_EH_REGS >= 4);
-
-      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[1]) < 0
-	  || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
-	  || unw_set_reg (&c, UNW_REG_EH + 2,
-			  ((unw_word_t *) &current_mask)[0]) < 0
-	  || unw_set_reg (&c, UNW_REG_IP,
-			  (unw_word_t) &_UI_siglongjmp_cont))
-	abort ();
-
-      if (_NSIG > 8 * sizeof (unw_word_t))
+      if (UNW_NUM_EH_REGS >= 4)
 	{
-	  if (_NSIG > 16 * sizeof (unw_word_t))
+	  if (unw_set_reg (&c, UNW_REG_EH + 0, wp[1]) < 0
+	      || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
+	      || unw_set_reg (&c, UNW_REG_EH + 2,
+			      ((unw_word_t *) &current_mask)[0]) < 0
+	      || unw_set_reg (&c, UNW_REG_IP,
+			      (unw_word_t) &_UI_siglongjmp_cont))
 	    abort ();
-	  if (unw_set_reg (&c, UNW_REG_EH + 3,
-			   ((unw_word_t *) &current_mask)[1]) < 0)
-	    abort ();
+
+	  if (_NSIG > 8 * sizeof (unw_word_t))
+	    {
+	      if (_NSIG > 16 * sizeof (unw_word_t))
+		abort ();
+	      if (unw_set_reg (&c, UNW_REG_EH + 3,
+			       ((unw_word_t *) &current_mask)[1]) < 0)
+		abort ();
+	    }
 	}
+      else
+	abort ();
 
       unw_resume (&c);
 
