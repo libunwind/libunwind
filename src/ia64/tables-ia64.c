@@ -51,10 +51,10 @@ is_local_addr_space (unw_addr_space_t as)
 	  );
 }
 
-HIDDEN int
-tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
-			  unw_dyn_info_t *di,
-			  unw_proc_info_t *pi, int need_unwind_info, void *arg)
+int
+_Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
+			    unw_dyn_info_t *di, unw_proc_info_t *pi,
+			    int need_unwind_info, void *arg)
 {
   unw_word_t addr, hdr_addr, info_addr, info_end_addr, hdr, *wp;
   unw_word_t handler_offset;
@@ -238,14 +238,13 @@ getunwind (void *buf, size_t len)
 
 static unw_dyn_info_t kernel_table;
 
-static int
-get_kernel_table (void *ptr)
+int
+_Uia64_get_kernel_table (unw_dyn_info_t *di)
 {
   struct ia64_table_entry *ktab, *etab;
-  unw_dyn_info_t *di = ptr;
   size_t size;
 
-  debug (100, "unwind: checking kernel unwind table");
+  debug (100, "unwind: getting kernel table");
 
   size = getunwind (NULL, 0);
   ktab = sos_alloc (size);
@@ -270,9 +269,9 @@ get_kernel_table (void *ptr)
   di->u.ti.table_len = ((char *) etab - (char *) ktab) / sizeof (unw_word_t);
   di->u.ti.table_data = (unw_word_t *) ktab;
 
-  debug (100, "unwind: found table `%s': segbase=%lx, len=%lu, gp=%lx\n",
-	 (char *) di->u.ti.name_ptr, di->u.ti.segbase, di->u.ti.table_len,
-	 di->gp);
+  debug (100, "unwind: found table `%s': [%lx-%lx) segbase=%lx len=%lu\n",
+	 (char *) di->u.ti.name_ptr, di->start_ip, di->end_ip,
+	 di->u.ti.segbase, di->u.ti.table_len);
   return 0;
 }
 
@@ -321,7 +320,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
       /* For dynamicly linked executables and shared libraries,
 	 DT_PLTGOT is the gp value for that object.  */
       Elf64_Dyn *dyn = (Elf64_Dyn *)(p_dynamic->p_vaddr + load_base);
-      for (; dyn->d_tag != DT_NULL ; dyn++)
+      for (; dyn->d_tag != DT_NULL; ++dyn)
 	if (dyn->d_tag == DT_PLTGOT)
 	  {
 	    /* On IA-64, _DYNAMIC is writable and GLIBC has relocated it.  */
@@ -363,7 +362,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
     {
       if (!kernel_table.u.ti.table_data)
 	{
-	  ret = get_kernel_table (&kernel_table);
+	  ret = _Uia64_get_kernel_table (&kernel_table);
 	  if (ret < 0)
 	    return ret;
 	}
