@@ -41,6 +41,7 @@ do_backtrace (void)
   unw_cursor_t cursor;
   unw_word_t ip, sp;
   unw_context_t uc;
+  char buf[512];
   int ret;
 
   unw_getcontext (&uc);
@@ -51,7 +52,8 @@ do_backtrace (void)
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
       unw_get_reg (&cursor, UNW_REG_SP, &sp);
-      printf ("ip=%016lx sp=%016lx\n", ip, sp);
+      unw_get_proc_name (&cursor, buf, sizeof (buf));
+      printf ("%016lx %-32s (sp=%016lx)\n", ip, buf, sp);
 
       {
 	unw_proc_info_t pi;
@@ -59,8 +61,8 @@ do_backtrace (void)
 
 	unw_get_proc_info (&cursor, &pi);
 	unw_get_reg (&cursor, UNW_IA64_BSP, &bsp);
-	printf ("\tproc_start=%016lx handler=%lx lsda=%lx bsp=%lx\n",
-		pi.start_ip, pi.end_ip, pi.lsda, bsp);
+	printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx bsp=%lx\n",
+		pi.start_ip, pi.end_ip, pi.handler, pi.lsda, bsp);
       }
       ret = unw_step (&cursor);
       if (ret < 0)
