@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -52,15 +52,15 @@ handler (int sig)
   unw_cursor_t c;
   int ret;
 
-  unw_getcontext(&uc);
-  unw_init_local(&c, &uc);
+  unw_getcontext (&uc);
+  unw_init_local (&c, &uc);
   do
     {
-      unw_get_reg(&c, UNW_REG_IP, &ip);
+      unw_get_reg (&c, UNW_REG_IP, &ip);
       if (verbose)
 	printf ("%lx: IP=%lx\n", (long) pthread_self (), (unsigned long) ip);
     }
-  while ((ret = unw_step(&c)) > 0);
+  while ((ret = unw_step (&c)) > 0);
 
   if (ret < 0)
     panic ("unw_step() returned %d\n", ret);
