@@ -1,0 +1,93 @@
+# This is the BitKeeper configuration for this package.
+# 
+# Please take a minute to fill it out carefully, it needs to be accurate.
+# 
+# NOTICE: you really do want to fill this out, if something goes wrong
+# with your repository, or if someone changes the logging policy, we
+# send mail to the contact listed here for confirmation.
+# 
+# BitKeeper can maintain a log of your change comments (not your source,
+# just the comments) on a centralized server.  This is useful as your
+# project grows, it gives people a place to go see what is happening on
+# a per project basis.  This is especially useful for distributed developers.
+# 
+
+# 
+# Name of the project, such as "BitKeeper" or "The GNU C compiler".
+# 
+description: libunwind: a platform-neutral unwind library
+# 
+# What (RedHat package) category this project fits into, if any.
+# 
+category: 
+# 
+# Open Logging server.  This site is where users go to see the
+# ChangeSet comments for all instances of this repository.  This must
+# be logging@openlogging.org for usage under the terms of the BKL,
+# "bk help bkl" will show you the default licensing terms.  If this
+# repository is commercial it can be an internal email address or "none"
+# to disable logging.
+# 
+logging: logging@openlogging.org
+# 
+# If this field is set, all checkins will appear to be made by this user,
+# in effect making this a single user package.  Single user packages are
+# free from the logging constraint up to a maximum of 1000 files.  In order 
+# for the package to really be free, both the single_user and the single_host 
+# field need to be set.
+# 
+single_user: 
+# 
+# If this field is set, all checkins will appear to be made on this host.
+# 
+single_host: 
+# 
+# Contact person for this project.  This is whoever is the person that
+# should be contacted with update information or contacted if BitKeeper
+# discovers a problem which requires local intervention.  Please make the
+# contact information accurate so we can support you.
+# 
+contact: David Mosberger-Tang
+# 
+# It is very important that this email address is filled out and accurate.
+# If someone converts your repository to open logging (which you may not
+# want), we will contact this email address for confirmation that you really
+# did want open logging.  If the email address is inaccurate and we get no
+# response from anyone else at your location after 90 days, then open logging
+# will be implicitly approved.
+# 
+email: davidm@hpl.hp.com
+# 
+# Add your street address if you like, it is optional.
+# 
+street: 1501 Page Mill Rd
+city: 	Palo Alto
+state: 	CA
+postal: 94304
+country: USA
+phone: 	
+cell: 
+pager: 
+# 
+# Business Hours when we can contact you if you left a phone number.
+# 
+hours: 
+# You do not have a license for BitKeeper and the logging field in the
+# BitKeeper/etc/config file is not set to "logging@openlogging.org".
+# You either need a commercial license (to run without open logging),
+# or you need to convert your package to single user, or you need to
+# configure your package to use openlogging.  Until you have done one of
+# those, you may not create any changesets.
+# 
+# You can get a temporary license by sending a mail request
+# to sales@bitmover.com.  
+# 
+# BitMover can be reached in the United States at 415-401-8808
+# during business hours (PST) or via email at sales@bitmover.com.
+# Thanks!
+license: 
+# 
+# Default compression algorithm for stored s.files is gzip.
+# If you want no compression, set this to "none".
+# 
+compression: gzip
