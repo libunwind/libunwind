@@ -29,7 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 inline int
-ia64_local_resume (unw_cursor_t *cursor, void *arg)
+ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
   unw_fpreg_t fpval;
@@ -113,8 +113,8 @@ unw_resume (unw_cursor_t *cursor)
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
 
 #ifdef UNW_LOCAL_ONLY
-  return ia64_local_resume (cursor, c->as_arg);
+  return ia64_local_resume (c->as, cursor, c->as_arg);
 #else
-  return (*c->as->acc.resume) (cursor, c->as_arg);
+  return (*c->as->acc.resume) (c->as, cursor, c->as_arg);
 #endif
 }
