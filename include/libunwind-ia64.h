@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -164,9 +164,12 @@ typedef ucontext_t unw_tdep_context_t;
    with malloc(), and should be free()d during the put_unwind_info()
    callback.  This routine is signal-safe for the local-address-space
    case ONLY.  */
-extern int _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
-				       unw_dyn_info_t *di, unw_proc_info_t *pi,
-				       int need_unwind_info, void *arg);
+extern int UNW_OBJ(search_unwind_table) (unw_addr_space_t as, unw_word_t ip,
+					 unw_dyn_info_t *di,
+					 unw_proc_info_t *pi,
+					 int need_unwind_info, void *arg);
+#define unw_search_ia64_unwind_table(as,ip,di,pi,n,arg) \
+	UNW_OBJ(search_unwind_table)(as,ip,di,pi,n,arg)
 
 /* This is a helper routine which the get_dyn_info_list_addr()
    callback can use to locate the special dynamic-info list entry in
