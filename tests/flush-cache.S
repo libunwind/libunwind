@@ -1,4 +1,4 @@
-#ifdef __ia64__
+#if defined(__ia64__)
 
 	.global flush_cache
 
@@ -29,5 +29,15 @@ flush_cache:
         mov ar.lc=r3                    // restore ar.lc
         br.ret.sptk.many rp
 	.endp flush_cache
+
+#elif defined(__i386__)
+
+	.globl flush_cache
+flush_cache:
+	ret
+
+#elif
+
+# error Need flush_cache code for this architecture.
 
 #endif
