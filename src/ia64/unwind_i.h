@@ -378,7 +378,9 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
 
   assert (reg >= 32 && reg < 128);
 
-  *locp = loc = ia64_rse_skip_regs (c->bsp, regs_to_skip);
+  loc = ia64_rse_skip_regs (c->bsp, regs_to_skip);
+  if (locp)
+    *locp = loc;
   if (rnat_locp)
     {
       *rnat_locp = ia64_rse_rnat_addr (loc);
