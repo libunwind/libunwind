@@ -185,6 +185,23 @@ function check_cxx_abi {
     match _Unwind_Resume_or_Rethrow
     match _Unwind_SetGR
     match _Unwind_SetIP
+    match __libunwind_Unwind_Backtrace
+    match __libunwind_Unwind_DeleteException
+    match __libunwind_Unwind_FindEnclosingFunction
+    match __libunwind_Unwind_ForcedUnwind
+    match __libunwind_Unwind_GetBSP
+    match __libunwind_Unwind_GetCFA
+    match __libunwind_Unwind_GetDataRelBase
+    match __libunwind_Unwind_GetGR
+    match __libunwind_Unwind_GetIP
+    match __libunwind_Unwind_GetLanguageSpecificData
+    match __libunwind_Unwind_GetRegionStart
+    match __libunwind_Unwind_GetTextRelBase
+    match __libunwind_Unwind_RaiseException
+    match __libunwind_Unwind_Resume
+    match __libunwind_Unwind_Resume_or_Rethrow
+    match __libunwind_Unwind_SetGR
+    match __libunwind_Unwind_SetIP
     case $os in
 	linux*)
 	    # needed only for Intel 8.0 bug-compatibility
