@@ -20929,7 +20929,7 @@ rm -f conftest.err conftest.$ac_objext conftest.$ac_ext
 
 if test x$GCC = xyes -a x$intel_compiler != xyes; then
   CFLAGS="${CFLAGS} -Wall -Wsign-compare"
-  LIBCRTS="`$CC --print-libgcc-file-name`"
+  LIBCRTS="-lgcc"
 fi
 
 CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
