@@ -1,45 +1,13 @@
 SOVERSION=1:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 
-EXTRA_DIST = elfxx.h elfxx.c
-
-if REMOTE_ONLY
-install-exec-hook:
-#	Nothing to do here....
-else
-
-libunwind_la_SOURCES_cdep =						     \
-	_UPT_internal.h							     \
-									     \
-	dyn-cancel.c dyn-register.c					     \
-									     \
-	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
-	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
-	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
-	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
-
-lib_LTLIBRARIES_cdep		= libunwind-setjmp.la
-libunwind_setjmp_la_SOURCES_common = longjmp.c siglongjmp.c
-libunwind_setjmp_la_LDFLAGS	= -version-info $(SETJMP_SO_VERSION)
-libunwind_setjmp_la_LIBADD	= libunwind-$(arch).la
-
-libunwind_setjmp_la_SOURCES_ia64 = ia64/setjmp-ia64.S ia64/sigsetjmp-ia64.S \
-				   ia64/siglongjmp-ia64.S
-libunwind_setjmp_la_SOURCES_hppa = setjmp.c sigsetjmp.c hppa/siglongjmp-hppa.S
-libunwind_setjmp_la_SOURCES_x86	 = setjmp.c sigsetjmp.c x86/siglongjmp-x86.S
-#
-# This is not ideal, but I know of no other way to install an
-# alias for a library.
-#
-install-exec-hook:
-	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind.a
-	$(LN_S) -f libunwind-$(arch).so $(DESTDIR)$(libdir)/libunwind.so
-
-endif
-
-if OS_LINUX
- libunwind_la_SOURCES_os = os-linux.h os-linux.c
-endif
+libunwind_setjmp_la_SOURCES_local = longjmp.c siglongjmp.c
+libunwind_setjmp_la_SOURCES_local_ia64 = ia64/setjmp-ia64.S	\
+	ia64/sigsetjmp-ia64.S ia64/siglongjmp-ia64.S
+libunwind_setjmp_la_SOURCES_local_hppa = setjmp.c sigsetjmp.c	\
+	hppa/siglongjmp-hppa.S
+libunwind_setjmp_la_SOURCES_local_x86 = setjmp.c sigsetjmp.c	\
+	x86/siglongjmp-x86.S
 
 libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	$(libunwind_la_SOURCES_os)					      \
@@ -49,10 +17,18 @@ libunwind_la_SOURCES_common = $(libunwind_la_SOURCES_cdep)		      \
 	mempool.c							      \
 	Gfind_dynamic_proc_info.c Gget_proc_name.c Gput_dynamic_unwind_info.c \
 	Lfind_dynamic_proc_info.c Lget_proc_name.c Lput_dynamic_unwind_info.c
+libunwind_la_SOURCES_local = 						     \
+	_UPT_internal.h							     \
+	dyn-cancel.c dyn-register.c					     \
+	_UPT_accessors.c _UPT_access_fpreg.c _UPT_access_mem.c		     \
+	_UPT_access_reg.c _UPT_create.c _UPT_destroy.c _UPT_find_proc_info.c \
+	_UPT_get_dyn_info_list_addr.c _UPT_put_unwind_info.c		     \
+	_UPT_get_proc_name.c _UPT_reg_offset.c _UPT_resume.c
+libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 
 #
 # Note: As of automake-1.6, there is a stupid limitation which requires
-#	that each filename is unique.  This prevents us from having, e.g.,
+#	that each filename be unique.  This prevents us from having, e.g.,
 #	ia64/tables.c and x86/tables.c.  The fix for now is to uglify the
 #	filenames by appending the arch-name (e.g., tables-ia64.c).  Oh, well.
 #
@@ -111,12 +87,41 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_common)		\
 	x86/Linit_local-x86.c x86/Lget_proc_info-x86.c x86/Lregs-x86.c	\
 	x86/Lstep-x86.c
 
+if REMOTE_ONLY
+libunwind_la_SOURCES_cdep = $(libunwind_la_SOURCES_remote)
+install-exec-hook:
+#	Nothing to do here....
+else
+libunwind_la_SOURCES_cdep = $(libunwind_la_SOURCES_local)
+
+lib_LTLIBRARIES_cdep		= libunwind-setjmp.la
+libunwind_setjmp_la_SOURCES_common = $(libunwind_setjmp_la_SOURCES_local)
+libunwind_setjmp_la_LDFLAGS	= -version-info $(SETJMP_SO_VERSION)
+libunwind_setjmp_la_LIBADD	= libunwind-$(arch).la
+
+libunwind_setjmp_la_SOURCES_ia64 = $(libunwind_setjmp_la_SOURCES_local_ia64)
+libunwind_setjmp_la_SOURCES_hppa = $(libunwind_setjmp_la_SOURCES_local_hppa)
+libunwind_setjmp_la_SOURCES_x86	 = $(libunwind_setjmp_la_SOURCES_local_x86)
+#
+# This is not ideal, but I know of no other way to install an
+# alias for a library.
+#
+install-exec-hook:
+	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind.a
+	$(LN_S) -f libunwind-$(arch).so $(DESTDIR)$(libdir)/libunwind.so
+
+endif
+
+if OS_LINUX
+ libunwind_la_SOURCES_os = $(libunwind_la_SOURCES_os_linux)
+endif
+
 if ARCH_IA64
  mk_cursor_i_ia64_SOURCES = ia64/mk_cursor_i-ia64.c
  noinst_PROGRAMS = mk_cursor_i-ia64
  BUILT_SOURCES = cursor_i.h
 cursor_i.h: mk_cursor_i-ia64
-	mk_cursor_i-ia64 > $@
+	./mk_cursor_i-ia64 > $@
  lib_LTLIBRARIES_arch = libunwind-ia64.la
  libunwind_ia64_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = -version-info $(SOVERSION)
@@ -144,6 +149,18 @@ lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
+
+EXTRA_DIST =	elfxx.h elfxx.c					\
+		$(libunwind_la_SOURCES_hppa)			\
+		$(libunwind_la_SOURCES_ia64)			\
+		$(libunwind_la_SOURCES_x86)			\
+		$(libunwind_la_SOURCES_os_linux)		\
+		$(libunwind_la_SOURCES_local)			\
+		$(libunwind_la_SOURCES_remote)			\
+		$(libunwind_setjmp_la_SOURCES_local)		\
+		$(libunwind_setjmp_la_SOURCES_local_hppa)	\
+		$(libunwind_setjmp_la_SOURCES_local_ia64)	\
+		$(libunwind_setjmp_la_SOURCES_local_x86)
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
