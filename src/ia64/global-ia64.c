@@ -177,6 +177,8 @@ ia64_init (void)
   if (8*sizeof(unw_hash_index_t) < IA64_LOG_UNW_HASH_SIZE)
     unw_hash_index_t_is_too_narrow ();
 
+#ifndef UNW_REMOTE_ONLY
   _Uia64_local_addr_space_init ();
   _ULia64_local_addr_space_init ();
+#endif
 }
