@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -42,7 +42,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   unsigned long hi;
 
   maps_init (&mi, pid);
-  while (maps_next (&mi, segbase, &hi, mapoff, path))
+  while (maps_next (&mi, segbase, &hi, mapoff, path, sizeof (path)))
     if (ip >= *segbase && ip < hi)
       {
 	found = 1;
