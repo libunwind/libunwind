@@ -130,7 +130,11 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	  break;
 	}
     }
-  if (!ptxt || !punw)
+  if (!ptxt || !punw
+      /* Verify that the segment that contains the IP also contains
+	 the static unwind table.  If not, we are dealing with
+	 runtime-generated code, for which we have no info here.  */
+      || (punw->p_vaddr - ptxt->p_vaddr) >= ptxt->p_memsz)
     return NULL;
 
   ui->di_cache.start_ip = segbase;
@@ -152,6 +156,7 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
 {
   unsigned long segbase, mapoff;
   char path[PATH_MAX];
+  unw_dyn_info_t *di;
 
 #if UNW_TARGET_IA64
   if (!ui->ktab.start_ip && _Uia64_get_kernel_table (&ui->ktab) < 0)
@@ -177,7 +182,16 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
   if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff) < 0)
     return NULL;
 
-  return _UPTi_find_unwind_table (ui, as, path, segbase, mapoff);
+  di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff);
+  if (!di
+      /* This can happen in corner cases where dynamically generated
+         code falls into the same page that contains the data-segment
+         and the page-offset of the code is within the first page of
+         the executable.  */
+      || ip < di->start_ip || ip >= di->end_ip)
+    return NULL;
+
+  return di;
 }
 
 int
