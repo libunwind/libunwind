@@ -439,7 +439,7 @@ rbs_contains (struct rbs_area *rbs, unw_word_t bsp)
   return result;
 }
 
-static ia64_loc_t
+static inline ia64_loc_t
 rbs_get_rnat_loc (struct rbs_area *rbs, unw_word_t bsp)
 {
   unw_word_t rnat_addr = ia64_rse_rnat_addr (bsp);
@@ -457,7 +457,7 @@ rbs_get_rnat_loc (struct rbs_area *rbs, unw_word_t bsp)
   return rnat_loc;
 }
 
-static ia64_loc_t
+static inline ia64_loc_t
 rbs_loc (struct rbs_area *rbs, unw_word_t bsp)
 {
   if (rbs_on_uc (rbs))
