@@ -66,7 +66,7 @@ extern "C" {
 
 #define UNW_PI_FLAG_IA64_RBS_SWITCH	(1 << UNW_PI_FLAG_IA64_RBS_SWITCH_BIT)
 
-typedef uint64_t unw_tdep_word_t;
+typedef uint64_t unw_word_t;
 
 /* On IA-64, we want to access the contents of floating-point
    registers as a pair of "words", but to ensure 16-byte alignment, we
@@ -74,10 +74,16 @@ typedef uint64_t unw_tdep_word_t;
    Right Thing on all known IA-64 platforms, including HP-UX.  */
 typedef union
   {
-    struct { unw_tdep_word_t bits[2]; } raw;
+    struct { unw_word_t bits[2]; } raw;
     long double dummy;	/* dummy to force 16-byte alignment */
   }
 unw_tdep_fpreg_t;
+
+typedef struct
+  {
+    /* no ia64-specific auxiliary proc-info */
+  }
+unw_tdep_proc_info_t;
 
 typedef enum
   {
@@ -149,6 +155,7 @@ typedef ucontext_t unw_tdep_context_t;
 
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_IA64_FR) < 128)
 
+#include "libunwind-dynamic.h"
 #include "libunwind-common.h"
 
 /* This is a helper routine to search an ia64 unwind table.  If the

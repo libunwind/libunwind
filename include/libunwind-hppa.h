@@ -43,7 +43,13 @@ extern "C" {
    want to err on making it rather too big than too small.  */
 #define UNW_TDEP_CURSOR_LEN	127
 
-typedef uint64_t unw_tdep_word_t;
+typedef uint64_t unw_word_t;
+
+typedef struct
+  {
+    /* no PA-RISC-specific auxiliary proc-info */
+  }
+unw_tdep_proc_info_t;
 
 typedef enum
   {
@@ -85,6 +91,7 @@ typedef ucontext_t unw_tdep_context_t;
 /* XXX fixme: */
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_HPPA_FR) < 128)
 
+#include "libunwind-dynamic.h"
 #include "libunwind-common.h"
 
 #if defined(__cplusplus) || defined(c_plusplus)
