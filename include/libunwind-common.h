@@ -214,8 +214,8 @@ unw_save_loc_t;
 #define unw_get_save_loc	UNW_OBJ(get_save_loc)
 #define unw_is_signal_frame	UNW_OBJ(is_signal_frame)
 #define unw_get_proc_name	UNW_OBJ(get_proc_name)
+#define unw_set_caching_policy	UNW_OBJ(set_caching_policy)
 #define unw_regname		UNW_ARCH_OBJ(regname)
-#define unw_set_caching_policy	UNW_ARCH_OBJ(set_caching_policy)
 #define unw_flush_cache		UNW_ARCH_OBJ(flush_cache)
 
 extern unw_addr_space_t unw_create_addr_space (unw_accessors_t *, int);
