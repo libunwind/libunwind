@@ -1,11 +1,6 @@
 The central data structure of the unwind API is the unwind cursor.
-This structure tracks the frame registers and the preserved registers.
-The distinction between frame registers and preserved registers is
-important: the former represent the *current* value of a register (as
-it existed at the current IP); the latter represent the *saved* value
-of a register (i.e., the value that existed on entry to the current
-procedure).  The unwind API defines a handful of well-known frame
-"registers":
+This structure tracks the register contents.  The unwind API defines a
+handful of well-known frame "registers":
 
         - ip: the instruction pointer (pc)
         - rp: the return pointer (rp, aka "return address" or "return link")
@@ -110,3 +105,20 @@ targets also need to be upgraded.
 Note 2: The assumption is that a cross-unwinder can handle all
 interesting flavors of a target.  For example, the unwinder for the
 ia64 target is expected to be able to handle both Linux and HP-UX.
+
+* IA-64 Specific Information
+
+Apart from the normal frame-registers, the IA-64 implementation of
+libunwind provides the means to access the current value of the
+register backing store pointer (bsp).  One quirk with this
+frame-register is that it corresponds to the address that would be in
+register ar.bsp after flushing the current register stack to the
+backing store (i.e., as if a "flushrs" instruction had been executed).
+Of course, given this value and the contents of the current frame
+marker (CFM), it's easy to calculate the original value of ar.bsp:
+
+	unw_word_t cfm, bsp, bsp_after_flushrs, sof;
+
+	unw_get_reg (&cursor, UNW_IA64_BSP, &bsp_after_flushrs);
+	unw_get_reg (&cursor, UNW_IA64_CFM, &cfm);
+	bsp = ia64_rse_skip_regs (bsp_after_flushrs, -(cfm & 0x7f));
