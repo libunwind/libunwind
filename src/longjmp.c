@@ -25,6 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 
+#include <assert.h>
 #include <libunwind.h>
 #include <setjmp.h>
 #include <signal.h>
@@ -71,14 +72,17 @@ _longjmp (jmp_buf env, int val)
       }
 #endif
 
+
       /* found the right frame: */
 
       if (sigprocmask (SIG_BLOCK, NULL, &current_mask) < 0)
 	abort ();
 
-      if (unw_set_reg (&c, UNW_REG_EH_ARG0, wp[1]) < 0
-	  || unw_set_reg (&c, UNW_REG_EH_ARG1, val) < 0
-	  || unw_set_reg (&c, UNW_REG_EH_ARG2,
+      assert (UNW_NUM_EH_REGS >= 4);
+
+      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[1]) < 0
+	  || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
+	  || unw_set_reg (&c, UNW_REG_EH + 2,
 			  ((unw_word_t *) &current_mask)[0]) < 0
 	  || unw_set_reg (&c, UNW_REG_IP,
 			  (unw_word_t) &_UI_siglongjmp_cont))
@@ -88,7 +92,7 @@ _longjmp (jmp_buf env, int val)
 	{
 	  if (_NSIG > 16 * sizeof (unw_word_t))
 	    abort ();
-	  if (unw_set_reg (&c, UNW_REG_EH_ARG3,
+	  if (unw_set_reg (&c, UNW_REG_EH + 3,
 			   ((unw_word_t *) &current_mask)[1]) < 0)
 	    abort ();
 	}
@@ -102,8 +106,14 @@ _longjmp (jmp_buf env, int val)
   abort ();
 }
 
+#ifdef __GNUC__
+void longjmp (jmp_buf env, int val) __attribute__ ((alias ("_longjmp")));
+#else
+
 void
 longjmp (jmp_buf env, int val)
 {
   _longjmp (env, val);
 }
+
+#endif
