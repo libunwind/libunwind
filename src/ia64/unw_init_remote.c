@@ -25,10 +25,10 @@ License.  */
 #include "unwind_i.h"
 
 int
-ia64_init_remote (unw_cursor_t *cursor, unw_accessors_t *a)
+unw_init_remote (unw_cursor_t *cursor, unw_accessors_t *a)
 {
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
-  int i;
+  int i, ret;
 
   if (unw.first_time)
     {
@@ -38,13 +38,13 @@ ia64_init_remote (unw_cursor_t *cursor, unw_accessors_t *a)
 
   c->acc = *a;
 
-  c->cfm_loc =		IA64_REG_LOC (UNW_IA64_AR_PFS);
+  c->cfm_loc =		IA64_REG_LOC (UNW_IA64_CFM);
   c->top_rnat_loc =	IA64_REG_LOC (UNW_IA64_AR_RNAT);
   c->bsp_loc =		IA64_REG_LOC (UNW_IA64_AR_BSP);
-  c->bspstore_loc =	IA64_REG_LOC (UNW_IA64_AR_BSP);
+  c->bspstore_loc =	IA64_REG_LOC (UNW_IA64_AR_BSPSTORE);
   c->pfs_loc =		IA64_REG_LOC (UNW_IA64_AR_PFS);
   c->rnat_loc =		IA64_REG_LOC (UNW_IA64_AR_RNAT);
-  c->rp_loc =		IA64_REG_LOC (UNW_IA64_BR + 0);
+  c->ip_loc =		IA64_REG_LOC (UNW_IA64_IP);
   c->pri_unat_loc =	0;	/* no primary UNaT location */
   c->unat_loc =		IA64_REG_LOC (UNW_IA64_AR_UNAT);
   c->pr_loc =		IA64_REG_LOC (UNW_IA64_PR);
@@ -74,25 +74,43 @@ ia64_init_remote (unw_cursor_t *cursor, unw_accessors_t *a)
   for (i = 16; i <= 31; ++i)
     c->fr_loc[i - 16] = IA64_FPREG_LOC (UNW_IA64_FR + i);
 
-  if (ia64_get (c, IA64_REG_LOC (UNW_IA64_SP), &c->psp) < 0)
-    return -1;
+  ret = ia64_get (c, c->pr_loc, &c->pr);
+  if (ret < 0)
+    return ret;
 
-  if (ia64_get (c, c->bsp_loc, &c->bsp) < 0)
-    return -1;
+  ret = ia64_get (c, c->ip_loc, &c->ip);
+  if (ret < 0)
+    return ret;
+
+  ret = ia64_get (c, IA64_REG_LOC (UNW_IA64_SP), &c->sp);
+  if (ret < 0)
+    return ret;
+
+  c->psp = c->sp;
+
+  ret = ia64_get (c, c->bsp_loc, &c->bsp);
+  if (ret < 0)
+    return ret;
 
   c->rbs_top = c->bsp;
   c->pi.flags = 0;
-  c->eh_args[0] = 0;
-  c->eh_args[1] = 0;
-  c->eh_args[2] = 0;
-  c->eh_args[3] = 0;
+
+  for (i = 0; i < 4; ++i)
+    {
+      ret = ia64_get (c, IA64_REG_LOC (UNW_IA64_GR + 15 + i), &c->eh_args[i]);
+      if (ret < 0)
+	{
+	  if (ret == -UNW_EBADREG)
+	    c->eh_args[i] = 0;
+	  else
+	    return ret;
+	}
+    }
 
 #ifdef IA64_UNW_SCRIPT_CACHE
   c->hint = 0;
   c->prev_script = 0;
 #endif
 
-  return ia64_get_frame_state (c);
+  return ia64_get_proc_info (c);
 }
-
-alias (ia64_init_remote, UNW_OBJ(init_remote))
