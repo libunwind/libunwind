@@ -313,6 +313,7 @@ struct ia64_labeled_state
 #define rbs_record_switch		UNW_ARCH_OBJ(rbs_record_switch)
 #define rbs_underflow			UNW_ARCH_OBJ(rbs_underflow)
 #define rbs_find_stacked		UNW_ARCH_OBJ(rbs_find_stacked)
+#define rbs_cover_and_flush		UNW_ARCH_OBJ(rbs_cover_and_flush)
 
 extern int ia64_make_proc_info (struct cursor *c);
 extern int ia64_create_state_record (struct cursor *c,
@@ -328,7 +329,7 @@ extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 extern unw_word_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
 extern void _Uia64_install_context (struct cursor *c, unw_word_t pri_unat,
-				    unw_word_t *extra, unw_word_t loadrs)
+				    unw_word_t *extra)
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
@@ -338,6 +339,7 @@ extern int rbs_record_switch (struct cursor *c,
 extern void rbs_underflow (struct cursor *c);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 			     unw_word_t *locp, unw_word_t *rnat_locp);
+extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs);
 
 static inline int
 ia64_get_stacked (struct cursor *c, unw_word_t reg,
