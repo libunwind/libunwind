@@ -46,14 +46,9 @@ sos_alloc (size_t size)
   char *mem;
 
 #ifdef HAVE_CMPXCHG
-  union {
-    long *lp;
-    char **cp;
-  } u;
   char *old_mem;
 
   size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
-  u.cp = &sos_memp;
   do
     {
       old_mem = sos_memp;
@@ -63,7 +58,7 @@ sos_alloc (size_t size)
       if (mem >= sos_memory + sizeof (sos_memory))
 	abort ();
     }
-  while (!cmpxchg_ptr (u.lp, old_mem, mem));
+  while (!cmpxchg_ptr (&sos_memp, old_mem, mem));
 #else
   static pthread_mutex_t sos_lock = PTHREAD_MUTEX_INITIALIZER;
   sigset_t saved_sigmask;
