@@ -79,6 +79,27 @@ rbs_switch (struct cursor *c,
   return 0;
 }
 
+/* Find the rbs_area which contains address ADDR.  If there is no such
+   rbs_area, return NULL. */
+
+HIDDEN struct rbs_area *
+rbs_find (struct cursor *c, unw_word_t addr)
+{
+  unw_word_t left_edge = c->rbs_left_edge;
+  unw_word_t curr = c->rbs_curr;
+
+  while (!rbs_contains (&c->rbs_area[curr], addr))
+    {
+      if (curr == left_edge)
+	{
+	  Debug (1, "could not find address %lx!\n", addr);
+	  break;
+	}
+      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
+    }
+  return c->rbs_area + curr;
+}
+
 HIDDEN int
 rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 		  ia64_loc_t *locp, ia64_loc_t *rnat_locp)
