@@ -35,7 +35,7 @@ _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
   errno = 0;
   if (write)
     {
-      debug (100, "_UPT_mem[%lx] <- %lx\n", __FUNCTION__, addr, *val);
+      debug (100, "%s: mem[%lx] <- %lx\n", __FUNCTION__, addr, *val);
       ptrace (PTRACE_POKEDATA, pid, addr, *val);
       if (errno)
 	return -UNW_EINVAL;
