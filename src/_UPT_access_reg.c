@@ -58,7 +58,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 #else
       nat_bits = ptrace (PTRACE_PEEKUSER, pid, PT_NAT_BITS, 0);
       if (errno)
-	return -UNW_EBADREG;
+	goto badreg;
 #endif
 
       if (write)
@@ -73,7 +73,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	  errno = 0;
 	  ptrace (PTRACE_POKEUSER, pid, PT_NAT_BITS, nat_bits);
 	  if (errno)
-	    return -UNW_EBADREG;
+	    goto badreg;
 #endif
 	}
       goto out;
@@ -83,7 +83,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
       {
       case UNW_IA64_GR + 0:
 	if (write)
-	  return -UNW_EBADREG;
+	  goto badreg;
 	*val = 0;
 	return 0;
 
@@ -98,7 +98,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	  errno = 0;
 	  psr = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IPSR, 0);
 	  if (errno)
-	    return -UNW_EBADREG;
+	    goto badreg;
 #endif
 	  if (write)
 	    {
@@ -111,7 +111,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	      ptrace (PTRACE_POKEUSER, pid, PT_CR_IIP, ip);
 	      ptrace (PTRACE_POKEUSER, pid, PT_CR_IPSR, psr);
 	      if (errno)
-		return -UNW_EBADREG;
+		goto badreg;
 #endif
 	    }
 	  else
@@ -122,7 +122,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	      errno = 0;
 	      ip = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IIP, 0);
 	      if (errno)
-		return -UNW_EBADREG;
+		goto badreg;
 #endif
 	      *val = ip + ((psr >> 41) & 0x3);
 	    }
@@ -146,7 +146,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	  errno = 0;
 	  cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
 	  if (errno)
-	    return -UNW_EBADREG;
+	    goto badreg;
 #endif
 	  sof = (cfm & 0x7f);
 
@@ -159,7 +159,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	      errno = 0;
 	      ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, bsp);
 	      if (errno)
-		return -UNW_EBADREG;
+		goto badreg;
 #endif
 	    }
 	  else
@@ -170,7 +170,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	      errno = 0;
 	      bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
 	      if (errno)
-		return -UNW_EBADREG;
+		goto badreg;
 #endif
 	      *val = ia64_rse_skip_regs (bsp, -sof);
 	    }
@@ -192,7 +192,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	    cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
 #endif
 	    if (errno)
-	      return -UNW_EBADREG;
+	      goto badreg;
 	    old_sof = (cfm & 0x7f);
 	    new_sof = (*val & 0x7f);
 	    if (old_sof != new_sof)
@@ -204,7 +204,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 		errno = 0;
 		ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, 0);
 		if (errno)
-		  return -UNW_EBADREG;
+		  goto badreg;
 #endif
 	      }
 #ifdef HAVE_TTRACE
@@ -213,7 +213,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	    errno = 0;
 	    ptrace (PTRACE_POKEUSER, pid, PT_CFM, *val);
 	    if (errno)
-	      return -UNW_EBADREG;
+	      goto badreg;
 #endif
 	    goto out;
 	  }
@@ -222,7 +222,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 #endif
 
   if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
-    return -UNW_EBADREG;
+    goto badreg;
 
 #ifdef HAVE_TTRACE
 #	warning No support for ttrace() yet.
@@ -233,7 +233,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   else
     *val = ptrace (PTRACE_PEEKUSER, pid, _UPT_reg_offset[reg], 0);
   if (errno)
-    return -UNW_EBADREG;
+    goto badreg;
 #endif
 
  out:
@@ -242,4 +242,8 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
     debug (100, "%s: %s -> %lx\n", __FUNCTION__, unw_regname (reg), *val);
 #endif
   return 0;
+
+ badreg:
+  debug (1, "%s: bad register number %u\n", __FUNCTION__, reg);
+  return -UNW_EBADREG;
 }
