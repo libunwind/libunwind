@@ -72,7 +72,7 @@ uc_addr (ucontext_t *uc, int reg)
 
 # ifdef UNW_LOCAL_ONLY
 
-void *
+HIDDEN void *
 tdep_uc_addr (ucontext_t *uc, int reg)
 {
   return uc_addr (uc, reg);
@@ -195,7 +195,7 @@ x86_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
   local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
-  local_addr_space.acc.find_proc_info = tdep_find_proc_info;
+  local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
   local_addr_space.acc.access_mem = access_mem;
