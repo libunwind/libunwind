@@ -48,7 +48,7 @@ _UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 
 #if UNW_TARGET_IA64
   maps_init (&mi, ui->pid);
-  while (maps_next (&mi, &lo, &hi, &off, path))
+  while (maps_next (&mi, &lo, &hi, &off, path, sizeof (path)))
     {
       if (off)
 	continue;
