@@ -190,16 +190,23 @@ struct ia64_global_unwind_state
 # endif
   };
 
+#define tdep_needs_initialization	unw.needs_initialization
+#define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
-#define tdep_search_unwind_table(a,b,c,d,e,f)			\
-		unw_search_ia64_unwind_table(a,b,c,d,e,f)
+#define tdep_search_unwind_table	unw_search_ia64_unwind_table
 #define tdep_find_proc_info		UNW_OBJ(find_proc_info)
-#define tdep_uc_addr(uc,reg)		UNW_OBJ(uc_addr)(uc, reg)
-#define tdep_get_elf_image(a,b,c,d,e)	UNW_ARCH_OBJ(get_elf_image) (a, b, c, \
-								     d, e)
+#define tdep_uc_addr			UNW_OBJ(uc_addr)
+#define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
+#define tdep_access_reg			UNW_OBJ(access_reg)
+#define tdep_access_fpreg		UNW_OBJ(access_fpreg)
+#define tdep_get_as(c)			((c)->as)
+#define tdep_get_as_arg(c)		((c)->as_arg)
+#define tdep_get_ip(c)			((c)->ip)
+#define tdep_big_endian(as)		((c)->as->big_endian != 0)
+
 #ifndef UNW_LOCAL_ONLY
-# define tdep_put_unwind_info(a,b,c) 	UNW_OBJ(put_unwind_info)(a, b, c)
+# define tdep_put_unwind_info		UNW_OBJ(put_unwind_info)
 #endif
 
 /* This can't be an UNW_ARCH_OBJ() because we need separate
@@ -208,6 +215,7 @@ struct ia64_global_unwind_state
    data structure, we couldn't declare "unw" as HIDDEN/PROTECTED.  */
 #define unw				UNW_OBJ(data)
 
+extern void tdep_init (void);
 extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				unw_proc_info_t *pi, int need_unwind_info,
 				void *arg);
@@ -216,6 +224,10 @@ extern void tdep_put_unwind_info (unw_addr_space_t as,
 extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff);
+extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
+			    unw_word_t *valp, int write);
+extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
+			      unw_fpreg_t *valp, int write);
 
 extern struct ia64_global_unwind_state unw;
 
