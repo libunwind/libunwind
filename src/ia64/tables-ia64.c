@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2003 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.  */
@@ -73,6 +73,7 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 	 unwind info => use default conventions (i.e., this is NOT an
 	 error).  */
       memset (pi, 0, sizeof (*pi));
+      pi->gp = di->gp;
       return 0;
     }
 
