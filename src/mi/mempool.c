@@ -114,7 +114,7 @@ add_memory (struct mempool *pool, char *mem, size_t size, size_t obj_size)
 {
   char *obj;
 
-  for (obj = mem; obj + obj_size <= mem + size; obj += obj_size)
+  for (obj = mem; obj <= mem + size - obj_size; obj += obj_size)
     free_object (pool, obj);
 }
 
