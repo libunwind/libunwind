@@ -28,6 +28,113 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static inline int
+linux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
+{
+#if defined(UNW_LOCAL_ONLY) && !defined(__linux)
+  return -UNW_EINVAL;
+#else
+  unw_word_t sc_addr;
+  int ret;
+
+  if ((ret = ia64_get (c, IA64_LOC_ADDR (c->sp + 0x10
+					 + LINUX_SIGFRAME_ARG2_OFF, 0),
+		       &sc_addr)) < 0)
+    return ret;
+
+  c->sigcontext_addr = sc_addr;
+
+  if (!IA64_IS_REG_LOC (c->loc[IA64_REG_IP])
+      && IA64_GET_ADDR (c->loc[IA64_REG_IP]) == sc_addr + LINUX_SC_BR_OFF + 8)
+    {
+      /* Linux kernels before 2.4.19 and 2.5.10 had buggy
+	 unwind info for sigtramp.  Fix it up here.  */
+      c->loc[IA64_REG_IP]  = IA64_LOC_ADDR (sc_addr + LINUX_SC_IP_OFF, 0);
+      c->cfm_loc = IA64_LOC_ADDR (sc_addr + LINUX_SC_CFM_OFF, 0);
+    }
+
+  /* do what can't be described by unwind directives: */
+  c->loc[IA64_REG_PFS] = IA64_LOC_ADDR (sc_addr + LINUX_SC_AR_PFS_OFF, 0);
+  *num_regsp = c->cfm & 0x7f;		/* size of frame */
+  return 0;
+#endif
+}
+
+static inline int
+hpux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
+{
+#if defined(UNW_LOCAL_ONLY) && !defined(__hpux)
+  return -UNW_EINVAL;
+#else
+  unw_word_t sc_addr, bsp, bspstore;
+  ia64_loc_t sc_loc;
+  int ret, i;
+
+  /* HP-UX passes the address of ucontext_t in r32: */
+  if ((ret = ia64_get_stacked (c, 32, &sc_loc, NULL)) < 0)
+    return ret;
+  if ((ret = ia64_get (c, sc_loc, &sc_addr)) < 0)
+    return ret;
+
+  c->sigcontext_addr = sc_addr;
+
+  /* Now mark all (preserved) registers as coming from the
+     signal context: */
+  c->cfm_loc = IA64_LOC_UC_REG (UNW_IA64_CFM, sc_addr);
+  c->loc[IA64_REG_PRI_UNAT_MEM] = IA64_NULL_LOC;
+  c->loc[IA64_REG_PSP] = IA64_LOC_UC_REG (UNW_IA64_GR + 12, sc_addr);
+  c->loc[IA64_REG_BSP] = IA64_LOC_UC_REG (UNW_IA64_AR_BSP, sc_addr);
+  c->loc[IA64_REG_BSPSTORE] = IA64_LOC_UC_REG (UNW_IA64_AR_BSPSTORE, sc_addr);
+  c->loc[IA64_REG_PFS] = IA64_LOC_UC_REG (UNW_IA64_AR_PFS, sc_addr);
+  c->loc[IA64_REG_RNAT] = IA64_LOC_UC_REG (UNW_IA64_AR_RNAT, sc_addr);
+  c->loc[IA64_REG_IP] = IA64_LOC_UC_REG (UNW_IA64_IP, sc_addr);
+  c->loc[IA64_REG_R4] = IA64_LOC_UC_REG (UNW_IA64_GR + 4, sc_addr);
+  c->loc[IA64_REG_R5] = IA64_LOC_UC_REG (UNW_IA64_GR + 5, sc_addr);
+  c->loc[IA64_REG_R6] = IA64_LOC_UC_REG (UNW_IA64_GR + 6, sc_addr);
+  c->loc[IA64_REG_R7] = IA64_LOC_UC_REG (UNW_IA64_GR + 7, sc_addr);
+  c->loc[IA64_REG_NAT4] = IA64_LOC_UC_REG (UNW_IA64_NAT + 4, sc_addr);
+  c->loc[IA64_REG_NAT5] = IA64_LOC_UC_REG (UNW_IA64_NAT + 5, sc_addr);
+  c->loc[IA64_REG_NAT6] = IA64_LOC_UC_REG (UNW_IA64_NAT + 6, sc_addr);
+  c->loc[IA64_REG_NAT7] = IA64_LOC_UC_REG (UNW_IA64_NAT + 7, sc_addr);
+  c->loc[IA64_REG_UNAT] = IA64_LOC_UC_REG (UNW_IA64_AR_UNAT, sc_addr);
+  c->loc[IA64_REG_PR] = IA64_LOC_UC_REG (UNW_IA64_PR, sc_addr);
+  c->loc[IA64_REG_LC] = IA64_LOC_UC_REG (UNW_IA64_AR_LC, sc_addr);
+  c->loc[IA64_REG_FPSR] = IA64_LOC_UC_REG (UNW_IA64_AR_FPSR, sc_addr);
+  c->loc[IA64_REG_B1] = IA64_LOC_UC_REG (UNW_IA64_BR + 1, sc_addr);
+  c->loc[IA64_REG_B2] = IA64_LOC_UC_REG (UNW_IA64_BR + 2, sc_addr);
+  c->loc[IA64_REG_B3] = IA64_LOC_UC_REG (UNW_IA64_BR + 3, sc_addr);
+  c->loc[IA64_REG_B4] = IA64_LOC_UC_REG (UNW_IA64_BR + 4, sc_addr);
+  c->loc[IA64_REG_B5] = IA64_LOC_UC_REG (UNW_IA64_BR + 5, sc_addr);
+  c->loc[IA64_REG_F2] = IA64_LOC_UC_REG (UNW_IA64_FR + 2, sc_addr);
+  c->loc[IA64_REG_F3] = IA64_LOC_UC_REG (UNW_IA64_FR + 3, sc_addr);
+  c->loc[IA64_REG_F4] = IA64_LOC_UC_REG (UNW_IA64_FR + 4, sc_addr);
+  c->loc[IA64_REG_F5] = IA64_LOC_UC_REG (UNW_IA64_FR + 5, sc_addr);
+  for (i = 0; i < 16; ++i)
+    c->loc[IA64_REG_F16 + i] = IA64_LOC_UC_REG (UNW_IA64_FR + 16 + i, sc_addr);
+
+  c->pi.flags |= UNW_PI_FLAG_IA64_RBS_SWITCH;
+
+  /* update the CFM cache: */
+  if ((ret = ia64_get (c, c->cfm_loc, &c->cfm)) < 0)
+    return ret;
+  /* update the PSP cache: */
+  if ((ret = ia64_get (c, c->loc[IA64_REG_PSP], &c->psp)) < 0)
+    return ret;
+
+  if ((ret = ia64_get (c, c->loc[IA64_REG_BSP], &bsp)) < 0
+      || (ret = ia64_get (c, c->loc[IA64_REG_BSPSTORE], &bspstore)) < 0)
+    return ret;
+  if (bspstore < bsp)
+    /* Dirty partition got spilled into the ucontext_t structure
+       itself.  We'll need to access it via uc_access(3).  */
+    rbs_switch (c, bsp, bspstore, IA64_LOC_UC_ADDR (bsp | 0x1f8, 0));
+
+   *num_regsp = 0;
+  return 0;
+#endif
+}
+
+
+static inline int
 check_rbs_switch (struct cursor *c)
 {
   unw_word_t saved_bsp, saved_bspstore, loadrs, ndirty;
@@ -112,57 +219,21 @@ update_frame_state (struct cursor *c)
     return ret;
 
   num_regs = 0;
-  if (c->abi_marker)
+  if (unlikely (c->abi_marker))
     {
       switch (c->abi_marker)
 	{
-#if !defined(UNW_LOCAL_ONLY) || defined(__linux)
 	case ABI_MARKER_LINUX_SIGTRAMP:
-	  if ((ret = ia64_get (c, IA64_LOC_ADDR (c->sp + 0x10
-						 + LINUX_SIGFRAME_ARG2_OFF, 0),
-			       &c->sigcontext_addr)) < 0)
+	  c->as->abi = ABI_LINUX;
+	  if ((ret = linux_sigtramp (c, &num_regs)) < 0)
 	    return ret;
-
-	  if (!IA64_IS_REG_LOC (c->loc[IA64_REG_IP])
-	      && (IA64_GET_ADDR (c->loc[IA64_REG_IP])
-		  == c->sigcontext_addr + LINUX_SC_BR_OFF + 0*8))
-	    {
-	      /* Linux kernels before 2.4.19 and 2.5.10 had buggy
-		 unwind info for sigtramp.  Fix it up here.  */
-	      c->loc[IA64_REG_IP]  = IA64_LOC_ADDR (c->sigcontext_addr
-						    + LINUX_SC_IP_OFF, 0);
-	      c->cfm_loc = IA64_LOC_ADDR (c->sigcontext_addr
-					  + LINUX_SC_CFM_OFF, 0);
-	      /* update the IP cache: */
-	      if ((ret = ia64_get (c, c->loc[IA64_REG_IP], &ip)) < 0)
-		return ret;
-	      c->ip = ip;
-	      if (ip == 0)
-		/* end of frame-chain reached */
-		return 0;
-	      /* update the CFM cache: */
-	      if ((ret = ia64_get (c, c->cfm_loc, &c->cfm)) < 0)
-		return ret;
-	    }
-
-	  /* do what can't be described by unwind directives: */
-	  c->loc[IA64_REG_PFS] = IA64_LOC_ADDR (c->sigcontext_addr
-						+ LINUX_SC_AR_PFS_OFF, 0);
 	  break;
-#endif
 
-#if !defined(UNW_LOCAL_ONLY) || defined(__hpux)
 	case ABI_MARKER_HP_UX_SIGTRAMP:
-	  {
-	    ia64_loc_t sc_loc;
-
-	    /* HP-UX passes the address of ucontext_t in r32: */
-	    if ((ret = ia64_get_stacked (c, 32, &sc_loc, NULL)) < 0)
-	      return ret;
-	    c->sigcontext_addr = IA64_GET_ADDR (sc_loc);
-	  }
+	  c->as->abi = ABI_HPUX;
+	  if ((ret = hpux_sigtramp (c, &num_regs)) < 0)
+	    return ret;
 	  break;
-#endif
 
 	default:
 	  debug (1, "%s: unknown ABI marker: ABI=%u, context=%u\n",
@@ -173,7 +244,14 @@ update_frame_state (struct cursor *c)
 	     __FUNCTION__, c->sigcontext_addr, ret);
 
       c->sigcontext_off = c->sigcontext_addr - c->sp;
-      num_regs = c->cfm & 0x7f;		/* size of frame */
+
+      /* update the IP cache: */
+      if ((ret = ia64_get (c, c->loc[IA64_REG_IP], &ip)) < 0)
+ 	return ret;
+      c->ip = ip;
+      if (ip == 0)
+	/* end of frame-chain reached */
+	return 0;
     }
   else
     num_regs = (c->cfm >> 7) & 0x7f;	/* size of locals */
