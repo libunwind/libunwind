@@ -75,4 +75,7 @@ ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
 AC_SUBST(arch)
 AC_SUBST(ARCH)
-AC_OUTPUT(Makefile src/Makefile tests/Makefile doc/Makefile)
+
+AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile
+		doc/Makefile doc/common.tex)
+AC_OUTPUT
