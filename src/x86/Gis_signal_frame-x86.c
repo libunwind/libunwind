@@ -53,8 +53,8 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   if ((ret = (*a->access_mem) (c->as, c->eip, &w0, 0, c->as_arg)) < 0
       || (ret = (*a->access_mem) (c->as, c->eip + 4, &w1, 0, c->as_arg)) < 0)
     return ret;
-  return (w0 == 0x0077b858) && (w1 == 0x80cd0000)
-         || (w0 == 0x0000adb8) && (w1 == 0x9080cd00);
+  return (w0 == 0x0077b858 && w1 == 0x80cd0000)
+	  || (w0 == 0x0000adb8 && w1 == 0x9080cd00);
 #else
   printf ("%s: implement me\n", __FUNCTION__);
 #endif
