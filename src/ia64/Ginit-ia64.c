@@ -290,9 +290,6 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   unw_word_t *addr, mask;
   ucontext_t *uc = arg;
 
-  if (reg >= UNW_IA64_FR && reg < UNW_IA64_FR + 128)
-    goto badreg;
-
   if (reg >= UNW_IA64_NAT + 4 && reg <= UNW_IA64_NAT + 7)
     {
       mask = ((unw_word_t) 1) << (reg - UNW_IA64_NAT);
@@ -319,7 +316,12 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
   if (write)
     {
-      *(unw_word_t *) addr = *val;
+      if (ia64_read_only_reg (addr))
+	{
+	  Debug (16, "attempt to write read-only register\n");
+	  return -UNW_EREADONLYREG;
+	}
+      *addr = *val;
       Debug (12, "%s <- %lx\n", unw_regname (reg), *val);
     }
   else
@@ -350,9 +352,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
   if (write)
     {
+      if (ia64_read_only_reg (addr))
+	{
+	  Debug (16, "attempt to write read-only register\n");
+	  return -UNW_EREADONLYREG;
+	}
+      *addr = *val;
       Debug (12, "%s <- %016lx.%016lx\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
-      *(unw_fpreg_t *) addr = *val;
     }
   else
     {
