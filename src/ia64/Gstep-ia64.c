@@ -110,7 +110,17 @@ update_frame_state (struct cursor *c)
   num_regs = 0;
   if (c->is_signal_frame)
     {
+      /* Caveat: #ifdef __hpux is wrong here.  The code below is just
+         a placeholder until HP-UX is fully supported.  Once this gets
+         fixed, we need to check the unwind cursor to see if the
+         target is running HP-UX or Linux.  We can infer that from the
+         .unwabi directive associated with a signal trampoline.  */
+#ifdef __hpux
+      /* HP-UX passes the address of ucontext_t in r32: */
+      ret = ia64_get_stacked (c, 32, &c->sigcontext_loc, NULL);
+#else
       ret = ia64_get (c, c->sp + 0x10 + SIGFRAME_ARG2_OFF, &c->sigcontext_loc);
+#endif
       debug (100, "%s: sigcontext_loc=%lx (ret=%d)\n",
 	     __FUNCTION__, c->sigcontext_loc, ret);
       if (ret < 0)
