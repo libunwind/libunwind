@@ -23,8 +23,9 @@ rotate_gr (struct cursor *c, int reg)
       if (preg > 32 + (int) sor)
 	preg -= sor;		/* wrap around */
     }
-  debug (100, "%s: sor=%u rrb.gr=%u, r%d -> r%d\n",
-	 __FUNCTION__, sor, rrb_gr, reg, preg);
+  if (sor)
+    debug (100, "%s: sor=%u rrb.gr=%u, r%d -> r%d\n",
+	   __FUNCTION__, sor, rrb_gr, reg, preg);
   return preg;
 }
 
@@ -46,7 +47,9 @@ rotate_fr (struct cursor *c, int reg)
       if (preg > 127)
 	preg -= 96;		/* wrap around */
     }
-  debug (100, "%s: rrb.fr=%u, f%d -> f%d\n", __FUNCTION__, rrb_fr, reg, preg);
+  if (rrb_fr)
+    debug (100, "%s: rrb.fr=%u, f%d -> f%d\n",
+	   __FUNCTION__, rrb_fr, reg, preg);
   return preg;
 }
 
