@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
+   Copyright (C) 2002-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -184,11 +184,11 @@ unw_dyn_info_list_t;
 
 /* Register the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
-extern void _U_dyn_register (unw_dyn_info_t *di);
+extern void _U_dyn_register (unw_dyn_info_t *);
 
 /* Cancel the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
-extern void _U_dyn_cancel (unw_dyn_info_t *di);
+extern void _U_dyn_cancel (unw_dyn_info_t *);
 
 
 /* Convenience routines.  */
