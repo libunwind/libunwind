@@ -20,7 +20,7 @@ rotate_gr (struct cursor *c, int reg)
 	preg -= sor;		/* wrap around */
     }
   if (sor)
-    Debug (16, "sor=%u rrb.gr=%u, r%d -> r%d\n", sor, rrb_gr, reg, preg);
+    Debug (15, "sor=%u rrb.gr=%u, r%d -> r%d\n", sor, rrb_gr, reg, preg);
   return preg;
 }
 
@@ -43,7 +43,7 @@ rotate_fr (struct cursor *c, int reg)
 	preg -= 96;		/* wrap around */
     }
   if (rrb_fr)
-    Debug (16, "rrb.fr=%u, f%d -> f%d\n", rrb_fr, reg, preg);
+    Debug (15, "rrb.fr=%u, f%d -> f%d\n", rrb_fr, reg, preg);
   return preg;
 }
 
