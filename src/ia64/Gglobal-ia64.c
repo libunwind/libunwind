@@ -49,7 +49,7 @@ HIDDEN struct ia64_global_unwind_state unw =
 };
 
 HIDDEN void
-ia64_init (void)
+tdep_init (void)
 {
   extern void unw_hash_index_t_is_too_narrow (void);
   uint8_t f1_bytes[16] = {
@@ -73,7 +73,7 @@ ia64_init (void)
   sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
   mutex_lock (&unw.lock);
   {
-    if (!unw.needs_initialization)
+    if (!tdep_needs_initialization)
       /* another thread else beat us to it... */
       goto out;
 
@@ -117,7 +117,7 @@ ia64_init (void)
 #ifndef UNW_REMOTE_ONLY
     ia64_local_addr_space_init ();
 #endif
-    unw.needs_initialization = 0;	/* signal that we're initialized... */
+    tdep_needs_initialization = 0;	/* signal that we're initialized... */
   }
  out:
   mutex_unlock (&unw.lock);
