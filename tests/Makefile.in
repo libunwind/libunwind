@@ -111,11 +111,11 @@ check_SCRIPTS_common =
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
 @REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = 
 @REMOTE_ONLY_TRUE@check_PROGRAMS_cdep = 
-@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-init Ltest-init	\
-@REMOTE_ONLY_FALSE@			Gtest-concurrent Ltest-concurrent		\
-@REMOTE_ONLY_FALSE@			Gtest-resume-sig Ltest-resume-sig		\
-@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1				\
-@REMOTE_ONLY_FALSE@			test-flush-cache test-setjmp test-ptrace
+@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-init Ltest-init	  \
+@REMOTE_ONLY_FALSE@			Gtest-concurrent Ltest-concurrent		  \
+@REMOTE_ONLY_FALSE@			Gtest-resume-sig Ltest-resume-sig		  \
+@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1				  \
+@REMOTE_ONLY_FALSE@			test-flush-cache test-mem test-setjmp test-ptrace
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 @REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = bt test-varargs Gperf-simple Lperf-simple
@@ -177,6 +177,7 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Gtest-dyn1$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	Ltest-dyn1$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-flush-cache$(EXEEXT) \
+@ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-mem$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-setjmp$(EXEEXT) \
 @ARCH_IA64_FALSE@@REMOTE_ONLY_FALSE@	test-ptrace$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_TRUE@check_PROGRAMS = \
@@ -194,6 +195,7 @@ CONFIG_CLEAN_FILES =
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gtest-dyn1$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Ltest-dyn1$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-flush-cache$(EXEEXT) \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-mem$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-setjmp$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	test-ptrace$(EXEEXT) \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-stack$(EXEEXT) \
@@ -317,6 +319,11 @@ test_flush_cache_OBJECTS = test-flush-cache.$(OBJEXT)
 test_flush_cache_LDADD = $(LDADD)
 test_flush_cache_DEPENDENCIES = ../src/libunwind-$(arch).la
 test_flush_cache_LDFLAGS =
+test_mem_SOURCES = test-mem.c
+test_mem_OBJECTS = test-mem.$(OBJEXT)
+test_mem_LDADD = $(LDADD)
+test_mem_DEPENDENCIES = ../src/libunwind-$(arch).la
+test_mem_LDFLAGS =
 test_proc_info_SOURCES = test-proc-info.c
 test_proc_info_OBJECTS = test-proc-info.$(OBJEXT)
 test_proc_info_LDADD = $(LDADD)
@@ -361,6 +368,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/ia64-test-dyn1.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/ia64-test-sig.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-flush-cache.Po \
+@AMDEP_TRUE@	./$(DEPDIR)/test-mem.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-proc-info.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-ptrace.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/test-setjmp.Po \
@@ -392,9 +400,10 @@ DIST_SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) \
 	Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) \
 	Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c \
 	$(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-flush-cache.c \
-	test-proc-info.c test-ptrace.c test-setjmp.c test-varargs.c
+	test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c \
+	test-varargs.c
 DIST_COMMON = Makefile.am Makefile.in
-SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-flush-cache.c test-proc-info.c test-ptrace.c test-setjmp.c test-varargs.c
+SOURCES = $(Gia64_test_rbs_SOURCES) $(Gia64_test_stack_SOURCES) Gperf-simple.c Gtest-concurrent.c $(Gtest_dyn1_SOURCES) Gtest-exc.c $(Gtest_init_SOURCES) Gtest-resume-sig.c $(Lia64_test_rbs_SOURCES) $(Lia64_test_stack_SOURCES) Lperf-simple.c Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c $(Ltest_init_SOURCES) Ltest-resume-sig.c bt.c $(ia64_test_dyn1_SOURCES) ia64-test-sig.c test-flush-cache.c test-mem.c test-proc-info.c test-ptrace.c test-setjmp.c test-varargs.c
 
 all: all-am
 
@@ -479,6 +488,9 @@ ia64-test-sig$(EXEEXT): $(ia64_test_sig_OBJECTS) $(ia64_test_sig_DEPENDENCIES)
 test-flush-cache$(EXEEXT): $(test_flush_cache_OBJECTS) $(test_flush_cache_DEPENDENCIES) 
 	@rm -f test-flush-cache$(EXEEXT)
 	$(LINK) $(test_flush_cache_LDFLAGS) $(test_flush_cache_OBJECTS) $(test_flush_cache_LDADD) $(LIBS)
+test-mem$(EXEEXT): $(test_mem_OBJECTS) $(test_mem_DEPENDENCIES) 
+	@rm -f test-mem$(EXEEXT)
+	$(LINK) $(test_mem_LDFLAGS) $(test_mem_OBJECTS) $(test_mem_LDADD) $(LIBS)
 test-proc-info$(EXEEXT): $(test_proc_info_OBJECTS) $(test_proc_info_DEPENDENCIES) 
 	@rm -f test-proc-info$(EXEEXT)
 	$(LINK) $(test_proc_info_LDFLAGS) $(test_proc_info_OBJECTS) $(test_proc_info_LDADD) $(LIBS)
@@ -518,6 +530,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-dyn1.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-flush-cache.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-mem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-proc-info.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-ptrace.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-setjmp.Po@am__quote@
