@@ -8,10 +8,6 @@
 
 #include <sys/mman.h>
 
-#ifdef HAVE_IA64INTRIN_H
-# include <ia64intrin.h>
-#endif
-
 int verbose;
 
 #ifdef __ia64__
