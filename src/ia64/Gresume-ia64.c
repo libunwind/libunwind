@@ -34,6 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
+#ifndef __hpux
   unw_word_t val, sol, sof, pri_unat, n, pfs;
   struct cursor *c = (struct cursor *) cursor;
   struct
@@ -137,6 +138,9 @@ local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       extra.r18 = c->eh_args[3];
     }
   _Uia64_install_context (c, pri_unat, (unw_word_t *) &extra);
+#else
+  return -UNW_EINVAL;
+#endif
 }
 
 HIDDEN int
@@ -152,6 +156,7 @@ ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 static inline int
 remote_install_cursor (struct cursor *c)
 {
+#ifndef __hpux
   int (*access_reg) (unw_addr_space_t, unw_regnum_t, unw_word_t *,
 		     int write, void *);
   int (*access_fpreg) (unw_addr_space_t, unw_regnum_t, unw_fpreg_t *,
@@ -227,6 +232,7 @@ remote_install_cursor (struct cursor *c)
 	}
     }
   return (*c->as->acc.resume) (c->as, (unw_cursor_t *) c, c->as_arg);
+#endif
 }
 
 #endif
