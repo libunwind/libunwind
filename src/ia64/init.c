@@ -21,6 +21,8 @@ This exception does not however invalidate any other reasons why the
 executable file might be covered by the GNU General Public
 License.  */
 
+#include <stdlib.h>
+
 #include "unwind_i.h"
 
 struct ia64_global_unwind_state unw =
@@ -114,6 +116,15 @@ ia64_init (void)
   };
   uint8_t *lep, *bep;
   long i;
+
+#if IA64_UNW_DEBUG
+  {
+    const char *str = getenv ("UNW_DEBUG_LEVEL");
+
+    if (str)
+      unw.debug_level = atoi (str);
+  }
+#endif
 
   unw.f0.raw.bits[0] = 0;
   unw.f0.raw.bits[1] = 0;
