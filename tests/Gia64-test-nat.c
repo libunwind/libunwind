@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind.h>
 
+//#define NUM_RUNS		1024
 #define NUM_RUNS		1
 //#define MAX_CHECKS		1024
 #define MAX_CHECKS		2
@@ -49,6 +50,9 @@ typedef unw_word_t *check_func_t (unw_cursor_t *c, unsigned long *vals);
 extern save_func_t save_static_to_stacked;
 static check_func_t check_static_to_stacked;
 
+extern save_func_t save_static_to_fpreg;
+static check_func_t check_static_to_fpreg;
+
 static int verbose;
 static int nerrors;
 
@@ -64,7 +68,8 @@ static struct
   }
 all_funcs[] =
   {
-    { save_static_to_stacked, check_static_to_stacked }
+    //    { save_static_to_stacked,	check_static_to_stacked },
+    { save_static_to_fpreg,	check_static_to_fpreg }
   };
 
 static unw_word_t *
@@ -75,7 +80,7 @@ check_static_to_stacked (unw_cursor_t *c, unw_word_t *vals)
   int i, ret;
 
   if (verbose)
-    printf ("%s()\n", __FUNCTION__);
+    printf ("  %s()\n", __FUNCTION__);
 
   vals -= 4;
 
@@ -92,7 +97,7 @@ check_static_to_stacked (unw_cursor_t *c, unw_word_t *vals)
   for (i = 0; i < 4; ++i)
     {
       if (verbose)
-	printf ("  r%d = %c%016lx (expected %c%016lx)\n",
+	printf ("    r%d = %c%016lx (expected %c%016lx)\n",
 		4 + i, nat[i] ? '*' : ' ', r[i],
 		(vals[i] & 1) ? '*' : ' ', vals[i]);
 
@@ -109,6 +114,43 @@ check_static_to_stacked (unw_cursor_t *c, unw_word_t *vals)
 	    panic ("%s: r%d=%lx instead of %lx!\n",
 		   __FUNCTION__, 4 + i, r[i], vals[i]);
 	}
+    }
+  return vals;
+}
+
+static unw_word_t *
+check_static_to_fpreg (unw_cursor_t *c, unw_word_t *vals)
+{
+  unw_word_t r4;
+  unw_word_t nat4;
+  int ret;
+
+  if (verbose)
+    printf ("  %s()\n", __FUNCTION__);
+
+  vals -= 1;
+
+  if ((ret = unw_get_reg (c, UNW_IA64_GR + 4, &r4)) < 0)
+    panic ("%s: failed to read register r4, error=%d", __FUNCTION__, ret);
+
+  if ((ret = unw_get_reg (c, UNW_IA64_NAT + 4, &nat4)) < 0)
+    panic ("%s: failed to read register nat4, error=%d", __FUNCTION__, ret);
+
+  if (verbose)
+    printf ("    r4 = %c%016lx (expected %c%016lx)\n",
+	    nat4 ? '*' : ' ', r4, (vals[0] & 1) ? '*' : ' ', vals[0]);
+
+  if (vals[0] & 1)
+    {
+      if (!nat4)
+	panic ("%s: r4 not a NaT!\n", __FUNCTION__);
+    }
+  else
+    {
+      if (nat4)
+	panic ("%s: r4 a NaT!\n", __FUNCTION__);
+      if (r4 != vals[0])
+	panic ("%s: r4=%lx instead of %lx!\n", __FUNCTION__, r4, vals[0]);
     }
   return vals;
 }
@@ -156,7 +198,6 @@ run_check (int test)
 
   funcs[num_checks] = start_checks;
 
-printf("starting at funcs[0]=%p\n", funcs[0]);
   (*funcs[0]) (funcs + 1, values);
 }
 
@@ -169,7 +210,11 @@ main (int argc, char **argv)
     verbose = 1;
 
   for (i = 0; i < NUM_RUNS; ++i)
-    run_check (i + 1);
+    {
+      if (verbose)
+	printf ("Run %d", i + 1);
+      run_check (i + 1);
+    }
 
   if (nerrors > 0)
     {
