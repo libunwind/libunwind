@@ -39,14 +39,14 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	elf64.c elf64.h							      \
-	ia64/_Uia64_install_context.S					      \
-	ia64/global-ia64.c ia64/global-asm-ia64.S ia64/rbs-ia64.c	      \
+	ia64/_Uia64_install_cursor.S					      \
+	ia64/global-ia64.c ia64/global-asm-ia64.S			      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
 									      \
 	ia64/Ginit-ia64.c ia64/Gparser-ia64.c ia64/Gregs-ia64.c		      \
-	ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c		      \
+	ia64/Grbs-ia64.c ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c   \
 	ia64/Gdestroy_addr_space-ia64.c					      \
 	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c		      \
 	ia64/Gget_reg-ia64.c ia64/Gget_fpreg-ia64.c ia64/Gget_save_loc-ia64.c \
@@ -55,7 +55,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c ia64/Gstep-ia64.c    \
 									      \
 	ia64/Linit-ia64.c ia64/Lparser-ia64.c ia64/Lregs-ia64.c		      \
-	ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c		      \
+	ia64/Lrbs-ia64.c ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c   \
 	ia64/Ldestroy_addr_space-ia64.c					      \
 	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c		      \
 	ia64/Lget_reg-ia64.c ia64/Lget_fpreg-ia64.c ia64/Lget_save_loc-ia64.c \
