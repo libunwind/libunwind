@@ -35,7 +35,7 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 {
 #if !defined(UNW_LOCAL_ONLY) || defined(__linux)
   unw_word_t addr = c->sigcontext_addr, flags, tmp_addr;
-  int i, ret;
+  int i;
 
   switch (c->last_abi_marker)
     {
@@ -58,8 +58,8 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 	  return IA64_LOC_ADDR (addr, IA64_LOC_TYPE_FP);
 
 	case UNW_IA64_FR + 32 ... UNW_IA64_FR + 127:
-	  if ((ret = ia64_get (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF, 0),
-			       &flags)) < 0)
+	  if (ia64_get (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF, 0),
+			&flags) < 0)
 	    return IA64_NULL_LOC;
 
 	  if (!(flags & IA64_SC_FLAG_FPH_VALID))
@@ -67,13 +67,11 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
 	      /* initialize fph partition: */
 	      tmp_addr = addr + LINUX_SC_FR_OFF + 32*16;
 	      for (i = 32; i < 128; ++i, tmp_addr += 16)
-		if ((ret = ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0), unw.f0))
-		    < 0)
+		if (ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0), unw.f0) < 0)
 		  return IA64_NULL_LOC;
 	      /* mark fph partition as valid: */
-	      if ((ret = ia64_put (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF,
-						     0),
-				   flags | IA64_SC_FLAG_FPH_VALID)) < 0)
+	      if (ia64_put (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF, 0),
+			    flags | IA64_SC_FLAG_FPH_VALID) < 0)
 		return IA64_NULL_LOC;
 	    }
 
