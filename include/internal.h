@@ -95,34 +95,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define UNW_DEBUG	0
 #endif
 
-#if UNW_DEBUG
-# include <stdio.h>
-# define debug(level,format...)					\
-do {								\
-  if (tdep_debug_level > level) fprintf (stderr, format);	\
-} while (0)
-# define Debug(level,format...)						\
-do {									\
-  if (tdep_debug_level > level)						\
-    {									\
-      int _n = level;							\
-      if (_n > 16)							\
-	_n = 16;							\
-      fprintf (stderr, "%*c>%s: ", _n, ' ', __FUNCTION__);		\
-      fprintf (stderr, format);						\
-    }									\
-} while (0)
-# define dprintf(format...) \
-    fprintf (stderr, format)
-# ifdef __GNUC__
-#  undef inline
-#  define inline	UNUSED
-# endif
-#else
-# define debug(level,format...)
-# define dprintf(format...)
-#endif
-
 #define NELEMS(a)	(sizeof (a) / sizeof ((a)[0]))
 
 /* Make it easy to write thread-safe code which may or may not be
@@ -239,6 +211,37 @@ extern int UNWI_OBJ(get_proc_name) (unw_addr_space_t as, unw_word_t ip,
 
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
+
+#if UNW_DEBUG
+#define unwi_debug_level		UNWI_ARCH_OBJ(debug_level)
+extern long unwi_debug_level;
+
+# include <stdio.h>
+# define debug(level,format...)					\
+do {								\
+  if (unwi_debug_level > level) fprintf (stderr, format);	\
+} while (0)
+# define Debug(level,format...)						\
+do {									\
+  if (unwi_debug_level > level)						\
+    {									\
+      int _n = level;							\
+      if (_n > 16)							\
+	_n = 16;							\
+      fprintf (stderr, "%*c>%s: ", _n, ' ', __FUNCTION__);		\
+      fprintf (stderr, format);						\
+    }									\
+} while (0)
+# define dprintf(format...) \
+    fprintf (stderr, format)
+# ifdef __GNUC__
+#  undef inline
+#  define inline	UNUSED
+# endif
+#else
+# define debug(level,format...)
+# define dprintf(format...)
+#endif
 
 #define WSIZE	(sizeof (unw_word_t))
 
