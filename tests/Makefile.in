@@ -52,8 +52,8 @@ am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = check-namespace.sh
-am__EXEEXT_1 = test-init-remote$(EXEEXT) test-proc-info$(EXEEXT) \
-	test-static-link$(EXEEXT) test-strerror$(EXEEXT)
+am__EXEEXT_1 = test-proc-info$(EXEEXT) test-static-link$(EXEEXT) \
+	test-strerror$(EXEEXT)
 @REMOTE_ONLY_FALSE@am__EXEEXT_2 = Gtest-exc$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Ltest-exc$(EXEEXT) Gtest-init$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Ltest-init$(EXEEXT) \
@@ -63,7 +63,8 @@ am__EXEEXT_1 = test-init-remote$(EXEEXT) test-proc-info$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Ltest-resume-sig$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Gtest-dyn1$(EXEEXT) Ltest-dyn1$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	test-async-sig$(EXEEXT) \
-@REMOTE_ONLY_FALSE@	test-flush-cache$(EXEEXT) test-mem$(EXEEXT) \
+@REMOTE_ONLY_FALSE@	test-flush-cache$(EXEEXT) \
+@REMOTE_ONLY_FALSE@	test-init-remote$(EXEEXT) test-mem$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	test-setjmp$(EXEEXT) test-ptrace$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_3 =  \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	Gia64-test-stack$(EXEEXT) \
@@ -289,6 +290,8 @@ ARCH_HPPA_FALSE = @ARCH_HPPA_FALSE@
 ARCH_HPPA_TRUE = @ARCH_HPPA_TRUE@
 ARCH_IA64_FALSE = @ARCH_IA64_FALSE@
 ARCH_IA64_TRUE = @ARCH_IA64_TRUE@
+ARCH_X86_64_FALSE = @ARCH_X86_64_FALSE@
+ARCH_X86_64_TRUE = @ARCH_X86_64_TRUE@
 ARCH_X86_FALSE = @ARCH_X86_FALSE@
 ARCH_X86_TRUE = @ARCH_X86_TRUE@
 AUTOCONF = @AUTOCONF@
@@ -405,18 +408,18 @@ EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper		\
 		run-check-namespace check-namespace.sh.in
 
 noinst_PROGRAMS_common = 
-check_PROGRAMS_common = test-init-remote test-proc-info test-static-link \
+check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
 
 check_SCRIPTS_common = run-check-namespace
 @REMOTE_ONLY_FALSE@check_SCRIPTS_cdep = run-ptrace-mapper
 @REMOTE_ONLY_TRUE@check_SCRIPTS_cdep = 
-@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-init Ltest-init	\
-@REMOTE_ONLY_FALSE@			Gtest-concurrent Ltest-concurrent		\
-@REMOTE_ONLY_FALSE@			Gtest-resume-sig Ltest-resume-sig		\
-@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1				\
-@REMOTE_ONLY_FALSE@			test-async-sig test-flush-cache test-mem	\
-@REMOTE_ONLY_FALSE@			test-setjmp test-ptrace
+@REMOTE_ONLY_FALSE@check_PROGRAMS_cdep = Gtest-exc Ltest-exc Gtest-init Ltest-init	  \
+@REMOTE_ONLY_FALSE@			Gtest-concurrent Ltest-concurrent		  \
+@REMOTE_ONLY_FALSE@			Gtest-resume-sig Ltest-resume-sig		  \
+@REMOTE_ONLY_FALSE@			Gtest-dyn1 Ltest-dyn1				  \
+@REMOTE_ONLY_FALSE@			test-async-sig test-flush-cache test-init-remote  \
+@REMOTE_ONLY_FALSE@			test-mem test-setjmp test-ptrace
 
 @REMOTE_ONLY_TRUE@check_PROGRAMS_cdep = 
 @REMOTE_ONLY_FALSE@noinst_PROGRAMS_cdep = bt forker mapper test-varargs Gperf-simple Lperf-simple

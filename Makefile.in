@@ -63,11 +63,11 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	install-recursive installcheck-recursive installdirs-recursive \
 	pdf-recursive ps-recursive uninstall-info-recursive \
 	uninstall-recursive
-am__include_HEADERS_DIST = include/libunwind-x86.h \
-	include/libunwind-hppa.h include/libunwind-ia64.h \
-	include/libunwind-common.h include/libunwind-dynamic.h \
-	include/libunwind-ptrace.h include/libunwind.h \
-	include/unwind.h
+am__include_HEADERS_DIST = include/libunwind-x86_64.h \
+	include/libunwind-x86.h include/libunwind-hppa.h \
+	include/libunwind-ia64.h include/libunwind-common.h \
+	include/libunwind-dynamic.h include/libunwind-ptrace.h \
+	include/libunwind.h include/unwind.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
 am__vpath_adj = case $$p in \
     $(srcdir)/*) f=`echo "$$p" | sed "s|^$$srcdirstrip/||"`;; \
@@ -101,6 +101,8 @@ ARCH_HPPA_FALSE = @ARCH_HPPA_FALSE@
 ARCH_HPPA_TRUE = @ARCH_HPPA_TRUE@
 ARCH_IA64_FALSE = @ARCH_IA64_FALSE@
 ARCH_IA64_TRUE = @ARCH_IA64_TRUE@
+ARCH_X86_64_FALSE = @ARCH_X86_64_FALSE@
+ARCH_X86_64_TRUE = @ARCH_X86_64_TRUE@
 ARCH_X86_FALSE = @ARCH_X86_FALSE@
 ARCH_X86_TRUE = @ARCH_X86_TRUE@
 AUTOCONF = @AUTOCONF@
@@ -212,6 +214,7 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
+@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-x86_64.h
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@include_HEADERS_tdep = include/libunwind-x86.h
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@include_HEADERS_tdep = include/libunwind-hppa.h
 @ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
@@ -230,7 +233,10 @@ EXTRA_DIST = include/dwarf.h include/dwarf_i.h				\
 	include/ia64/script.h						\
 	include/libunwind-hppa.h include/tdep-hppa.h			\
 	include/libunwind-x86.h include/tdep-x86.h			\
-	include/x86/dwarf-config.h
+	include/x86/dwarf-config.h					\
+	include/libunwind-x86_64.h include/tdep-x86_64.h		\
+	include/x86/dwarf-config.h					\
+	include/x86_64/dwarf-config.h
 
 DISTCLEANFILES = include/libunwind.h include/tdep.h
 all: all-recursive
@@ -437,7 +443,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/config $(distdir)/doc $(distdir)/include $(distdir)/include/ia64 $(distdir)/include/x86 $(distdir)/tests
+	$(mkdir_p) $(distdir)/config $(distdir)/doc $(distdir)/include $(distdir)/include/ia64 $(distdir)/include/x86 $(distdir)/include/x86_64 $(distdir)/tests
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
