@@ -139,14 +139,14 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		      \
 									      \
 	elf64.c elf64.h							      \
-	ia64/_Uia64_install_context.S					      \
-	ia64/global-ia64.c ia64/global-asm-ia64.S ia64/rbs-ia64.c	      \
+	ia64/_Uia64_install_cursor.S					      \
+	ia64/global-ia64.c ia64/global-asm-ia64.S			      \
 	ia64/tables-ia64.c ia64/get_accessors-ia64.c			      \
 	ia64/flush_cache-ia64.c ia64/set_caching_policy-ia64.c		      \
 	ia64/regname-ia64.c						      \
 									      \
 	ia64/Ginit-ia64.c ia64/Gparser-ia64.c ia64/Gregs-ia64.c		      \
-	ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c		      \
+	ia64/Grbs-ia64.c ia64/Gscript-ia64.c ia64/Gcreate_addr_space-ia64.c   \
 	ia64/Gdestroy_addr_space-ia64.c					      \
 	ia64/Gget_proc_info-ia64.c ia64/Gget_proc_name-ia64.c		      \
 	ia64/Gget_reg-ia64.c ia64/Gget_fpreg-ia64.c ia64/Gget_save_loc-ia64.c \
@@ -155,7 +155,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_common)		      \
 	ia64/Ginit_local-ia64.c ia64/Ginit_remote-ia64.c ia64/Gstep-ia64.c    \
 									      \
 	ia64/Linit-ia64.c ia64/Lparser-ia64.c ia64/Lregs-ia64.c		      \
-	ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c		      \
+	ia64/Lrbs-ia64.c ia64/Lscript-ia64.c ia64/Lcreate_addr_space-ia64.c   \
 	ia64/Ldestroy_addr_space-ia64.c					      \
 	ia64/Lget_proc_info-ia64.c ia64/Lget_proc_name-ia64.c		      \
 	ia64/Lget_reg-ia64.c ia64/Lget_fpreg-ia64.c ia64/Lget_save_loc-ia64.c \
@@ -289,18 +289,18 @@ am__objects_8 = $(am__objects_7) flush_cache-hppa.lo \
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@	$(am__objects_8)
 libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 libunwind_ia64_la_LIBADD =
-am__objects_9 = $(am__objects_7) elf64.lo _Uia64_install_context.lo \
-	global-ia64.lo global-asm-ia64.lo rbs-ia64.lo tables-ia64.lo \
+am__objects_9 = $(am__objects_7) elf64.lo _Uia64_install_cursor.lo \
+	global-ia64.lo global-asm-ia64.lo tables-ia64.lo \
 	get_accessors-ia64.lo flush_cache-ia64.lo \
 	set_caching_policy-ia64.lo regname-ia64.lo Ginit-ia64.lo \
-	Gparser-ia64.lo Gregs-ia64.lo Gscript-ia64.lo \
+	Gparser-ia64.lo Gregs-ia64.lo Grbs-ia64.lo Gscript-ia64.lo \
 	Gcreate_addr_space-ia64.lo Gdestroy_addr_space-ia64.lo \
 	Gget_proc_info-ia64.lo Gget_proc_name-ia64.lo Gget_reg-ia64.lo \
 	Gget_fpreg-ia64.lo Gget_save_loc-ia64.lo \
 	Gis_signal_frame-ia64.lo Gresume-ia64.lo Gset_reg-ia64.lo \
 	Gset_fpreg-ia64.lo Ginit_local-ia64.lo Ginit_remote-ia64.lo \
 	Gstep-ia64.lo Linit-ia64.lo Lparser-ia64.lo Lregs-ia64.lo \
-	Lscript-ia64.lo Lcreate_addr_space-ia64.lo \
+	Lrbs-ia64.lo Lscript-ia64.lo Lcreate_addr_space-ia64.lo \
 	Ldestroy_addr_space-ia64.lo Lget_proc_info-ia64.lo \
 	Lget_proc_name-ia64.lo Lget_reg-ia64.lo Lget_fpreg-ia64.lo \
 	Lget_save_loc-ia64.lo Lis_signal_frame-ia64.lo Lresume-ia64.lo \
@@ -387,6 +387,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Gis_signal_frame-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gparser-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gput_dynamic_unwind_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Grbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Gregs-x86.Plo \
@@ -427,6 +428,7 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/Lis_signal_frame-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lparser-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lput_dynamic_unwind_info.Plo \
+@AMDEP_TRUE@	./$(DEPDIR)/Lrbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lregs-hppa.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lregs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/Lregs-x86.Plo \
@@ -469,7 +471,6 @@ am__depfiles_maybe = depfiles
 @AMDEP_TRUE@	./$(DEPDIR)/mempool.Plo ./$(DEPDIR)/mi-init.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/mk_cursor_i-ia64.Po \
 @AMDEP_TRUE@	./$(DEPDIR)/os-hpux.Plo ./$(DEPDIR)/os-linux.Plo \
-@AMDEP_TRUE@	./$(DEPDIR)/rbs-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-ia64.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/regname-x86.Plo \
 @AMDEP_TRUE@	./$(DEPDIR)/set_caching_policy-ia64.Plo \
@@ -553,10 +554,9 @@ Lregs-hppa.lo: hppa/Lregs-hppa.c
 Lstep-hppa.lo: hppa/Lstep-hppa.c
 libunwind-hppa.la: $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_DEPENDENCIES) 
 	$(LINK) -rpath $(libdir) $(libunwind_hppa_la_LDFLAGS) $(libunwind_hppa_la_OBJECTS) $(libunwind_hppa_la_LIBADD) $(LIBS)
-_Uia64_install_context.lo: ia64/_Uia64_install_context.S
+_Uia64_install_cursor.lo: ia64/_Uia64_install_cursor.S
 global-ia64.lo: ia64/global-ia64.c
 global-asm-ia64.lo: ia64/global-asm-ia64.S
-rbs-ia64.lo: ia64/rbs-ia64.c
 tables-ia64.lo: ia64/tables-ia64.c
 get_accessors-ia64.lo: ia64/get_accessors-ia64.c
 flush_cache-ia64.lo: ia64/flush_cache-ia64.c
@@ -565,6 +565,7 @@ regname-ia64.lo: ia64/regname-ia64.c
 Ginit-ia64.lo: ia64/Ginit-ia64.c
 Gparser-ia64.lo: ia64/Gparser-ia64.c
 Gregs-ia64.lo: ia64/Gregs-ia64.c
+Grbs-ia64.lo: ia64/Grbs-ia64.c
 Gscript-ia64.lo: ia64/Gscript-ia64.c
 Gcreate_addr_space-ia64.lo: ia64/Gcreate_addr_space-ia64.c
 Gdestroy_addr_space-ia64.lo: ia64/Gdestroy_addr_space-ia64.c
@@ -583,6 +584,7 @@ Gstep-ia64.lo: ia64/Gstep-ia64.c
 Linit-ia64.lo: ia64/Linit-ia64.c
 Lparser-ia64.lo: ia64/Lparser-ia64.c
 Lregs-ia64.lo: ia64/Lregs-ia64.c
+Lrbs-ia64.lo: ia64/Lrbs-ia64.c
 Lscript-ia64.lo: ia64/Lscript-ia64.c
 Lcreate_addr_space-ia64.lo: ia64/Lcreate_addr_space-ia64.c
 Ldestroy_addr_space-ia64.lo: ia64/Ldestroy_addr_space-ia64.c
@@ -684,6 +686,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gis_signal_frame-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gparser-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gput_dynamic_unwind_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Grbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Gregs-x86.Plo@am__quote@
@@ -724,6 +727,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lis_signal_frame-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lparser-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lput_dynamic_unwind_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lrbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lregs-hppa.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lregs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Lregs-x86.Plo@am__quote@
@@ -770,7 +774,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mk_cursor_i-ia64.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-hpux.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/os-linux.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rbs-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-ia64.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/regname-x86.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/set_caching_policy-ia64.Plo@am__quote@
@@ -793,14 +796,14 @@ distclean-depend:
 .S.lo:
 	$(LTCCASCOMPILE) -c -o $@ `test -f '$<' || echo '$(srcdir)/'`$<
 
-_Uia64_install_context.o: ia64/_Uia64_install_context.S
-	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_context.o `test -f 'ia64/_Uia64_install_context.S' || echo '$(srcdir)/'`ia64/_Uia64_install_context.S
+_Uia64_install_cursor.o: ia64/_Uia64_install_cursor.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_cursor.o `test -f 'ia64/_Uia64_install_cursor.S' || echo '$(srcdir)/'`ia64/_Uia64_install_cursor.S
 
-_Uia64_install_context.obj: ia64/_Uia64_install_context.S
-	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_context.obj `cygpath -w ia64/_Uia64_install_context.S`
+_Uia64_install_cursor.obj: ia64/_Uia64_install_cursor.S
+	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_cursor.obj `cygpath -w ia64/_Uia64_install_cursor.S`
 
-_Uia64_install_context.lo: ia64/_Uia64_install_context.S
-	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_context.lo `test -f 'ia64/_Uia64_install_context.S' || echo '$(srcdir)/'`ia64/_Uia64_install_context.S
+_Uia64_install_cursor.lo: ia64/_Uia64_install_cursor.S
+	$(LIBTOOL) --mode=compile $(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o _Uia64_install_cursor.lo `test -f 'ia64/_Uia64_install_cursor.S' || echo '$(srcdir)/'`ia64/_Uia64_install_cursor.S
 
 global-asm-ia64.o: ia64/global-asm-ia64.S
 	$(CCAS) $(AM_CCASFLAGS) $(CCASFLAGS) -c -o global-asm-ia64.o `test -f 'ia64/global-asm-ia64.S' || echo '$(srcdir)/'`ia64/global-asm-ia64.S
@@ -1216,24 +1219,6 @@ global-ia64.lo: ia64/global-ia64.c
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o global-ia64.lo `test -f 'ia64/global-ia64.c' || echo '$(srcdir)/'`ia64/global-ia64.c
 
-rbs-ia64.o: ia64/rbs-ia64.c
-@AMDEP_TRUE@	source='ia64/rbs-ia64.c' object='rbs-ia64.o' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/rbs-ia64.Po' tmpdepfile='$(DEPDIR)/rbs-ia64.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rbs-ia64.o `test -f 'ia64/rbs-ia64.c' || echo '$(srcdir)/'`ia64/rbs-ia64.c
-
-rbs-ia64.obj: ia64/rbs-ia64.c
-@AMDEP_TRUE@	source='ia64/rbs-ia64.c' object='rbs-ia64.obj' libtool=no @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/rbs-ia64.Po' tmpdepfile='$(DEPDIR)/rbs-ia64.TPo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rbs-ia64.obj `cygpath -w ia64/rbs-ia64.c`
-
-rbs-ia64.lo: ia64/rbs-ia64.c
-@AMDEP_TRUE@	source='ia64/rbs-ia64.c' object='rbs-ia64.lo' libtool=yes @AMDEPBACKSLASH@
-@AMDEP_TRUE@	depfile='$(DEPDIR)/rbs-ia64.Plo' tmpdepfile='$(DEPDIR)/rbs-ia64.TPlo' @AMDEPBACKSLASH@
-@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o rbs-ia64.lo `test -f 'ia64/rbs-ia64.c' || echo '$(srcdir)/'`ia64/rbs-ia64.c
-
 tables-ia64.o: ia64/tables-ia64.c
 @AMDEP_TRUE@	source='ia64/tables-ia64.c' object='tables-ia64.o' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@	depfile='$(DEPDIR)/tables-ia64.Po' tmpdepfile='$(DEPDIR)/tables-ia64.TPo' @AMDEPBACKSLASH@
@@ -1377,6 +1362,24 @@ Gregs-ia64.lo: ia64/Gregs-ia64.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Gregs-ia64.Plo' tmpdepfile='$(DEPDIR)/Gregs-ia64.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Gregs-ia64.lo `test -f 'ia64/Gregs-ia64.c' || echo '$(srcdir)/'`ia64/Gregs-ia64.c
+
+Grbs-ia64.o: ia64/Grbs-ia64.c
+@AMDEP_TRUE@	source='ia64/Grbs-ia64.c' object='Grbs-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Grbs-ia64.Po' tmpdepfile='$(DEPDIR)/Grbs-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Grbs-ia64.o `test -f 'ia64/Grbs-ia64.c' || echo '$(srcdir)/'`ia64/Grbs-ia64.c
+
+Grbs-ia64.obj: ia64/Grbs-ia64.c
+@AMDEP_TRUE@	source='ia64/Grbs-ia64.c' object='Grbs-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Grbs-ia64.Po' tmpdepfile='$(DEPDIR)/Grbs-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Grbs-ia64.obj `cygpath -w ia64/Grbs-ia64.c`
+
+Grbs-ia64.lo: ia64/Grbs-ia64.c
+@AMDEP_TRUE@	source='ia64/Grbs-ia64.c' object='Grbs-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Grbs-ia64.Plo' tmpdepfile='$(DEPDIR)/Grbs-ia64.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Grbs-ia64.lo `test -f 'ia64/Grbs-ia64.c' || echo '$(srcdir)/'`ia64/Grbs-ia64.c
 
 Gscript-ia64.o: ia64/Gscript-ia64.c
 @AMDEP_TRUE@	source='ia64/Gscript-ia64.c' object='Gscript-ia64.o' libtool=no @AMDEPBACKSLASH@
@@ -1701,6 +1704,24 @@ Lregs-ia64.lo: ia64/Lregs-ia64.c
 @AMDEP_TRUE@	depfile='$(DEPDIR)/Lregs-ia64.Plo' tmpdepfile='$(DEPDIR)/Lregs-ia64.TPlo' @AMDEPBACKSLASH@
 @AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lregs-ia64.lo `test -f 'ia64/Lregs-ia64.c' || echo '$(srcdir)/'`ia64/Lregs-ia64.c
+
+Lrbs-ia64.o: ia64/Lrbs-ia64.c
+@AMDEP_TRUE@	source='ia64/Lrbs-ia64.c' object='Lrbs-ia64.o' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lrbs-ia64.Po' tmpdepfile='$(DEPDIR)/Lrbs-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lrbs-ia64.o `test -f 'ia64/Lrbs-ia64.c' || echo '$(srcdir)/'`ia64/Lrbs-ia64.c
+
+Lrbs-ia64.obj: ia64/Lrbs-ia64.c
+@AMDEP_TRUE@	source='ia64/Lrbs-ia64.c' object='Lrbs-ia64.obj' libtool=no @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lrbs-ia64.Po' tmpdepfile='$(DEPDIR)/Lrbs-ia64.TPo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lrbs-ia64.obj `cygpath -w ia64/Lrbs-ia64.c`
+
+Lrbs-ia64.lo: ia64/Lrbs-ia64.c
+@AMDEP_TRUE@	source='ia64/Lrbs-ia64.c' object='Lrbs-ia64.lo' libtool=yes @AMDEPBACKSLASH@
+@AMDEP_TRUE@	depfile='$(DEPDIR)/Lrbs-ia64.Plo' tmpdepfile='$(DEPDIR)/Lrbs-ia64.TPlo' @AMDEPBACKSLASH@
+@AMDEP_TRUE@	$(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
+	$(LIBTOOL) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS) -c -o Lrbs-ia64.lo `test -f 'ia64/Lrbs-ia64.c' || echo '$(srcdir)/'`ia64/Lrbs-ia64.c
 
 Lscript-ia64.o: ia64/Lscript-ia64.c
 @AMDEP_TRUE@	source='ia64/Lscript-ia64.c' object='Lscript-ia64.o' libtool=no @AMDEPBACKSLASH@
