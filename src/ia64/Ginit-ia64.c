@@ -47,6 +47,8 @@ uc_addr (ucontext_t *uc, int reg)
 
   switch (reg)
     {
+    case UNW_IA64_GR + 0:	addr = &unw.r0; break;
+    case UNW_IA64_NAT + 0:	addr = &unw.r0; break;
     case UNW_IA64_IP:		addr = &uc->uc_mcontext.sc_br[0]; break;
     case UNW_IA64_CFM:		addr = &uc->uc_mcontext.sc_ar_pfs; break;
     case UNW_IA64_AR_RNAT:	addr = &uc->uc_mcontext.sc_ar_rnat; break;
