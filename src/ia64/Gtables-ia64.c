@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2001-2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2001-2004 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -162,9 +162,9 @@ lookup (struct ia64_table_entry *table, size_t table_size, unw_word_t rel_ip)
 }
 
 PROTECTED int
-tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
-			  unw_dyn_info_t *di, unw_proc_info_t *pi,
-			  int need_unwind_info, void *arg)
+unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
+			      unw_dyn_info_t *di, unw_proc_info_t *pi,
+			      int need_unwind_info, void *arg)
 {
   unw_word_t addr, hdr_addr, info_addr, info_end_addr, hdr, *wp;
   const struct ia64_table_entry *e = NULL;
@@ -271,6 +271,86 @@ tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   return 0;
 }
 
+#ifndef UNW_REMOTE_ONLY
+
+#if defined(HAVE_DL_ITERATE_PHDR)
+
+#include <link.h>
+#include <stdlib.h>
+
+#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 2) \
+    || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && !defined(DT_CONFIG))
+# error You need GLIBC 2.2.4 or later on IA-64 Linux
+#endif
+
+#if defined(HAVE_GETUNWIND)
+
+extern unsigned long getunwind (void *buf, size_t len);
+
+#else /* HAVE_GETUNWIND */
+
+#include <unistd.h>
+#include <sys/syscall.h>
+
+# ifndef __NR_getunwind
+#  define __NR_getunwind	1215
+# endif
+
+static unsigned long
+getunwind (void *buf, size_t len)
+{
+  return syscall (SYS_getunwind, buf, len);
+}
+
+#endif /* HAVE_GETUNWIND */
+
+static unw_dyn_info_t kernel_table;
+
+static int
+get_kernel_table (unw_dyn_info_t *di)
+{
+  struct ia64_table_entry *ktab, *etab;
+  size_t size;
+
+  debug (100, "unwind: getting kernel table");
+
+  size = getunwind (NULL, 0);
+  ktab = sos_alloc (size);
+  if (!ktab)
+    {
+      dprintf (__FILE__".%s: failed to allocate %Zu bytes",
+	       __FUNCTION__, size);
+      return -UNW_ENOMEM;
+    }
+  getunwind (ktab, size);
+
+  /* Determine length of kernel's unwind table & relocate its entries.  */
+  for (etab = ktab; etab->start_offset; ++etab)
+    etab->info_offset += (uint64_t) ktab;
+
+  di->format = UNW_INFO_FORMAT_TABLE;
+  di->gp = 0;
+  di->start_ip = ktab[0].start_offset;
+  di->end_ip = etab[-1].end_offset;
+  di->u.ti.name_ptr = (unw_word_t) "<kernel>";
+  di->u.ti.segbase = 0;
+  di->u.ti.table_len = ((char *) etab - (char *) ktab) / sizeof (unw_word_t);
+  di->u.ti.table_data = (unw_word_t *) ktab;
+
+  debug (100, "unwind: found table `%s': [%lx-%lx) segbase=%lx len=%lu\n",
+	 (char *) di->u.ti.name_ptr, di->start_ip, di->end_ip,
+	 di->u.ti.segbase, di->u.ti.table_len);
+  return 0;
+}
+
+#ifndef UNW_LOCAL_ONLY
+
+PROTECTED int
+_Uia64_get_kernel_table (unw_dyn_info_t *di)
+{
+  return get_kernel_table (di);
+}
+
 PROTECTED unw_word_t
 _Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
 {
@@ -358,86 +438,6 @@ _Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
 
   /* OK, we ran the gauntlet and found it: */
   return off + gp;
-}
-
-#ifndef UNW_REMOTE_ONLY
-
-#if defined(HAVE_DL_ITERATE_PHDR)
-
-#include <link.h>
-#include <stdlib.h>
-
-#if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 2) \
-    || (__GLIBC__ == 2 && __GLIBC_MINOR__ == 2 && !defined(DT_CONFIG))
-# error You need GLIBC 2.2.4 or later on IA-64 Linux
-#endif
-
-#if defined(HAVE_GETUNWIND)
-
-extern unsigned long getunwind (void *buf, size_t len);
-
-#else /* HAVE_GETUNWIND */
-
-#include <unistd.h>
-#include <sys/syscall.h>
-
-# ifndef __NR_getunwind
-#  define __NR_getunwind	1215
-# endif
-
-static unsigned long
-getunwind (void *buf, size_t len)
-{
-  return syscall (SYS_getunwind, buf, len);
-}
-
-#endif /* HAVE_GETUNWIND */
-
-static unw_dyn_info_t kernel_table;
-
-static int
-get_kernel_table (unw_dyn_info_t *di)
-{
-  struct ia64_table_entry *ktab, *etab;
-  size_t size;
-
-  debug (100, "unwind: getting kernel table");
-
-  size = getunwind (NULL, 0);
-  ktab = sos_alloc (size);
-  if (!ktab)
-    {
-      dprintf (__FILE__".%s: failed to allocate %Zu bytes",
-	       __FUNCTION__, size);
-      return -UNW_ENOMEM;
-    }
-  getunwind (ktab, size);
-
-  /* Determine length of kernel's unwind table & relocate its entries.  */
-  for (etab = ktab; etab->start_offset; ++etab)
-    etab->info_offset += (uint64_t) ktab;
-
-  di->format = UNW_INFO_FORMAT_TABLE;
-  di->gp = 0;
-  di->start_ip = ktab[0].start_offset;
-  di->end_ip = etab[-1].end_offset;
-  di->u.ti.name_ptr = (unw_word_t) "<kernel>";
-  di->u.ti.segbase = 0;
-  di->u.ti.table_len = ((char *) etab - (char *) ktab) / sizeof (unw_word_t);
-  di->u.ti.table_data = (unw_word_t *) ktab;
-
-  debug (100, "unwind: found table `%s': [%lx-%lx) segbase=%lx len=%lu\n",
-	 (char *) di->u.ti.name_ptr, di->start_ip, di->end_ip,
-	 di->u.ti.segbase, di->u.ti.table_len);
-  return 0;
-}
-
-#ifndef UNW_LOCAL_ONLY
-
-PROTECTED int
-_Uia64_get_kernel_table (unw_dyn_info_t *di)
-{
-  return get_kernel_table (di);
 }
 
 #endif /* !UNW_LOCAL_ONLY */
@@ -670,7 +670,7 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
    stale data and had to be flushed.  */
 
 HIDDEN int
-ia64_local_validate_cache (unw_addr_space_t as)
+ia64_local_validate_cache (unw_addr_space_t as, void *arg)
 {
   return validate_cache (as);
 }
