@@ -39,9 +39,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define LOAD_VAL(reg)				\
 	ld8 reg = [in1], 8;;			\
-	tbit.nz p6, p0 = reg, 0;;		\
-(p6)	ld8.s reg = [r0]
+	tbit.nz p15, p0 = reg, 0;;		\
+(p15)	ld8.s reg = [r0]
 
+
+	.global flushrs
+	.proc flushrs
+flushrs:
+	flushrs;;
+	br.ret.sptk.many rp
+	.endp flushrs
 
 	/* Save r4-r7 into stacked registers, load them up with the
 	   values passed via the pointer in in1 and then call the
@@ -126,9 +133,9 @@ save_static_to_fr:
 	.proc save_static_to_br
 save_static_to_br:
 	.prologue
-	.regstk 2, 5, 2, 0
+	.regstk 2, 6, 2, 0
 	.save ar.pfs, loc0
-	alloc loc0 = ar.pfs, 2, 5, 2, 0
+	alloc loc0 = ar.pfs, 2, 6, 2, 0
 	.save rp, loc1
 	mov loc1 = rp
 
@@ -141,13 +148,17 @@ save_static_to_br:
 	tnat.z p1, p2 = r4;;
 	.spillreg.p p1, r4, b3
 (p1)	mov b3 = r4
+	.spillreg.p p2, r4, loc4
+(p2)	mov loc4 = r4
 
 	.body
 
 	LOAD_VAL(r4)
-	CALL_NEXT(loc4)
+	CALL_NEXT(loc5)
 
+	.pred.rel.mutex p1, p2
 (p1)	mov r4 = b3			// restore r4
+(p2)	mov r4 = loc4
 
 	mov ar.pfs = loc0
 	mov rp = loc1
@@ -238,3 +249,40 @@ save_static_to_scratch:
 
 	br.ret.sptk.many rp
 	.endp save_static_to_scratch
+
+	.global rotate_regs
+	.proc rotate_regs
+rotate_regs:
+	.prologue
+	.regstk 2, 14, 2, 16
+	.save ar.pfs, loc0
+	alloc loc0 = ar.pfs, 2, 14, 2, 16
+	.save rp, loc1
+	mov loc1 = rp
+	.save pr, loc2
+	mov loc2 = pr
+	.save ar.lc, loc3
+	mov loc3 = ar.lc
+
+	mov r8 = in0
+	mov r9 = in1
+
+	ld8 r2 = [in1], 8;;
+	and r2 = 127, r2;;
+	mov ar.ec = 0
+	mov ar.lc = r2;;
+1:	br.ctop.dptk.few 1b;;
+
+	mov in0 = r8
+	mov in1 = r9;;
+	CALL_NEXT(loc4)
+
+	clrrrb
+
+	mov ar.pfs = loc0
+	mov rp = loc1
+	mov pr = loc2, -1
+	mov ar.lc = loc3
+	br.ret.sptk.many rp
+
+	.endp rotate_regs
