@@ -197,6 +197,7 @@ man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 	unw_set_fpreg.man						\
 	unw_set_reg.man							\
 	unw_step.man							\
+	unw_strerror.man						\
 	_U_dyn_register.man						\
 	_U_dyn_cancel.man
 
@@ -219,6 +220,7 @@ EXTRA_DIST = NOTES libunwind.trans					\
 	unw_set_fpreg.tex						\
 	unw_set_reg.tex							\
 	unw_step.tex							\
+	unw_strerror.tex						\
 	_U_dyn_register.tex						\
 	_U_dyn_cancel.tex						\
 	$(man3_MANS)

@@ -87,8 +87,8 @@ libunwind_hppa_la_OBJECTS = $(am_libunwind_hppa_la_OBJECTS)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@libunwind_ia64_la_DEPENDENCIES =  \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	libunwind.la
 am__libunwind_ia64_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
-	mi/init.c mi/flush_cache.c mi/mempool.c ia64/init.h \
-	ia64/offsets.h ia64/regs.h ia64/ucontext_i.h \
+	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
+	ia64/init.h ia64/offsets.h ia64/regs.h ia64/ucontext_i.h \
 	ia64/unwind_decoder.h ia64/unwind_i.h ia64/regname.c \
 	mi/Gdyn-extract.c mi/Gdyn-remote.c \
 	mi/Gfind_dynamic_proc_info.c mi/Gget_accessors.c \
@@ -106,7 +106,7 @@ am__objects_2 = os-linux.lo
 @OS_HPUX_FALSE@@OS_LINUX_TRUE@am__objects_3 = $(am__objects_2)
 @OS_HPUX_TRUE@am__objects_3 = $(am__objects_1)
 am__objects_4 = $(am__objects_3) mi/init.lo mi/flush_cache.lo \
-	mi/mempool.lo
+	mi/mempool.lo mi/strerror.lo
 am__objects_5 = $(am__objects_4) ia64/regname.lo
 am__objects_6 = mi/Gdyn-extract.lo mi/Gdyn-remote.lo \
 	mi/Gfind_dynamic_proc_info.lo mi/Gget_accessors.lo \
@@ -143,9 +143,9 @@ libunwind_setjmp_la_OBJECTS = $(am_libunwind_setjmp_la_OBJECTS)
 @REMOTE_ONLY_FALSE@am_libunwind_setjmp_la_rpath = -rpath $(libdir)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_DEPENDENCIES = libunwind.la
 am__libunwind_x86_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
-	mi/init.c mi/flush_cache.c mi/mempool.c dwarf/dwarf-eh.h \
-	dwarf/global.c x86/init.h x86/offsets.h x86/unwind_i.h \
-	x86/is_fpreg.c x86/regname.c mi/Gdyn-extract.c \
+	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
+	dwarf/dwarf-eh.h dwarf/global.c x86/init.h x86/offsets.h \
+	x86/unwind_i.h x86/is_fpreg.c x86/regname.c mi/Gdyn-extract.c \
 	mi/Gdyn-remote.c mi/Gfind_dynamic_proc_info.c \
 	mi/Gget_accessors.c mi/Gget_proc_info_by_ip.c \
 	mi/Gget_proc_name.c mi/Gput_dynamic_unwind_info.c \
@@ -174,11 +174,11 @@ libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@	$(libdir)
 libunwind_la_DEPENDENCIES =
 am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
-	mi/init.c mi/flush_cache.c mi/mempool.c dwarf/dwarf-eh.h \
-	dwarf/global.c x86/init.h x86/offsets.h x86/unwind_i.h \
-	x86/is_fpreg.c x86/regname.c mi/_ReadULEB.c mi/_ReadSLEB.c \
-	mi/backtrace.c mi/dyn-cancel.c mi/dyn-info-list.c \
-	mi/dyn-register.c mi/Ldyn-extract.c \
+	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
+	dwarf/dwarf-eh.h dwarf/global.c x86/init.h x86/offsets.h \
+	x86/unwind_i.h x86/is_fpreg.c x86/regname.c mi/_ReadULEB.c \
+	mi/_ReadSLEB.c mi/backtrace.c mi/dyn-cancel.c \
+	mi/dyn-info-list.c mi/dyn-register.c mi/Ldyn-extract.c \
 	mi/Lfind_dynamic_proc_info.c mi/Lget_accessors.c \
 	mi/Lget_proc_info_by_ip.c mi/Lget_proc_name.c \
 	mi/Lput_dynamic_unwind_info.c mi/Ldestroy_addr_space.c \
@@ -461,8 +461,8 @@ libunwind_setjmp_la_SOURCES_x86 = setjmp.c sigsetjmp.c x86/siglongjmp.S
 # List of arch-independent files needed by both local-only and generic
 # libraries:
 libunwind_la_SOURCES_common = \
-	$(libunwind_la_SOURCES_os)		\
-	mi/init.c mi/flush_cache.c mi/mempool.c
+	$(libunwind_la_SOURCES_os)				\
+	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c
 
 
 # List of arch-independent files needed by generic library (libunwind-$ARCH):
@@ -773,6 +773,7 @@ mi/$(DEPDIR)/$(am__dirstamp):
 mi/init.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
 mi/flush_cache.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
 mi/mempool.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
+mi/strerror.lo: mi/$(am__dirstamp) mi/$(DEPDIR)/$(am__dirstamp)
 ia64/$(am__dirstamp):
 	@$(mkdir_p) ia64
 	@: > ia64/$(am__dirstamp)
@@ -1241,6 +1242,8 @@ mostlyclean-compile:
 	-rm -f mi/init.lo
 	-rm -f mi/mempool.$(OBJEXT)
 	-rm -f mi/mempool.lo
+	-rm -f mi/strerror.$(OBJEXT)
+	-rm -f mi/strerror.lo
 	-rm -f ptrace/_UPT_access_fpreg.$(OBJEXT)
 	-rm -f ptrace/_UPT_access_mem.$(OBJEXT)
 	-rm -f ptrace/_UPT_access_reg.$(OBJEXT)
@@ -1445,6 +1448,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@mi/$(DEPDIR)/flush_cache.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@mi/$(DEPDIR)/init.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@mi/$(DEPDIR)/mempool.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@mi/$(DEPDIR)/strerror.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ptrace/$(DEPDIR)/_UPT_access_fpreg.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ptrace/$(DEPDIR)/_UPT_access_mem.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ptrace/$(DEPDIR)/_UPT_access_reg.Po@am__quote@
