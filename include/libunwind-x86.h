@@ -41,6 +41,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef uint32_t unw_tdep_word_t;
 
+typedef long double unw_tdep_fpreg_t;
+
 typedef enum
   {
     /* Note: general registers are excepted to start with index 0.
@@ -60,9 +62,12 @@ typedef enum
     UNW_TDEP_LAST_REG = UNW_X86_ESP,
 
     UNW_TDEP_IP = UNW_X86_EIP,
-    UNW_TDEP_SP = UNW_X86_ESP
+    UNW_TDEP_SP = UNW_X86_ESP,
+    UNW_TDEP_EH = UNW_X86_EAX
   }
 x86_regnum_t;
+
+#define UNW_TDEP_NUM_EH_REGS	2	/* eax and ebx are exception args */
 
 typedef struct unw_tdep_save_loc
   {
