@@ -34,6 +34,8 @@
 \Type{int} \Func{\_UPT\_access\_fpreg}(\Type{unw\_addr\_space\_t}, \Type{unw\_regnum\_t}, \Type{unw\_fpreg\_t~*}, \Type{int}, \Type{void~*});\\
 \noindent
 \Type{int} \Func{\_UPT\_get\_proc\_name}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t}, \Type{char~*}, \Type{size\_t}, \Type{unw_word_t~*}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{\_UPT\_resume}(\Type{unw\_addr\_space\_t}, \Type{unw\_cursor\_t~*}, \Type{void~*});\\
 
 \section{Description}
 
@@ -74,6 +76,10 @@ by calling \Func{\_UPT\_create}(), passing the pid of the target process
 as the only argument.  The returned void-pointer then needs to be
 passed as the ``argument'' pointer (third argument) to
 \Func{unw\_init\_remote}().
+
+The \Func{\_UPT\_resume}() routine can be used to resume execution of
+the target process.  It simply invokes \Func{ptrace}(2) with a command
+value of \Const{PTRACE\_CONT}.
 
 When the application is done using \Prog{libunwind} on the target
 process, \Func{\_UPT\_destroy}() needs to be called, passing it the
