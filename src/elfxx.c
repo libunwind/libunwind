@@ -90,7 +90,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	  str_size = str_shdr->sh_size;
 	  strtab = (char *) ei->image + str_shdr->sh_offset;
 
-	  debug (10, "symtab=0x%lx[%d], strtab=0x%lx\n", shdr->sh_offset,
+	  debug (160, "symtab=0x%lx[%d], strtab=0x%lx\n", shdr->sh_offset,
 		 shdr->sh_type, str_shdr->sh_offset);
 
 	  for (sym = symtab;
@@ -103,7 +103,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		  val = sym->st_value;
 		  if (sym->st_shndx != SHN_ABS)
 		    val += load_offset;
-		  debug (100, "0x%016lx info=0x%02x %s\n",
+		  debug (160, "0x%016lx info=0x%02x %s\n",
 			 val, sym->st_info, strtab + sym->st_name);
 
 		  if ((ElfW (Addr)) (ip - val) < min_dist)
@@ -135,7 +135,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
    sensitive to the performance of this routine, why bother...  */
 
 HIDDEN int
-elfW (get_proc_name) (unw_word_t ip, char *buf, size_t buf_len,
+elfW (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
 		      unw_word_t *offp)
 {
   unsigned long segbase, mapoff;
@@ -145,7 +145,7 @@ elfW (get_proc_name) (unw_word_t ip, char *buf, size_t buf_len,
   ElfW (Phdr) *phdr;
   int i, ret;
 
-  ret = tdep_get_elf_image (&ei, getpid (), ip, &segbase, &mapoff);
+  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff);
   if (ret < 0)
     return ret;
 
