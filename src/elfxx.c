@@ -53,11 +53,11 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
   ElfW (Off) soff, str_soff;
   ElfW (Shdr) *shdr, *str_shdr;
   ElfW (Addr) val, min_dist = ~(ElfW (Addr))0;
+  int i, ret = 0;
   char *strtab;
-  int i;
 
   if (!elfW (valid_object) (ei))
-    return -1;
+    return -UNW_ENOINFO;
 
   soff = ehdr->e_shoff;
   if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
@@ -65,7 +65,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
       debug (1, "%s: section table outside of image? (%lu > %lu)\n",
 	     __FUNCTION__, soff + ehdr->e_shnum * ehdr->e_shentsize,
 	     ei->size);
-      return -1;
+      return -UNW_ENOINFO;
     }
 
   shdr = (ElfW (Shdr) *) ((char *) ei->image + soff);
@@ -110,9 +110,10 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		  if ((ElfW (Addr)) (ip - val) < min_dist)
 		    {
 		      min_dist = (ElfW (Addr)) (ip - val);
-		      buf[buf_len - 1] = 'x';
 		      strncpy (buf, strtab + sym->st_name, buf_len);
 		      buf[buf_len - 1] = '\0';
+		      if (strlen (strtab + sym->st_name) >= buf_len)
+			ret = -UNW_ENOMEM;
 		    }
 		}
 	    }
@@ -124,10 +125,10 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
       shdr = (Elf64_Shdr *) (((char *) shdr) + ehdr->e_shentsize);
     }
   if (min_dist >= ei->size)
-    return -1;			/* not found */
+    return -UNW_ENOINFO;		/* not found */
   if (offp)
     *offp = min_dist;
-  return 0;
+  return ret;
 }
 
 /* Find the ELF image that contains IP and return the "closest"
