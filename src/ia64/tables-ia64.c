@@ -42,13 +42,13 @@ lookup (struct ia64_table_entry *table, size_t table_size, unw_word_t rel_ip)
 static inline int
 is_local_addr_space (unw_addr_space_t as)
 {
+#ifdef UNW_REMOTE_ONLY
+  return 0;
+#else
   extern unw_addr_space_t _ULia64_local_addr_space;
 
-  return (as == _Uia64_local_addr_space
-#ifndef UNW_REMOTE_ONLY
-	  || as == _ULia64_local_addr_space
+  return (as == _Uia64_local_addr_space || as == _ULia64_local_addr_space);
 #endif
-	  );
 }
 
 int
@@ -99,7 +99,7 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       pi->unwind_info_size = 8 * IA64_UNW_LENGTH (hdr);
 
       if (is_local_addr_space (as))
-	pi->unwind_info = (void *) info_addr;
+	pi->unwind_info = (void *) (uintptr_t) info_addr;
       else
 	{
 	  /* Internalize unwind info.  Note: since we're doing this
