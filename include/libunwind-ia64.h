@@ -39,6 +39,14 @@ extern "C" {
 # undef ia64
 #endif
 
+#ifdef __hpux
+  /* On HP-UX, there is no hope of supporting UNW_LOCAL_ONLY, because
+     it's impossible to obtain the address of the members in the
+     sigcontext structure.  */
+# undef UNW_LOCAL_ONLY
+# define UNW_GENERIC_ONLY
+#endif
+
 #define UNW_TARGET	ia64
 #define UNW_TARGET_IA64	1
 
