@@ -294,9 +294,9 @@ emit_nat_info (struct ia64_state_record *sr, int i, struct ia64_script *script)
 }
 
 static void
-compile_reg (struct ia64_state_record *sr, int i, struct ia64_script *script)
+compile_reg (struct ia64_state_record *sr, int i, struct ia64_reg_info *r,
+	     struct ia64_script *script)
 {
-  struct ia64_reg_info *r = sr->curr.reg + i;
   enum ia64_script_insn_opcode opc;
   unsigned long val, rval;
   struct ia64_script_insn insn;
@@ -439,6 +439,7 @@ static inline int
 build_script (struct cursor *c, struct ia64_script *script)
 {
   int num_regs, i, ret, regorder[IA64_NUM_PREGS - 3];
+  struct ia64_reg_info *pri_unat;
   struct ia64_state_record sr;
   struct ia64_script_insn insn;
 
@@ -461,26 +462,36 @@ build_script (struct cursor *c, struct ia64_script *script)
       script_emit (script, insn);
     }
   else
-    compile_reg (&sr, IA64_REG_PSP, script);
+    compile_reg (&sr, IA64_REG_PSP, sr.curr.reg + IA64_REG_PSP, script);
 
-  /* Second, compile the update for the primary UNaT: */
+  /* Second, compile the update for the primary UNaT, if any: */
 
-  if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_GR].when)
-    i = IA64_REG_PRI_UNAT_MEM;
-  else if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when)
-    i = IA64_REG_PRI_UNAT_GR;
-  else if (sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when >
-	   sr.curr.reg[IA64_REG_PRI_UNAT_GR].when)
-    i = IA64_REG_PRI_UNAT_MEM;
-  else
-    i = IA64_REG_PRI_UNAT_GR;
-  compile_reg (&sr, i, script);
+  if (sr.when_target >= sr.curr.reg[IA64_REG_PRI_UNAT_GR].when
+      || sr.when_target >= sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when)
+    {
+      if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_GR].when)
+	/* (primary) NaT bits were saved to memory only */
+	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_MEM;
+      else if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when)
+	/* (primary) NaT bits were saved to a register only */
+	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_MEM;
+      else if (sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when >
+	       sr.curr.reg[IA64_REG_PRI_UNAT_GR].when)
+	/* (primary) NaT bits were last saved to memory */
+	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_MEM;
+      else
+	/* (primary) NaT bits were last saved to a register */
+	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_GR;
+
+      /* Note: we always store the final primary-UNaT location in UNAT_MEM.  */
+      compile_reg (&sr, IA64_REG_PRI_UNAT_MEM, pri_unat, script);
+    }
 
   /* Third, compile the other register in decreasing order of WHEN values.  */
 
   num_regs = sort_regs (&sr, regorder);
   for (i = 0; i < num_regs; ++i)
-    compile_reg (&sr, regorder[i], script);
+    compile_reg (&sr, regorder[i], sr.curr.reg + regorder[i], script);
 
   script->abi_marker = sr.abi_marker;
   script_finalize (script, c, &sr);
@@ -497,9 +508,9 @@ static inline int
 run_script (struct ia64_script *script, struct cursor *c)
 {
   struct ia64_script_insn *ip, *limit, next_insn;
-  unw_word_t val, unat_addr;
   unsigned long opc, dst;
   ia64_loc_t loc;
+  unw_word_t val;
   int ret;
 
   c->pi = script->pi;
@@ -550,10 +561,15 @@ run_script (struct ia64_script *script, struct cursor *c)
 	    break;
 
 	  case IA64_INSN_SETNAT_MEMSTK:
-	    if ((ret = ia64_get (c, c->loc[IA64_REG_PRI_UNAT_MEM],
-				 &unat_addr)) < 0)
-	      return ret;
-	    loc = IA64_LOC_ADDR (unat_addr, IA64_LOC_TYPE_MEMSTK_NAT);
+	    loc = c->loc[IA64_REG_PRI_UNAT_MEM];
+	    /* This is a fast and clean, if somewhat verbose way of
+	       turning on bit 1 in the first word.  */
+	    if (IA64_IS_REG_LOC (loc))
+	      loc = IA64_LOC_REG (IA64_GET_REG (loc),
+				  IA64_LOC_TYPE_MEMSTK_NAT);
+	    else
+	      loc = IA64_LOC_ADDR (IA64_GET_ADDR (loc),
+				   IA64_LOC_TYPE_MEMSTK_NAT);
 	    break;
 
 	  case IA64_INSN_INC_PSP:
