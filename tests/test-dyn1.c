@@ -95,7 +95,8 @@ static void
 sighandler (int signal)
 {
   unw_cursor_t cursor;
-  unw_word_t ip;
+  char name[128], off[32];
+  unw_word_t ip, offset;
   unw_context_t uc;
   int count = 0;
 
@@ -113,8 +114,13 @@ sighandler (int signal)
   do
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
+      name[0] = '\0';
+      off[0] = '\0';
+      if (unw_get_proc_name (&cursor, name, sizeof (name), &offset) == 0
+	  && off > 0)
+	snprintf (off, sizeof (off), "+0x%lx", (long) offset);
       if (verbose)
-	printf ("ip = %lx\n", (long) ip);
+	printf ("ip = %lx <%s%s>\n", (long) ip, name, off);
       ++count;
     }
   while (unw_step (&cursor) > 0);
