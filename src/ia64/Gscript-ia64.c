@@ -552,7 +552,6 @@ run_script (struct ia64_script *script, struct cursor *c)
       /* This is by far the most common operation: */
       if (likely (opc == IA64_INSN_MOVE_STACKED))
 	{
-	  val = rotate_gr (c, val);
 	  if ((ret = ia64_get_stacked (c, val, &loc, NULL)) < 0)
 	    return ret;
 	}
@@ -612,7 +611,6 @@ run_script (struct ia64_script *script, struct cursor *c)
 	    break;
 
 	  case IA64_INSN_MOVE_STACKED_NAT:
-	    val = rotate_gr (c, val);
 	    if ((ret = ia64_get_stacked (c, val, &loc, &nat_loc)) < 0)
 	      return ret;
 	    assert (!IA64_IS_REG_LOC (loc));
