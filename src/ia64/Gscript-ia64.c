@@ -486,7 +486,7 @@ build_script (struct cursor *c, struct ia64_script *script)
 	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_MEM;
       else if (sr.when_target < sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when)
 	/* (primary) NaT bits were saved to a register only */
-	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_MEM;
+	pri_unat = sr.curr.reg + IA64_REG_PRI_UNAT_GR;
       else if (sr.curr.reg[IA64_REG_PRI_UNAT_MEM].when >
 	       sr.curr.reg[IA64_REG_PRI_UNAT_GR].when)
 	/* (primary) NaT bits were last saved to memory */
