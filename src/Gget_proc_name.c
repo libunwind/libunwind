@@ -87,18 +87,10 @@ unwi_get_proc_name (unw_addr_space_t as, unw_word_t ip,
   if (ret != -UNW_ENOINFO)
     return ret;
 
-  /* not a dynamic procedure */
+  /* not a dynamic procedure, try to lookup static procedure name: */
 
-#ifdef UNW_REMOTE_ONLY
+  if (a->get_proc_name)
+    return (*a->get_proc_name) (as, ip, buf, buf_len, offp, arg);
+
   return -UNW_ENOINFO;
-#else
-  if (as != unw_local_addr_space)
-    /* It makes no sense to implement get_proc_name() for remote
-       address spaces because that would require a callback and in
-       that case, the application using libunwind needs to know how to
-       look up a procedure name anyhow.  */
-    return -UNW_ENOINFO;
-
-  return tdep_get_proc_name (ip, buf, buf_len, offp);
-#endif
 }
