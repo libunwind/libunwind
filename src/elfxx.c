@@ -63,8 +63,9 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
   if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
     {
       debug (1, "%s: section table outside of image? (%lu > %lu)\n",
-	     __FUNCTION__, soff + ehdr->e_shnum * ehdr->e_shentsize,
-	     ei->size);
+	     __FUNCTION__,
+	     (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
+	     (unsigned long) ei->size);
       return -UNW_ENOINFO;
     }
 
@@ -84,15 +85,18 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	  if (str_soff + ehdr->e_shentsize >= ei->size)
 	    {
 	      debug (1, "%s: string table outside of image? (%lu >= %lu)\n",
-		     __FUNCTION__, str_soff + ehdr->e_shentsize, ei->size);
+		     __FUNCTION__,
+		     (unsigned long) (str_soff + ehdr->e_shentsize),
+		     (unsigned long) ei->size);
 	      break;
 	    }
 	  str_shdr = (ElfW (Shdr) *) ((char *) ei->image + str_soff);
 	  str_size = str_shdr->sh_size;
 	  strtab = (char *) ei->image + str_shdr->sh_offset;
 
-	  debug (160, "symtab=0x%lx[%d], strtab=0x%lx\n", shdr->sh_offset,
-		 shdr->sh_type, str_shdr->sh_offset);
+	  debug (160, "symtab=0x%lx[%d], strtab=0x%lx\n",
+		 (long) shdr->sh_offset, shdr->sh_type,
+		 (long) str_shdr->sh_offset);
 
 	  for (sym = symtab;
 	       sym < symtab_end;
@@ -105,7 +109,7 @@ elfW (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 		  if (sym->st_shndx != SHN_ABS)
 		    val += load_offset;
 		  debug (160, "0x%016lx info=0x%02x %s\n",
-			 val, sym->st_info, strtab + sym->st_name);
+			 (long) val, sym->st_info, strtab + sym->st_name);
 
 		  if ((ElfW (Addr)) (ip - val) < min_dist)
 		    {
