@@ -4,7 +4,7 @@ EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper		\
 		run-check-namespace check-namespace.sh.in
 
 noinst_PROGRAMS_common =
-check_PROGRAMS_common = test-proc-info test-static-link
+check_PROGRAMS_common = test-init-remote test-proc-info test-static-link
 check_SCRIPTS_common =	run-check-namespace
 
 if REMOTE_ONLY
