@@ -23,15 +23,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include "_UPT_internal.h"
 
-#if UNW_TARGET_IA64
+#ifdef HAVE_ASM_PTRACE_OFFSETS_H
 # include <asm/ptrace_offsets.h>
 #endif
 
 int _UPT_reg_offset[UNW_REG_LAST] =
   {
-#if UNW_TARGET_IA64
+#ifdef HAVE_ASM_PTRACE_OFFSETS_H
 # ifndef PT_AR_CSD
 #  define PT_AR_CSD	-1	/* this was introduced with rev 2.1 of ia64 */
 # endif
@@ -208,6 +212,8 @@ int _UPT_reg_offset[UNW_REG_LAST] =
     [UNW_IA64_PR]	= PT_PR,
     [UNW_IA64_CFM]	= PT_CFM,
     [UNW_IA64_IP]	= PT_CR_IIP
+#elif defined(HAVE_TTRACE)
+# warning No support for ttrace() yet.
 #else
 # error Fix me.
 #endif
