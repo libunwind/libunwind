@@ -391,8 +391,7 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
   if (ret == -UNW_ENOINFO)
     {
       dynamic = 0;
-      if ((ret = dwarf_find_proc_info (c->as, ip, &c->pi, need_unwind_info,
-				       c->as_arg)) < 0)
+      if ((ret = tdep_find_proc_info (c, ip, need_unwind_info)) < 0)
 	return ret;
     }
 
