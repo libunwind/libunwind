@@ -10,6 +10,7 @@ This file is part of libunwind.  */
 
 #include <assert.h>
 #include <stdlib.h>
+#include <stddef.h>
 #ifdef HAVE_IA64INTRIN_H
 # include <ia64intrin.h>
 #endif
@@ -48,6 +49,56 @@ lookup (struct ia64_table_entry *table, size_t table_size, unw_word_t rel_ip)
   return e;
 }
 
+/* Helper macro for reading an ia64_table_entry from remote memory.  */
+#define remote_read(addr, member)					     \
+	(*a->access_mem) (as, (addr) + offsetof (struct ia64_table_entry,    \
+						 member), &member, 0, arg)
+
+/* Lookup an unwind-table entry in remote memory.  Returns 1 if an
+   entry is found, 0 if no entry is found, negative if an error
+   occurred reading remote memory.  */
+static int
+remote_lookup (unw_addr_space_t as,
+	       unw_word_t table, size_t table_size, unw_word_t rel_ip,
+	       struct ia64_table_entry *e, void *arg)
+{
+  unw_word_t e_addr = 0, start_offset, end_offset, info_offset;
+  unw_accessors_t *a = unw_get_accessors (as);
+  unsigned long lo, hi, mid;
+  int ret;
+
+  /* do a binary search for right entry: */
+  for (lo = 0, hi = table_size / sizeof (struct ia64_table_entry); lo < hi;)
+    {
+      mid = (lo + hi) / 2;
+      e_addr = table + mid * sizeof (struct ia64_table_entry);
+      if ((ret = remote_read (e_addr, start_offset)) < 0)
+	return ret;
+
+      if (rel_ip < start_offset)
+	hi = mid;
+      else
+	{
+	  if ((ret = remote_read (e_addr, end_offset)) < 0)
+	    return ret;
+
+	  if (rel_ip >= end_offset)
+	    lo = mid + 1;
+	  else
+	    break;
+	}
+    }
+  if (rel_ip < start_offset || rel_ip >= end_offset)
+    return 0;
+  e->start_offset = start_offset;
+  e->end_offset = end_offset;
+
+  if ((ret = remote_read (e_addr, info_offset)) < 0)
+    return ret;
+  e->info_offset = info_offset;
+  return 1;
+}
+
 static inline int
 is_local_addr_space (unw_addr_space_t as)
 {
@@ -68,20 +119,39 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 			    int need_unwind_info, void *arg)
 {
   unw_word_t addr, hdr_addr, info_addr, info_end_addr, hdr, *wp;
-  unw_word_t handler_offset;
+  unw_word_t handler_offset, segbase;
   const struct ia64_table_entry *e;
+  struct ia64_table_entry ent;
   unw_accessors_t *a = unw_get_accessors (as);
   int ret;
 
-  assert (di->format == UNW_INFO_FORMAT_TABLE
+  assert ((di->format == UNW_INFO_FORMAT_TABLE
+	   || di->format == UNW_INFO_FORMAT_REMOTE_TABLE)
 	  && (ip >= di->start_ip && ip < di->end_ip));
 
   pi->flags = 0;
   pi->unwind_info = 0;
   pi->handler = 0;
 
-  e = lookup ((struct ia64_table_entry *) di->u.ti.table_data,
-	      di->u.ti.table_len * sizeof (unw_word_t), ip - di->u.ti.segbase);
+  if (likely (di->format == UNW_INFO_FORMAT_TABLE))
+    {
+      segbase = di->u.ti.segbase;
+      e = lookup ((struct ia64_table_entry *) di->u.ti.table_data,
+		  di->u.ti.table_len * sizeof (unw_word_t),
+		  ip - segbase);
+    }
+  else
+    {
+      segbase = di->u.rti.segbase;
+      if ((ret = remote_lookup (as, di->u.rti.table_data,
+				di->u.rti.table_len * sizeof (unw_word_t),
+				ip - segbase, &ent, arg)) < 0)
+	return ret;
+      if (ret)
+	e = &ent;
+      else
+	e = NULL;	/* no info found */
+    }
   if (!e)
     {
       /* IP is inside this table's range, but there is no explicit
@@ -95,10 +165,10 @@ _Uia64_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       return 0;
     }
 
-  pi->start_ip = e->start_offset + di->u.ti.segbase;
-  pi->end_ip = e->end_offset + di->u.ti.segbase;
+  pi->start_ip = e->start_offset + segbase;
+  pi->end_ip = e->end_offset + segbase;
 
-  hdr_addr = e->info_offset + di->u.ti.segbase;
+  hdr_addr = e->info_offset + segbase;
   info_addr = hdr_addr + 8;
 
   /* read the header word: */
@@ -172,18 +242,49 @@ tdep_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
 }
 
 unw_word_t
-_Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
-		      unw_word_t segbase, unw_word_t gp, void *arg)
+_Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
 {
   unw_word_t hdr_addr, info_addr, hdr, directives, pers, cookie, off;
+  unw_word_t start_offset, end_offset, info_offset, e_addr, segbase;
   unw_accessors_t *a = unw_get_accessors (as);
-  struct ia64_table_entry *tab = table;
+  struct ia64_table_entry *e;
+  size_t table_size;
+  unw_word_t gp = di->gp;
   int ret;
 
-  if (table_size < sizeof (struct ia64_table_entry))
-    return 0;
+  switch (di->format)
+    {
+    case UNW_INFO_FORMAT_DYNAMIC:
+    default:
+      return 0;
 
-  if (tab[0].start_offset != tab[0].end_offset)
+    case UNW_INFO_FORMAT_TABLE:
+      e = (struct ia64_table_entry *) di->u.ti.table_data;
+      table_size = di->u.ti.table_len * sizeof (di->u.ti.table_data[0]);
+      segbase = di->u.ti.segbase;
+      if (table_size < sizeof (struct ia64_table_entry))
+	return 0;
+      start_offset = e[0].start_offset;
+      end_offset = e[0].end_offset;
+      info_offset = e[0].info_offset;
+      break;
+
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
+      e_addr = di->u.rti.table_data;
+      table_size = di->u.rti.table_len * sizeof (unw_word_t);
+      segbase = di->u.rti.segbase;
+      if (table_size < sizeof (struct ia64_table_entry))
+	return 0;
+
+      if ((ret = remote_read (e_addr, start_offset) < 0)
+	  || (ret = remote_read (e_addr, end_offset) < 0)
+	  || (ret = remote_read (e_addr, info_offset) < 0))
+	return ret;
+      break;
+    }
+
+
+  if (start_offset != end_offset)
     /* dyn-list entry cover a zero-length "procedure" and should be
        first entry (note: technically a binary could contain code
        below the segment base, but this doesn't happen for normal
@@ -192,7 +293,7 @@ _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
        have to provide its own (slower) version of this routine.  */
     return 0;
 
-  hdr_addr = tab[0].info_offset + segbase;
+  hdr_addr = info_offset + segbase;
   info_addr = hdr_addr + 8;
 
   /* read the header word: */
@@ -230,7 +331,6 @@ _Uia64_find_dyn_list (unw_addr_space_t as, void *table, size_t table_size,
 #if defined(HAVE_DL_ITERATE_PHDR)
 
 #include <link.h>
-#include <stddef.h>
 #include <stdlib.h>
 
 #if __GLIBC__ < 2 || (__GLIBC__ == 2 && __GLIBC_MINOR__ < 2) \
