@@ -32,11 +32,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#if UNW_TARGET_IA64
+
+#include "elf64.h"
+
 static unw_word_t
 find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
 {
   Elf64_Off soff, str_soff;
-  Elf64_Ehdr *ehdr = ui->image;
+  Elf64_Ehdr *ehdr = ui->ei.image;
   Elf64_Shdr *shdr;
   Elf64_Shdr *str_shdr;
   Elf64_Addr gp = 0;
@@ -47,7 +51,7 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
     {
       /* If we have a PT_DYNAMIC program header, fetch the gp-value
 	 from the DT_PLTGOT entry.  */
-      Elf64_Dyn *dyn = (Elf64_Dyn *) (pdyn->p_offset + ui->image);
+      Elf64_Dyn *dyn = (Elf64_Dyn *) (pdyn->p_offset + ui->ei.image);
       for (; dyn->d_tag != DT_NULL; ++dyn)
 	if (dyn->d_tag == DT_PLTGOT)
 	  {
@@ -64,36 +68,31 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
   soff = ehdr->e_shoff;
   str_soff = soff + (ehdr->e_shstrndx * ehdr->e_shentsize);
 
-  if (soff + ehdr->e_shnum * ehdr->e_shentsize > ui->image_size)
+  if (soff + ehdr->e_shnum * ehdr->e_shentsize > ui->ei.size)
     {
-      debug (1, "%s: section table outside of image? (%lu > %lu)", __FUNCTION__,
-	     soff + ehdr->e_shnum * ehdr->e_shentsize, ui->image_size);
+      debug (1, "%s: section table outside of image? (%lu > %lu)",
+	     __FUNCTION__, soff + ehdr->e_shnum * ehdr->e_shentsize,
+	     ui->ei.size);
       goto done;
     }
 
-  shdr = (Elf64_Shdr *) ((char *) ui->image + soff);
-  str_shdr = (Elf64_Shdr *) ((char *) ui->image + str_soff);
-  strtab = (char *) ui->image + str_shdr->sh_offset;
+  shdr = (Elf64_Shdr *) ((char *) ui->ei.image + soff);
+  str_shdr = (Elf64_Shdr *) ((char *) ui->ei.image + str_soff);
+  strtab = (char *) ui->ei.image + str_shdr->sh_offset;
   for (i = 0; i < ehdr->e_shnum; ++i)
     {
       if (strcmp (strtab + shdr->sh_name, ".opd") == 0
 	  && shdr->sh_size >= 16)
 	{
-	  gp = ((Elf64_Addr *) (ui->image + shdr->sh_offset))[1];
+	  gp = ((Elf64_Addr *) (ui->ei.image + shdr->sh_offset))[1];
 	  goto done;
 	}
       shdr = (Elf64_Shdr *) (((char *) shdr) + ehdr->e_shentsize);
     }
 
  done:
-  debug (100, "%s: image at %lx, gp = %lx\n", ui->image, gp);
+  debug (100, "%s: image at %p, gp = %lx\n", __FUNCTION__, ui->ei.image, gp);
   return gp;
-}
-
-static inline int
-elf64_valid_object (struct UPT_info *ui)
-{
-  return memcmp (ui->image, ELFMAG, SELFMAG) == 0;
 }
 
 HIDDEN unw_dyn_info_t *
@@ -101,41 +100,14 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff)
 {
   Elf64_Phdr *phdr, *ptxt = NULL, *punw = NULL, *pdyn = NULL;
-  struct stat stat;
   Elf64_Ehdr *ehdr;
-  int fd, i;
+  int i;
 
-  if (ui->image)
-    {
-      munmap (ui->image, ui->image_size);
-      ui->image = NULL;
-      ui->image_size = 0;
-
-      /* invalidate the cache: */
-      ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
-    }
-
-  fd = open (path, O_RDONLY);
-  if (fd < 0)
+  if (!_Uelf64_valid_object (&ui->ei))
     return NULL;
 
-  if (fstat (fd, &stat) < 0)
-    {
-      close (fd);
-      return NULL;
-    }
-
-  ui->image_size = stat.st_size;
-  ui->image = mmap (NULL, ui->image_size, PROT_READ, MAP_PRIVATE, fd, 0);
-  close (fd);
-  if (ui->image == MAP_FAILED)
-    return NULL;
-
-  if (!elf64_valid_object (ui))
-    return NULL;
-
-  ehdr = ui->image;
-  phdr = (Elf64_Phdr *) ((char *) ui->image + ehdr->e_phoff);
+  ehdr = ui->ei.image;
+  phdr = (Elf64_Phdr *) ((char *) ui->ei.image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
@@ -169,26 +141,24 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   ui->di_cache.u.ti.segbase = segbase;
   ui->di_cache.u.ti.table_len = punw->p_memsz / sizeof (unw_word_t);
   ui->di_cache.u.ti.table_data = (unw_word_t *)
-    ((char *) ui->image + (punw->p_vaddr - ptxt->p_vaddr));
+    ((char *) ui->ei.image + (punw->p_vaddr - ptxt->p_vaddr));
   return &ui->di_cache;
 }
+
+#endif /* UNW_TARGET_IA64 */
 
 static unw_dyn_info_t *
 get_unwind_info (struct UPT_info *ui, unw_addr_space_t as,
 		 unw_word_t ip, unw_proc_info_t *pi,
 		 int need_unwind_info)
 {
-  unsigned long segbase, hi, mapoff;
-  struct map_iterator mi;
+  unsigned long segbase, mapoff;
   char path[PATH_MAX];
 
 #if UNW_TARGET_IA64
-  if (!ui->ktab.start_ip)
-    {
-      int ret = _Uia64_get_kernel_table (&ui->ktab);
-      if (ret < 0)
-	return NULL;
-    }
+  if (!ui->ktab.start_ip && _Uia64_get_kernel_table (&ui->ktab) < 0)
+    return NULL;
+
   if (ip >= ui->ktab.start_ip && ip < ui->ktab.end_ip)
     return &ui->ktab;
 #endif
@@ -196,15 +166,17 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as,
   if (ip >= ui->di_cache.start_ip && ip < ui->di_cache.end_ip)
     return &ui->di_cache;
 
-  maps_init (&mi, ui->pid);
-  while (maps_next (&mi, &segbase, &hi, &mapoff, path))
+  if (ui->ei.image)
     {
-      if (ip >= segbase && ip < hi)
-	break;
-    }
-  maps_close (&mi);
+      munmap (ui->ei.image, ui->ei.size);
+      ui->ei.image = NULL;
+      ui->ei.size = 0;
 
-  if (ip < segbase || ip >= hi)
+      /* invalidate the cache: */
+      ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
+    }
+
+  if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff) < 0)
     return NULL;
 
   return _UPTi_find_unwind_table (ui, as, path, segbase, mapoff);
