@@ -132,19 +132,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #else
 # ifdef HAVE_IA64INTRIN_H
 #  include <ia64intrin.h>
-  /*
-   * ecc v7.0 is broken: it's missing __sync_val_compare_and_swap()
-   * even though the ia64 ABI requires it.  Work around it:
-   */
-#  ifndef __sync_val_compare_and_swap
-#   define __sync_val_compare_and_swap(x,y,z)				\
-	_InterlockedCompareExchange64_rel(x,y,z)
-#  endif
-
 #  define cmpxchg_ptr(_ptr,_o,_n)					\
-	((void *) __sync_val_compare_and_swap((volatile long *) (_ptr),	\
-					      (long) (_o), (long) (_n))	\
-	 == (_o))
+	(__sync_bool_compare_and_swap((volatile long *) (_ptr),		\
+				      (long) (_o), (long) (_n)))
 #  define fetch_and_add1(_ptr)		__sync_fetch_and_add(_ptr, 1)
 #  define HAVE_CMPXCHG
 #  define HAVE_FETCH_AND_ADD1
