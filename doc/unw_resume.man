@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Sat Feb  8 01:21:05 PST 2003
+.\" Manual page created with latex2man on Thu Feb 20 23:26:18 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_RESUME" "3" "08 February 2003" "Programming Library " "Programming Library "
+.TH "UNW\\_RESUME" "3" "20 February 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -54,6 +54,16 @@ will always install the new value as the
 contents of that register. In other words, the exception handling 
 arguments are installed even in cases where normally only the 
 ``preserved\&'' registers are restored. 
+.PP
+Note that unw_resume()
+does \fInot\fP
+invoke any unwind 
+handlers (aka, ``personality routines\&''). If a program needs this, it 
+will have to do so on its own by obtaining the unw_proc_info_t
+of each unwound frame and appropriately processing its unwind handler 
+and language\-specific data area (lsda). These steps are generally 
+dependent on the target\-platform and are regulated by the 
+processor\-specific ABI (application\-binary interface). 
 .PP
 .SH RETURN VALUE
 
