@@ -379,7 +379,7 @@ struct ia64_labeled_state
 #define rbs_switch			UNW_OBJ(rbs_switch)
 #define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
 #define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
-#define ia64_init			UNW_ARCH_OBJ(init)
+#define ia64_init			UNW_OBJ(init)
 
 extern int ia64_make_proc_info (struct cursor *c);
 extern int ia64_fetch_proc_info (struct cursor *c, unw_word_t ip,
