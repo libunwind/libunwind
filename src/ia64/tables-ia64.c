@@ -54,7 +54,11 @@ is_local_addr_space (unw_addr_space_t as)
 #else
   extern unw_addr_space_t _ULia64_local_addr_space;
 
-  return (as == _Uia64_local_addr_space || as == _ULia64_local_addr_space);
+  return (as == _Uia64_local_addr_space
+# ifndef UNW_GENERIC_ONLY
+	  || as == _ULia64_local_addr_space
+# endif
+	  );
 #endif
 }
 
@@ -402,6 +406,14 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
     }
 #elif defined(HAVE_DLMODINFO)
   struct load_module_desc lmd;
+  unw_dyn_info_t di, *dip = &di;
+  struct unwind_header
+    {
+      uint64_t format;
+      uint64_t start_offset;
+      uint64_t end_offset;
+    }
+  *uhdr;
 
   if (!dlmodinfo (ip, &lmd, sizeof (lmd), NULL, 0, 0))
     return -UNW_ENOINFO;
@@ -410,9 +422,13 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   di.start_ip = lmd.text_base;
   di.end_ip = lmd.text_base + lmd.text_size;
   di.u.ti.name_ptr = 0;	/* no obvious table-name available */
-  di.u.ti.table_data = lmd.unwind_base;
-  di.u.ti.table_len = lmd.unwind_size / sizeof (unw_word_t);
   di.u.ti.segbase = lmd.text_base;
+
+  uhdr = (struct unwind_header *) lmd.unwind_base;
+  di.u.ti.table_data = (unw_word_t *) (di.u.ti.segbase + uhdr->start_offset);
+  di.u.ti.table_len = ((uhdr->end_offset - uhdr->start_offset)
+		       / sizeof (unw_word_t));
+
   debug (100, "unwind: found table `%s': segbase=%lx, len=%lu, gp=%lx, "
  	 "table_data=%p\n", (char *) di.u.ti.name_ptr, di.u.ti.segbase,
  	 di.u.ti.table_len, di.gp, di.u.ti.table_data);
