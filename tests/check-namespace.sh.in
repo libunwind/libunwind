@@ -94,6 +94,7 @@ function check_local_unw_abi {
     match _U${plat}_get_accessors
     match _U${plat}_getcontext
     match _U${plat}_regname
+    match _U${plat}_strerror
 
     match _U_dyn_cancel
     match _U_dyn_info_list_addr
@@ -139,6 +140,7 @@ function check_generic_unw_abi {
     match _U${plat}_set_fpreg
     match _U${plat}_set_reg
     match _U${plat}_step
+    match _U${plat}_strerror
 
     case ${plat} in
 	ia64)
