@@ -8,8 +8,7 @@ int
 unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 {
   struct ia64_cursor *c = (struct ia64_cursor *) cursor;
-  unw_word_t loc, reg_loc, nat_loc, sc_addr;
-  int ret;
+  unw_word_t loc, reg_loc, nat_loc;
 
   loc = 0;		/* default to "not saved" */
 
