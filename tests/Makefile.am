@@ -1,10 +1,10 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
-EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper
+EXTRA_DIST = run-ia64-test-dyn1 run-ptrace-mapper check-namespace.sh.in
 
 noinst_PROGRAMS_common =
 check_PROGRAMS_common = test-proc-info test-static-link
-check_SCRIPTS_common =
+check_SCRIPTS_common =	run-check-namespace
 
 if REMOTE_ONLY
  check_SCRIPTS_cdep =
