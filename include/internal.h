@@ -29,8 +29,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Platform-independent libunwind-internal declarations.  */
 
 #include <assert.h>
-#include <pthread.h>
 #include <libunwind.h>
+#include <pthread.h>
+#include <signal.h>
 
 #ifdef __GNUC__
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
@@ -79,11 +80,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_unlock
 
+#define mutex_init(l)	(pthread_mutex_init ? pthread_mutex_init ((l), 0) : 0)
 #define mutex_lock(l)	(pthread_mutex_lock ? pthread_mutex_lock (l) : 0)
 #define mutex_unlock(l)	(pthread_mutex_unlock ? pthread_mutex_unlock (l) : 0)
 
+#if UNW_TARGET_IA64
+# define HAVE_CMPXCHG
+# include <ia64intrin.h>
+# define cmpxchg_ptr(_ptr,_o,_n)					\
+	((void *) __sync_val_compare_and_swap((long *) (_ptr),		\
+					      (long) (_o), (long) (_n)))
+#endif
+
 #define UNWI_OBJ(fn)	  UNW_PASTE(UNW_PREFIX,UNW_PASTE(I,fn))
 #define UNWI_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_UI,UNW_TARGET),_), fn)
+
+#define unwi_full_sigmask	UNWI_ARCH_OBJ(full_sigmask)
+
+extern sigset_t unwi_full_sigmask;
 
 extern int UNWI_OBJ(find_dynamic_proc_info) (unw_addr_space_t as,
 					     unw_word_t ip,
@@ -222,7 +236,5 @@ struct elf_image
     void *image;		/* pointer to mmap'd image */
     size_t size;		/* (file-) size of the image */
   };
-
-#include <tdep.h>
 
 #endif /* internal_h */
