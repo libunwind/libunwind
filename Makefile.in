@@ -40,10 +40,10 @@ target_triplet = @target@
 DIST_COMMON = README $(am__configure_deps) $(am__include_HEADERS_DIST) \
 	$(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(top_srcdir)/configure $(top_srcdir)/include/config.h.in \
-	AUTHORS COPYING ChangeLog INSTALL NEWS TODO config/compile \
-	config/config.guess config/config.sub config/depcomp \
-	config/install-sh config/ltmain.sh config/missing \
-	config/mkinstalldirs
+	$(top_srcdir)/include/libunwind-common.h.in AUTHORS COPYING \
+	ChangeLog INSTALL NEWS TODO config/compile config/config.guess \
+	config/config.sub config/depcomp config/install-sh \
+	config/ltmain.sh config/missing config/mkinstalldirs
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/acinclude.m4 \
@@ -54,7 +54,8 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
  configure.lineno configure.status.lineno
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
-CONFIG_CLEAN_FILES = include/libunwind.h include/tdep.h
+CONFIG_CLEAN_FILES = include/libunwind-common.h include/libunwind.h \
+	include/tdep.h
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -65,7 +66,7 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	uninstall-recursive
 am__include_HEADERS_DIST = include/libunwind-x86_64.h \
 	include/libunwind-x86.h include/libunwind-hppa.h \
-	include/libunwind-ia64.h include/libunwind-common.h \
+	include/libunwind-ia64.h include/libunwind-common.h.in \
 	include/libunwind-dynamic.h include/libunwind-ptrace.h \
 	include/libunwind.h include/unwind.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -158,6 +159,10 @@ PACKAGE_STRING = @PACKAGE_STRING@
 PACKAGE_TARNAME = @PACKAGE_TARNAME@
 PACKAGE_VERSION = @PACKAGE_VERSION@
 PATH_SEPARATOR = @PATH_SEPARATOR@
+PKG_EXTRA = @PKG_EXTRA@
+PKG_MAINTAINER = @PKG_MAINTAINER@
+PKG_MAJOR = @PKG_MAJOR@
+PKG_MINOR = @PKG_MINOR@
 RANLIB = @RANLIB@
 REMOTE_ONLY_FALSE = @REMOTE_ONLY_FALSE@
 REMOTE_ONLY_TRUE = @REMOTE_ONLY_TRUE@
@@ -218,7 +223,8 @@ target_vendor = @target_vendor@
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@include_HEADERS_tdep = include/libunwind-x86.h
 @ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@include_HEADERS_tdep = include/libunwind-hppa.h
 @ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
-include_HEADERS_common = $(include_HEADERS_tdep) include/libunwind-common.h \
+include_HEADERS_common = $(include_HEADERS_tdep)		\
+	include/libunwind-common.h.in				\
 	include/libunwind-dynamic.h include/libunwind-ptrace.h
 
 @REMOTE_ONLY_FALSE@include_HEADERS = $(include_HEADERS_common) include/libunwind.h \
@@ -233,10 +239,9 @@ EXTRA_DIST = include/dwarf.h include/dwarf_i.h				\
 	include/ia64/jmpbuf.h include/ia64/rse.h include/ia64/script.h	\
 	include/libunwind-hppa.h include/tdep-hppa.h			\
 	include/libunwind-x86.h include/tdep-x86.h			\
-	include/x86/dwarf-config.h					\
+	include/x86/jmpbuf.h include/x86/dwarf-config.h			\
 	include/libunwind-x86_64.h include/tdep-x86_64.h		\
-	include/x86/dwarf-config.h					\
-	include/x86_64/dwarf-config.h
+	include/x86_64/jmpbuf.h include/x86_64/dwarf-config.h
 
 DISTCLEANFILES = include/libunwind.h include/tdep.h
 all: all-recursive
@@ -292,6 +297,8 @@ $(top_srcdir)/include/config.h.in: @MAINTAINER_MODE_TRUE@ $(am__configure_deps)
 
 distclean-hdr:
 	-rm -f include/config.h include/stamp-h1
+include/libunwind-common.h: $(top_builddir)/config.status $(top_srcdir)/include/libunwind-common.h.in
+	cd $(top_builddir) && $(SHELL) ./config.status $@
 
 mostlyclean-libtool:
 	-rm -f *.lo
