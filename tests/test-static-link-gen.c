@@ -60,7 +60,7 @@ test_generic (void)
 
 #ifndef UNW_REMOTE_ONLY
   {
-    ucontext_t uc;
+    unw_context_t uc;
 
     unw_getcontext (&uc);
     unw_init_local (&c, &uc);
