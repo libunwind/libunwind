@@ -37,6 +37,7 @@ else
   CPPFLAGS="${CPPFLAGS} -DNDEBUG"
 fi
 
+AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
 AC_CHECK_TYPES([sighandler_t], [], [],
 [$ac_includes_default
 #if HAVE_SIGNAL_H
