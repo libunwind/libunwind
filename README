@@ -8,6 +8,16 @@ information yet, so its utility is limited.  Similarly, the HP-UX/IPF
 support is incomplete, though it is sufficient to do a basic
 backtrace.  unw_resume() is not supported, however.
 
+* Important GCC v3.4.0 Caveat
+
+GCC v3.4.0 breaks C++ ABI compatibility and because of that, libunwind
+cannot easily be used as the unwinder for GCC v3.4.0.  The GCC
+developers are aware of the problem [1] and the expectation is that
+the problem will be fixed with GCC v3.4.1.  In the meantime, it may be
+best to avoid using GCC v3.4.0.
+
+[1] http://gcc.gnu.org/ml/gcc/2004-04/msg00989.html
+
 * General Build Instructions
 
 In general, this library can be built and installed with the following
@@ -30,7 +40,8 @@ testing, you may want to use a prefix of /usr/local instead.
 To build libunwind with the Intel Electron compiler (ECC), it is
 recommended to run configure like this:
 
-	$ ./configure CC=ecc CXX=ecc CCAS=gcc
+	$ ./configure CC=ecc CXX=ecc CCAS=gcc CCASFLAGS=-g \
+		LDFLAGS="-L$PWD/src/.libs"
 
 The reason for this is that ECC uses the Intel assembler, which
 doesn't grok some of the IA-64 assembly code in the "tests" directory.
@@ -49,6 +60,7 @@ should look like this:
 
     $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
 		LDFLAGS="-L$PWD/src/.libs"
+
 
 * Building on HP-UX
 
