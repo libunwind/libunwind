@@ -37,12 +37,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef unw_tdep_word_t unw_word_t;
 
-/* This needs to be big enough to accommodate the unwind state of any
-   architecture, while leaving some slack for future expansion.
-   Changing this value will require recompiling all users of this
-   library.  */
-#define UNW_STATE_LEN	127
-
 /* Error codes.  The unwind routines return the *negated* values of
    these error codes on error and a non-negative value on success.  */
 typedef enum
@@ -92,7 +86,7 @@ typedef int unw_regnum_t;
    of this type.  */
 typedef struct unw_cursor
   {
-    unw_word_t opaque[UNW_STATE_LEN];
+    unw_word_t opaque[UNW_TDEP_CURSOR_LEN];
   }
 unw_cursor_t;
 
@@ -118,6 +112,9 @@ typedef union
 unw_fpreg_t;
 
 typedef struct unw_addr_space *unw_addr_space_t;
+
+/* This bit is set to indicate */
+#define UNW_PI_FLAG_FIRST_TDEP_BIT	16
 
 typedef struct unw_proc_info
   {
@@ -234,7 +231,7 @@ extern int UNW_OBJ(get_proc_name) (unw_cursor_t *c, char *buf, size_t buf_len);
 /* Create a new address space (in addition to the default
    local_addr_space).  BYTE_ORDER can be 0 to select the default
    byte-order or one of the byte-order values defined by <endian.h>
-   (e.g., __LITLE_ENDIAN or __BIG_ENDIAN).  The default byte-order is
+   (e.g., __LITTLE_ENDIAN or __BIG_ENDIAN).  The default byte-order is
    either implied by the target architecture (e.g., x86 is always
    little-endian) or is select based on the byte-order of the host.
 
