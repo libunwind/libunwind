@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Thu Jan 16 23:17:13 PST 2003
+.\" Manual page created with latex2man on Fri Jan 17 15:53:56 PST 2003
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND" "3" "16 January 2003" "Programming Library " "Programming Library "
+.TH "LIBUNWIND" "3" "17 January 2003" "Programming Library " "Programming Library "
 .SH NAME
 
 .PP
@@ -53,7 +53,7 @@ int,
 unw_word_t);
 .br
 int
-unw_get_fpreg(unw_cursor_t *,
+unw_set_fpreg(unw_cursor_t *,
 int,
 unw_fpreg_t);
 .br
@@ -451,8 +451,7 @@ multiple platforms.
 .SH SEE ALSO
 
 .PP
-libunwind\-ia64(3), libunwind\-hppa(3), libunwind\-x86(3), 
-unw_init_local(3), unw_init_remote(3), etc. 
+libunwind\-ia64(3)
 .PP
 .SH AUTHOR
 
