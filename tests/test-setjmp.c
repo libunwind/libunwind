@@ -94,7 +94,8 @@ void
 test_sigsetjmp (void)
 {
   sigjmp_buf jbuf;
-  int i, ret;
+  volatile int i;
+  int ret;
 
   for (i = 0; i < 10; ++i)
     {
