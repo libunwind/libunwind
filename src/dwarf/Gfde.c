@@ -47,9 +47,11 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 # define STR2(x)	#x
 # define STR(x)		STR2(x)
 
-  /* Pick appropriate default for FDE-encoding.  DWARF spec says it
-     has to be the size of the addressing unit of the architecture,
-     unless specfied otherwise in the augmentation string.  */
+  /* Pick appropriate default for FDE-encoding.  DWARF spec says
+     start-IP (initial_location) and the code-size (address_range) are
+     "address-unit sized constants".  The `R' augmentation can be used
+     to override this, but by default, we pick an address-sized unit
+     for fde_encoding.  */
   switch (sizeof (unw_word_t))
     {
     case 4:	fde_encoding = DW_EH_PE_udata4; break;
