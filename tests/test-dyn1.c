@@ -1,3 +1,30 @@
+/* libunwind - a platform-independent unwind library
+   Copyright (C) 2002-2003 Hewlett-Packard Co
+	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+
+This file is part of libunwind.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+/* This file tests dynamic code-generation via function-cloning.  */
+
 #include <libunwind.h>
 #include <malloc.h>
 #include <stdio.h>
@@ -13,6 +40,8 @@
 typedef void (*template_t) (int, void (*)(),
 			    int (*)(const char *, ...), const char *,
 			    const char **);
+
+int verbose;
 
 static const char *strarr[] =
   {
@@ -70,7 +99,8 @@ sighandler (int signal)
   unw_context_t uc;
   int count = 0;
 
-  printf ("caught signal %d\n", signal);
+  if (verbose)
+    printf ("caught signal %d\n", signal);
 
   unw_getcontext (&uc);
   unw_init_local (&cursor, &uc);
@@ -83,7 +113,8 @@ sighandler (int signal)
   do
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
-      printf ("ip = %lx\n", (long) ip);
+      if (verbose)
+	printf ("ip = %lx\n", (long) ip);
       ++count;
     }
   while (unw_step (&cursor) > 0);
@@ -91,8 +122,15 @@ sighandler (int signal)
   if (count != 13)
     panic ("FAILURE: expected 13, not %d frames below signal frame\n", count);
 
-  printf ("SUCCESS\n");
+  if (verbose)
+    printf ("SUCCESS\n");
   exit (0);
+}
+
+int
+dev_null (const char *format, ...)
+{
+  return 0;
 }
 
 int
@@ -104,11 +142,15 @@ main (int argc, char *argv[])
   template_t funcp;
   void *mem;
 
+  if (argc > 1)
+    ++verbose;
+
   mem = malloc (getpagesize ());
 
   get_fdesc (fdesc, template);
 
-  printf ("old code @ %p, new code @ %p\n", (void *) fdesc.code, mem);
+  if (verbose)
+    printf ("old code @ %p, new code @ %p\n", (void *) fdesc.code, mem);
 
   memcpy (mem, (void *) fdesc.code, 256);
   mprotect ((void *) ((long) mem & ~(getpagesize () - 1)),
@@ -139,7 +181,10 @@ main (int argc, char *argv[])
   fdesc.code = (long) mem;
   funcp = get_funcp (fdesc);
 
-  (*funcp) (10, funcp, printf, "iteration %c%s\n", strarr);
+  if (verbose)
+    (*funcp) (10, funcp, printf, "iteration %c%s\n", strarr);
+  else
+    (*funcp) (10, funcp, dev_null, "iteration %c%s\n", strarr);
 
   _U_dyn_cancel (&di);
   return -1;
