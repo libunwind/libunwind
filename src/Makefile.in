@@ -180,8 +180,8 @@ libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 am__libunwind_x86_64_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
 	dwarf/dwarf-eh.h dwarf/global.c x86_64/init.h \
-	x86_64/unwind_i.h x86_64/is_fpreg.c x86_64/regname.c \
-	mi/Gdyn-extract.c mi/Gdyn-remote.c \
+	x86_64/unwind_i.h x86_64/ucontext_i.h x86_64/is_fpreg.c \
+	x86_64/regname.c mi/Gdyn-extract.c mi/Gdyn-remote.c \
 	mi/Gfind_dynamic_proc_info.c mi/Gget_accessors.c \
 	mi/Gget_proc_info_by_ip.c mi/Gget_proc_name.c \
 	mi/Gput_dynamic_unwind_info.c mi/Gdestroy_addr_space.c \
@@ -209,30 +209,31 @@ libunwind_la_DEPENDENCIES =
 am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
 	dwarf/dwarf-eh.h dwarf/global.c x86_64/init.h \
-	x86_64/unwind_i.h x86_64/is_fpreg.c x86_64/regname.c \
-	mi/_ReadULEB.c mi/_ReadSLEB.c mi/backtrace.c mi/dyn-cancel.c \
-	mi/dyn-info-list.c mi/dyn-register.c mi/Ldyn-extract.c \
-	mi/Lfind_dynamic_proc_info.c mi/Lget_accessors.c \
-	mi/Lget_proc_info_by_ip.c mi/Lget_proc_name.c \
-	mi/Lput_dynamic_unwind_info.c mi/Ldestroy_addr_space.c \
-	mi/Lget_reg.c mi/Lset_reg.c mi/Lget_fpreg.c mi/Lset_fpreg.c \
-	mi/Lset_caching_policy.c unwind/Backtrace.c \
-	unwind/DeleteException.c unwind/FindEnclosingFunction.c \
-	unwind/ForcedUnwind.c unwind/GetBSP.c unwind/GetCFA.c \
-	unwind/GetDataRelBase.c unwind/GetGR.c unwind/GetIP.c \
-	unwind/GetLanguageSpecificData.c unwind/GetRegionStart.c \
-	unwind/GetTextRelBase.c unwind/RaiseException.c \
-	unwind/Resume.c unwind/Resume_or_Rethrow.c unwind/SetGR.c \
-	unwind/SetIP.c elf64.c elf64.h dwarf/Lexpr.c dwarf/Lfde.c \
-	dwarf/Lparser.c dwarf/Lpe.c dwarf/Lstep.c \
-	dwarf/Lfind_proc_info-lsb.c x86_64/Lcreate_addr_space.c \
-	x86_64/Lget_save_loc.c x86_64/Lglobal.c x86_64/Linit.c \
-	x86_64/Linit_local.c x86_64/Linit_remote.c \
-	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c \
-	x86_64/Lregs.c x86_64/Lresume.c x86_64/Lstep.c x86/init.h \
-	x86/offsets.h x86/unwind_i.h x86/is_fpreg.c x86/regname.c \
-	elf32.c elf32.h x86/Lcreate_addr_space.c x86/Lget_save_loc.c \
-	x86/Lglobal.c x86/Linit.c x86/Linit_local.c x86/Linit_remote.c \
+	x86_64/unwind_i.h x86_64/ucontext_i.h x86_64/is_fpreg.c \
+	x86_64/regname.c mi/_ReadULEB.c mi/_ReadSLEB.c mi/backtrace.c \
+	mi/dyn-cancel.c mi/dyn-info-list.c mi/dyn-register.c \
+	mi/Ldyn-extract.c mi/Lfind_dynamic_proc_info.c \
+	mi/Lget_accessors.c mi/Lget_proc_info_by_ip.c \
+	mi/Lget_proc_name.c mi/Lput_dynamic_unwind_info.c \
+	mi/Ldestroy_addr_space.c mi/Lget_reg.c mi/Lset_reg.c \
+	mi/Lget_fpreg.c mi/Lset_fpreg.c mi/Lset_caching_policy.c \
+	unwind/Backtrace.c unwind/DeleteException.c \
+	unwind/FindEnclosingFunction.c unwind/ForcedUnwind.c \
+	unwind/GetBSP.c unwind/GetCFA.c unwind/GetDataRelBase.c \
+	unwind/GetGR.c unwind/GetIP.c unwind/GetLanguageSpecificData.c \
+	unwind/GetRegionStart.c unwind/GetTextRelBase.c \
+	unwind/RaiseException.c unwind/Resume.c \
+	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c \
+	elf64.c elf64.h dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c \
+	dwarf/Lpe.c dwarf/Lstep.c dwarf/Lfind_proc_info-lsb.c \
+	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c \
+	x86_64/Lglobal.c x86_64/Linit.c x86_64/Linit_local.c \
+	x86_64/Linit_remote.c x86_64/Lis_signal_frame.c \
+	x86_64/Lget_proc_info.c x86_64/Lregs.c x86_64/Lresume.c \
+	x86_64/Lstep.c x86/init.h x86/offsets.h x86/unwind_i.h \
+	x86/is_fpreg.c x86/regname.c elf32.c elf32.h \
+	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c \
+	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c \
 	x86/Lis_signal_frame.c x86/Lget_proc_info.c x86/Lregs.c \
 	x86/Lresume.c x86/Lstep.c hppa/global.c hppa/tables.c \
 	hppa/init.h hppa/unwind_i.h hppa/Gget_reg.c \
@@ -478,8 +479,10 @@ COMMON_SO_LDFLAGS = -XCClinker -nostartfiles	\
 
 @REMOTE_ONLY_FALSE@LIBRARIES_cdep = libunwind-ptrace.a
 @REMOTE_ONLY_TRUE@LIBRARIES_cdep = 
-@REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind.la libunwind-setjmp.la
+@REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep = libunwind.la
 @REMOTE_ONLY_TRUE@lib_LTLIBRARIES_cdep = 
+@REMOTE_ONLY_FALSE@lib_LTLIBRARIES_cdep_setjmp = libunwind-setjmp.la
+@REMOTE_ONLY_TRUE@lib_LTLIBRARIES_cdep_setjmp = 
 
 ### libunwind-ptrace:
 libunwind_ptrace_a_SOURCES = \
@@ -640,7 +643,7 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 # The list of files that go both into libunwind and libunwind-x86_64:
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
-	x86_64/init.h x86_64/unwind_i.h					\
+	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h		\
 	x86_64/is_fpreg.c x86_64/regname.c
 
 
@@ -708,7 +711,9 @@ libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
 libunwind_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 libunwind_la_LIBADD = -lc
 lib_LIBRARIES = $(LIBRARIES_cdep)
-lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
+lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
+		  $(lib_LTLIBRARIES_cdep_setjmp)
+
 AM_CPPFLAGS = -I$(top_srcdir)/include/$(arch) -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 EXTRA_DIST = elfxx.h elfxx.c unwind-internal.h	\
