@@ -8,6 +8,10 @@
 
 #include <sys/mman.h>
 
+#ifdef HAVE_IA64INTRIN_H
+# include <ia64intrin.h>
+#endif
+
 int verbose;
 
 #ifdef __ia64__
@@ -20,20 +24,7 @@ int verbose;
 # define EXTRA			0
 #endif
 
-static void
-flush_cache (void *addr, size_t len)
-{
-#ifdef __ia64__
-  void *end = (char *) addr + len;
-
-  while (addr < end)
-    {
-      asm volatile ("fc %0" :: "r"(addr));
-      addr = (char *) addr + 32;
-    }
-  asm volatile (";;sync.i;;srlz.i;;");
-#endif
-}
+extern void flush_cache (void *addr, size_t len);
 
 int
 make_executable (void *addr, size_t len)
