@@ -48,7 +48,7 @@ measure_unwind (int maxlevel)
     panic ("Unwound only %d levels, expected at least %d levels",
 	   level, maxlevel);
 
-  printf ("initialization time = %gnsec, time per unwind-step = %gnsec\n",
+  printf (" unw_{getcontext+init_local}: %9.3f nsec, unw_step: %9.3f nsec\n",
 	  1e9*(mid - start), 1e9*(stop - mid)/level);
   return 0;
 }
@@ -71,6 +71,18 @@ main (int argc, char **argv)
   if (argc > 1)
     maxlevel = atol (argv[1]);
 
+  printf ("Caching: none\n");
+  unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_NONE);
+  for (i = 0; i < 20; ++i)
+    f1 (0, maxlevel);
+
+  printf ("Caching: global\n");
+  unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_GLOBAL);
+  for (i = 0; i < 20; ++i)
+    f1 (0, maxlevel);
+
+  printf ("Caching: per-thread\n");
+  unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
   for (i = 0; i < 20; ++i)
     f1 (0, maxlevel);
   return 0;
