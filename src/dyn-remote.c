@@ -190,61 +190,66 @@ unwi_dyn_remote_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 {
   unw_accessors_t *a = unw_get_accessors (as);
   unw_word_t dyn_list_addr, addr, next_addr, gen1, gen2;
-  unw_word_t start_ip, end_ip;
   unw_dyn_info_t di;
-  int32_t pad;
   int ret;
 
-  ret = (*a->get_dyn_info_list_addr) (as, &dyn_list_addr, arg);
-  if (ret < 0)
-    return ret;
+  if ((*a->get_dyn_info_list_addr) (as, &dyn_list_addr, arg) < 0)
+    return -UNW_ENOINFO;
 
   do
     {
       addr = dyn_list_addr;
 
-      if ((ret = fetchw (as, a, &addr, &gen1, arg)) < 0
-	  || (ret = fetchw (as, a, &addr, &next_addr, arg)) < 0)
+      ret = -UNW_ENOINFO;
+
+      if (fetchw (as, a, &addr, &gen1, arg) < 0
+	  || fetchw (as, a, &addr, &next_addr, arg) < 0)
 	return ret;
 
       for (addr = next_addr; addr != 0; addr = next_addr)
 	{
-	  if ((ret = fetchw (as, a, &addr, &next_addr, arg)) < 0
-	      || (ret = fetchw (as, a, &addr, &start_ip, arg)) < 0
-	      || (ret = fetchw (as, a, &addr, &end_ip, arg)) < 0)
-	    return ret;
+	  if (fetchw (as, a, &addr, &next_addr, arg) < 0)
+	    goto recheck;	/* only fail if generation # didn't change */
+
+	  addr += WSIZE;	/* skip over prev_addr */
+
+	  if (fetchw (as, a, &addr, &di.start_ip, arg) < 0
+	      || fetchw (as, a, &addr, &di.end_ip, arg) < 0)
+	    goto recheck;	/* only fail if generation # didn't change */
 
 	  if (ip >= di.start_ip && ip < di.end_ip)
 	    {
-	      if ((ret = fetchw (as, a, &addr, &di.gp, arg)) < 0
-		  || (ret = fetch32 (as, a, &addr, &di.format, arg)) < 0
-		  || (ret = fetch32 (as, a, &addr, &pad, arg)) < 0)
-		return ret;
+	      if (fetchw (as, a, &addr, &di.gp, arg) < 0
+		  || fetch32 (as, a, &addr, &di.format, arg) < 0)
+		goto recheck;	/* only fail if generation # didn't change */
 
-	      if (need_unwind_info)
-		if ((ret = intern_dyn_info (as, a, &addr, &di, arg)) < 0)
-		  return ret;
+	      addr += 4;	/* skip over padding */
 
-	      ret = unwi_extract_dynamic_proc_info (as, ip, pi, &di,
-						    need_unwind_info, arg);
-	      if (ret < 0)
+	      if (need_unwind_info
+		  && intern_dyn_info (as, a, &addr, &di, arg) < 0)
+		goto recheck;	/* only fail if generation # didn't change */
+
+	      if (unwi_extract_dynamic_proc_info (as, ip, pi, &di,
+						  need_unwind_info, arg) < 0)
 		{
 		  free_dyn_info (&di);
-		  return ret;
+		  goto recheck;	/* only fail if generation # didn't change */
 		}
-	      return 0;
+	      ret = 0;	/* OK, found it */
+	      break;
 	    }
 	}
 
-      /* Recheck generation number to ensure things didn't change
-	 underneath us:  */
+      /* Re-check generation number to ensure the data we have is
+	 consistent.  */
+    recheck:
       addr = dyn_list_addr;
-      if ((ret = fetchw (as, a, &addr, &gen2, arg)) < 0)
+      if (fetchw (as, a, &addr, &gen2, arg) < 0)
 	return ret;
     }
   while (gen1 != gen2);
   *genp = gen1;
-  return 0;
+  return ret;
 }
 
 HIDDEN void
