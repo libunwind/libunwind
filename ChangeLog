@@ -1,3 +1,19 @@
+***********************************************************
+
+	Discontinued.  See bitkeeper loginstead at
+
+		http://unwind.bkbits.net/
+
+***********************************************************
+
+2002-11-08  David Mosberger-Tang  <David.Mosberger@acm.org>
+
+	* src/ia64/unwind_i.h (ia64_getfp): Change from macro to inline
+	function.  Check "loc" argument for being NULL before dereferencing it.
+	(ia64_putfp): Ditto.
+	(ia64_get): Ditto.
+	(ia64_put): Ditto.
+
 2002-01-18  David Mosberger-Tang  <David.Mosberger@acm.org>
 
 	* src/ia64/parser.c (__ia64_unw_create_state_record): Set
