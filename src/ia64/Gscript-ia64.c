@@ -60,7 +60,8 @@ static __thread struct ia64_script_cache ia64_per_thread_cache =
 static inline unw_hash_index_t
 hash (unw_word_t ip)
 {
-# define magic	0x9e3779b97f4a7c16	/* based on (sqrt(5)/2-1)*2^64 */
+  /* based on (sqrt(5)/2-1)*2^64 */
+# define magic	((unw_word_t) 0x9e3779b97f4a7c16ULL)
 
   return (ip >> 4) * magic >> (64 - IA64_LOG_UNW_HASH_SIZE);
 }
