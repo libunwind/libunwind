@@ -202,6 +202,8 @@ fetchw (unw_addr_space_t as, unw_accessors_t *a,
   return ret;
 }
 
+#define mi_init		UNWI_ARCH_OBJ(mi_init)
+
 extern void mi_init (void);	/* machine-independent initializations */
 
 #include <tdep.h>
