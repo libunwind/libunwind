@@ -148,9 +148,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 #endif /* UNW_TARGET_IA64 */
 
 static unw_dyn_info_t *
-get_unwind_info (struct UPT_info *ui, unw_addr_space_t as,
-		 unw_word_t ip, unw_proc_info_t *pi,
-		 int need_unwind_info)
+get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
 {
   unsigned long segbase, mapoff;
   char path[PATH_MAX];
@@ -189,7 +187,7 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   struct UPT_info *ui = arg;
   unw_dyn_info_t *di;
 
-  di = get_unwind_info (ui, as, ip, pi, need_unwind_info);
+  di = get_unwind_info (ui, as, ip);
   if (!di)
     return -UNW_ENOINFO;
 
