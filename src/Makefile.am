@@ -11,9 +11,11 @@ COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles	\
 if REMOTE_ONLY
 LIBRARIES_cdep			=
 lib_LTLIBRARIES_cdep		=
+lib_LTLIBRARIES_cdep_setjmp	=
 else
 LIBRARIES_cdep			= libunwind-ptrace.a
-lib_LTLIBRARIES_cdep		= libunwind.la libunwind-setjmp.la
+lib_LTLIBRARIES_cdep		= libunwind.la
+lib_LTLIBRARIES_cdep_setjmp	= libunwind-setjmp.la
 endif
 
 ### libunwind-ptrace:
@@ -162,7 +164,7 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 # The list of files that go both into libunwind and libunwind-x86_64:
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
-	x86_64/init.h x86_64/unwind_i.h					\
+	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h		\
 	x86_64/is_fpreg.c x86_64/regname.c
 
 # The list of files that go into libunwind:
@@ -270,7 +272,8 @@ libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 libunwind_la_LIBADD  = -lc
 
 lib_LIBRARIES = $(LIBRARIES_cdep)
-lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch)
+lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
+		  $(lib_LTLIBRARIES_cdep_setjmp)
 
 AM_CPPFLAGS = -I$(top_srcdir)/include/$(arch) -I$(top_srcdir)/include -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
