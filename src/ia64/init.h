@@ -107,9 +107,7 @@ common_init (struct ia64_cursor *c)
 #endif
   c->sigcontext_loc = 0;
 
-#ifdef IA64_UNW_SCRIPT_CACHE
   c->hint = 0;
   c->prev_script = 0;
-#endif
   return ia64_get_proc_info (c);
 }
