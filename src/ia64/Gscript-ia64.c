@@ -71,16 +71,21 @@ static inline struct ia64_script_cache *
 get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
 {
   struct ia64_script_cache *cache = &as->global_cache;
+  unw_caching_policy_t caching = as->caching_policy;
 
 #ifdef HAVE___THREAD
   if (as->caching_policy == UNW_CACHE_PER_THREAD)
     cache = &ia64_per_thread_cache;
 #endif
 
-  if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
+  if (likely (caching != UNW_CACHE_NONE))
     {
       sigprocmask (SIG_SETMASK, &unwi_full_sigmask, saved_sigmaskp);
-      mutex_lock (&cache->lock);
+      if (likely (caching == UNW_CACHE_GLOBAL))
+	{
+	  debug (200, "%s: acquiring lock\n", __FUNCTION__);
+	  mutex_lock (&cache->lock);
+	}
     }
 
   if (as->cache_generation != cache->generation)
@@ -95,9 +100,13 @@ static inline void
 put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
 		  sigset_t *saved_sigmaskp)
 {
-  if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
+  unw_caching_policy_t caching = as->caching_policy;
+
+  if (likely (caching != UNW_CACHE_NONE))
     {
-      mutex_unlock (&cache->lock);
+      debug (200, "%s: unmasking signals/releasing lock\n", __FUNCTION__);
+      if (likely (caching == UNW_CACHE_GLOBAL))
+	mutex_unlock (&cache->lock);
       sigprocmask (SIG_SETMASK, saved_sigmaskp, NULL);
     }
 }
