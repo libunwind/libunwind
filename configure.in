@@ -11,12 +11,13 @@ AC_PROG_CC
 AC_PROG_INSTALL
 AC_PROG_MAKE_SET
 AM_PROG_LIBTOOL
+AM_PROG_AS
 
 dnl Checks for libraries.
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(unistd.h)
+AC_CHECK_HEADERS(unistd.h ia64intrin.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -27,8 +28,6 @@ dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(getunwind)
-
-AM_PROG_AS
 
 get_arch() {
  case "$1" in
@@ -65,11 +64,12 @@ if test x$enable_debug = xyes; then
 else
   CPPFLAGS="${CPPFLAGS} -DNDEBUG"
 fi
-ASFLAGS="${ASFLAGS} ${CPPFLAGS}"
 
 if test x$GCC = xyes; then
   CFLAGS="${CFLAGS} -Wall -Wsign-compare"
 fi
+
+CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
