@@ -29,7 +29,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Target-dependent definitions that are internal to libunwind but need
    to be shared with target-independent code.  */
 
-#include <endian.h>
+#ifdef HAVE_ENDIAN_H
+# include <endian.h>
+#else
+# define __LITTLE_ENDIAN	1234
+# define __BIG_ENDIAN		4321
+# if defined(__hpux)
+#   define __BYTE_ORDER __LITTLE_ENDIAN
+# else
+#   error Host has unknown byte-order.
+# endif
+#endif
 #include <libunwind.h>
 
 #include "elf64.h"
