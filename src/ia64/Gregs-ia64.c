@@ -69,7 +69,8 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg, uint8_t *nat_bitnr)
 	      /* initialize fph partition: */
 	      tmp_addr = addr + LINUX_SC_FR_OFF + 32*16;
 	      for (i = 32; i < 128; ++i, tmp_addr += 16)
-		if (ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0), unw.f0) < 0)
+		if (ia64_putfp (c, IA64_LOC_ADDR (tmp_addr, 0),
+				unw.read_only.f0) < 0)
 		  return IA64_NULL_LOC;
 	      /* mark fph partition as valid: */
 	      if (ia64_put (c, IA64_LOC_ADDR (addr + LINUX_SC_FLAGS_OFF, 0),
@@ -539,7 +540,7 @@ tdep_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
     case UNW_IA64_FR + 0:
       if (write)
 	return -UNW_EREADONLYREG;
-      *valp = unw.f0;
+      *valp = unw.read_only.f0;
       return 0;
 
     case UNW_IA64_FR + 1:
@@ -547,9 +548,9 @@ tdep_access_fpreg (struct cursor *c, int reg, unw_fpreg_t *valp,
 	return -UNW_EREADONLYREG;
 
       if (c->as->big_endian)
-	*valp = unw.f1_be;
+	*valp = unw.read_only.f1_be;
       else
-	*valp = unw.f1_le;
+	*valp = unw.read_only.f1_le;
       return 0;
 
     case UNW_IA64_FR + 2: loc = c->loc[IA64_REG_F2]; break;
