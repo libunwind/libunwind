@@ -4,10 +4,19 @@
 
 ** Fixed a bug which caused "make install" to install libunwind-common.h.in
    instead of libunwind-common.h.
+** Fixed a bug in the ia64 {sig,}longjmp() which showed on
+   SuSE Linux 9 because it's using a newer compiler & the EPC-based system
+   call stubs.
+** Fixed incorrect offsets in tests/ia64-test-nat-asm.S.
+   Warning: you'll need a GNU assembler dated later than 21-Sep-2004 to
+   get this file translated correctly.  With an old assembler, "make check"
+   will get lots of failures when running Gia64-test-nat or Lia64-test-nat!
 ** Convert tests/bt into a full-blown test-case.  It's designed to
    trigger a (rarely-encountered) bug in the GNU assembler on ia64.
    The assembler has been fixed and once the libraries (libc etc)
    have been rebuilt, this test will pass.
+** Added test-case tests/run-ptrace-misc which, on ia64, triggers a bug in
+   current GCC (including v3.4.2) which causes bad unwind info.
 
 * News for v0.98:
 
