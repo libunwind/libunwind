@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN inline int
 ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-  unw_word_t val, sol, sof, pri_unat, loadrs, n, pfs;
+  unw_word_t val, sol, sof, pri_unat, n, pfs;
   struct cursor *c = (struct cursor *) cursor;
   struct
     {
