@@ -232,15 +232,12 @@ lookup (struct table_entry *table, size_t table_size, int32_t rel_ip)
       if (rel_ip < e->start_ip_offset)
 	hi = mid;
       else
-	{
-	  if (mid + 1 >= table_len
-	      || rel_ip < table[mid + 1].start_ip_offset)
-	    return e;
-	  else
-	    lo = mid + 1;
-	}
+	lo = mid + 1;
     }
-  return NULL;
+  if (hi <= 0)
+	return NULL;
+  e = table + hi - 1;
+  return e;
 }
 
 #endif /* !UNW_REMOTE_ONLY */
@@ -252,14 +249,14 @@ lookup (struct table_entry *table, size_t table_size, int32_t rel_ip)
    occurred reading remote memory.  */
 static int
 remote_lookup (unw_addr_space_t as,
-	       unw_word_t table, size_t table_size, unw_word_t rel_ip,
+	       unw_word_t table, size_t table_size, int32_t rel_ip,
 	       struct table_entry *e, void *arg)
 {
   unsigned long table_len = table_size / sizeof (struct table_entry);
-  unw_word_t start = ~(unw_word_t) 0, end = 0;
   unw_accessors_t *a = unw_get_accessors (as);
   unsigned long lo, hi, mid;
   unw_word_t e_addr = 0;
+  int32_t start;
   int ret;
 
   /* do a binary search for right entry: */
@@ -273,24 +270,13 @@ remote_lookup (unw_addr_space_t as,
       if (rel_ip < start)
 	hi = mid;
       else
-	{
-	  if (mid + 1 >= table_len)
-	    break;
-
-	  e_addr += 4;	/* skip over fde_offset to next table-entry */
-	  if ((ret = dwarf_reads32 (as, a, &e_addr, &end, arg)) < 0)
-	    return ret;
-
-	  if (rel_ip >= end)
-	    lo = mid + 1;
-	  else
-	    break;
-	}
+	lo = mid + 1;
     }
-  if (rel_ip < start)
+  if (hi <= 0)
     return 0;
-  e->start_ip_offset = start;
-  if ((ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0)
+  e_addr = table + (hi - 1) * sizeof (struct table_entry);
+  if ((ret = dwarf_reads32 (as, a, &e_addr, &e->start_ip_offset, arg)) < 0
+   || (ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0)
     return ret;
   return 1;
 }
