@@ -40,7 +40,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   struct UPT_info *ui = arg;
   pid_t pid = ui->pid;
 
-#if DEBUG
+#if UNW_DEBUG
   if (write)
     debug (100, "%s: %s <- %lx\n",
 	   __FUNCTION__, unw_regname (reg), (long) *val);
@@ -240,7 +240,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 #ifdef UNW_TARGET_IA64
  out:
 #endif
-#if DEBUG
+#if UNW_DEBUG
   if (!write)
     debug (100, "%s: %s -> %lx\n",
 	   __FUNCTION__, unw_regname (reg), (long) *val);
