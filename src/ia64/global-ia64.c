@@ -27,14 +27,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 struct ia64_global_unwind_state unw =
   {
-    needs_initialization: 1,
-    save_order: {
+    .needs_initialization = 1,
+    .lock = PTHREAD_MUTEX_INITIALIZER,
+    .save_order = {
       IA64_REG_IP, IA64_REG_PFS, IA64_REG_PSP, IA64_REG_PR,
       IA64_REG_UNAT, IA64_REG_LC, IA64_REG_FPSR, IA64_REG_PRI_UNAT_GR
     },
 #if UNW_DEBUG
-    debug_level: 0,
-    preg_name: {
+    .debug_level = 0,
+    .preg_name = {
       "pri_unat_gr", "pri_unat_mem", "psp", "bsp", "bspstore",
       "ar.pfs", "ar.rnat", "rp",
       "r4", "r5", "r6", "r7",
@@ -73,53 +74,67 @@ ia64_init (void)
     0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0xff, 0xfe,
     0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
   };
+  sigset_t saved_sigmask;
   uint8_t *lep, *bep;
   long i;
 
-  mi_init ();
+  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  mutex_lock (&unw.lock);
+  {
+    if (!unw.needs_initialization)
+      /* another thread else beat us to it... */
+      goto out;
 
-  mempool_init (&unw.reg_state_pool, sizeof (struct ia64_reg_state), 0);
-  mempool_init (&unw.labeled_state_pool,
-		sizeof (struct ia64_labeled_state), 0);
+    unw.needs_initialization = 0;
 
-  unw.r0 = 0;
-  unw.f0.raw.bits[0] = 0;
-  unw.f0.raw.bits[1] = 0;
+    mi_init ();
 
-  lep = (uint8_t *) &unw.f1_le + 16;
-  bep = (uint8_t *) &unw.f1_be;
-  for (i = 0; i < 16; ++i)
-    {
-      *--lep = f1_bytes[i];
-      *bep++ = f1_bytes[i];
-    }
+    mempool_init (&unw.reg_state_pool, sizeof (struct ia64_reg_state), 0);
+    mempool_init (&unw.labeled_state_pool,
+		  sizeof (struct ia64_labeled_state), 0);
 
-  lep = (uint8_t *) &unw.nat_val_le + 16;
-  bep = (uint8_t *) &unw.nat_val_be;
-  for (i = 0; i < 16; ++i)
-    {
-      *--lep = nat_val_bytes[i];
-      *bep++ = nat_val_bytes[i];
-    }
+    unw.r0 = 0;
+    unw.f0.raw.bits[0] = 0;
+    unw.f0.raw.bits[1] = 0;
 
-  lep = (uint8_t *) &unw.int_val_le + 16;
-  bep = (uint8_t *) &unw.int_val_be;
-  for (i = 0; i < 16; ++i)
-    {
-      *--lep = int_val_bytes[i];
-      *bep++ = int_val_bytes[i];
-    }
+    lep = (uint8_t *) &unw.f1_le + 16;
+    bep = (uint8_t *) &unw.f1_be;
+    for (i = 0; i < 16; ++i)
+      {
+	*--lep = f1_bytes[i];
+	*bep++ = f1_bytes[i];
+      }
 
-  if (8*sizeof(unw_hash_index_t) < IA64_LOG_UNW_HASH_SIZE)
-    unw_hash_index_t_is_too_narrow ();
+    lep = (uint8_t *) &unw.nat_val_le + 16;
+    bep = (uint8_t *) &unw.nat_val_be;
+    for (i = 0; i < 16; ++i)
+      {
+	*--lep = nat_val_bytes[i];
+	*bep++ = nat_val_bytes[i];
+      }
+
+    lep = (uint8_t *) &unw.int_val_le + 16;
+    bep = (uint8_t *) &unw.int_val_be;
+    for (i = 0; i < 16; ++i)
+      {
+	*--lep = int_val_bytes[i];
+	*bep++ = int_val_bytes[i];
+      }
+
+    if (8*sizeof(unw_hash_index_t) < IA64_LOG_UNW_HASH_SIZE)
+      unw_hash_index_t_is_too_narrow ();
 
 #ifndef UNW_REMOTE_ONLY
-  _Uia64_local_addr_space_init ();
+    _Uia64_local_addr_space_init ();
 # ifndef UNW_GENERIC_ONLY
-  {
-    extern void _ULia64_local_addr_space_init (void);
-    _ULia64_local_addr_space_init ();
-  }
+    {
+      extern void _ULia64_local_addr_space_init (void);
+      _ULia64_local_addr_space_init ();
+    }
 # endif
 #endif
+  }
+ out:
+  mutex_unlock (&unw.lock);
+  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
 }
