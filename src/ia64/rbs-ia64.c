@@ -105,10 +105,12 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
       if (regs_to_skip < nregs)
 	{
 	  /* found it: */
-	  *locp = ia64_rse_skip_regs (bsp, regs_to_skip);
+	  unw_word_t loc = ia64_rse_skip_regs (bsp, regs_to_skip);
+	  if (locp)
+	    *locp = loc;
 	  if (rnat_locp)
 	    {
-	      *rnat_locp = ia64_rse_rnat_addr (*locp);
+	      *rnat_locp = ia64_rse_rnat_addr (loc);
 	      if (!rbs_contains (&c->rbs_area[curr], *rnat_locp))
 		*rnat_locp = c->rbs_area[curr].rnat_loc;
 	    }
