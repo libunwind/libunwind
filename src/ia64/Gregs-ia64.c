@@ -226,7 +226,7 @@ HIDDEN int
 ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
-  unw_word_t loc = -8, reg_loc, nat, nat_loc, cfm, mask, pr;
+  unw_word_t loc = -8, reg_loc, nat, nat_loc, mask, pr;
   int ret, readonly = 0;
 
   switch (reg)
@@ -274,7 +274,12 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_BR + 3:	loc = c->b3_loc; break;
     case UNW_IA64_BR + 4:	loc = c->b4_loc; break;
     case UNW_IA64_BR + 5:	loc = c->b5_loc; break;
-    case UNW_IA64_CFM:		loc = c->cfm_loc; break;
+
+    case UNW_IA64_CFM:
+      if (write)
+	c->cfm = *valp;	/* also update the CFM cache */
+      loc = c->cfm_loc;
+      break;
 
     case UNW_IA64_PR:
       if (write)
@@ -307,21 +312,21 @@ ia64_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	return -UNW_EBADREG;
       ret = ia64_get_stacked (c, reg, &loc, &nat_loc);
       if (ret < 0)
-	return 0;
+	return ret;
       mask = (unw_word_t) 1 << ia64_rse_slot_num (loc);
       return update_nat (c, nat_loc, mask, valp, write);
 
     case UNW_IA64_AR_EC:
-      ret = ia64_get (c, c->cfm_loc, &cfm);
-      if (ret < 0)
-	return ret;
       if (write)
-	ret = ia64_put (c, c->cfm_loc, ((cfm & ~((unw_word_t) 0x3f << 52))
-					| (*valp & 0x3f) << 52));
+	{
+	  c->cfm = (c->cfm & ~((unw_word_t) 0x3f << 52)) | ((*valp & 0x3f) << 52);
+	  return ia64_put (c, c->cfm_loc, c->cfm);
+	}
       else
-	*valp = (cfm >> 52) & 0x3f;
-      return ret;
-
+	{
+	  *valp = (c->cfm >> 52) & 0x3f;
+	  return 0;
+	}
 
       /* scratch & special registers: */
 
