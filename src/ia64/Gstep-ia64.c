@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "rse.h"
 #include "unwind_i.h"
 
-static int
+static inline int
 check_rbs_switch (struct cursor *c)
 {
   unw_word_t saved_bsp, saved_bspstore, loadrs, ndirty;
@@ -67,10 +67,10 @@ check_rbs_switch (struct cursor *c)
       saved_bspstore = ia64_rse_skip_regs (saved_bsp, -ndirty);
     }
 
-  if (saved_bsp != c->bsp)
-    ret = rbs_record_switch (c, saved_bsp, saved_bspstore, c->rnat_loc);
+  if (saved_bsp == c->bsp)
+    return 0;
 
-  return ret;
+  return rbs_switch (c, saved_bsp, saved_bspstore, c->rnat_loc);
 }
 
 static inline int
@@ -128,8 +128,6 @@ update_frame_state (struct cursor *c)
     }
 
   c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
-  if (c->rbs_area[c->rbs_curr].end - c->bsp > c->rbs_area[c->rbs_curr].size)
-    rbs_underflow (c);
 
   /* update the IP cache: */
   ret = ia64_get (c, c->ip_loc, &ip);
