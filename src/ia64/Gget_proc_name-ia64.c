@@ -32,6 +32,5 @@ unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
   struct cursor *c = (struct cursor *) cursor;
 
   return unwi_get_proc_name (c->as, c->ip,
-			     c->as == unw_local_addr_space,
 			     buf, buf_len, offp, c->as_arg);
 }
