@@ -199,9 +199,12 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
   curr = c->rbs_curr;
   dst_rbs = c->rbs_area + curr;
   final_bsp = ia64_rse_skip_regs (c->bsp, nregs);	/* final bsp */
-  if (likely (final_bsp <= dst_rbs->end))
+  dst_rnat_loc = ia64_rse_rnat_addr (ia64_rse_skip_regs (c->bsp, nregs - 1));
+  if (likely (final_bsp <= dst_rbs->end || curr == left_edge))
     {
       c->bsp = final_bsp;
+      if (dst_rnat_loc < dst_rbs->end)
+	c->rnat_loc = dst_rnat_loc;
       return 0;
     }
 
@@ -256,7 +259,7 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
       dst_bsp += 8;
       if (ia64_rse_is_rnat_slot (dst_bsp))
 	{
-	  if ((ret = ia64_put (c, dst_rnat_loc, dst_rnat)) < 0)
+	  if ((ret = ia64_put (c, dst_bsp, dst_rnat)) < 0)
 	    return ret;
 
 	  dst_bsp += 8;
@@ -267,5 +270,6 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs)
 	}
     }
   c->bsp = dst_bsp;
+  c->rnat_loc = dst_rnat_loc;
   return ia64_put (c, dst_rnat_loc, dst_rnat);
 }
