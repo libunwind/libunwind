@@ -30,8 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
-/*  _Uia64_install_context (const cursor *c, long pri_unat, long *extra,
-			    long loadrs_value)
+/*  _Uia64_install_context (const cursor *c, long pri_unat, long *extra)
 
   Restores the machine-state represented by C and thereby resumes execution
   in that frame.  If the frame or one of its descendants was interrupted
@@ -39,16 +38,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
   Otherwise, only the preserved registers, the global-pointer (r1), and
   the exception-arguments (r15-r18) are restored.  */
 
-	.hidden _Uia64_install_context
-
 #define pRet	p6
 #define pSig	p7
 
 	.align 32
+	.hidden _Uia64_install_context
 	.global _Uia64_install_context
 	.proc _Uia64_install_context
 _Uia64_install_context:
-	alloc r3 = ar.pfs, 6, 0, 3, 0
+	alloc r3 = ar.pfs, 3, 0, 0, 0
 	invala
 	add r2 = FR_LOC_OFF, in0
 	;;
@@ -132,7 +130,7 @@ _Uia64_install_context:
 	;;
 
 	ld8 r8 = [r8]			// r8 = sigcontext_loc
-	or r11 = in3, r10		// ar.rsc.loadrs = loadrs_value
+	and r11 = 0x1c, r10		// clear all but rsc.be and rsc.pl
 	add r2 = PFS_LOC_OFF, in0
 
 	ldf.fill f30 = [r30]		// f30 restored (don't touch no more)
@@ -151,7 +149,7 @@ _Uia64_install_context:
 
 	ld8 r14 = [r2], (B1_LOC_OFF - PFS_LOC_OFF)	// r14 = pfs_loc
 	ld8 r15 = [r3], (B2_LOC_OFF - IP_OFF)		// r15 = ip
-	and r11 = ~0x3, r11			// clear ar.rsc.mode
+	nop 0
 	;;
 
 	ld8 r16 = [r2], (B3_LOC_OFF - B1_LOC_OFF)	// r16 = b1_loc
@@ -229,33 +227,28 @@ _Uia64_install_context:
 
 	ld8 r28 = [r28]			// r28 = rnat
 	mov.m ar.rsc = r11		// put RSE into enforced lazy mode
-	mov r2 = in2			// r2 = &extra[r15]
-	;;
-
-	alloc r3 = ar.pfs, 0, 0, 0, 0	// drop current frame for loadrs
-(pRet)	mov.m ar.fpsr = r27		// fpsr restored (don't touch no more)
 	mov.i ar.lc = r26		// lc restored (don't touch no more)
 	;;
 
-	loadrs				// restore or drop dirty partition
+	loadrs				// drop dirty partition
 	;;
 	mov.m ar.bspstore = r30		// restore register backing-store
-	add r3 = 8, r2			// r3 = &extra[r16]
+	add r3 = 8, in2			// r3 = &extra[r16]
 	;;
 
-(pRet)	mov.m ar.unat = r25		// unat restored (don't touch no more)
+(pRet)	mov.m ar.fpsr = r27		// fpsr restored (don't touch no more)
 	mov.m ar.rnat = r28
 (pSig)	br.cond.dpnt.many 1f
 
 /****** Return via br.ret: */
 
 	ld8 r14 = [r14]			// r14 = *pfs_loc
-	ld8 r15 = [r2], 16		// r15 restored (don't touch no more)
+	ld8 r15 = [in2], 16		// r15 restored (don't touch no more)
 	mov pr = r31, -1		// pr restored (don't touch no more)
 	;;
 
 	ld8 r16 = [r3], 16		// r16 restored (don't touch no more)
-	ld8 r17 = [r2]			// r17 restored (don't touch no more)
+	ld8 r17 = [in2]			// r17 restored (don't touch no more)
 	nop.i 0
 	;;
 
@@ -263,7 +256,7 @@ _Uia64_install_context:
 	mov.m ar.rsc = r10		// restore original ar.rsc
 	mov sp = r29
 
-	nop.m 0
+	mov.m ar.unat = r25		// unat restored (don't touch no more)
 	mov.i ar.pfs = r14
 	br.ret.sptk.many rp
 	;;
