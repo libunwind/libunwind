@@ -12,6 +12,8 @@ Testing:
 
 === taken care of:
 
++ global data is not protected by a lock; causes problems if two threads
+  call ia64_init() at almost the same time
 + cache the value of *cfm_loc; each rotate_FOO() call needs it!
 + implement the remote-lookup of the dynamic registration list
 + when doing sigreturn, must restore fp regs (and perhaps other regs) the same
