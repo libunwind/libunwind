@@ -348,6 +348,7 @@ struct ia64_labeled_state
 #define ia64_local_resume		UNW_OBJ(local_resume)
 #define ia64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
 #define ia64_strloc			UNW_OBJ(strloc)
+#define ia64_install_cursor		UNW_OBJ(install_cursor)
 #define rbs_switch			UNW_OBJ(rbs_switch)
 #define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
 #define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
@@ -367,8 +368,8 @@ extern int ia64_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
 extern ia64_loc_t ia64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
-extern void _Uia64_install_cursor (struct cursor *c, unw_word_t pri_unat,
-				   unw_word_t *extra)
+extern void ia64_install_cursor (struct cursor *c, unw_word_t pri_unat,
+				 unw_word_t *extra)
 	__attribute__ ((noreturn));
 extern int ia64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			      void *arg);
