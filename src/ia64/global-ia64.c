@@ -108,7 +108,6 @@ HIDDEN void
 ia64_init (void)
 {
   extern void unw_hash_index_t_is_too_narrow (void);
-  extern void _ULia64_local_addr_space_init (void);
   uint8_t f1_bytes[16] = {
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0xff, 0xff,
     0x80, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
@@ -163,6 +162,11 @@ ia64_init (void)
 
 #ifndef UNW_REMOTE_ONLY
   _Uia64_local_addr_space_init ();
-  _ULia64_local_addr_space_init ();
+# ifndef UNW_GENERIC_ONLY
+  {
+    extern void _ULia64_local_addr_space_init (void);
+    _ULia64_local_addr_space_init ();
+  }
+# endif
 #endif
 }
