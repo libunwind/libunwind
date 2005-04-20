@@ -747,7 +747,8 @@ lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
 /* An alias directive inside a region of length RLEN is interpreted to
    mean that the region behaves exactly like the first RLEN
    instructions at the aliased IP.  RLEN=0 implies that the current
-   state matches exactly that of the aliased IP.  */
+   state matches exactly that of before the instruction at the aliased
+   IP is executed.  */
 
 static int
 desc_alias (unw_dyn_op_t *op, struct cursor *c, struct ia64_state_record *sr)
@@ -756,7 +757,7 @@ desc_alias (unw_dyn_op_t *op, struct cursor *c, struct ia64_state_record *sr)
   int i, ret, when, rlen = sr->region_len;
   unw_word_t new_ip;
 
-  when = MIN(sr->when_target, rlen - 1);
+  when = MIN (sr->when_target, rlen);
   new_ip = op->val + ((when / 3) * 16 + (when % 3));
 
   if ((ret = ia64_fetch_proc_info (c, new_ip, 1)) < 0)
@@ -772,13 +773,13 @@ desc_alias (unw_dyn_op_t *op, struct cursor *c, struct ia64_state_record *sr)
   sr->region_start = orig_sr.region_start;
   sr->region_len = orig_sr.region_len;
   if (sr->when_sp_restored != IA64_WHEN_NEVER)
-    sr->when_sp_restored = op->when + MIN (orig_sr.when_sp_restored, rlen - 1);
+    sr->when_sp_restored = op->when + MIN (orig_sr.when_sp_restored, rlen);
   sr->epilogue_count = orig_sr.epilogue_count;
   sr->when_target = orig_sr.when_target;
 
   for (i = 0; i < IA64_NUM_PREGS; ++i)
     if (sr->curr.reg[i].when != IA64_WHEN_NEVER)
-      sr->curr.reg[i].when = op->when + MIN (sr->curr.reg[i].when, rlen - 1);
+      sr->curr.reg[i].when = op->when + MIN (sr->curr.reg[i].when, rlen);
 
   ia64_free_state_record (sr);
   sr->labeled_states = orig_sr.labeled_states;
