@@ -1,5 +1,13 @@
 -*-Mode: outline-*-
 
+* News for v0.98.5:
+
+** Fix a typo in the man-page of unw_create_addr_space().
+** Fix an off-by-1 bug in the handling of the dynamic ALIAS directive
+   for ia64.  Reported by Todd L. Miller.
+** Fix a bug in libunwind-ptrace which could cause crash due to extraneous
+   munmap() calls.
+
 * News for v0.98.4:
 
 ** Fix a typo in _ReadSLEB.c which caused hangs when throwing exceptions
