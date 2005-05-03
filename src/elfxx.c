@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "tdep.h"
 
-PROTECTED int
+HIDDEN int
 elf_w (valid_object) (struct elf_image *ei)
 {
   if (ei->size <= EI_CLASS)
@@ -137,7 +137,7 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
    sped up greatly, but until an application materializes that's
    sensitive to the performance of this routine, why bother...  */
 
-PROTECTED int
+HIDDEN int
 elf_w (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
 		       unw_word_t *offp)
 {
