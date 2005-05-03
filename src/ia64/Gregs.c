@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2004 Hewlett-Packard Co
+   Copyright (C) 2001-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -417,7 +417,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       if (ret < 0)
 	return ret;
       assert (!IA64_IS_REG_LOC (loc));
-      mask = (unw_word_t) 1 << ia64_rse_slot_num (IA64_GET_ADDR (loc));
+      mask = (unw_word_t) 1 << rse_slot_num (IA64_GET_ADDR (loc));
       return update_nat (c, nat_loc, mask, valp, write);
 
     case UNW_IA64_AR_EC:
@@ -494,7 +494,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	}
       else if ((c->eh_valid_mask & mask) != 0)
 	{
-	  *valp = c->eh_args[reg - (UNW_IA64_GR + 15)] = *valp;
+	  *valp = c->eh_args[reg - (UNW_IA64_GR + 15)];
 	  return 0;
 	}
       else
