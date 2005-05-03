@@ -31,11 +31,18 @@ PROTECTED int
 unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
 {
   struct cursor *c = (struct cursor *) cursor;
-  int ret;
 
-  if (ret = dwarf_make_proc_info (&c->dwarf))
-    return ret;
-
+  if (dwarf_make_proc_info (&c->dwarf) < 0)
+    {
+      /* On x86-64, some key routines such as _start() and _dl_start()
+	 are missing DWARF unwind info.  We don't want to fail in that
+	 case, because those frames are uninteresting and just mark
+	 the end of the frame-chain anyhow.  */
+      memset (pi, 0, sizeof (*pi));
+      pi->start_ip = c->dwarf.ip;
+      pi->end_ip = c->dwarf.ip + 1;
+      return 0;
+    }
   *pi = c->dwarf.pi;
   return 0;
 }
