@@ -1,6 +1,6 @@
 define(pkg_major, 0)
-define(pkg_minor, 98)
-define(pkg_extra, .5)
+define(pkg_minor, 99)
+define(pkg_extra, -alpha)
 define(pkg_maintainer, libunwind@linux.hpl.hp.com)
 define(mkvers, $1.$2$3)
 dnl Process this file with autoconf to produce a configure script.
@@ -101,7 +101,7 @@ AC_TRY_COMPILE([], [#ifndef __INTEL_COMPILER
 #endif], [intel_compiler=yes])
 
 if test x$GCC = xyes -a x$intel_compiler != xyes; then
-  CFLAGS="${CFLAGS} -Wall -Wsign-compare"
+  CFLAGS="${CFLAGS} -fexceptions -Wall -Wsign-compare"
   LIBCRTS="-lgcc"
 fi
 
