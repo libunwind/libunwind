@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2004 Hewlett-Packard Co
+   Copyright (C) 2001-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -38,7 +38,7 @@ enum ia64_script_insn_opcode
     IA64_INSN_MOVE,		/* s[dst] = s[val] */
     IA64_INSN_MOVE_NAT,		/* like above, but with NaT info */
     IA64_INSN_MOVE_NO_NAT,	/* like above, but clear NaT info */
-    IA64_INSN_MOVE_STACKED,	/* s[dst] = ia64_rse_skip(*s.bsp_loc, val) */
+    IA64_INSN_MOVE_STACKED,	/* s[dst] = rse_skip(*s.bsp_loc, val) */
     IA64_INSN_MOVE_STACKED_NAT,	/* like above, but with NaT info */
     IA64_INSN_MOVE_SCRATCH,	/* s[dst] = scratch reg "val" */
     IA64_INSN_MOVE_SCRATCH_NAT,	/* like above, but with NaT info */
@@ -93,7 +93,7 @@ flush_script_cache (struct ia64_script_cache *cache)
 }
 
 static inline struct ia64_script_cache *
-get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
+get_script_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
 {
   struct ia64_script_cache *cache = &as->global_cache;
   unw_caching_policy_t caching = as->caching_policy;
@@ -101,24 +101,28 @@ get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
   if (caching == UNW_CACHE_NONE)
     return NULL;
 
-#ifdef HAVE___THREAD
-  if (as->caching_policy == UNW_CACHE_PER_THREAD)
-    cache = &ia64_per_thread_cache;
-#endif
-
-#ifdef HAVE_ATOMIC_OPS_H
-  if (AO_test_and_set (&cache->busy) == AO_TS_SET)
+#if defined(__linux) && defined(__KERNEL__)
+  if (!spin_trylock_irqsave (&cache->busy, *saved_maskp))
     return NULL;
 #else
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, saved_sigmaskp);
+# ifdef HAVE___THREAD
+  if (as->caching_policy == UNW_CACHE_PER_THREAD)
+    cache = &ia64_per_thread_cache;
+# endif
+# ifdef HAVE_ATOMIC_OPS_H
+  if (AO_test_and_set (&cache->busy) == AO_TS_SET)
+    return NULL;
+# else
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, saved_maskp);
   if (likely (caching == UNW_CACHE_GLOBAL))
     {
-      Debug (16, "%s: acquiring lock\n");
+      Debug (16, "%s: acquiring lock\n", __FUNCTION__);
       mutex_lock (&cache->lock);
     }
+# endif
 #endif
 
-  if (as->cache_generation != cache->generation)
+  if (atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
     {
       flush_script_cache (cache);
       cache->generation = as->cache_generation;
@@ -128,17 +132,21 @@ get_script_cache (unw_addr_space_t as, sigset_t *saved_sigmaskp)
 
 static inline void
 put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
-		  sigset_t *saved_sigmaskp)
+		  intrmask_t *saved_maskp)
 {
   assert (as->caching_policy != UNW_CACHE_NONE);
 
-  Debug (16, "unmasking signals/releasing lock\n");
-#ifdef HAVE_ATOMIC_OPS_H
-  AO_CLEAR (&cache->busy);
+  Debug (16, "unmasking signals/interrupts and releasing lock\n");
+#if defined(__linux) && defined(__KERNEL__)
+  spin_unlock_irqrestore (&cache->busy, *saved_maskp);
 #else
+# ifdef HAVE_ATOMIC_OPS_H
+  AO_CLEAR (&cache->busy);
+# else
   if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
     mutex_unlock (&cache->lock);
-  sigprocmask (SIG_SETMASK, saved_sigmaskp, NULL);
+  sigprocmask (SIG_SETMASK, saved_maskp, NULL);
+# endif
 #endif
 }
 
@@ -173,25 +181,6 @@ script_lookup (struct ia64_script_cache *cache, struct cursor *c)
 	return 0;
       script = cache->buckets + script->coll_chain;
     }
-}
-
-HIDDEN int
-ia64_get_cached_proc_info (struct cursor *c)
-{
-  struct ia64_script_cache *cache;
-  struct ia64_script *script;
-  sigset_t saved_sigmask;
-
-  cache = get_script_cache (c->as, &saved_sigmask);
-  if (!cache)
-    return -UNW_ENOINFO;	/* cache is busy */
-  {
-    script = script_lookup (cache, c);
-    if (script)
-      c->pi = script->pi;
-  }
-  put_script_cache (c->as, cache, &saved_sigmask);
-  return script ? 0 : -UNW_ENOINFO;
 }
 
 static inline void
@@ -614,8 +603,7 @@ run_script (struct ia64_script *script, struct cursor *c)
 	    if ((ret = ia64_get_stacked (c, val, &loc, &nat_loc)) < 0)
 	      return ret;
 	    assert (!IA64_IS_REG_LOC (loc));
-	    set_nat_info (c, dst,
-			  nat_loc, ia64_rse_slot_num (IA64_GET_ADDR (loc)));
+	    set_nat_info (c, dst, nat_loc, rse_slot_num (IA64_GET_ADDR (loc)));
 	    break;
 
 	  case IA64_INSN_MOVE_SCRATCH_NAT:
@@ -655,13 +643,13 @@ ia64_find_save_locs (struct cursor *c)
 {
   struct ia64_script_cache *cache = NULL;
   struct ia64_script *script = NULL;
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
   int ret = 0;
 
   if (c->as->caching_policy == UNW_CACHE_NONE)
     return uncached_find_save_locs (c);
 
-  cache = get_script_cache (c->as, &saved_sigmask);
+  cache = get_script_cache (c->as, &saved_mask);
   if (!cache)
     {
       Debug (1, "contention on script-cache; doing uncached lookup\n");
@@ -671,11 +659,15 @@ ia64_find_save_locs (struct cursor *c)
     script = script_lookup (cache, c);
     Debug (8, "ip %lx %s in script cache\n", (long) c->ip,
 	   script ? "hit" : "missed");
-    if (!script)
+
+    if (!script || (script->count == 0 && !script->pi.unwind_info))
       {
 	if ((ret = ia64_fetch_proc_info (c, c->ip, 1)) < 0)
 	  goto out;
+      }
 
+    if (!script)
+      {
 	script = script_new (cache, c->ip);
 	if (!script)
 	  {
@@ -683,10 +675,14 @@ ia64_find_save_locs (struct cursor *c)
 	    ret = -UNW_EUNSPEC;
 	    goto out;
 	  }
-	cache->buckets[c->prev_script].hint = script - cache->buckets;
-
-	ret = build_script (c, script);
       }
+    cache->buckets[c->prev_script].hint = script - cache->buckets;
+
+    if (script->count == 0)
+      ret = build_script (c, script);
+
+    assert (script->count > 0);
+
     c->hint = script->hint;
     c->prev_script = script - cache->buckets;
 
@@ -701,7 +697,7 @@ ia64_find_save_locs (struct cursor *c)
     ret = run_script (script, c);
   }
  out:
-  put_script_cache (c->as, cache, &saved_sigmask);
+  put_script_cache (c->as, cache, &saved_mask);
   return ret;
 }
 
@@ -717,4 +713,55 @@ ia64_validate_cache (unw_addr_space_t as, void *arg)
   /* local info is up-to-date, check dynamic info.  */
   unwi_dyn_validate_cache (as, arg);
 #endif
+}
+
+HIDDEN int
+ia64_cache_proc_info (struct cursor *c)
+{
+  struct ia64_script_cache *cache;
+  struct ia64_script *script;
+  intrmask_t saved_mask;
+  int ret = 0;
+
+  cache = get_script_cache (c->as, &saved_mask);
+  if (!cache)
+    return ret;	/* cache is busy */
+
+  /* Re-check to see if a cache entry has been added in the meantime: */
+  script = script_lookup (cache, c);
+  if (script)
+    goto out;
+
+  script = script_new (cache, c->ip);
+  if (!script)
+    {
+      dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
+      ret = -UNW_EUNSPEC;
+      goto out;
+    }
+
+  script->pi = c->pi;
+
+ out:
+  put_script_cache (c->as, cache, &saved_mask);
+  return ret;
+}
+
+HIDDEN int
+ia64_get_cached_proc_info (struct cursor *c)
+{
+  struct ia64_script_cache *cache;
+  struct ia64_script *script;
+  intrmask_t saved_mask;
+
+  cache = get_script_cache (c->as, &saved_mask);
+  if (!cache)
+    return -UNW_ENOINFO;	/* cache is busy */
+  {
+    script = script_lookup (cache, c);
+    if (script)
+      c->pi = script->pi;
+  }
+  put_script_cache (c->as, cache, &saved_mask);
+  return script ? 0 : -UNW_ENOINFO;
 }
