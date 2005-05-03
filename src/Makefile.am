@@ -1,12 +1,9 @@
 SOVERSION=7:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 #
-# Don't link with standard libraries, because those may mention
-# libunwind already.
+# Don't link with start-files since we don't use any constructors/destructors:
 #
-COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles	\
-			-XCClinker -nostdlib		\
-			$(LDFLAGS_STATIC_LIBCXA)
+COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 
 if REMOTE_ONLY
 LIBRARIES_cdep			=
@@ -20,6 +17,7 @@ endif
 
 ### libunwind-ptrace:
 libunwind_ptrace_a_SOURCES =						  \
+	ptrace/_UPT_elf.c						  \
 	ptrace/_UPT_internal.h						  \
 	ptrace/_UPT_accessors.c ptrace/_UPT_access_fpreg.c		  \
 	ptrace/_UPT_access_mem.c ptrace/_UPT_access_reg.c		  \
@@ -32,14 +30,14 @@ libunwind_ptrace_a_SOURCES =						  \
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
 					  -version-info $(SETJMP_SO_VERSION)
 libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la -lc
-libunwind_setjmp_la_SOURCES_common	= longjmp.c siglongjmp.c
+libunwind_setjmp_la_SOURCES_common	= setjmp/setjmp_i.h 	\
+					  setjmp/longjmp.c	\
+					  setjmp/siglongjmp.c
 libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S  ia64/sigsetjmp.S  \
 					  ia64/longjmp.S ia64/siglongjmp.S
-libunwind_setjmp_la_SOURCES_hppa	= setjmp.c sigsetjmp.c	\
-					  hppa/siglongjmp.S
-libunwind_setjmp_la_SOURCES_x86		= setjmp.c sigsetjmp.c x86/siglongjmp.S
-libunwind_setjmp_la_SOURCES_x86_64	= setjmp.c sigsetjmp.c \
-					  x86_64/siglongjmp.S
+libunwind_setjmp_la_SOURCES_hppa	= hppa/siglongjmp.S
+libunwind_setjmp_la_SOURCES_x86		= x86/longjmp.S x86/siglongjmp.S
+libunwind_setjmp_la_SOURCES_x86_64	= x86_64/longjmp.S x86_64/siglongjmp.S
 
 ### libunwind:
 
@@ -86,7 +84,6 @@ libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 dwarf_SOURCES_common =				\
-	dwarf/dwarf-eh.h			\
 	dwarf/global.c
 
 dwarf_SOURCES_local =							     \
@@ -97,6 +94,7 @@ dwarf_SOURCES_generic =							     \
 
 # The list of files that go both into libunwind and libunwind-ia64:
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
+	elf64.c elf64.h							    \
 	ia64/init.h ia64/offsets.h ia64/regs.h				    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h		    \
 	ia64/regname.c
@@ -104,8 +102,6 @@ libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
 	$(libunwind_la_SOURCES_local)					     \
-									     \
-	elf64.c elf64.h							     \
 									     \
 	ia64/dyn_info_list.S ia64/getcontext.S				     \
 									     \
@@ -124,26 +120,44 @@ libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
 	ia64/Grbs.c ia64/Gregs.c ia64/Gresume.c ia64/Gscript.c ia64/Gstep.c  \
 	ia64/Gtables.c
 
-libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_common)		      \
-	hppa/global.c hppa/tables.c					      \
-	hppa/init.h hppa/unwind_i.h					      \
-									      \
-	hppa/Gget_reg.c hppa/Gget_proc_name.c hppa/Ginit.c hppa/Ginit_local.c \
-	hppa/Gget_proc_info.c hppa/Gregs.c hppa/Gstep.c			      \
-									      \
-	hppa/Lget_reg.c hppa/Lget_proc_name.c hppa/Linit.c hppa/Linit_local.c \
-	hppa/Lget_proc_info.c hppa/Lregs.c hppa/Lstep.c
+# The list of files that go both into libunwind and libunwind-hppa:
+libunwind_la_SOURCES_hppa_common = $(libunwind_la_SOURCES_common)	\
+	$(dwarf_SOURCES_common)						\
+	elf32.c elf32.h							\
+	hppa/init.h hppa/offsets.h hppa/unwind_i.h			\
+	hppa/regname.c
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)		\
+	$(libunwind_la_SOURCES_local)					\
+	hppa/getcontext.S hppa/setcontext.S				\
+	$(dwarf_SOURCES_local)						\
+	dwarf/Lfind_proc_info-lsb.c					\
+	hppa/Lcreate_addr_space.c hppa/Lget_save_loc.c hppa/Lglobal.c	\
+	hppa/Linit.c hppa/Linit_local.c hppa/Linit_remote.c		\
+	hppa/Lis_signal_frame.c hppa/Lget_proc_info.c hppa/Lregs.c	\
+	hppa/Lresume.c hppa/Lstep.c
+
+# The list of files that go into libunwind-hppa:
+libunwind_hppa_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)	\
+	$(libunwind_la_SOURCES_generic)					\
+	$(dwarf_SOURCES_generic)					\
+	dwarf/Gfind_proc_info-lsb.c					\
+	hppa/Gcreate_addr_space.c hppa/Gget_save_loc.c hppa/Gglobal.c	\
+	hppa/Ginit.c hppa/Ginit_local.c hppa/Ginit_remote.c		\
+	hppa/Gis_signal_frame.c hppa/Gget_proc_info.c hppa/Gregs.c	\
+	hppa/Gresume.c hppa/Gstep.c
 
 # The list of files that go both into libunwind and libunwind-x86:
 libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
+	elf32.c elf32.h							\
 	x86/init.h x86/offsets.h x86/unwind_i.h				\
 	x86/is_fpreg.c x86/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
 	$(libunwind_la_SOURCES_local)					\
-	elf32.c elf32.h							\
 	$(dwarf_SOURCES_local)						\
 	dwarf/Lfind_proc_info-lsb.c					\
 	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c	\
@@ -164,13 +178,14 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 # The list of files that go both into libunwind and libunwind-x86_64:
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
+	elf64.c elf64.h							\
+	x86_64/setcontext.S						\
 	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h		\
 	x86_64/is_fpreg.c x86_64/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
 	$(libunwind_la_SOURCES_local)					    \
-	elf64.c elf64.h							    \
 	$(dwarf_SOURCES_local)						    \
 	dwarf/Lfind_proc_info-lsb.c					    \
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
@@ -268,7 +283,12 @@ endif # ARCH_X86
 endif # ARCH_HPPA
 endif # ARCH_IA64
 
-libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+#
+# Don't link with standard libraries, because those may mention
+# libunwind already.
+#
+libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -XCClinker -nostdlib \
+			$(LDFLAGS_STATIC_LIBCXA) -version-info $(SOVERSION)
 libunwind_la_LIBADD  = -lc $(LIBCRTS)
 
 lib_LIBRARIES = $(LIBRARIES_cdep)
