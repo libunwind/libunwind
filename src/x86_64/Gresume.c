@@ -31,10 +31,52 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
+#include <sys/syscall.h>
+
+/* sigreturn() is a no-op on x86_64 glibc.  */
+
+static NORETURN inline long
+my_rt_sigreturn (void *new_sp)
+{
+  __asm__ __volatile__ ("mov %0, %%rsp;"
+			"mov %1, %%rax;"
+			"syscall"
+			:: "r"(new_sp), "i"(SYS_rt_sigreturn)
+			: "memory");
+  abort ();
+}
+
 HIDDEN inline int
 x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
+#if defined(__linux)
+  struct cursor *c = (struct cursor *) cursor;
+  ucontext_t *uc = c->dwarf.as_arg;
+
+  /* Ensure c->pi is up-to-date.  On x86-64, it's relatively common to
+     be missing DWARF unwind info.  We don't want to fail in that
+     case, because the frame-chain still would let us do a backtrace
+     at least.  */
+  dwarf_make_proc_info (&c->dwarf);
+
+  if (unlikely (c->sigcontext_format != X86_64_SCF_NONE))
+    {
+      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+
+      Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
+	     (unsigned long long) c->dwarf.ip, sc);
+      my_rt_sigreturn (sc);
+    }
+  else
+    {
+      Debug (8, "resuming at ip=%llx via setcontext()\n",
+	     (unsigned long long) c->dwarf.ip);
+      setcontext (uc);
+    }
+#else
 # warning Implement me!
+#endif
+  return -UNW_EINVAL;
 }
 
 #endif /* !UNW_REMOTE_ONLY */
@@ -60,9 +102,9 @@ establish_machine_state (struct cursor *c)
 
   Debug (8, "copying out cursor state\n");
 
-  for (reg = 0; reg < UNW_REG_LAST; ++reg)
+  for (reg = 0; reg <= UNW_REG_LAST; ++reg)
     {
-      Debug (8, "copying %s %d\n", unw_regname (reg), reg);
+      Debug (16, "copying %s %d\n", unw_regname (reg), reg);
       if (unw_is_fpreg (reg))
 	{
 	  if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
