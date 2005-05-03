@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003-2004 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -27,13 +27,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "tdep.h"
 
 static int
-update_frame_state (struct dwarf_cursor *c)
+update_frame_state (struct dwarf_cursor *c, unw_word_t prev_cfa)
 {
-  unw_word_t prev_ip, prev_cfa, ip;
+  unw_word_t prev_ip, ip;
   int ret;
 
   prev_ip = c->ip;
-  prev_cfa = c->cfa;
 
   /* Update the IP cache (do this first: if we reach the end of the
      frame-chain, the rest of the info may not be valid/useful
@@ -110,8 +109,8 @@ update_frame_state (struct dwarf_cursor *c)
 
   if (c->ip == prev_ip && c->cfa == prev_cfa)
     {
-      dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
-	       __FUNCTION__, (long) ip);
+      dprintf ("%s: ip and cfa unchanged; stopping (ip=0x%lx cfa=0x%lx)\n",
+	       __FUNCTION__, (long) prev_ip, (long) prev_cfa);
       return -UNW_EBADFRAME;
     }
 
@@ -122,14 +121,13 @@ update_frame_state (struct dwarf_cursor *c)
 HIDDEN int
 dwarf_step (struct dwarf_cursor *c)
 {
+  unw_word_t prev_cfa = c->cfa;
   int ret;
 
-  if ((ret = dwarf_find_save_locs (c)) < 0)
-    return ret;
+  if ((ret = dwarf_find_save_locs (c)) >= 0
+      && (ret = update_frame_state (c, prev_cfa)) >= 0)
+    ret = (c->ip == 0) ? 0 : 1;
 
-  if ((ret = update_frame_state (c)) < 0)
-    return ret;
-
-  Debug (15, "done\n");
-  return (c->ip == 0) ? 0 : 1;
+  Debug (15, "returning %d\n", ret);
+  return ret;
 }
