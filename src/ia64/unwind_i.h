@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2004 Hewlett-Packard Co
+   Copyright (C) 2001-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -51,7 +51,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #if !defined(HAVE_SYS_UC_ACCESS_H) && !defined(UNW_REMOTE_ONLY)
 
-static inline ALWAYS_INLINE void *
+static ALWAYS_INLINE void *
 inlined_uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
 {
   unw_word_t reg_addr;
@@ -566,7 +566,7 @@ rbs_contains (struct rbs_area *rbs, unw_word_t bsp)
 static inline ia64_loc_t
 rbs_get_rnat_loc (struct rbs_area *rbs, unw_word_t bsp)
 {
-  unw_word_t rnat_addr = ia64_rse_rnat_addr (bsp);
+  unw_word_t rnat_addr = rse_rnat_addr (bsp);
   ia64_loc_t rnat_loc;
 
   if (rbs_contains (rbs, rnat_addr))
@@ -600,7 +600,7 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
 
   assert (reg >= 32 && reg < 128);
 
-  addr = ia64_rse_skip_regs (c->bsp, regs_to_skip);
+  addr = rse_skip_regs (c->bsp, regs_to_skip);
   if (locp)
     *locp = rbs_loc (rbs, addr);
   if (rnat_locp)
@@ -614,7 +614,7 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
 /* The UNaT slot # calculation is identical to the one for RNaT slots,
    but for readability/clarity, we don't want to use
    ia64_rnat_slot_num() directly.  */
-#define ia64_unat_slot_num(addr)	ia64_rse_slot_num(addr)
+#define ia64_unat_slot_num(addr)	rse_slot_num(addr)
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
