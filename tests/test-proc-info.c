@@ -110,7 +110,7 @@ main (int argc, char **argv)
   int ret, verbose = 0;
   unw_cursor_t c;
 
-  if (argc > 1 && strcmp (argv[0], "-v") == 0)
+  if (argc > 1 && strcmp (argv[1], "-v") == 0)
     verbose = 1;
 
   memset (&acc, 0, sizeof (acc));
