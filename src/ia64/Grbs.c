@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
+   Copyright (C) 2003-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -50,8 +50,8 @@ rbs_switch (struct cursor *c,
   Debug (10, "(left=%u, curr=%u)\n", c->rbs_left_edge, c->rbs_curr);
 
   /* Calculate address "lo" at which the backing store starts:  */
-  ndirty = ia64_rse_num_regs (saved_bspstore, saved_bsp);
-  lo = ia64_rse_skip_regs (c->bsp, -ndirty);
+  ndirty = rse_num_regs (saved_bspstore, saved_bsp);
+  lo = rse_skip_regs (c->bsp, -ndirty);
 
   rbs->size = (rbs->end - lo);
 
@@ -62,11 +62,11 @@ rbs_switch (struct cursor *c,
       Debug (10, "inner=[0x%lx-0x%lx)\n",
 	     (long) (rbs->end - rbs->size), (long) rbs->end);
 
-      c->rbs_curr = (c->rbs_curr + 1) % NELEMS (c->rbs_area);
+      c->rbs_curr = (c->rbs_curr + 1) % ARRAY_SIZE (c->rbs_area);
       rbs = c->rbs_area + c->rbs_curr;
 
       if (c->rbs_curr == c->rbs_left_edge)
-	c->rbs_left_edge = (c->rbs_left_edge + 1) % NELEMS (c->rbs_area);
+	c->rbs_left_edge = (c->rbs_left_edge + 1) % ARRAY_SIZE (c->rbs_area);
     }
   rbs->end = saved_bspstore;
   rbs->size = ((unw_word_t) 1) << 63; /* initial guess... */
@@ -97,22 +97,21 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 	  return -UNW_EBADREG;
 	}
 
-      n = ia64_rse_num_regs (c->rbs_area[curr].end, bsp);
-      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
-      bsp = ia64_rse_skip_regs (c->rbs_area[curr].end - c->rbs_area[curr].size,
-				n);
+      n = rse_num_regs (c->rbs_area[curr].end, bsp);
+      curr = (curr + ARRAY_SIZE (c->rbs_area) - 1) % ARRAY_SIZE (c->rbs_area);
+      bsp = rse_skip_regs (c->rbs_area[curr].end - c->rbs_area[curr].size, n);
     }
 
   while (1)
     {
-      nregs = ia64_rse_num_regs (bsp, c->rbs_area[curr].end);
+      nregs = rse_num_regs (bsp, c->rbs_area[curr].end);
 
       if (regs_to_skip < nregs)
 	{
 	  /* found it: */
 	  unw_word_t addr;
 
-	  addr = ia64_rse_skip_regs (bsp, regs_to_skip);
+	  addr = rse_skip_regs (bsp, regs_to_skip);
 	  if (locp)
 	    *locp = rbs_loc (c->rbs_area + curr, addr);
 	  if (rnat_locp)
@@ -128,7 +127,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 
       regs_to_skip -= nregs;
 
-      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
+      curr = (curr + ARRAY_SIZE (c->rbs_area) - 1) % ARRAY_SIZE (c->rbs_area);
       bsp = c->rbs_area[curr].end - c->rbs_area[curr].size;
     }
 }
@@ -165,12 +164,12 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
   int ret;
 
   bsp = c->bsp;
-  c->bsp = ia64_rse_skip_regs (bsp, nregs);
+  c->bsp = rse_skip_regs (bsp, nregs);
 
   if (likely (rbs_contains (rbs, bsp)))
     {
       /* at least _some_ registers are on rbs... */
-      n = ia64_rse_num_regs (bsp, rbs->end);
+      n = rse_num_regs (bsp, rbs->end);
       if (likely (n >= nregs))
 	{
 	  /* common case #1: all registers are on current rbs... */
@@ -190,13 +189,12 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
 	}
       nregs -= n;	/* account for registers already on the rbs */
 
-      assert (ia64_rse_skip_regs (c->bsp, -nregs) ==
-	      ia64_rse_skip_regs (rbs->end, 0));
+      assert (rse_skip_regs (c->bsp, -nregs) == rse_skip_regs (rbs->end, 0));
     }
   else
     /* Earlier frames also didn't get spilled; need to "loadrs" those,
        too... */
-    nregs += ia64_rse_num_regs (rbs->end, bsp);
+    nregs += rse_num_regs (rbs->end, bsp);
 
   /* OK, we need to copy NREGS registers to the dirty partition.  */
 
@@ -221,9 +219,10 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
 		  return -UNW_EBADREG;
 		}
 
-	      assert (ia64_rse_num_regs (rbs->end, bsp) == 0);
+	      assert (rse_num_regs (rbs->end, bsp) == 0);
 
-	      curr = (curr + NELEMS (c->rbs_area) - 1) % NELEMS (c->rbs_area);
+	      curr = (curr + ARRAY_SIZE (c->rbs_area) - 1)
+		      % ARRAY_SIZE (c->rbs_area);
 	      rbs = c->rbs_area + curr;
 	      bsp = rbs->end - rbs->size;
 	    }
@@ -233,20 +232,20 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
 	    return ret;
 	}
 
-      if (unlikely (ia64_rse_is_rnat_slot (bsp)))
+      if (unlikely (rse_is_rnat_slot (bsp)))
 	{
 	  bsp += 8;
 	  if ((ret = get_rnat (c, rbs, bsp, &src_rnat)) < 0)
 	    return ret;
 	}
-      if (unlikely (ia64_rse_is_rnat_slot ((unw_word_t) dst)))
+      if (unlikely (rse_is_rnat_slot ((unw_word_t) dst)))
 	{
 	  *dst++ = dst_rnat;
 	  dst_rnat = 0;
 	}
 
-      src_mask = ((unw_word_t) 1) << ia64_rse_slot_num (bsp);
-      dst_mask = ((unw_word_t) 1) << ia64_rse_slot_num ((unw_word_t) dst);
+      src_mask = ((unw_word_t) 1) << rse_slot_num (bsp);
+      dst_mask = ((unw_word_t) 1) << rse_slot_num ((unw_word_t) dst);
 
       if (src_rnat & src_mask)
 	dst_rnat |= dst_mask;
@@ -262,7 +261,7 @@ rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
       bsp += 8;
       ++dst;
     }
-  if (unlikely (ia64_rse_is_rnat_slot ((unw_word_t) dst)))
+  if (unlikely (rse_is_rnat_slot ((unw_word_t) dst)))
     {
       /* The LOADRS instruction loads "the N bytes below the current
 	 BSP" but BSP can never point to an RNaT slot so if the last
