@@ -36,6 +36,17 @@ flush_cache:
 flush_cache:
 	ret
 
+#elif defined(__hppa__)
+
+# warning FIX ME!!
+
+        .globl flush_cache
+flush_cache:
+        .proc
+        .callinfo
+        bv      %r0(%rp)
+        .procend
+
 #else
 # error Need flush_cache code for this architecture.
 #endif
