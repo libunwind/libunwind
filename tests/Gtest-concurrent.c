@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
+   Copyright (C) 2003-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -84,7 +84,13 @@ doit (void)
   int i;
 
   for (i = 0; i < NTHREADS; ++i)
-    pthread_create (th + i, NULL, worker, NULL);
+    if (pthread_create (th + i, NULL, worker, NULL))
+      {
+	fprintf (stderr, "FAILURE: Failed to create %u threads "
+		 "(after %u threads)\n",
+		 NTHREADS, i);
+	exit (-1);
+      }
 
   for (i = 0; i < NTHREADS; ++i)
     pthread_join (th[i], NULL);
@@ -110,7 +116,10 @@ main (int argc, char **argv)
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
 
   if (nerrors)
-    fprintf (stderr, "FAILURE: detected %d errors\n", nerrors);
+    {
+      fprintf (stderr, "FAILURE: detected %d errors\n", nerrors);
+      exit (-1);
+    }
 
   if (verbose)
     printf ("SUCCESS\n");
