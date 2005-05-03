@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2001-2004 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2001-2005 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -255,7 +255,7 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
   unw_word_t addr, hdr_addr, info_addr, info_end_addr, hdr, *wp;
   const struct ia64_table_entry *e = NULL;
   unw_word_t handler_offset, segbase = 0;
-  int ret;
+  int ret, is_local;
 
   assert ((di->format == UNW_INFO_FORMAT_TABLE
 	   || di->format == UNW_INFO_FORMAT_REMOTE_TABLE)
@@ -305,20 +305,33 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
   hdr_addr = e->info_offset + segbase;
   info_addr = hdr_addr + 8;
 
-  /* read the header word: */
+  /* Read the header word.  Note: the actual unwind-info is always
+     assumed to reside in memory, independent of whether di->format is
+     UNW_INFO_FORMAT_TABLE or UNW_INFO_FORMAT_REMOTE_TABLE.  */
+
   if ((ret = read_mem (as, hdr_addr, &hdr, arg)) < 0)
     return ret;
 
   if (IA64_UNW_VER (hdr) != 1)
-    return -UNW_EBADVERSION;
+    {
+      Debug (1, "Unknown header version %ld (hdr word=0x%lx @ 0x%lx)\n",
+	     IA64_UNW_VER (hdr), (unsigned long) hdr,
+	     (unsigned long) hdr_addr);
+      return -UNW_EBADVERSION;
+    }
 
   info_end_addr = info_addr + 8 * IA64_UNW_LENGTH (hdr);
 
-  if (need_unwind_info)
+  is_local = is_local_addr_space (as);
+
+  /* If we must have the unwind-info, return it.  Also, if we are in
+     the local address-space, return the unwind-info because it's so
+     cheap to do so and it may come in handy later on.  */
+  if (need_unwind_info || is_local)
     {
       pi->unwind_info_size = 8 * IA64_UNW_LENGTH (hdr);
 
-      if (is_local_addr_space (as))
+      if (is_local)
 	pi->unwind_info = (void *) (uintptr_t) info_addr;
       else
 	{
@@ -606,12 +619,12 @@ check_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 static inline int
 validate_cache (unw_addr_space_t as)
 {
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
   int ret;
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
   ret = dl_iterate_phdr (check_callback, as);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
   return ret;
 }
 
@@ -635,14 +648,14 @@ tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 {
 # if defined(HAVE_DL_ITERATE_PHDR)
   unw_dyn_info_t di, *dip = &di;
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
   int ret;
 
   di.u.ti.segbase = ip;	/* this is cheap... */
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
   ret = dl_iterate_phdr (callback, &di);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
 
   if (ret <= 0)
     {
