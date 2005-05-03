@@ -70,6 +70,7 @@ struct cursor
 # define DWARF_NULL_LOC		DWARF_LOC (0, 0)
 # define DWARF_IS_NULL_LOC(l)	(DWARF_GET_LOC (l) == 0)
 # define DWARF_LOC(r, t)	((dwarf_loc_t) { .val = (r) })
+# define DWARF_IS_REG_LOC(l)	0
 # define DWARF_REG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
 				 tdep_uc_addr((c)->as_arg, (r)), 0))
 # define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
