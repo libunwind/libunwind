@@ -76,7 +76,6 @@ typedef enum
     UNW_INFO_FORMAT_DYNAMIC,		/* unw_dyn_proc_info_t */
     UNW_INFO_FORMAT_TABLE,		/* unw_dyn_table_t */
     UNW_INFO_FORMAT_REMOTE_TABLE,	/* unw_dyn_remote_table_t */
-    UNW_INFO_FORMAT_DWARF_FDE		/* unw_dyn_dwarf_fde_t */
   }
 unw_dyn_info_format_t;
 
@@ -127,26 +126,6 @@ typedef struct unw_dyn_remote_table_info
   }
 unw_dyn_remote_table_info_t;
 
-/* The flags member encodes the pointer-encoding used in the FDE, the
-   pointer-encoding used for the LSDA, and a bit flag that is set if
-   the FDE's augmentation body starts with a length.  */
-#define UNW_DYN_DFI_FLAG_FDE_PE_MASK		0x0ff
-#define UNW_DYN_DFI_FLAG_AUGMENTATION_HAS_SIZE	0x100
-
-typedef struct unw_dyn_dwarf_fde_info
-  {
-    unw_word_t name_ptr;	/* addr. of table name (e.g., library name) */
-    unw_word_t flags;		/* see UNW_DYN_DFI_FLAG */
-    unw_word_t cie_instr_start;	/* start addr. of CIE "initial_instructions" */
-    unw_word_t cie_instr_end;	/* start addr. of CIE "initial_instructions" */
-    unw_word_t fde_instr_start;	/* start addr. of FDE "instructions" */
-    unw_word_t fde_instr_end;	/* start addr. of FDE "instructions" */
-    unw_word_t code_align;	/* code-alignment factor */
-    unw_word_t data_align;	/* data-alignment factor */
-    unw_word_t ret_addr_column;	/* column of return-address register */
-  }
-unw_dyn_dwarf_fde_info_t;
-
 typedef struct unw_dyn_info
   {
     /* doubly-linked list of dyn-info structures: */
@@ -162,7 +141,6 @@ typedef struct unw_dyn_info
 	unw_dyn_proc_info_t pi;
 	unw_dyn_table_info_t ti;
 	unw_dyn_remote_table_info_t rti;
-	unw_dyn_dwarf_fde_info_t dfi;
       }
     u;
   }
