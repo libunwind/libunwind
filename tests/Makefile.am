@@ -16,6 +16,7 @@ if REMOTE_ONLY
 perf:
 
 else
+ LIBUNWIND_local = ../src/libunwind.la
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-dyn1
  check_SCRIPTS_arch =	run-ia64-test-dyn1
@@ -79,11 +80,11 @@ Gtest_bt_SOURCES = Gtest-bt.c ident.c
 Ltest_bt_SOURCES = Ltest-bt.c ident.c
 test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 
-LIBUNWIND = ../src/libunwind-$(arch).la
+LIBUNWIND = ../src/libunwind-$(arch).la $(LIBUNWIND_local)
 LDADD = $(LIBUNWIND)
 
-test_setjmp_LDADD = ../src/libunwind-setjmp.la
-ia64_test_setjmp_LDADD = ../src/libunwind-setjmp.la
+test_setjmp_LDADD = ../src/libunwind-setjmp.la $(LIBUNWIND_local)
+ia64_test_setjmp_LDADD = ../src/libunwind-setjmp.la $(LIBUNWIND_local)
 test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
 Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
