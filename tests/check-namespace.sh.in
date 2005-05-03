@@ -103,11 +103,21 @@ function check_local_unw_abi {
     match backtrace
 
     case ${plat} in
+	hppa)
+	    match _UL${plat}_dwarf_search_unwind_table
+	    match _U${plat}_get_elf_image
+	    match _U${plat}_setcontext
+	    ;;
 	ia64)
 	    match _UL${plat}_search_unwind_table
 	    match _U${plat}_get_elf_image
 	    ;;
 	x86)
+	    match _U${plat}_get_elf_image
+	    match _U${plat}_is_fpreg
+	    match _UL${plat}_dwarf_search_unwind_table
+	    ;;
+	x86_64)
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
@@ -143,6 +153,10 @@ function check_generic_unw_abi {
     match _U${plat}_strerror
 
     case ${plat} in
+	hppa)
+	    match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_get_elf_image
+	    ;;
 	ia64)
 	    match _U${plat}_search_unwind_table
 	    match _U${plat}_find_dyn_list
@@ -156,6 +170,11 @@ function check_generic_unw_abi {
 	    fi
 	    ;;
 	x86)
+	    match _U${plat}_get_elf_image
+	    match _U${plat}_is_fpreg
+	    match _U${plat}_dwarf_search_unwind_table
+	    ;;
+	x86_64)
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _U${plat}_dwarf_search_unwind_table
