@@ -106,7 +106,7 @@ typedef ucontext_t unw_tdep_context_t;
 
 typedef struct
   {
-    unw_dyn_dwarf_fde_info_t dwarf_info;
+    /* no x86-64-specific auxiliary proc-info */
   }
 unw_tdep_proc_info_t;
 
