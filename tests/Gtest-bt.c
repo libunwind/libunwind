@@ -38,8 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 #include <libunwind.h>
 
-#if UNW_TARGET_X86
-# define STACK_SIZE	(128*1024)	/* On x86, SIGSTKSZ is too small */
+#if UNW_TARGET_X86 || UNW_TARGET_X86_64
+# define STACK_SIZE	(128*1024)	/* On x86/-64, SIGSTKSZ is too small */
 #else
 # define STACK_SIZE	SIGSTKSZ
 #endif
@@ -63,6 +63,9 @@ do_backtrace (void)
   unw_proc_info_t pi;
   unw_context_t uc;
   int ret;
+
+  if (verbose)
+    printf ("\texplicit backtrace:\n");
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -110,24 +113,24 @@ do_backtrace (void)
 	}
     }
   while (ret > 0);
+
+  {
+    void *buffer[20];
+    int i, n;
+
+    if (verbose)
+      printf ("\n\tvia backtrace():\n");
+    n = backtrace (buffer, 20);
+    if (verbose)
+      for (i = 0; i < n; ++i)
+	printf ("[%d] ip=%p\n", i, buffer[i]);
+  }
 }
 
 void
 foo (long val)
 {
-  void *buffer[20];
-  int i, n;
-
-  if (verbose)
-    printf ("\texplicit backtrace:\n");
   do_backtrace ();
-
-  if (verbose)
-    printf ("\n\tvia backtrace():\n");
-  n = backtrace (buffer, 20);
-  if (verbose)
-    for (i = 0; i < n; ++i)
-      printf ("[%d] ip=%p\n", i, buffer[i]);
 }
 
 void
