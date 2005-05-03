@@ -161,7 +161,7 @@ read_operand (unw_addr_space_t as, unw_accessors_t *a,
 
     case OFFSET: /* only used by DW_OP_call_ref, which we don't implement */
     default:
-      Debug (1, "Unexpected operand type %d", operand_type);
+      Debug (1, "Unexpected operand type %d\n", operand_type);
       ret = -UNW_EINVAL;
     }
   return ret;
@@ -184,12 +184,12 @@ dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr, unw_word_t len,
   int ret;
 # define pop()					\
 ({						\
-  if (tos >= MAX_EXPR_STACK_SIZE)		\
+  if ((tos - 1) >= MAX_EXPR_STACK_SIZE)		\
     {						\
       Debug (1, "Stack underflow\n");		\
       return -UNW_EINVAL;			\
     }						\
-  stack[tos--];					\
+  stack[--tos];					\
 })
 # define push(x)				\
 do {						\
@@ -202,7 +202,7 @@ do {						\
 } while (0)
 # define pick(n)				\
 ({						\
-  unsigned int _index = tos - (n);		\
+  unsigned int _index = tos - 1 - (n);		\
   if (_index >= MAX_EXPR_STACK_SIZE)		\
     {						\
       Debug (1, "Out-of-stack pick\n");		\
@@ -215,10 +215,14 @@ do {						\
   arg = c->as_arg;
   a = unw_get_accessors (as);
   end_addr = *addr + len;
+  *is_register = 0;
+
+  Debug (14, "len=%lu, pushing cfa=0x%lx\n",
+	 (unsigned long) len, (unsigned long) c->cfa);
 
   push (c->cfa);	/* push current CFA as required by DWARF spec */
 
-  while (*addr < len)
+  while (*addr < end_addr)
     {
       if ((ret = dwarf_readu8 (as, a, addr, &opcode, arg)) < 0)
 	return ret;
@@ -251,7 +255,8 @@ do {						\
 	case DW_OP_lit24: case DW_OP_lit25: case DW_OP_lit26:
 	case DW_OP_lit27: case DW_OP_lit28: case DW_OP_lit29:
 	case DW_OP_lit30: case DW_OP_lit31:
-	  push (opcode = DW_OP_lit0);
+	  Debug (15, "OP_lit(%d)\n", (int) opcode - DW_OP_lit0);
+	  push (opcode - DW_OP_lit0);
 	  break;
 
 	case DW_OP_breg0:  case DW_OP_breg1:  case DW_OP_breg2:
@@ -265,6 +270,8 @@ do {						\
 	case DW_OP_breg24: case DW_OP_breg25: case DW_OP_breg26:
 	case DW_OP_breg27: case DW_OP_breg28: case DW_OP_breg29:
 	case DW_OP_breg30: case DW_OP_breg31:
+	  Debug (15, "OP_breg(r%d,0x%lx)\n",
+		 (int) opcode - DW_OP_breg0, (unsigned long) operand1);
 	  if ((ret = unw_get_reg (dwarf_to_cursor (c),
 				  dwarf_to_unw_regnum (opcode - DW_OP_breg0),
 				  &tmp1)) < 0)
@@ -273,6 +280,8 @@ do {						\
 	  break;
 
 	case DW_OP_bregx:
+	  Debug (15, "OP_bregx(r%d,0x%lx)\n",
+		 (int) operand1, (unsigned long) operand2);
 	  if ((ret = unw_get_reg (dwarf_to_cursor (c),
 				  dwarf_to_unw_regnum (operand1), &tmp1)) < 0)
 	    return ret;
@@ -290,11 +299,13 @@ do {						\
 	case DW_OP_reg24: case DW_OP_reg25: case DW_OP_reg26:
 	case DW_OP_reg27: case DW_OP_reg28: case DW_OP_reg29:
 	case DW_OP_reg30: case DW_OP_reg31:
+	  Debug (15, "OP_reg(r%d)\n", (int) opcode - DW_OP_reg0);
 	  *valp = dwarf_to_unw_regnum (opcode - DW_OP_reg0);
 	  *is_register = 1;
 	  return 0;
 
 	case DW_OP_regx:
+	  Debug (15, "OP_regx(r%d)\n", (int) operand1);
 	  *valp = dwarf_to_unw_regnum (operand1);
 	  *is_register = 1;
 	  return 0;
@@ -307,28 +318,33 @@ do {						\
 	case DW_OP_constu:
 	case DW_OP_const8s:
 	case DW_OP_consts:
+	  Debug (15, "OP_const(0x%lx)\n", (unsigned long) operand1);
 	  push (operand1);
 	  break;
 
 	case DW_OP_const1s:
 	  if (operand1 & 0x80)
 	    operand1 |= ((unw_word_t) -1) << 8;
+	  Debug (15, "OP_const1s(%ld)\n", (long) operand1);
 	  push (operand1);
 	  break;
 
 	case DW_OP_const2s:
 	  if (operand1 & 0x8000)
 	    operand1 |= ((unw_word_t) -1) << 16;
+	  Debug (15, "OP_const2s(%ld)\n", (long) operand1);
 	  push (operand1);
 	  break;
 
 	case DW_OP_const4s:
 	  if (operand1 & 0x80000000)
 	    operand1 |= (((unw_word_t) -1) << 16) << 16;
+	  Debug (15, "OP_const4s(%ld)\n", (long) operand1);
 	  push (operand1);
 	  break;
 
 	case DW_OP_deref:
+	  Debug (15, "OP_deref\n");
 	  tmp1 = pop ();
 	  if ((ret = dwarf_readw (as, a, &tmp1, &tmp2, arg)) < 0)
 	    return ret;
@@ -336,6 +352,7 @@ do {						\
 	  break;
 
 	case DW_OP_deref_size:
+	  Debug (15, "OP_deref_size(%d)\n", (int) operand1);
 	  tmp1 = pop ();
 	  switch (operand1)
 	    {
@@ -387,22 +404,27 @@ do {						\
 	  break;
 
 	case DW_OP_dup:
+	  Debug (15, "OP_dup\n");
 	  push (pick (0));
 	  break;
 
 	case DW_OP_drop:
+	  Debug (15, "OP_drop\n");
 	  pop ();
 	  break;
 
 	case DW_OP_pick:
+	  Debug (15, "OP_pick(%d)\n", (int) operand1);
 	  push (pick (operand1));
 	  break;
 
 	case DW_OP_over:
+	  Debug (15, "OP_over\n");
 	  push (pick (1));
 	  break;
 
 	case DW_OP_swap:
+	  Debug (15, "OP_swap\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp1);
@@ -410,6 +432,7 @@ do {						\
 	  break;
 
 	case DW_OP_rot:
+	  Debug (15, "OP_rot\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  tmp3 = pop ();
@@ -419,6 +442,7 @@ do {						\
 	  break;
 
 	case DW_OP_abs:
+	  Debug (15, "OP_abs\n");
 	  tmp1 = pop ();
 	  if (tmp1 & ((unw_word_t) 1 << (8 * sizeof (unw_word_t) - 1)))
 	    tmp1 = -tmp1;
@@ -426,12 +450,14 @@ do {						\
 	  break;
 
 	case DW_OP_and:
+	  Debug (15, "OP_and\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp1 & tmp2);
 	  break;
 
 	case DW_OP_div:
+	  Debug (15, "OP_div\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  if (tmp1)
@@ -440,6 +466,7 @@ do {						\
 	  break;
 
 	case DW_OP_minus:
+	  Debug (15, "OP_minus\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  tmp1 = tmp2 - tmp1;
@@ -447,6 +474,7 @@ do {						\
 	  break;
 
 	case DW_OP_mod:
+	  Debug (15, "OP_mod\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  if (tmp1)
@@ -455,6 +483,7 @@ do {						\
 	  break;
 
 	case DW_OP_mul:
+	  Debug (15, "OP_mul\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  if (tmp1)
@@ -463,101 +492,119 @@ do {						\
 	  break;
 
 	case DW_OP_neg:
+	  Debug (15, "OP_neg\n");
 	  push (-pop ());
 	  break;
 
 	case DW_OP_not:
+	  Debug (15, "OP_not\n");
 	  push (~pop ());
 	  break;
 
 	case DW_OP_or:
+	  Debug (15, "OP_or\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp1 | tmp2);
 	  break;
 
 	case DW_OP_plus:
+	  Debug (15, "OP_plus\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp1 + tmp2);
 	  break;
 
 	case DW_OP_plus_uconst:
+	  Debug (15, "OP_plus_uconst(%lu)\n", (unsigned long) operand1);
 	  tmp1 = pop ();
 	  push (tmp1 + operand1);
 	  break;
 
 	case DW_OP_shl:
+	  Debug (15, "OP_shl\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp2 << tmp1);
 	  break;
 
 	case DW_OP_shr:
+	  Debug (15, "OP_shr\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp2 >> tmp1);
 	  break;
 
 	case DW_OP_shra:
+	  Debug (15, "OP_shra\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp2) >> tmp1);
 	  break;
 
 	case DW_OP_xor:
+	  Debug (15, "OP_xor\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (tmp1 ^ tmp2);
 	  break;
 
 	case DW_OP_le:
+	  Debug (15, "OP_le\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp1) <= sword (tmp2));
 	  break;
 
 	case DW_OP_ge:
+	  Debug (15, "OP_ge\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp1) >= sword (tmp2));
 	  break;
 
 	case DW_OP_eq:
+	  Debug (15, "OP_eq\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp1) == sword (tmp2));
 	  break;
 
 	case DW_OP_lt:
+	  Debug (15, "OP_lt\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp1) < sword (tmp2));
 	  break;
 
 	case DW_OP_gt:
+	  Debug (15, "OP_gt\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp1) > sword (tmp2));
 	  break;
 
 	case DW_OP_ne:
+	  Debug (15, "OP_ne\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  push (sword (tmp1) != sword (tmp2));
 	  break;
 
 	case DW_OP_skip:
+	  Debug (15, "OP_skip(%d)\n", (int16_t) operand1);
 	  *addr += (int16_t) operand1;
 	  break;
 
 	case DW_OP_bra:
+	  Debug (15, "OP_skip(%d)\n", (int16_t) operand1);
 	  tmp1 = pop ();
 	  if (tmp1)
 	    *addr += (int16_t) operand1;
 	  break;
 
 	case DW_OP_nop:
+	  Debug (15, "OP_nop\n");
 	  break;
 
 	case DW_OP_call2:
@@ -574,5 +621,6 @@ do {						\
 	}
     }
   *valp = pop ();
+  Debug (14, "final value = 0x%lx\n", (unsigned long) *valp);
   return 0;
 }
