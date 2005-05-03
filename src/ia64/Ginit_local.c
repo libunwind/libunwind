@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2003, 2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -73,8 +73,8 @@ unw_init_local (unw_cursor_t *cursor, unw_context_t *uc)
      and we know that getcontext() doesn't switch the register-backing
      store.  */
   sol = (uc->uc_mcontext.sc_ar_pfs >> 7) & 0x7f;
-  uc->uc_mcontext.sc_rbs_base = ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
-						    -sol);
+  uc->uc_mcontext.sc_rbs_base = rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
+					       -sol);
 #endif
 
   c->as = unw_local_addr_space;
