@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003-2004 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -28,18 +28,26 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 #include "tdep.h"
 
+static inline int
+is_cie_id (unw_word_t val)
+{
+  /* DWARF spec says CIE_id is 0xffffffff (for 32-bit ELF) or
+     0xffffffffffffffff (for 64-bit ELF).  However, the GNU toolchain
+     uses 0.  */
+  return (val == 0 || val == - (unw_word_t) 1);
+}
+
 /* Note: we don't need to keep track of more than the first four
    characters of the augmentation string, because we (a) ignore any
    augmentation string contents once we find an unrecognized character
    and (b) those characters that we do recognize, can't be
    repeated.  */
 static inline int
-parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
-	   unw_proc_info_t *pi, unw_dyn_dwarf_fde_info_t *dfi,
-	   int *lsda_encodingp, void *arg)
+parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
+	   const unw_proc_info_t *pi, struct dwarf_cie_info *dci, void *arg)
 {
   uint8_t version, ch, augstr[5], fde_encoding, handler_encoding;
-  unw_word_t len, cie_end_addr, aug_size, handler = 0;
+  unw_word_t len, cie_end_addr, aug_size;
   uint32_t u32val;
   uint64_t u64val;
   size_t i;
@@ -59,10 +67,10 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
     default:	fde_encoding = DW_EH_PE_omit; break;
     }
 
-  *lsda_encodingp = DW_EH_PE_omit;
-  dfi->flags = 0;
+  dci->lsda_encoding = DW_EH_PE_omit;
+  dci->handler = 0;
 
-  if ((ret = dwarf_readu32 (as, a, addr, &u32val, arg)) < 0)
+  if ((ret = dwarf_readu32 (as, a, &addr, &u32val, arg)) < 0)
     return ret;
 
   if (u32val != 0xffffffff)
@@ -71,8 +79,8 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
       uint32_t cie_id;
 
       len = u32val;
-      cie_end_addr = *addr + len;
-      if ((ret = dwarf_readu32 (as, a, addr, &cie_id, arg)) < 0)
+      cie_end_addr = addr + len;
+      if ((ret = dwarf_readu32 (as, a, &addr, &cie_id, arg)) < 0)
 	return ret;
       /* DWARF says CIE id should be 0xffffffff, but in .eh_frame, it's 0 */
       if (cie_id != 0)
@@ -86,11 +94,11 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
       /* the CIE is in the 64-bit DWARF format */
       uint64_t cie_id;
 
-      if ((ret = dwarf_readu64 (as, a, addr, &u64val, arg)) < 0)
+      if ((ret = dwarf_readu64 (as, a, &addr, &u64val, arg)) < 0)
 	return ret;
       len = u64val;
-      cie_end_addr = *addr + len;
-      if ((ret = dwarf_readu64 (as, a, addr, &cie_id, arg)) < 0)
+      cie_end_addr = addr + len;
+      if ((ret = dwarf_readu64 (as, a, &addr, &cie_id, arg)) < 0)
 	return ret;
       /* DWARF says CIE id should be 0xffffffffffffffff, but in
 	 .eh_frame, it's 0 */
@@ -100,9 +108,9 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 	  return -UNW_EINVAL;
 	}
     }
-  dfi->cie_instr_end = cie_end_addr;
+  dci->cie_instr_end = cie_end_addr;
 
-  if ((ret = dwarf_readu8 (as, a, addr, &version, arg)) < 0)
+  if ((ret = dwarf_readu8 (as, a, &addr, &version, arg)) < 0)
     return ret;
 
   if (version != 1 && version != DWARF_CIE_VERSION)
@@ -116,7 +124,7 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
   memset (augstr, 0, sizeof (augstr));
   for (i = 0;;)
     {
-      if ((ret = dwarf_readu8 (as, a, addr, &ch, arg)) < 0)
+      if ((ret = dwarf_readu8 (as, a, &addr, &ch, arg)) < 0)
 	return ret;
 
       if (!ch)
@@ -126,26 +134,25 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 	augstr[i++] = ch;
     }
 
-  if ((ret = dwarf_read_uleb128 (as, a, addr, &dfi->code_align, arg)) < 0
-      || (ret = dwarf_read_sleb128 (as, a, addr, &dfi->data_align, arg)) < 0)
+  if ((ret = dwarf_read_uleb128 (as, a, &addr, &dci->code_align, arg)) < 0
+      || (ret = dwarf_read_sleb128 (as, a, &addr, &dci->data_align, arg)) < 0)
     return ret;
 
   /* Read the return-address column either as a u8 or as a uleb128.  */
   if (version == 1)
     {
-      if ((ret = dwarf_readu8 (as, a, addr, &ch, arg)) < 0)
+      if ((ret = dwarf_readu8 (as, a, &addr, &ch, arg)) < 0)
 	return ret;
-      dfi->ret_addr_column = ch;
+      dci->ret_addr_column = ch;
     }
-  else if ((ret = dwarf_read_uleb128 (as, a, addr, &dfi->ret_addr_column, arg))
-	   < 0)
+  else if ((ret = dwarf_read_uleb128 (as, a, &addr, &dci->ret_addr_column,
+				      arg)) < 0)
     return ret;
 
   if (augstr[0] == 'z')
     {
-      dfi->flags |= UNW_DYN_DFI_FLAG_AUGMENTATION_HAS_SIZE;
-      if ((ret = dwarf_read_uleb128 (as, a, addr, &aug_size, arg))
-	  < 0)
+      dci->sized_augmentation = 1;
+      if ((ret = dwarf_read_uleb128 (as, a, &addr, &aug_size, arg)) < 0)
 	return ret;
     }
 
@@ -154,28 +161,34 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
       {
       case 'L':
 	/* read the LSDA pointer-encoding format.  */
-	if ((ret = dwarf_readu8 (as, a, addr, &ch, arg)) < 0)
+	if ((ret = dwarf_readu8 (as, a, &addr, &ch, arg)) < 0)
 	  return ret;
-	*lsda_encodingp = ch;
+	dci->lsda_encoding = ch;
 	break;
 
       case 'R':
 	/* read the FDE pointer-encoding format.  */
-	if ((ret = dwarf_readu8 (as, a, addr, &fde_encoding, arg)) < 0)
+	if ((ret = dwarf_readu8 (as, a, &addr, &fde_encoding, arg)) < 0)
 	  return ret;
 	break;
 
       case 'P':
 	/* read the personality-routine pointer-encoding format.  */
-	if ((ret = dwarf_readu8 (as, a, addr, &handler_encoding, arg)) < 0)
+	if ((ret = dwarf_readu8 (as, a, &addr, &handler_encoding, arg)) < 0)
 	  return ret;
-	if ((ret = dwarf_read_encoded_pointer (as, a, addr, handler_encoding,
-					       pi, &handler, arg)) < 0)
+	if ((ret = dwarf_read_encoded_pointer (as, a, &addr, handler_encoding,
+					       pi, &dci->handler, arg)) < 0)
 	  return ret;
 	break;
 
+      case 'S':
+	/* Temporarily set it to one so dwarf_parse_fde() knows that
+	   it should fetch the actual ABI/TAG pair from the FDE.  */
+	dci->have_abi_marker = 1;
+	break;
+
       default:
-	if (dfi->flags & UNW_DYN_DFI_FLAG_AUGMENTATION_HAS_SIZE)
+	if (dci->sized_augmentation)
 	  /* If we have the size of the augmentation body, we can skip
 	     over the parts that we don't understand, so we're OK. */
 	  return 0;
@@ -185,42 +198,55 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 	    return -UNW_EINVAL;
 	  }
       }
-  dfi->flags |= fde_encoding & UNW_DYN_DFI_FLAG_FDE_PE_MASK;
-  pi->handler = handler;
+  dci->fde_encoding = fde_encoding;
+  dci->cie_instr_start = addr;
   Debug (15, "CIE parsed OK, augmentation = \"%s\", handler=0x%lx\n",
-	 augstr, (long) handler);
-  dfi->cie_instr_start = *addr;
+	 augstr, (long) dci->handler);
   return 0;
 }
 
+/* Extract proc-info from the FDE starting at adress ADDR.  */
+
 HIDDEN int
-dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
-		 unw_proc_info_t *pi, unw_dyn_dwarf_fde_info_t *dfi, void *arg)
+dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
+				  unw_word_t *addrp, unw_proc_info_t *pi,
+				  int need_unwind_info,
+				  void *arg)
 {
   unw_word_t fde_end_addr, cie_addr, cie_offset_addr, aug_end_addr = 0;
-  int ret, fde_encoding, ip_range_encoding, lsda_encoding;
-  unw_word_t start_ip, ip_range, aug_size;
+  unw_word_t start_ip, ip_range, aug_size, addr = *addrp;
+  int ret, ip_range_encoding;
+  struct dwarf_cie_info dci;
   uint64_t u64val;
   uint32_t u32val;
 
-  Debug (12, "FDE @ 0x%lx\n", (long) *addr);
+  Debug (12, "FDE @ 0x%lx\n", (long) addr);
 
-  /* Parse enough of the FDE to get the procedure info (LSDA and handler).  */
+  memset (&dci, 0, sizeof (dci));
 
-  if ((ret = dwarf_readu32 (as, a, addr, &u32val, arg)) < 0)
+  if ((ret = dwarf_readu32 (as, a, &addr, &u32val, arg)) < 0)
     return ret;
 
   if (u32val != 0xffffffff)
     {
       uint32_t cie_offset;
 
+      /* In some configurations, an FDE with a 0 length indicates the
+	 end of the FDE-table.  */
+      if (u32val == 0)
+	return -UNW_ENOINFO;
+
       /* the FDE is in the 32-bit DWARF format */
 
-      fde_end_addr = *addr + u32val;
-      cie_offset_addr = *addr;
+      *addrp = fde_end_addr = addr + u32val;
+      cie_offset_addr = addr;
 
-      if ((ret = dwarf_reads32 (as, a, addr, &cie_offset, arg)) < 0)
+      if ((ret = dwarf_reads32 (as, a, &addr, &cie_offset, arg)) < 0)
 	return ret;
+
+      if (is_cie_id (cie_offset))
+	/* ignore CIEs (happens during linear searches) */
+	return 0;
 
       /* DWARF says that the CIE_pointer in the FDE is a
 	 .debug_frame-relative offset, but the GCC-generated .eh_frame
@@ -234,14 +260,18 @@ dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 
       /* the FDE is in the 64-bit DWARF format */
 
-      if ((ret = dwarf_readu64 (as, a, addr, &u64val, arg)) < 0)
+      if ((ret = dwarf_readu64 (as, a, &addr, &u64val, arg)) < 0)
 	return ret;
 
-      fde_end_addr = *addr + u64val;
-      cie_offset_addr = *addr;
+      *addrp = fde_end_addr = addr + u64val;
+      cie_offset_addr = addr;
 
-      if ((ret = dwarf_reads64 (as, a, addr, &cie_offset, arg)) < 0)
+      if ((ret = dwarf_reads64 (as, a, &addr, &cie_offset, arg)) < 0)
 	return ret;
+
+      if (is_cie_id (cie_offset))
+	/* ignore CIEs (happens during linear searches) */
+	return 0;
 
       /* DWARF says that the CIE_pointer in the FDE is a
 	 .debug_frame-relative offset, but the GCC-generated .eh_frame
@@ -249,50 +279,61 @@ dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 	 as fine as it's self-contained.  */
       cie_addr = (unw_word_t) ((uint64_t) cie_offset_addr - cie_offset);
     }
-  pi->extra.dwarf_info.fde_instr_end = fde_end_addr;
 
-  if ((ret = parse_cie (as, a, &cie_addr, pi, &pi->extra.dwarf_info,
-			&lsda_encoding, arg)) < 0)
+  if ((ret = parse_cie (as, a, cie_addr, pi, &dci, arg)) < 0)
     return ret;
 
-  fde_encoding = pi->extra.dwarf_info.flags & UNW_DYN_DFI_FLAG_FDE_PE_MASK;
   /* IP-range has same encoding as FDE pointers, except that it's
      always an absolute value: */
-  ip_range_encoding = fde_encoding & DW_EH_PE_FORMAT_MASK;
+  ip_range_encoding = dci.fde_encoding & DW_EH_PE_FORMAT_MASK;
 
-  if ((ret = dwarf_read_encoded_pointer (as, a, addr, fde_encoding,
+  if ((ret = dwarf_read_encoded_pointer (as, a, &addr, dci.fde_encoding,
 					 pi, &start_ip, arg)) < 0
-      || (ret = dwarf_read_encoded_pointer (as, a, addr, ip_range_encoding,
+      || (ret = dwarf_read_encoded_pointer (as, a, &addr, ip_range_encoding,
 					    pi, &ip_range, arg)) < 0)
     return ret;
   pi->start_ip = start_ip;
   pi->end_ip = start_ip + ip_range;
+  pi->handler = dci.handler;
 
-  if (pi->extra.dwarf_info.flags & UNW_DYN_DFI_FLAG_AUGMENTATION_HAS_SIZE)
+  if (dci.sized_augmentation)
     {
-      if ((ret = dwarf_read_uleb128 (as, a, addr, &aug_size, arg))
-	  < 0)
+      if ((ret = dwarf_read_uleb128 (as, a, &addr, &aug_size, arg)) < 0)
 	return ret;
-      aug_end_addr =  *addr + aug_size;
+      aug_end_addr = addr + aug_size;
     }
 
-  if ((ret = dwarf_read_encoded_pointer (as, a, addr, lsda_encoding,
+  if ((ret = dwarf_read_encoded_pointer (as, a, &addr, dci.lsda_encoding,
 					 pi, &pi->lsda, arg)) < 0)
     return ret;
 
-  if (pi->extra.dwarf_info.flags & UNW_DYN_DFI_FLAG_AUGMENTATION_HAS_SIZE)
-    pi->extra.dwarf_info.fde_instr_start = aug_end_addr;
-  else
-    pi->extra.dwarf_info.fde_instr_start = *addr;
-
-  /* Always set the unwind info, whether or not need_unwind_info is
-     set.  We had to do all the work anyhow, so there is no point in
-     not doing so.  */
-  pi->format = UNW_INFO_FORMAT_DWARF_FDE;
-  pi->unwind_info_size = sizeof (pi->extra.dwarf_info) / sizeof (unw_word_t);
-  pi->unwind_info = &pi->extra.dwarf_info;
-
   Debug (15, "FDE covers IP 0x%lx-0x%lx, LSDA=0x%lx\n",
 	 (long) pi->start_ip, (long) pi->end_ip, (long) pi->lsda);
+
+  if (need_unwind_info)
+    {
+      pi->format = UNW_INFO_FORMAT_TABLE;
+      pi->unwind_info_size = sizeof (dci);
+      pi->unwind_info = mempool_alloc (&dwarf_cie_info_pool);
+      if (!pi->unwind_info)
+	return UNW_ENOMEM;
+
+      if (dci.have_abi_marker)
+	{
+	  if ((ret = dwarf_readu16 (as, a, &addr, &dci.abi, arg)) < 0
+	      || (ret = dwarf_readu16 (as, a, &addr, &dci.tag, arg)) < 0)
+	    return ret;
+	  Debug (13, "Found ABI marker = (abi=%u, tag=%u)\n",
+		 dci.abi, dci.tag);
+	}
+
+      if (dci.sized_augmentation)
+	dci.fde_instr_start = aug_end_addr;
+      else
+	dci.fde_instr_start = addr;
+      dci.fde_instr_end = fde_end_addr;
+
+      memcpy (pi->unwind_info, &dci, sizeof (dci));
+    }
   return 0;
 }
