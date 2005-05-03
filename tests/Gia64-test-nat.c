@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2004 Hewlett-Packard Co
+   Copyright (C) 2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -125,8 +125,7 @@ sighandler (int signal, void *siginfo, void *context)
       printf ("sighandler: signal %d sp=%p nat=%08lx pr=%lx\n",
 	      signal, &sp, uc->uc_mcontext.sc_nat, uc->uc_mcontext.sc_pr);
     sof = uc->uc_mcontext.sc_cfm & 0x7f;
-    bsp = (unsigned long *) ia64_rse_skip_regs (uc->uc_mcontext.sc_ar_bsp,
-						-sof);
+    bsp = (unsigned long *) rse_skip_regs (uc->uc_mcontext.sc_ar_bsp, -sof);
   }
 #elif defined(__hpux)
   if (__uc_get_ar (uc, UNW_IA64_AR_BSP - UNW_IA64_AR, &bsp) != 0)
@@ -138,7 +137,7 @@ sighandler (int signal, void *siginfo, void *context)
 
   flushrs ();
   arg0 = (save_func_t **) *bsp;
-  bsp = (unsigned long *) ia64_rse_skip_regs ((uint64_t) bsp, 1);
+  bsp = (unsigned long *) rse_skip_regs ((uint64_t) bsp, 1);
   arg1 = (unsigned long *) *bsp;
 
   (*arg0[0]) (arg0 + 1, arg1);
@@ -525,9 +524,9 @@ run_check (int test)
     {
       if (test == 1)
 	/* Make first test once go through each test... */
-	index = i % NELEMS (all_funcs);
+	index = i % ARRAY_SIZE (all_funcs);
       else
-	index = random () % NELEMS (all_funcs);
+	index = random () % ARRAY_SIZE (all_funcs);
       funcs[i] = all_funcs[index].func;
       checks[i] = all_funcs[index].check;
     }
