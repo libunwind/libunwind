@@ -145,27 +145,169 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   return &ui->di_cache;
 }
 
-#elif UNW_TARGET_X86
+#elif UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_HPPA
+
+#include "dwarf-eh.h"
+#include "dwarf_i.h"
+
+/* We need our own instance of dwarf_read_encoded_pointer() here since
+   the one in dwarf/Gpe.c is not (and should not be) exported.  */
+int
+dwarf_read_encoded_pointer (unw_addr_space_t as, unw_accessors_t *a,
+			    unw_word_t *addr, unsigned char encoding,
+			    const unw_proc_info_t *pi,
+			    unw_word_t *valp, void *arg)
+{
+  return dwarf_read_encoded_pointer_inlined (as, a, addr, encoding,
+					     pi, valp, arg);
+}
 
 HIDDEN unw_dyn_info_t *
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff)
 {
-  /* fix me */
-  return NULL;
+  Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
+  unw_word_t addr, eh_frame_start, fde_count, load_base;
+  struct dwarf_eh_frame_hdr *hdr;
+  unw_proc_info_t pi;
+  unw_accessors_t *a;
+  Elf_W(Ehdr) *ehdr;
+  int i, ret;
+
+  /* XXX: Much of this code is Linux/LSB-specific.  */
+
+  if (!elf_w(valid_object) (&ui->ei))
+    return NULL;
+
+  ehdr = ui->ei.image;
+  phdr = (Elf_W(Phdr) *) ((char *) ui->ei.image + ehdr->e_phoff);
+
+  for (i = 0; i < ehdr->e_phnum; ++i)
+    {
+      switch (phdr[i].p_type)
+	{
+	case PT_LOAD:
+	  if (phdr[i].p_offset == mapoff)
+	    ptxt = phdr + i;
+	  break;
+
+	case PT_GNU_EH_FRAME:
+	  peh_hdr = phdr + i;
+	  break;
+
+	case PT_DYNAMIC:
+	  pdyn = phdr + i;
+	  break;
+
+	default:
+	  break;
+	}
+    }
+  if (!ptxt || !peh_hdr)
+    return NULL;
+
+  if (pdyn)
+    {
+      /* For dynamicly linked executables and shared libraries,
+	 DT_PLTGOT is the value that data-relative addresses are
+	 relative to for that object.  We call this the "gp".  */
+	    Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
+					     + (char *) ui->ei.image);
+      for (; dyn->d_tag != DT_NULL; ++dyn)
+	if (dyn->d_tag == DT_PLTGOT)
+	  {
+	    /* Assume that _DYNAMIC is writable and GLIBC has
+	       relocated it (true for x86 at least).  */
+	    ui->di_cache.gp = dyn->d_un.d_ptr;
+	    break;
+	  }
+    }
+  else
+    /* Otherwise this is a static executable with no _DYNAMIC.  Assume
+       that data-relative addresses are relative to 0, i.e.,
+       absolute.  */
+    ui->di_cache.gp = 0;
+
+  hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
+				       + (char *) ui->ei.image);
+  if (hdr->version != DW_EH_VERSION)
+    {
+      Debug (1, "table `%s' has unexpected version %d\n",
+	     path, hdr->version);
+      return 0;
+    }
+
+  a = unw_get_accessors (unw_local_addr_space);
+  addr = (unw_word_t) (hdr + 1);
+
+  /* Fill in a dummy proc_info structure.  We just need to fill in
+     enough to ensure that dwarf_read_encoded_pointer() can do it's
+     job.  Since we don't have a procedure-context at this point, all
+     we have to do is fill in the global-pointer.  */
+  memset (&pi, 0, sizeof (pi));
+  pi.gp = ui->di_cache.gp;
+
+  /* (Optionally) read eh_frame_ptr: */
+  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+					 &addr, hdr->eh_frame_ptr_enc, &pi,
+					 &eh_frame_start, NULL)) < 0)
+    return NULL;
+
+  /* (Optionally) read fde_count: */
+  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+					 &addr, hdr->fde_count_enc, &pi,
+					 &fde_count, NULL)) < 0)
+    return NULL;
+
+  if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
+    {
+      abort ();
+#if 0
+      /* If there is no search table or it has an unsupported
+	 encoding, fall back on linear search.  */
+      if (hdr->table_enc == DW_EH_PE_omit)
+	Debug (4, "table `%s' lacks search table; doing linear search\n",
+	       info->dlpi_name);
+      else
+	Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
+	       info->dlpi_name, hdr->table_enc);
+
+      eh_frame_end = max_load_addr;	/* XXX can we do better? */
+
+      if (hdr->fde_count_enc == DW_EH_PE_omit)
+	fde_count = ~0UL;
+      if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
+	abort ();
+
+      cb_data->single_fde = 1;
+      return linear_search (unw_local_addr_space, ip,
+			    eh_frame_start, eh_frame_end, fde_count,
+			    pi, need_unwind_info, NULL);
+#endif
+    }
+
+  load_base = segbase - ptxt->p_vaddr;
+
+  ui->di_cache.start_ip = segbase;
+  ui->di_cache.end_ip = ui->di_cache.start_ip + ptxt->p_memsz;
+  ui->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
+  ui->di_cache.u.rti.name_ptr = 0;
+  /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
+  ui->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
+  ui->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
+				   + (addr - (unw_word_t) ui->ei.image
+				      - peh_hdr->p_offset));
+
+  /* For the binary-search table in the eh_frame_hdr, data-relative
+     means relative to the start of that section... */
+  ui->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
+				+ ((unw_word_t) hdr - (unw_word_t) ui->ei.image
+				   - peh_hdr->p_offset));
+
+  return &ui->di_cache;
 }
 
-#elif UNW_TARGET_X86_64
-
-HIDDEN unw_dyn_info_t *
-_UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
-			 char *path, unw_word_t segbase, unw_word_t mapoff)
-{
-  /* fix me */
-  return NULL;
-}
-
-#endif /* UNW_TARGET_X86_64 */
+#endif /* UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_HPPA*/
 
 static unw_dyn_info_t *
 get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
@@ -198,6 +340,8 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
   if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff) < 0)
     return NULL;
 
+  /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
+     which covers the IP we're looking for.  */
   di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff);
   if (!di
       /* This can happen in corner cases where dynamically generated
