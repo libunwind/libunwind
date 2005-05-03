@@ -136,6 +136,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
   dwarf_loc_t loc = DWARF_NULL_LOC;
+  unsigned int mask;
+  int arg_num;
 
   switch (reg)
     {
@@ -147,25 +149,34 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_X86_CFA:
+    case UNW_X86_ESP:
       if (write)
 	return -UNW_EREADONLYREG;
       *valp = c->dwarf.cfa;
       return 0;
 
-    case UNW_X86_EAX: loc = c->dwarf.loc[EAX]; break;
-    case UNW_X86_ECX: loc = c->dwarf.loc[ECX]; break;
-    case UNW_X86_EDX: loc = c->dwarf.loc[EDX]; break;
-    case UNW_X86_EBX: loc = c->dwarf.loc[EBX]; break;
-    case UNW_X86_ESP:
-      if (c->dwarf.cfa_is_sp)
+    case UNW_X86_EAX:
+    case UNW_X86_EDX:
+      arg_num = reg - UNW_X86_EAX;
+      mask = (1 << arg_num);
+      if (write)
 	{
-	  if (write)
-	    return -UNW_EREADONLYREG;
-	  *valp = c->dwarf.cfa;
+	  c->dwarf.eh_args[arg_num] = *valp;
+	  c->dwarf.eh_valid_mask |= mask;
 	  return 0;
 	}
-      loc = c->dwarf.loc[ESP];
+      else if ((c->dwarf.eh_valid_mask & mask) != 0)
+	{
+	  *valp = c->dwarf.eh_args[arg_num];
+	  return 0;
+	}
+      else
+	loc = c->dwarf.loc[(reg == UNW_X86_EAX) ? EAX : EDX];
       break;
+
+    case UNW_X86_ECX: loc = c->dwarf.loc[ECX]; break;
+    case UNW_X86_EBX: loc = c->dwarf.loc[EBX]; break;
+
     case UNW_X86_EBP: loc = c->dwarf.loc[EBP]; break;
     case UNW_X86_ESI: loc = c->dwarf.loc[ESI]; break;
     case UNW_X86_EDI: loc = c->dwarf.loc[EDI]; break;
