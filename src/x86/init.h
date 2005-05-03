@@ -57,5 +57,9 @@ common_init (struct cursor *c)
   c->sigcontext_format = X86_SCF_NONE;
   c->sigcontext_addr = 0;
 
+  c->dwarf.args_size = 0;
+  c->dwarf.ret_addr_column = 0;
+  c->dwarf.pi_valid = 0;
+  c->dwarf.pi_is_dynamic = 0;
   return 0;
 }
