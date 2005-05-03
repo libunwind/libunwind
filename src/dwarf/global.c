@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003-2004 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -26,10 +26,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf.h"
 
 HIDDEN struct mempool dwarf_reg_state_pool;
+HIDDEN struct mempool dwarf_cie_info_pool;
 
 HIDDEN int
 dwarf_init (void)
 {
   mempool_init (&dwarf_reg_state_pool, sizeof (dwarf_reg_state_t), 0);
+  mempool_init (&dwarf_cie_info_pool, sizeof (struct dwarf_cie_info), 0);
   return 0;
 }
