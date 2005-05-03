@@ -55,7 +55,7 @@ struct _Unwind_Context {
    ((unw_getcontext (uc) < 0 || unw_init_local (&(context)->cursor, uc) < 0) \
     ? -1 : 0))
 
-static inline _Unwind_Reason_Code ALWAYS_INLINE
+static _Unwind_Reason_Code ALWAYS_INLINE
 _Unwind_Phase2 (struct _Unwind_Exception *exception_object,
 		struct _Unwind_Context *context)
 {
