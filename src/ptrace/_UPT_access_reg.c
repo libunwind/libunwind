@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
+   Copyright (C) 2003-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -152,7 +152,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 
 	  if (write)
 	    {
-	      bsp = ia64_rse_skip_regs (*val, sof);
+	      bsp = rse_skip_regs (*val, sof);
 #ifdef HAVE_TTRACE
 #	warning No support for ttrace() yet.
 #else
@@ -172,7 +172,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	      if (errno)
 		goto badreg;
 #endif
-	      *val = ia64_rse_skip_regs (bsp, -sof);
+	      *val = rse_skip_regs (bsp, -sof);
 	    }
 	  goto out;
 	}
@@ -197,7 +197,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	    new_sof = (*val & 0x7f);
 	    if (old_sof != new_sof)
 	      {
-		bsp = ia64_rse_skip_regs (bsp, -old_sof + new_sof);
+		bsp = rse_skip_regs (bsp, -old_sof + new_sof);
 #ifdef HAVE_TTRACE
 #	warning No support for ttrace() yet.
 #else
@@ -222,7 +222,10 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 #endif
 
   if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
-    goto badreg;
+    {
+      errno = EINVAL;
+      goto badreg;
+    }
 
 #ifdef HAVE_TTRACE
 #	warning No support for ttrace() yet.
@@ -246,6 +249,6 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   return 0;
 
  badreg:
-  Debug (1, "bad register number %u\n", reg);
+  Debug (1, "bad register number %u (error: %s)\n", reg, strerror (errno));
   return -UNW_EBADREG;
 }
