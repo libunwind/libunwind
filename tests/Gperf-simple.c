@@ -53,7 +53,7 @@ gettime (void)
   return tv.tv_sec + 1e-6*tv.tv_usec;
 }
 
-static int
+static int __attribute__((noinline))
 measure_unwind (int maxlevel, double *step)
 {
   double stop, start;
@@ -79,21 +79,33 @@ measure_unwind (int maxlevel, double *step)
   stop = gettime ();
 
   if (level <= maxlevel)
-    panic ("Unwound only %d levels, expected at least %d levels",
+    panic ("Unwound only %d levels, expected at least %d levels\n",
 	   level, maxlevel);
 
   *step = (stop - start) / (double) level;
   return 0;
 }
 
-static int
-f1 (int level, int maxlevel, double *step)
+static int f1 (int, int, double *);
+
+static int __attribute__((noinline))
+g1 (int level, int maxlevel, double *step)
 {
   if (level == maxlevel)
     return measure_unwind (maxlevel, step);
   else
     /* defeat last-call/sibcall optimization */
     return f1 (level + 1, maxlevel, step) + level;
+}
+
+static int __attribute__((noinline))
+f1 (int level, int maxlevel, double *step)
+{
+  if (level == maxlevel)
+    return measure_unwind (maxlevel, step);
+  else
+    /* defeat last-call/sibcall optimization */
+    return g1 (level + 1, maxlevel, step) + level;
 }
 
 static void
