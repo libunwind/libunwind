@@ -67,7 +67,7 @@ int
 bar (int v)
 {
   extern long f (long);
-  int arr[1];
+  int arr[1] = { v };
   uintptr_t r;
 
   /* This is a vain attempt to use up lots of registers to force
