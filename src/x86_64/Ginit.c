@@ -74,7 +74,7 @@ uc_addr (ucontext_t *uc, int reg)
 
 # ifdef UNW_LOCAL_ONLY
 
-void *
+HIDDEN void *
 tdep_uc_addr (ucontext_t *uc, int reg)
 {
   return uc_addr (uc, reg);
