@@ -60,7 +60,7 @@ set_reg (dwarf_state_record_t *sr, unw_word_t regnum, dwarf_where_t where,
 static int
 run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 		 unw_word_t ip, unw_word_t *addr, unw_word_t end_addr,
-		 unw_dyn_dwarf_fde_info_t *dfi)
+		 struct dwarf_cie_info *dci)
 {
   unw_word_t curr_ip, operand = 0, regnum, val, len, fde_encoding;
   dwarf_reg_state_t *rs_stack = NULL, *new_rs, *old_rs;
@@ -90,28 +90,28 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
       switch ((dwarf_cfa_t) op)
 	{
 	case DW_CFA_advance_loc:
-	  curr_ip += operand * dfi->code_align;
+	  curr_ip += operand * dci->code_align;
 	  Debug (15, "CFA_advance_loc to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_advance_loc1:
 	  if ((ret = dwarf_readu8 (as, a, addr, &u8, arg)) < 0)
 	    goto fail;
-	  curr_ip += u8 * dfi->code_align;
+	  curr_ip += u8 * dci->code_align;
 	  Debug (15, "CFA_advance_loc1 to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_advance_loc2:
 	  if ((ret = dwarf_readu16 (as, a, addr, &u16, arg)) < 0)
 	    goto fail;
-	  curr_ip += u16 * dfi->code_align;
+	  curr_ip += u16 * dci->code_align;
 	  Debug (15, "CFA_advance_loc2 to 0x%lx\n", (long) curr_ip);
 	  break;
 
 	case DW_CFA_advance_loc4:
 	  if ((ret = dwarf_readu32 (as, a, addr, &u32, arg)) < 0)
 	    goto fail;
-	  curr_ip += u32 * dfi->code_align;
+	  curr_ip += u32 * dci->code_align;
 	  Debug (15, "CFA_advance_loc4 to 0x%lx\n", (long) curr_ip);
 	  break;
 
@@ -122,7 +122,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
 	    if ((ret = dwarf_readu64 (as, a, addr, &u64, arg)) < 0)
 	      goto fail;
-	    curr_ip += u64 * dfi->code_align;
+	    curr_ip += u64 * dci->code_align;
 	    Debug (15, "CFA_MIPS_advance_loc8\n");
 	    break;
 	  }
@@ -143,27 +143,27 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	    }
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
-	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dfi->data_align);
+	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
 	  Debug (15, "CFA_offset r%lu at cfa+0x%lx\n",
-		 (long) regnum, (long) (val * dfi->data_align));
+		 (long) regnum, (long) (val * dci->data_align));
 	  break;
 
 	case DW_CFA_offset_extended:
 	  if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	      || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
-	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dfi->data_align);
+	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
 	  Debug (15, "CFA_offset_extended r%lu at cf+0x%lx\n",
-		 (long) regnum, (long) (val * dfi->data_align));
+		 (long) regnum, (long) (val * dci->data_align));
 	  break;
 
 	case DW_CFA_offset_extended_sf:
 	  if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	      || ((ret = dwarf_read_sleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
-	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dfi->data_align);
+	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
 	  Debug (15, "CFA_offset_extended_sf r%lu at cf+0x%lx\n",
-		 (long) regnum, (long) (val * dfi->data_align));
+		 (long) regnum, (long) (val * dci->data_align));
 	  break;
 
 	case DW_CFA_restore:
@@ -197,7 +197,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  break;
 
 	case DW_CFA_set_loc:
-	  fde_encoding = dfi->flags & UNW_DYN_DFI_FLAG_FDE_PE_MASK;
+	  fde_encoding = dci->fde_encoding;
 	  if ((ret = dwarf_read_encoded_pointer (as, a, addr, fde_encoding,
 						 &c->pi, &curr_ip,
 						 arg)) < 0)
@@ -271,9 +271,9 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0,
-		   val * dfi->data_align);		/* factored! */
+		   val * dci->data_align);		/* factored! */
 	  Debug (15, "CFA_def_cfa_sf r%lu+0x%lx\n",
-		 (long) regnum, (long) (val * dfi->data_align));
+		 (long) regnum, (long) (val * dci->data_align));
 	  break;
 
 	case DW_CFA_def_cfa_register:
@@ -287,16 +287,16 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0, val);	/* NOT factored! */
-	  Debug (15, "CFA_def_cfa_offsets 0x%lx\n", (long) val);
+	  Debug (15, "CFA_def_cfa_offset 0x%lx\n", (long) val);
 	  break;
 
 	case DW_CFA_def_cfa_offset_sf:
 	  if ((ret = dwarf_read_sleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
 	  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0,
-		   val * dfi->data_align);	/* factored! */
-	  Debug (15, "CFA_def_cfa_offsets_sf 0x%lx\n",
-		 (long) (val * dfi->data_align));
+		   val * dci->data_align);	/* factored! */
+	  Debug (15, "CFA_def_cfa_offset_sf 0x%lx\n",
+		 (long) (val * dci->data_align));
 	  break;
 
 	case DW_CFA_def_cfa_expression:
@@ -311,7 +311,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  *addr += len;
 	  break;
 
-	case DW_CFA_CFA_expression:
+	case DW_CFA_expression:
 	  if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	    goto fail;
 
@@ -340,9 +340,9 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
 	      || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
 	    goto fail;
-	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, -(val * dfi->data_align));
-	  Debug (15, "CFA_GNU_negative_offsets_extended cfa+0x%lx\n",
-		 (long) -(val * dfi->data_align));
+	  set_reg (sr, regnum, DWARF_WHERE_CFAREL, -(val * dci->data_align));
+	  Debug (15, "CFA_GNU_negative_offset_extended cfa+0x%lx\n",
+		 (long) -(val * dci->data_align));
 	  break;
 
 	case DW_CFA_GNU_window_save:
@@ -359,7 +359,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 #endif
 	case DW_CFA_lo_user:
 	case DW_CFA_hi_user:
-	  Debug (1, "Unexpected CFA opcode 0x%x", op);
+	  Debug (1, "Unexpected CFA opcode 0x%x\n", op);
 	  ret = -UNW_EINVAL;
 	  goto fail;
 	}
@@ -382,8 +382,12 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 {
   int ret, dynamic = 1;
 
+  --ip;
+
   if (c->pi_valid && !need_unwind_info)
     return 0;
+
+  memset (&c->pi, 0, sizeof (c->pi));
 
   /* check dynamic info first --- it overrides everything else */
   ret = unwi_find_dynamic_proc_info (c->as, ip, &c->pi, need_unwind_info,
@@ -419,27 +423,32 @@ put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
 
   if (c->pi_is_dynamic)
     unwi_put_dynamic_unwind_info (c->as, pi, c->as_arg);
+  else if (pi->unwind_info);
+    {
+      mempool_free (&dwarf_cie_info_pool, pi->unwind_info);
+      pi->unwind_info = NULL;
+    }
 }
 
 static inline int
 parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
 {
-  unw_dyn_dwarf_fde_info_t *dfi;
+  struct dwarf_cie_info *dci;
   unw_word_t addr;
   int ret;
 
-  dfi = c->pi.unwind_info;
-  c->ret_addr_column = dfi->ret_addr_column;
+  dci = c->pi.unwind_info;
+  c->ret_addr_column = dci->ret_addr_column;
 
-  addr = dfi->cie_instr_start;
+  addr = dci->cie_instr_start;
   if ((ret = run_cfi_program (c, sr, ~(unw_word_t) 0, &addr,
-			      dfi->cie_instr_end, dfi)) < 0)
+			      dci->cie_instr_end, dci)) < 0)
     return ret;
 
   memcpy (&sr->rs_initial, &sr->rs_current, sizeof (sr->rs_initial));
 
-  addr = dfi->fde_instr_start;
-  if ((ret = run_cfi_program (c, sr, ip, &addr, dfi->fde_instr_end, dfi)) < 0)
+  addr = dci->fde_instr_start;
+  if ((ret = run_cfi_program (c, sr, ip, &addr, dci->fde_instr_end, dci)) < 0)
     return ret;
 
   return 0;
@@ -453,12 +462,14 @@ create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
   assert (c->pi_valid);
 
-  for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+  memset (sr, 0, sizeof (*sr));
+  for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
     set_reg (sr, i, DWARF_WHERE_SAME, 0);
 
   switch (c->pi.format)
     {
-    case UNW_INFO_FORMAT_DWARF_FDE:
+    case UNW_INFO_FORMAT_TABLE:
+    case UNW_INFO_FORMAT_REMOTE_TABLE:
       ret = parse_fde (c, ip, sr);
       break;
 
@@ -466,8 +477,6 @@ create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
       ret = parse_dynamic (c, ip, sr);
       break;
 
-    case UNW_INFO_FORMAT_REMOTE_TABLE:
-    case UNW_INFO_FORMAT_TABLE:
     default:
       Debug (1, "Unexpected unwind-info format %d\n", c->pi.format);
       ret = -UNW_EINVAL;
@@ -513,9 +522,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   arg = c->as_arg;
   a = unw_get_accessors (as);
 
-  c->cfa_is_sp = 0;
-
-  /* Evaluate the CFA first, because it may be referred to be other
+  /* Evaluate the CFA first, because it may be referred to by other
      expressions.  */
 
   if (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_REG)
@@ -527,10 +534,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	 the stack-pointer as well.  */
       if ((rs->reg[DWARF_CFA_REG_COLUMN].val == UNW_TDEP_SP)
 	  && (rs->reg[UNW_TDEP_SP].where == DWARF_WHERE_SAME))
-	{
 	  cfa = c->cfa;
-	  c->cfa_is_sp = 1;
-	}
       else
 	{
 	  regnum = dwarf_to_unw_regnum (rs->reg[DWARF_CFA_REG_COLUMN].val);
@@ -548,10 +552,11 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
       addr = rs->reg[DWARF_CFA_REG_COLUMN].val;
       if ((ret = eval_location_expr (c, as, a, addr, &cfa_loc, arg)) < 0)
 	return ret;
-      if ((ret = dwarf_get (c, cfa_loc, &cfa)) < 0)
-	return ret;
+      /* the returned location better be a memory location... */
+      if (DWARF_IS_REG_LOC (cfa_loc))
+	return -UNW_EBADFRAME;
+      cfa = DWARF_GET_LOC (cfa_loc);
     }
-  c->cfa = cfa;
 
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
     {
@@ -579,6 +584,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	  break;
 	}
     }
+  c->cfa = cfa;
   return 0;
 }
 
