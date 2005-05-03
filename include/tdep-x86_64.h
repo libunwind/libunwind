@@ -41,7 +41,11 @@ struct unw_addr_space
   {
     struct unw_accessors acc;
     unw_caching_policy_t caching_policy;
+#ifdef HAVE_ATOMIC_OPS_H
+    AO_t cache_generation;
+#else
     uint32_t cache_generation;
+#endif
     unw_word_t dyn_generation;		/* see dyn-common.h */
     unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
    };
@@ -67,6 +71,7 @@ struct cursor
 # define DWARF_NULL_LOC		DWARF_LOC (0, 0)
 # define DWARF_IS_NULL_LOC(l)	(DWARF_GET_LOC (l) == 0)
 # define DWARF_LOC(r, t)	((dwarf_loc_t) { .val = (r) })
+# define DWARF_IS_REG_LOC(l)	0
 # define DWARF_REG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
 				 tdep_uc_addr((c)->as_arg, (r)), 0))
 # define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
