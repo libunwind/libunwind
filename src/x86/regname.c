@@ -18,7 +18,7 @@ static const char *regname[] =
 PROTECTED const char *
 unw_regname (unw_regnum_t reg)
 {
-  if (reg < (unw_regnum_t) NELEMS (regname))
+  if (reg < (unw_regnum_t) ARRAY_SIZE (regname))
     return regname[reg];
   else
     return "???";
