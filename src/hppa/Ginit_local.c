@@ -41,14 +41,13 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 {
   struct cursor *c = (struct cursor *) cursor;
 
-  if (hppa_needs_initialization)
-    {
-      hppa_needs_initialization = 0;
-      hppa_init ();
-    }
+  if (tdep_needs_initialization)
+    tdep_init ();
 
-  c->as = unw_local_addr_space;
-  c->as_arg = uc;
+  Debug (1, "(cursor=%p)\n", c);
+
+  c->dwarf.as = unw_local_addr_space;
+  c->dwarf.as_arg = uc;
   return common_init (c);
 }
 
