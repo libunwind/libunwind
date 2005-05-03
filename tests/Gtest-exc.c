@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2003 Hewlett-Packard Co
+   Copyright (C) 2001-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -24,11 +24,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* This illustrates the basics of using the unwind interface for
    exception handling.  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
 
 #include <libunwind.h>
+
+#ifdef HAVE_IA64INTRIN_H
+# include <ia64intrin.h>
+#endif
 
 #define panic(args...)				\
 	{ ++nerrors; fprintf (stderr, args); }
@@ -36,6 +44,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 int nerrors = 0;
 int verbose = 0;
 int depth = 13;
+volatile int got_here = 0;
 
 extern void b (int);
 
@@ -53,15 +62,8 @@ raise_exception (void)
       return;
     }
 
-  /* unwind to frame b(): */
-  if (unw_step (&cursor) < 0)
-    {
-      panic ("unw_step() failed!\n");
-      return;
-    }
-
-  /* unwind to top-most frame a(): */
-  for (i = 0; i < depth - 1; ++i)
+  /* unwind to top-most frame a(), skipping over b() and raise_exception(): */
+  for (i = 0; i < depth + 2; ++i)
     if (unw_step (&cursor) < 0)
       {
 	panic ("unw_step() failed!\n");
@@ -70,42 +72,50 @@ raise_exception (void)
   unw_resume (&cursor);	/* transfer control to exception handler */
 }
 
-#if !UNW_TARGET_IA64 || defined(__INTEL_COMPILER)
-
-void *
-__builtin_ia64_bsp (void)
+uintptr_t
+get_bsp (void)
 {
-  return NULL;
-}
-
+#if UNW_TARGET_IA64
+# ifdef __INTEL_COMPILER
+  return __getReg (_IA64_REG_AR_BSP);
+# else
+  return (uintptr_t) __builtin_ia64_bsp ();
+# endif
+#else
+  return 0;
 #endif
+}
 
 int
 a (int n)
 {
   long stack;
+  int result = 99;
 
   if (verbose)
-    printf ("a(n=%d)\n", n);
+    printf ("a(n=%d): sp=%p bsp=0x%lx\n",
+	    n, &stack, (unsigned long) get_bsp ());
 
   if (n > 0)
-    return a (n - 1);
-
-  if (verbose)
-    printf ("a: sp=%p bsp=%p\n", &stack, __builtin_ia64_bsp ());
-
-  b (16);
+    a (n - 1) + 1;
+  else
+    b (16);
 
   if (verbose)
     {
-      printf ("exception handler: here we go (sp=%p, bsp=%p)...\n",
-	      &stack, __builtin_ia64_bsp ());
+      printf ("exception handler: here we go (sp=%p, bsp=0x%lx)...\n",
+	      &stack, (unsigned long) get_bsp ());
       /* This call works around a bug in gcc (up-to pre3.4) which
 	 causes invalid assembly code to be generated when
 	 __builtin_ia64_bsp() gets predicated.  */
       getpid ();
     }
-  return 0;
+  if (n == depth)
+    {
+      result = 0;
+      got_here = 1;
+    }
+  return result;
 }
 
 void
@@ -123,15 +133,26 @@ b (int n)
 int
 main (int argc, char **argv)
 {
+  int result;
+
   if (argc > 1)
     {
       ++verbose;
       depth = atol (argv[1]);
+      if (depth < 1)
+	{
+	  fprintf (stderr, "Usage: %s depth\n"
+		   "  depth must be >= 1\n", argv[0]);
+	  exit (-1);
+	}
     }
 
-  if (a (depth) != 0 || nerrors > 0)
+  result = a (depth);
+  if (result != 0 || !got_here || nerrors > 0)
     {
-      fprintf (stderr, "FAILURE: test failed; try again?\n");
+      fprintf (stderr,
+	       "FAILURE: test failed: result=%d got_here=%d nerrors=%d\n",
+	       result, got_here, nerrors);
       exit (-1);
     }
 
