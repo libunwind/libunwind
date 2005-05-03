@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 1998, 1999, 2002, 2003 Hewlett-Packard Co
+ * Copyright (C) 1998, 1999, 2002, 2003, 2005 Hewlett-Packard Co
  *	David Mosberger-Tang <davidm@hpl.hp.com>
  *
  * Register stack engine related helper functions.  This file may be
@@ -15,7 +15,7 @@
 #include <inttypes.h>
 
 static inline uint64_t
-ia64_rse_slot_num (uint64_t addr)
+rse_slot_num (uint64_t addr)
 {
 	return (addr >> 3) & 0x3f;
 }
@@ -24,9 +24,9 @@ ia64_rse_slot_num (uint64_t addr)
  * Return TRUE if ADDR is the address of an RNAT slot.
  */
 static inline uint64_t
-ia64_rse_is_rnat_slot (uint64_t addr)
+rse_is_rnat_slot (uint64_t addr)
 {
-	return ia64_rse_slot_num (addr) == 0x3f;
+	return rse_slot_num (addr) == 0x3f;
 }
 
 /*
@@ -34,7 +34,7 @@ ia64_rse_is_rnat_slot (uint64_t addr)
  * address SLOT_ADDR.
  */
 static inline uint64_t
-ia64_rse_rnat_addr (uint64_t slot_addr)
+rse_rnat_addr (uint64_t slot_addr)
 {
 	return slot_addr | (0x3f << 3);
 }
@@ -45,11 +45,11 @@ ia64_rse_rnat_addr (uint64_t slot_addr)
  * because every 64th slot stores ar.rnat.
  */
 static inline uint64_t
-ia64_rse_num_regs (uint64_t bspstore, uint64_t bsp)
+rse_num_regs (uint64_t bspstore, uint64_t bsp)
 {
 	uint64_t slots = (bsp - bspstore) >> 3;
 
-	return slots - (ia64_rse_slot_num(bspstore) + slots)/0x40;
+	return slots - (rse_slot_num(bspstore) + slots)/0x40;
 }
 
 /*
@@ -57,9 +57,9 @@ ia64_rse_num_regs (uint64_t bspstore, uint64_t bsp)
  * registers, calculate ar.bsp.
  */
 static inline uint64_t
-ia64_rse_skip_regs (uint64_t addr, long num_regs)
+rse_skip_regs (uint64_t addr, long num_regs)
 {
-	long delta = ia64_rse_slot_num(addr) + num_regs;
+	long delta = rse_slot_num(addr) + num_regs;
 
 	if (num_regs < 0)
 		delta -= 0x3e;
