@@ -128,7 +128,6 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (unw_is_fpreg (reg))
     goto badreg;
 
-Debug (16, "reg = %s\n", unw_regname (reg));
   if (!(addr = uc_addr (uc, reg)))
     goto badreg;
 
