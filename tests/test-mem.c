@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
 
 #include <sys/resource.h>
@@ -69,11 +70,26 @@ do_backtrace (void)
 }
 
 int
+consume_some_stack_space (void)
+{
+  unw_cursor_t cursor;
+  unw_context_t uc;
+  char string[1024];
+
+  memset (&cursor, 0, sizeof (cursor));
+  memset (&uc, 0, sizeof (uc));
+  return sprintf (string, "hello %p %p\n", &cursor, &uc);
+}
+
+int
 main (int argc, char **argv)
 {
   struct rlimit rlim;
 
   verbose = argc > 1;
+
+  if (consume_some_stack_space () > 9999)
+    exit (-1);	/* can't happen, but don't let the compiler know... */
 
   rlim.rlim_cur = 0;
   rlim.rlim_max = RLIM_INFINITY;
