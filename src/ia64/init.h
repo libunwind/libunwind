@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2004 Hewlett-Packard Co
+   Copyright (C) 2002-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-static inline ALWAYS_INLINE int
+static ALWAYS_INLINE int
 common_init (struct cursor *c)
 {
   unw_word_t bspstore;
