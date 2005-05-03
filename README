@@ -1,21 +1,14 @@
 -*- mode: Outline -*-
 
-This is version 0.97 of the unwind library.  At the moment, only the
-IA-64 Linux (IPF Linux) platform is fully supported.  Some basic
-support for x86 and HP-UX/IPF exists also.  However, the x86 support
-is based mostly on the frame-chain and does not reliably use unwind
-information yet, so its utility is limited.  Similarly, the HP-UX/IPF
-support is incomplete, though it is sufficient to do a basic
-backtrace.  unw_resume() is not supported, however.
+This is version 0.99 of the unwind library.  This library supports
+several architecture/operating-system combinations:
 
-* Important GCC v3.4.[012] Caveat
+ Linux/IA-64:	Fully tested and supported.
+ Linux/x86-64:	Works well.
+ Linux/x86:	Works well, but C library is missing some unwind-info.
+ Linux/PARISC:	Works well, but C library missing unwind-info.
+ HP-UX/IA-64:	Mostly works but known to have some serious limitations.
 
-GCC v3.4.[012] break C++ ABI compatibility and because of that,
-libunwind cannot easily be used as the unwinder.  The GCC developers
-are aware of the problem [1] and the the problem has been fixed for
-GCC v3.4.3.
-
-[1] http://gcc.gnu.org/ml/gcc/2004-04/msg00989.html
 
 * General Build Instructions
 
@@ -60,6 +53,7 @@ called "__dummy" in the declaration of "struct ia64_fpreg".  Without
 that member, variables of type unw_context_t won't be aligned
 properly.
 
+
 * Building on HP-UX
 
 For the time being, libunwind must be built with GCC on HP-UX.
@@ -82,6 +76,7 @@ workaround is to issue the following commands before running
 
 GCC v3.3.2 or later have been fixed and do not require this
 workaround.
+
 
 * Regression Testing
 
@@ -114,10 +109,56 @@ Note: If you get lots of errors in Gia64-test-nat and Lia64-test-nat, it's
 
 The following tests are expected to fail on x86 Linux:
 
-	test-proc-info		(x86 unwinder doesn't use unwind-info yet)
-	Gtest-exc		(unw_resume() not implmented yet)
-	Ltest-exc		(unw_resume() not implmented yet)
-	test-setjmp		(unw_resume() not implmented yet)
+	Gtest-bt (see http://sources.redhat.com/bugzilla/show_bug.cgi?id=595)
+	Ltest-bt (likewise)
+	Gtest-resume-sig (likewise)
+	Ltest-resume-sig (likewise)
+	Gtest-dyn1		(no dynamic unwind info support yet)
+	Ltest-dyn1		(no dynamic unwind info support yet)
+	test-setjmp		(longjmp() not implemented yet)
+	run-check-namespace	(no _Ux86_getcontext yet)
+
+In addition, the following are failing on Debian (Sarge):
+
+	Gtest-init	   (lack of unwind info for __libc_start_main,
+			    libc ought to be compiled without
+			    -fno-frame-pointer or with -fexceptions)
+	Ltest-init	   (likewise)
+	test-ptrace	   (likewise?)
+
+** Expected results on x86-64 Linux
+
+The following tests are expected to fail on x86-64 Linux:
+
+	Gtest-dyn1		(no dynamic unwind info support yet)
+	Ltest-dyn1		(no dynamic unwind info support yet)
+	Gtest-init (see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18743)
+	Ltest-init		(likewise)
+	test-async-sig		(crashes due to bad unwind-info?)
+	test-setjmp		(longjmp() not implemented yet)
+	run-check-namespace	(no _Ux86_64_getcontext yet)
+	run-ptrace-mapper	(??? investigate)
+	run-ptrace-misc	(see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18748
+			 and http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18749)
+
+** Expected results on PARISC Linux
+
+Caveat: GCC v3.4 or newer is needed on PA-RISC Linux.  Earlier
+versions of the compiler failed to generate the exception-handling
+program header (GNU_EH_FRAME) needed for unwinding.
+
+The following tests are expected to fail on x86-64 Linux:
+
+	Gtest-bt   (backtrace truncated at kill() due to lack of unwind-info)
+	Ltest-bt   (likewise)
+	Gtest-resume-sig  (Gresume.c:my_rt_sigreturn() is wrong somehow)
+	Ltest-resume-sig  (likewise)
+	Gtest-init (likewise)
+	Ltest-init (likewise)
+	Gtest-dyn1 (no dynamic unwind info support yet)
+	Ltest-dyn1 (no dynamic unwind info support yet)
+	test-setjmp		(longjmp() not implemented yet)
+	run-check-namespace	(toolchain doesn't support HIDDEN yet)
 
 ** Expected results on HP-UX
 
