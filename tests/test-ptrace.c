@@ -68,11 +68,12 @@ static struct UPT_info *ui;
 void
 do_backtrace (pid_t target_pid)
 {
+  unw_word_t ip, sp, start_ip = 0, off;
   int n = 0, ret;
   unw_proc_info_t pi;
-  unw_word_t ip, sp, start_ip;
   unw_cursor_t c;
   char buf[512];
+  size_t len;
 
   ret = unw_init_remote (&c, as, ui);
   if (ret < 0)
@@ -89,13 +90,22 @@ do_backtrace (pid_t target_pid)
 
       buf[0] = '\0';
       if (print_names)
-	unw_get_proc_name (&c, buf, sizeof (buf), NULL);
+	unw_get_proc_name (&c, buf, sizeof (buf), &off);
 
       if (verbose)
-	printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
+	{
+	  if (off)
+	    {
+	      len = strlen (buf);
+	      if (len >= sizeof (buf) - 32)
+		len = sizeof (buf) - 32;
+	      sprintf (buf + len, "+0x%lx", off);
+	    }
+	  printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
+	}
 
       if ((ret = unw_get_proc_info (&c, &pi)) < 0)
-	panic ("unw_get_proc_info() failed: ret=%d\n", ret);
+	panic ("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
       else if (verbose)
 	printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
 		(long) pi.start_ip, (long) pi.end_ip,
@@ -122,10 +132,11 @@ do_backtrace (pid_t target_pid)
 		 ret, (long) ip, (long) start_ip);
 	}
 
-      if (++n > 32)
+      if (++n > 64)
 	{
 	  /* guard against bad unwind info in old libraries... */
-	  panic ("too deeply nested---assuming bogus unwind\n");
+	  panic ("too deeply nested---assuming bogus unwind (start ip=%lx)\n",
+		 (long) start_ip);
 	  break;
 	}
     }
