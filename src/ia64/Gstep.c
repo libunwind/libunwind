@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2004 Hewlett-Packard Co
+   Copyright (C) 2001-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -204,8 +204,8 @@ check_rbs_switch (struct cursor *c)
 			      &loadrs) < 0))
 	return ret;
       loadrs >>= 16;
-      ndirty = ia64_rse_num_regs (c->bsp - loadrs, c->bsp);
-      saved_bspstore = ia64_rse_skip_regs (saved_bsp, -ndirty);
+      ndirty = rse_num_regs (c->bsp - loadrs, c->bsp);
+      saved_bspstore = rse_skip_regs (saved_bsp, -ndirty);
     }
 
   if (saved_bsp == c->bsp)
@@ -302,7 +302,7 @@ update_frame_state (struct cursor *c)
 	return ret;
     }
 
-  c->bsp = ia64_rse_skip_regs (c->bsp, -num_regs);
+  c->bsp = rse_skip_regs (c->bsp, -num_regs);
 
   c->sp = c->psp;
   c->abi_marker = 0;
@@ -333,15 +333,12 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret;
 
-  Debug (1, "(cursor=%p)\n", c);
+  Debug (1, "(cursor=%p, ip=0x%016lx)\n", c, (unsigned long) c->ip);
 
-  ret = ia64_find_save_locs (c);
-  if (ret < 0)
-    return ret;
+  if ((ret = ia64_find_save_locs (c)) >= 0
+      && (ret = update_frame_state (c)) >= 0)
+    ret = (c->ip == 0) ? 0 : 1;
 
-  ret = update_frame_state (c);
-  if (ret < 0)
-    return ret;
-
-  return (c->ip == 0) ? 0 : 1;
+  Debug (2, "returning %d\n", ret);
+  return ret;
 }
