@@ -46,44 +46,6 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
     {
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
-#if 0
-      /* We're returning to a frame that was (either directly or
-	 indirectly) interrupted by a signal.  We have to restore
-	 _both_ "preserved" and "scratch" registers.  That doesn't
-	 leave us any registers to work with, and the only way we can
-	 achieve this is by doing a sigreturn().
-
-	 Note: it might be tempting to think that we don't have to
-	 restore the scratch registers when returning to a frame that
-	 was indirectly interrupted by a signal.  However, that is not
-	 safe because that frame and its descendants could have been
-	 using a special convention that stores "preserved" state in
-	 scratch registers.  For example, the Linux fsyscall
-	 convention does this with r11 (to save ar.pfs) and b6 (to
-	 save "rp"). */
-
-      sc->sc_gr[12] = c->psp;
-      c->psp = c->sigcontext_addr - c->sigcontext_off;
-
-      /* Clear the "in-syscall" flag, because in general we won't be
-	 returning to the interruption-point and we need all registers
-	 restored.  */
-      sc->sc_flags &= ~IA64_SC_FLAG_IN_SYSCALL;
-      sc->sc_ip = c->ip;
-      sc->sc_cfm = c->cfm & (((unw_word_t) 1 << 38) - 1);
-      sc->sc_pr = (c->pr & ~PR_SCRATCH) | (sc->sc_pr & ~PR_PRESERVED);
-      if ((ret = ia64_get (c, c->loc[IA64_REG_PFS], &sc->sc_ar_pfs)) < 0
-	  || (ret = ia64_get (c, c->loc[IA64_REG_FPSR], &sc->sc_ar_fpsr)) < 0
-	  || (ret = ia64_get (c, c->loc[IA64_REG_UNAT], &sc->sc_ar_unat)) < 0)
-	return ret;
-
-      sc->sc_gr[1] = c->pi.gp;
-      if (c->eh_valid_mask & 0x1) sc->sc_gr[15] = c->eh_args[0];
-      if (c->eh_valid_mask & 0x2) sc->sc_gr[16] = c->eh_args[1];
-      if (c->eh_valid_mask & 0x4) sc->sc_gr[17] = c->eh_args[2];
-      if (c->eh_valid_mask & 0x8) sc->sc_gr[18] = c->eh_args[3];
-#endif
-
       Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
       sigreturn (sc);
     }
@@ -121,9 +83,9 @@ establish_machine_state (struct cursor *c)
 
   Debug (8, "copying out cursor state\n");
 
-  for (reg = 0; reg < UNW_REG_LAST; ++reg)
+  for (reg = 0; reg <= UNW_REG_LAST; ++reg)
     {
-Debug (16, "copying %s\n", unw_regname (reg));
+      Debug (16, "copying %s %d\n", unw_regname (reg), reg);
       if (unw_is_fpreg (reg))
 	{
 	  if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
