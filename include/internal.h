@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2004 Hewlett-Packard Co
+   Copyright (C) 2001-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -65,7 +65,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define NORETURN	__attribute__((noreturn))
 # define ALIAS(name)	__attribute__((alias (#name)))
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
-#  define ALWAYS_INLINE	__attribute__((always_inline))
+#  define ALWAYS_INLINE	inline __attribute__((always_inline))
 #  define HIDDEN	__attribute__((visibility ("hidden")))
 #  define PROTECTED	__attribute__((visibility ("protected")))
 # else
@@ -97,7 +97,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define UNW_DEBUG	0
 #endif
 
-#define NELEMS(a)	(sizeof (a) / sizeof ((a)[0]))
+#define ARRAY_SIZE(a)	(sizeof (a) / sizeof ((a)[0]))
 
 /* Make it easy to write thread-safe code which may or may not be
    linked against libpthread.  The macros below can be used
@@ -157,13 +157,43 @@ cmpxchg_ptr (void *addr, void *old, void *new)
 #  define HAVE_FETCH_AND_ADD1
 # endif
 #endif
+#define atomic_read(ptr)	(*(ptr))
 
 #define UNWI_OBJ(fn)	  UNW_PASTE(UNW_PREFIX,UNW_PASTE(I,fn))
 #define UNWI_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_UI,UNW_TARGET),_), fn)
 
-#define unwi_full_sigmask	UNWI_ARCH_OBJ(full_sigmask)
+#define unwi_full_mask    UNWI_ARCH_OBJ(full_mask)
 
-extern sigset_t unwi_full_sigmask;
+/* Type of a mask that can be used to inhibit preemption.  At the
+   userlevel, preemption is caused by signals and hence sigset_t is
+   appropriate.  In constrast, the Linux kernel uses "unsigned long"
+   to hold the processor "flags" instead.  */
+typedef sigset_t intrmask_t;
+
+extern intrmask_t unwi_full_mask;
+
+#define define_lock(name) \
+  pthread_mutex_t name = PTHREAD_MUTEX_INITIALIZER
+#define lock_init(l)		mutex_init (l)
+#define lock_acquire(l,m)				\
+do {							\
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, &(m));	\
+  mutex_lock (l);					\
+} while (0)
+#define lock_release(l,m)			\
+do {						\
+  mutex_unlock (l);				\
+  sigprocmask (SIG_SETMASK, &(m), NULL);	\
+} while (0)
+
+#define GET_MEMORY(mem, size_in_bytes)				    \
+do {									    \
+  /* Hopefully, mmap() goes straight through to a system call stub...  */   \
+  mem = mmap (0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, \
+	      -1, 0);							    \
+  if (mem == MAP_FAILED)						    \
+    mem = NULL;								    \
+} while (0)
 
 #define unwi_find_dynamic_proc_info	UNWI_OBJ(find_dynamic_proc_info)
 #define unwi_extract_dynamic_proc_info	UNWI_OBJ(extract_dynamic_proc_info)
@@ -208,7 +238,7 @@ extern long unwi_debug_level;
 # include <stdio.h>
 # define Debug(level,format...)						\
 do {									\
-  if (unwi_debug_level > level)						\
+  if (unwi_debug_level >= level)					\
     {									\
       int _n = level;							\
       if (_n > 16)							\
@@ -227,7 +257,7 @@ do {									\
 # define dprintf(format...)
 #endif
 
-static inline ALWAYS_INLINE void
+static ALWAYS_INLINE void
 print_error (const char *string)
 {
   write (2, string, strlen (string));
