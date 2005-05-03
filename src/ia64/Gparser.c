@@ -210,7 +210,7 @@ finish_prologue (struct ia64_state_record *sr)
 
   /* First, resolve implicit register save locations (see Section
      "11.4.2.3 Rules for Using Unwind Descriptors", rule 3). */
-  for (i = 0; i < (int) NELEMS (unw.save_order); ++i)
+  for (i = 0; i < (int) ARRAY_SIZE (unw.save_order); ++i)
     {
       reg = sr->curr.reg + unw.save_order[i];
       if (reg->where == IA64_WHERE_GR_SAVE)
@@ -1117,9 +1117,15 @@ ia64_free_state_record (struct ia64_state_record *sr)
 HIDDEN int
 ia64_make_proc_info (struct cursor *c)
 {
-  if (c->as->caching_policy == UNW_CACHE_NONE
-      || ia64_get_cached_proc_info (c) < 0)
-    /* Lookup it up the slow way... */
-    return ia64_fetch_proc_info (c, c->ip, 0);
+  int ret, caching = c->as->caching_policy != UNW_CACHE_NONE;
+
+  if (!caching || ia64_get_cached_proc_info (c) < 0)
+    {
+      /* Lookup it up the slow way... */
+      if ((ret = ia64_fetch_proc_info (c, c->ip, 0)) < 0)
+	return ret;
+      if (caching)
+	ia64_cache_proc_info (c);
+    }
   return 0;
 }
