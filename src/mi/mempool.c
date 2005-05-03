@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
+   Copyright (C) 2002-2003, 2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -57,43 +57,28 @@ sos_alloc (size_t size)
 
       mem = (char *) (((unsigned long) old_mem + MAX_ALIGN - 1) & -MAX_ALIGN);
       mem += size;
-      if (mem >= sos_memory + sizeof (sos_memory))
-	abort ();
+      assert (mem < sos_memory + sizeof (sos_memory));
     }
   while (!cmpxchg_ptr (&sos_memp, old_mem, mem));
 #else
-  static pthread_mutex_t sos_lock = PTHREAD_MUTEX_INITIALIZER;
-  sigset_t saved_sigmask;
+  static define_lock (sos_lock);
+  intrmask_t saved_mask;
 
   size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
-  mutex_lock(&sos_lock);
+  lock_acquire (&sos_lock, saved_mask);
   {
     if (!sos_memp)
       sos_memp = sos_memory;
 
     mem = (char *) (((unsigned long) sos_memp + MAX_ALIGN - 1) & -MAX_ALIGN);
     mem += size;
-    if (mem >= sos_memory + sizeof (sos_memory))
-      abort ();
+    assert (mem < sos_memory + sizeof (sos_memory));
     sos_memp = mem;
   }
   mutex_unlock(&sos_lock);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
 #endif
-  return mem;
-}
-
-static void *
-alloc_memory (size_t size)
-{
-  /* Hopefully, mmap() goes straight through to a system call stub...  */
-  void *mem = mmap (0, size, PROT_READ | PROT_WRITE,
-		    MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
-  if (mem == MAP_FAILED)
-    return NULL;
-
   return mem;
 }
 
@@ -125,11 +110,11 @@ expand (struct mempool *pool)
   char *mem;
 
   size = pool->chunk_size;
-  mem = alloc_memory (size);
+  GET_MEMORY (mem, size);
   if (!mem)
     {
       size = (pool->obj_size + pg_size - 1) & -pg_size;
-      mem = alloc_memory (size);
+      GET_MEMORY (mem, size);
       if (!mem)
 	{
 	  /* last chance: try to allocate one object from the SOS memory */
@@ -148,14 +133,14 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
 
   memset (pool, 0, sizeof (*pool));
 
-  mutex_init (&pool->lock);
+  lock_init (&pool->lock);
 
   /* round object-size up to integer multiple of MAX_ALIGN */
   obj_size = (obj_size + MAX_ALIGN - 1) & -MAX_ALIGN;
 
   if (!reserve)
     {
-      reserve = pg_size / obj_size / 2;
+      reserve = pg_size / obj_size / 4;
       if (!reserve)
 	reserve = 16;
     }
@@ -170,11 +155,10 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
 HIDDEN void *
 mempool_alloc (struct mempool *pool)
 {
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
   struct object *obj;
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
-  mutex_lock(&pool->lock);
+  lock_acquire (&pool->lock, saved_mask);
   {
     if (pool->num_free <= pool->reserve)
       expand (pool);
@@ -185,21 +169,18 @@ mempool_alloc (struct mempool *pool)
     obj = pool->free_list;
     pool->free_list = obj->next;
   }
-  mutex_unlock(&pool->lock);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  lock_release(&pool->lock, saved_mask);
   return obj;
 }
 
 HIDDEN void
 mempool_free (struct mempool *pool, void *object)
 {
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
-  mutex_lock(&pool->lock);
+  lock_acquire (&pool->lock, saved_mask);
   {
     free_object (pool, object);
   }
-  mutex_unlock(&pool->lock);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  lock_release (&pool->lock, saved_mask);
 }
