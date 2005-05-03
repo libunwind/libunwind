@@ -62,6 +62,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
   dwarf_loc_t loc = DWARF_NULL_LOC;
+  unsigned int mask;
+  int arg_num;
 
   switch (reg)
     {
@@ -73,25 +75,34 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_X86_64_CFA:
+    case UNW_X86_64_RSP:
       if (write)
 	return -UNW_EREADONLYREG;
       *valp = c->dwarf.cfa;
       return 0;
 
-    case UNW_X86_64_RAX: loc = c->dwarf.loc[RAX]; break;
-    case UNW_X86_64_RCX: loc = c->dwarf.loc[RCX]; break;
-    case UNW_X86_64_RDX: loc = c->dwarf.loc[RDX]; break;
-    case UNW_X86_64_RBX: loc = c->dwarf.loc[RBX]; break;
-    case UNW_X86_64_RSP:
-      if (c->dwarf.cfa_is_sp)
+    case UNW_X86_64_RAX:
+    case UNW_X86_64_RDX:
+      arg_num = reg - UNW_X86_64_RAX;
+      mask = (1 << arg_num);
+      if (write)
 	{
-	  if (write)
-	    return -UNW_EREADONLYREG;
-	  *valp = c->dwarf.cfa;
+	  c->dwarf.eh_args[arg_num] = *valp;
+	  c->dwarf.eh_valid_mask |= mask;
 	  return 0;
 	}
-      loc = c->dwarf.loc[RSP];
+      else if ((c->dwarf.eh_valid_mask & mask) != 0)
+	{
+	  *valp = c->dwarf.eh_args[arg_num];
+	  return 0;
+	}
+      else
+	loc = c->dwarf.loc[(reg == UNW_X86_64_RAX) ? RAX : RDX];
       break;
+
+    case UNW_X86_64_RCX: loc = c->dwarf.loc[RCX]; break;
+    case UNW_X86_64_RBX: loc = c->dwarf.loc[RBX]; break;
+
     case UNW_X86_64_RBP: loc = c->dwarf.loc[RBP]; break;
     case UNW_X86_64_RSI: loc = c->dwarf.loc[RSI]; break;
     case UNW_X86_64_RDI: loc = c->dwarf.loc[RDI]; break;
