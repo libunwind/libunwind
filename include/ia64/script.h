@@ -76,8 +76,10 @@ struct ia64_script_cache
     struct ia64_script buckets[IA64_UNW_CACHE_SIZE];
   };
 
-#define ia64_get_cached_proc_info	UNW_OBJ(ia64_get_cached_proc_info)
+#define ia64_cache_proc_info		UNW_OBJ(cache_proc_info)
+#define ia64_get_cached_proc_info	UNW_OBJ(get_cached_proc_info)
 
 struct cursor;			/* forward declaration */
 
+extern int ia64_cache_proc_info (struct cursor *c);
 extern int ia64_get_cached_proc_info (struct cursor *c);
