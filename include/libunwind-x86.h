@@ -68,7 +68,7 @@ typedef enum
        wouldn't be with the DWARF numbering.  */
     UNW_X86_EAX,	/* scratch (exception argument 1) */
     UNW_X86_EDX,	/* scratch (exception argument 2) */
-    UNW_X86_ECX,	/* preserved */
+    UNW_X86_ECX,	/* scratch */
     UNW_X86_EBX,	/* preserved */
     UNW_X86_ESI,	/* preserved */
     UNW_X86_EDI,	/* preserved */
@@ -159,7 +159,7 @@ typedef ucontext_t unw_tdep_context_t;
 
 typedef struct
   {
-    unw_dyn_dwarf_fde_info_t dwarf_info;
+    /* no x86-specific auxiliary proc-info */
   }
 unw_tdep_proc_info_t;
 
