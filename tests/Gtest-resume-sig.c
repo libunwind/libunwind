@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
+   Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -45,6 +45,20 @@ int nerrors;
 int got_usr1, got_usr2;
 char *sigusr1_sp;
 
+uintptr_t
+get_bsp (void)
+{
+#if UNW_TARGET_IA64
+# ifdef __INTEL_COMPILER
+  return __getReg (_IA64_REG_AR_BSP);
+# else
+  return (uintptr_t) __builtin_ia64_bsp ();
+# endif
+#else
+  return 0;
+#endif
+}
+
 void
 handler (int sig)
 {
@@ -53,15 +67,11 @@ handler (int sig)
   unw_context_t uc;
   unw_cursor_t c;
   char foo;
+  int ret;
 
 #if UNW_TARGET_IA64
-# ifdef __ECC
-  void *bsp = (void *) __getReg(_IA64_REG_AR_BSP);
-# else
-  void *bsp = __builtin_ia64_bsp ();
-#endif
   if (verbose)
-    printf ("bsp = %p\n", bsp);
+    printf ("bsp = %llx\n", (unsigned long long) get_bsp ());
 #endif
 
   if (verbose)
@@ -80,15 +90,23 @@ handler (int sig)
       signal (SIGUSR1, SIG_IGN);
       signal (SIGUSR2, handler);
 
-      unw_getcontext(&uc);
-      unw_init_local(&c, &uc);
-      unw_step(&c);		/* step to signal trampoline */
-      unw_step(&c);		/* step to signaller frame (main ()) */
-      unw_get_reg(&c, UNW_REG_IP, &ip);
+      if ((ret = unw_getcontext (&uc)) < 0)
+	panic ("unw_getcontext() failed: ret=%d\n", ret);
+      if ((ret = unw_init_local (&c, &uc)) < 0)
+	panic ("unw_init_local() failed: ret=%d\n", ret);
+
+      if ((ret = unw_step (&c)) < 0)		/* step to signal trampoline */
+	panic ("unw_step(1) failed: ret=%d\n", ret);
+
+      if ((ret = unw_step (&c)) < 0)		/* step to signal trampoline */
+	panic ("unw_step(2) failed: ret=%d\n", ret);
+
+      if ((ret = unw_get_reg (&c, UNW_REG_IP, &ip)) < 0)
+	panic ("unw_get_reg(IP) failed: ret=%d\n", ret);
       if (verbose)
 	printf ("resuming at 0x%lx, with SIGUSR2 pending\n",
 		(unsigned long) ip);
-      unw_resume(&c);
+      unw_resume (&c);
     }
   else if (sig == SIGUSR2)
     {
@@ -110,17 +128,37 @@ handler (int sig)
 int
 main (int argc, char **argv)
 {
+  float d = 1.0;
+  int n = 0;
+
   if (argc > 1)
     verbose = 1;
 
   signal (SIGUSR1, handler);
 
+  /* Use the FPU a bit; otherwise we get spurious errors should the
+     signal handler need to use the FPU for any reason.  This seems to
+     happen on x86-64.  */
+  while (d > 0.0)
+    {
+      d /= 2.0;
+      ++n;
+    }
+  if (n > 9999)
+    return -1;	/* can't happen, but don't tell the compiler... */
+
   if (verbose)
     printf ("sending SIGUSR1\n");
   kill (getpid (), SIGUSR1);
 
+  if (!got_usr2)
+    panic ("failed to get SIGUSR2\n");
+
   if (nerrors)
-    fprintf (stderr, "FAILURE: detected %d errors\n", nerrors);
+    {
+      fprintf (stderr, "FAILURE: detected %d errors\n", nerrors);
+      exit (-1);
+    }
 
   if (verbose)
     printf ("SUCCESS\n");
