@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003, 2005 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -43,11 +43,11 @@ HIDDEN uint8_t dwarf_to_unw_regnum_map[19] =
 HIDDEN void
 tdep_init (void)
 {
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
 
-  sigfillset (&unwi_full_sigmask);
+  sigfillset (&unwi_full_mask);
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
   mutex_lock (&x86_lock);
   {
     if (!tdep_needs_initialization)
@@ -65,5 +65,5 @@ tdep_init (void)
   }
  out:
   mutex_unlock (&x86_lock);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
 }

@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2004 Hewlett-Packard Co
+   Copyright (C) 2002-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -65,13 +65,13 @@ tdep_init (void)
     0x00, 0x00, 0x00, 0x00, 0x00, 0x01, 0x00, 0x3e,
     0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
   };
-  sigset_t saved_sigmask;
+  intrmask_t saved_mask;
   uint8_t *lep, *bep;
   long i;
 
-  sigfillset (&unwi_full_sigmask);
+  sigfillset (&unwi_full_mask);
 
-  sigprocmask (SIG_SETMASK, &unwi_full_sigmask, &saved_sigmask);
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
   mutex_lock (&unw.lock);
   {
     if (!tdep_needs_initialization)
@@ -121,5 +121,5 @@ tdep_init (void)
   }
  out:
   mutex_unlock (&unw.lock);
-  sigprocmask (SIG_SETMASK, &saved_sigmask, NULL);
+  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
 }
