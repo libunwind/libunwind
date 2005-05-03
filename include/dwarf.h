@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003-2004 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -145,7 +145,7 @@ typedef enum
     DW_CFA_def_cfa_register	= 0x0d,
     DW_CFA_def_cfa_offset	= 0x0e,
     DW_CFA_def_cfa_expression	= 0x0f,
-    DW_CFA_CFA_expression	= 0x10,
+    DW_CFA_expression		= 0x10,
     DW_CFA_offset_extended_sf	= 0x11,
     DW_CFA_def_cfa_sf		= 0x12,
     DW_CFA_def_cfa_offset_sf	= 0x13,
@@ -199,6 +199,7 @@ dwarf_cfa_t;
 #define DW_EH_PE_aligned	0x50	/* aligned pointer */
 
 extern struct mempool dwarf_reg_state_pool;
+extern struct mempool dwarf_cie_info_pool;
 
 typedef enum
   {
@@ -237,6 +238,25 @@ typedef struct dwarf_reg_state
   }
 dwarf_reg_state_t;
 
+typedef struct dwarf_cie_info
+  {
+    unw_word_t cie_instr_start;	/* start addr. of CIE "initial_instructions" */
+    unw_word_t cie_instr_end;	/* end addr. of CIE "initial_instructions" */
+    unw_word_t fde_instr_start;	/* start addr. of FDE "instructions" */
+    unw_word_t fde_instr_end;	/* end addr. of FDE "instructions" */
+    unw_word_t code_align;	/* code-alignment factor */
+    unw_word_t data_align;	/* data-alignment factor */
+    unw_word_t ret_addr_column;	/* column of return-address register */
+    unw_word_t handler;		/* address of personality-routine */
+    uint16_t abi;
+    uint16_t tag;
+    uint8_t fde_encoding;
+    uint8_t lsda_encoding;
+    unsigned int sized_augmentation : 1;
+    unsigned int have_abi_marker : 1;
+  }
+dwarf_cie_info_t;
+
 typedef struct dwarf_state_record
   {
     unsigned char fde_encoding;
@@ -256,12 +276,13 @@ typedef struct dwarf_cursor
     unw_word_t ip;		/* instruction pointer */
     unw_word_t args_size;	/* size of arguments */
     unw_word_t ret_addr_column;	/* column for return-address */
+    unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
+    unsigned int eh_valid_mask;
 
     dwarf_loc_t loc[DWARF_NUM_PRESERVED_REGS];
 
     unsigned int pi_valid :1;	/* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
-    unsigned int cfa_is_sp :1;	/* TRUE if stack-pointer is CFA */
     unw_proc_info_t pi;		/* info about current procedure */
   }
 dwarf_cursor_t;
@@ -273,7 +294,8 @@ dwarf_cursor_t;
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_eval_expr			UNW_OBJ (dwarf_eval_expr)
-#define dwarf_parse_fde			UNW_OBJ (dwarf_parse_fde)
+#define dwarf_extract_proc_info_from_fde \
+		UNW_OBJ (dwarf_extract_proc_info_from_fde)
 #define dwarf_find_save_locs		UNW_OBJ (dwarf_find_save_locs)
 #define dwarf_create_state_record	UNW_OBJ (dwarf_create_state_record)
 #define dwarf_make_proc_info		UNW_OBJ (dwarf_make_proc_info)
@@ -294,9 +316,12 @@ extern void dwarf_put_unwind_info (unw_addr_space_t as,
 extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr,
 			    unw_word_t len, unw_word_t *valp,
 			    int *is_register);
-extern int dwarf_parse_fde (unw_addr_space_t as, unw_accessors_t *a,
-			    unw_word_t *addr, unw_proc_info_t *pi,
-			    unw_dyn_dwarf_fde_info_t *dfi, void *arg);
+extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
+					     unw_accessors_t *a,
+					     unw_word_t *fde_addr,
+					     unw_proc_info_t *pi,
+					     int need_unwind_info,
+					     void *arg);
 extern int dwarf_find_save_locs (struct dwarf_cursor *c);
 extern int dwarf_create_state_record (struct dwarf_cursor *c,
 				      dwarf_state_record_t *sr);
@@ -305,7 +330,7 @@ extern int dwarf_read_encoded_pointer (unw_addr_space_t as,
 				       unw_accessors_t *a,
 				       unw_word_t *addr,
 				       unsigned char encoding,
-				       unw_proc_info_t *pi,
+				       const unw_proc_info_t *pi,
 				       unw_word_t *valp, void *arg);
 extern int dwarf_step (struct dwarf_cursor *c);
 
