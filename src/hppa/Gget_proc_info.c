@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by ...
+   Copyright (C) 2004 Hewlett-Packard Co
+	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -28,15 +28,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 PROTECTED int
 unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
 {
-#if 0
   struct cursor *c = (struct cursor *) cursor;
-  int ret;
-#endif
 
-  printf ("%s: implement me, please\n", __FUNCTION__);
-#if 0
-  if ((ret = ia64_make_proc_info (c)) < 0)
-    return ret;
-#endif
+  if (dwarf_make_proc_info (&c->dwarf) < 0)
+    {
+      /* On hppa, some key routines such as _start() and _dl_start()
+	 are missing DWARF unwind info.  We don't want to fail in that
+	 case, because those frames are uninteresting and just mark
+	 the end of the frame-chain anyhow.  */
+      memset (pi, 0, sizeof (*pi));
+      pi->start_ip = c->dwarf.ip;
+      pi->end_ip = c->dwarf.ip + 4;
+      return 0;
+    }
+  *pi = c->dwarf.pi;
   return 0;
 }
