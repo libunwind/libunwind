@@ -26,8 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef dwarf_config_h
 #define dwarf_config_h
 
-/* This matches the value used by GCC, which leaves plenty of room for
-   expansion.  */
+/* This matches the value used by GCC (see
+   gcc/config/i386.h:DWARF_FRAME_REGISTERS), which leaves plenty of
+   room for expansion.  */
 #define DWARF_NUM_PRESERVED_REGS	17
 
 #define DWARF_REGNUM_MAP_LENGTH		19
