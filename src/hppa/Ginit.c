@@ -44,28 +44,19 @@ uc_addr (ucontext_t *uc, int reg)
 {
   void *addr;
 
-  switch (reg)
-    {
-    case UNW_X86_EAX: addr = &uc->uc_mcontext.gregs[REG_EAX]; break;
-    case UNW_X86_EBX: addr = &uc->uc_mcontext.gregs[REG_EBX]; break;
-    case UNW_X86_ECX: addr = &uc->uc_mcontext.gregs[REG_ECX]; break;
-    case UNW_X86_EDX: addr = &uc->uc_mcontext.gregs[REG_EDX]; break;
-    case UNW_X86_ESI: addr = &uc->uc_mcontext.gregs[REG_ESI]; break;
-    case UNW_X86_EDI: addr = &uc->uc_mcontext.gregs[REG_EDI]; break;
-    case UNW_X86_EBP: addr = &uc->uc_mcontext.gregs[REG_EBP]; break;
-    case UNW_X86_EIP: addr = &uc->uc_mcontext.gregs[REG_EIP]; break;
-    case UNW_X86_ESP: addr = &uc->uc_mcontext.gregs[REG_ESP]; break;
-
-    default:
-      addr = NULL;
-    }
+  if ((unsigned) (reg - UNW_HPPA_GR) < 32)
+    addr = &uc->uc_mcontext.sc_gr[reg - UNW_HPPA_GR];
+  else if ((unsigned) (reg - UNW_HPPA_FR) < 32)
+    addr = &uc->uc_mcontext.sc_fr[reg - UNW_HPPA_FR];
+  else
+    addr = NULL;
   return addr;
 }
 
 # ifdef UNW_LOCAL_ONLY
 
 void *
-_Ux86_uc_addr (ucontext_t *uc, int reg)
+_Uhppa_uc_addr (ucontext_t *uc, int reg)
 {
   return uc_addr (uc, reg);
 }
@@ -99,13 +90,13 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 {
   if (write)
     {
-      Debug (16, "mem[%x] <- %x\n", addr, *val);
+      Debug (12, "mem[%x] <- %x\n", addr, *val);
       *(unw_word_t *) addr = *val;
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      Debug (16, "mem[%x] -> %x\n", addr, *val);
+      Debug (12, "mem[%x] -> %x\n", addr, *val);
     }
   return 0;
 }
@@ -117,10 +108,8 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   unw_word_t *addr;
   ucontext_t *uc = arg;
 
-#if 0
-  if (reg >= UNW_IA64_FR && reg < UNW_IA64_FR + 128)
+  if ((unsigned int) (reg - UNW_HPPA_FR) < 32)
     goto badreg;
-#endif
 
   addr = uc_addr (uc, reg);
   if (!addr)
@@ -129,12 +118,12 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (write)
     {
       *(unw_word_t *) addr = *val;
-      Debug (16, "%s <- %x\n", unw_regname (reg), *val);
+      Debug (12, "%s <- %x\n", unw_regname (reg), *val);
     }
   else
     {
       *val = *(unw_word_t *) addr;
-      Debug (16, "%s -> %x\n", unw_regname (reg), *val);
+      Debug (12, "%s -> %x\n", unw_regname (reg), *val);
     }
   return 0;
 
@@ -147,14 +136,10 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 	      int write, void *arg)
 {
-#if 1
-  printf ("access_fpreg: screams to get implemented, doesn't it?\n");
-  return 0;
-#else
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
 
-  if (reg < UNW_IA64_FR || reg >= UNW_IA64_FR + 128)
+  if ((unsigned) (reg - UNW_HPPA_FR) > 32)
     goto badreg;
 
   addr = uc_addr (uc, reg);
@@ -163,14 +148,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
   if (write)
     {
-      Debug (16, "%s <- %016lx.%016lx\n",
+      Debug (12, "%s <- %08x.%08x\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
-      Debug (16, "%s -> %016lx.%016lx\n",
+      Debug (12, "%s -> %08x.%08x\n",
 	     unw_regname (reg), val->raw.bits[1], val->raw.bits[0]);
     }
   return 0;
@@ -179,21 +164,30 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   Debug (1, "bad register number %u\n", reg);
   /* attempt to access a non-preserved register */
   return -UNW_EBADREG;
-#endif
+}
+
+static int
+get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
+		      char *buf, size_t buf_len, unw_word_t *offp,
+		      void *arg)
+{
+  return _Uelf32_get_proc_name (getpid (), ip, buf, buf_len, offp);
 }
 
 HIDDEN void
-x86_local_addr_space_init (void)
+hppa_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
   local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
-  local_addr_space.acc.find_proc_info = UNW_ARCH_OBJ (find_proc_info);
+  local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
   local_addr_space.acc.access_mem = access_mem;
   local_addr_space.acc.access_reg = access_reg;
   local_addr_space.acc.access_fpreg = access_fpreg;
-  local_addr_space.acc.resume = x86_local_resume;
+  local_addr_space.acc.resume = hppa_local_resume;
+  local_addr_space.acc.get_proc_name = get_static_proc_name;
+  unw_flush_cache (&local_addr_space, 0, 0);
 }
 
 #endif /* !UNW_REMOTE_ONLY */
