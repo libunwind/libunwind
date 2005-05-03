@@ -210,6 +210,42 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_IA64_IP]	= PT_CR_IIP
 #elif defined(HAVE_TTRACE)
 # warning No support for ttrace() yet.
+#elif defined(UNW_TARGET_HPPA)
+    [UNW_HPPA_GR +  0]	= 0x000,	[UNW_HPPA_GR +  1]	= 0x004,
+    [UNW_HPPA_GR +  2]	= 0x008,	[UNW_HPPA_GR +  3]	= 0x00c,
+    [UNW_HPPA_GR +  4]	= 0x010,	[UNW_HPPA_GR +  5]	= 0x014,
+    [UNW_HPPA_GR +  6]	= 0x018,	[UNW_HPPA_GR +  7]	= 0x01c,
+    [UNW_HPPA_GR +  8]	= 0x020,	[UNW_HPPA_GR +  9]	= 0x024,
+    [UNW_HPPA_GR + 10]	= 0x028,	[UNW_HPPA_GR + 11]	= 0x02c,
+    [UNW_HPPA_GR + 12]	= 0x030,	[UNW_HPPA_GR + 13]	= 0x034,
+    [UNW_HPPA_GR + 14]	= 0x038,	[UNW_HPPA_GR + 15]	= 0x03c,
+    [UNW_HPPA_GR + 16]	= 0x040,	[UNW_HPPA_GR + 17]	= 0x044,
+    [UNW_HPPA_GR + 18]	= 0x048,	[UNW_HPPA_GR + 19]	= 0x04c,
+    [UNW_HPPA_GR + 20]	= 0x050,	[UNW_HPPA_GR + 21]	= 0x054,
+    [UNW_HPPA_GR + 22]	= 0x058,	[UNW_HPPA_GR + 23]	= 0x05c,
+    [UNW_HPPA_GR + 24]	= 0x060,	[UNW_HPPA_GR + 25]	= 0x064,
+    [UNW_HPPA_GR + 26]	= 0x068,	[UNW_HPPA_GR + 27]	= 0x06c,
+    [UNW_HPPA_GR + 28]	= 0x070,	[UNW_HPPA_GR + 29]	= 0x074,
+    [UNW_HPPA_GR + 30]	= 0x078,	[UNW_HPPA_GR + 31]	= 0x07c,
+
+    [UNW_HPPA_FR +  0]	= 0x080,	[UNW_HPPA_FR +  1]	= 0x088,
+    [UNW_HPPA_FR +  2]	= 0x090,	[UNW_HPPA_FR +  3]	= 0x098,
+    [UNW_HPPA_FR +  4]	= 0x0a0,	[UNW_HPPA_FR +  5]	= 0x0a8,
+    [UNW_HPPA_FR +  6]	= 0x0b0,	[UNW_HPPA_FR +  7]	= 0x0b8,
+    [UNW_HPPA_FR +  8]	= 0x0c0,	[UNW_HPPA_FR +  9]	= 0x0c8,
+    [UNW_HPPA_FR + 10]	= 0x0d0,	[UNW_HPPA_FR + 11]	= 0x0d8,
+    [UNW_HPPA_FR + 12]	= 0x0e0,	[UNW_HPPA_FR + 13]	= 0x0e8,
+    [UNW_HPPA_FR + 14]	= 0x0f0,	[UNW_HPPA_FR + 15]	= 0x0f8,
+    [UNW_HPPA_FR + 16]	= 0x100,	[UNW_HPPA_FR + 17]	= 0x108,
+    [UNW_HPPA_FR + 18]	= 0x110,	[UNW_HPPA_FR + 19]	= 0x118,
+    [UNW_HPPA_FR + 20]	= 0x120,	[UNW_HPPA_FR + 21]	= 0x128,
+    [UNW_HPPA_FR + 22]	= 0x130,	[UNW_HPPA_FR + 23]	= 0x138,
+    [UNW_HPPA_FR + 24]	= 0x140,	[UNW_HPPA_FR + 25]	= 0x148,
+    [UNW_HPPA_FR + 26]	= 0x150,	[UNW_HPPA_FR + 27]	= 0x158,
+    [UNW_HPPA_FR + 28]	= 0x160,	[UNW_HPPA_FR + 29]	= 0x168,
+    [UNW_HPPA_FR + 30]	= 0x170,	[UNW_HPPA_FR + 31]	= 0x178,
+
+    [UNW_HPPA_IP]	= 0x1a8		/* IAOQ[0] */
 #elif defined(UNW_TARGET_X86)
     [UNW_X86_EAX]	= 0x18,
     [UNW_X86_EBX]	= 0x00,
@@ -235,7 +271,7 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_X86_64_RBX]	= 0x28,
     [UNW_X86_64_RSI]	= 0x68,
     [UNW_X86_64_RDI]	= 0x70,
-    [UNW_X86_64_RBP]	= 0x24,
+    [UNW_X86_64_RBP]	= 0x20,
     [UNW_X86_64_RSP]	= 0x98,
     [UNW_X86_64_R8]	= 0x48,
     [UNW_X86_64_R9]	= 0x40,
