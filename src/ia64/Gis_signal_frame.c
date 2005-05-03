@@ -49,5 +49,6 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 
   ia64_free_state_record (&sr);
 
+  Debug (1, "(cursor=%p, ip=0x%016lx) -> %d\n", c, c->ip, ret);
   return ret;
 }
