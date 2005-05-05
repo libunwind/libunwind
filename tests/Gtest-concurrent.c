@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 
 #include <libunwind.h>
+#include <limits.h>
 #include <pthread.h>
 #include <signal.h>
 #include <stdio.h>
@@ -81,10 +82,14 @@ static void
 doit (void)
 {
   pthread_t th[NTHREADS];
+  pthread_attr_t attr;
   int i;
 
+  pthread_attr_init (&attr);
+  pthread_attr_setstacksize (&attr, PTHREAD_STACK_MIN + 64*1024);
+
   for (i = 0; i < NTHREADS; ++i)
-    if (pthread_create (th + i, NULL, worker, NULL))
+    if (pthread_create (th + i, &attr, worker, NULL))
       {
 	fprintf (stderr, "FAILURE: Failed to create %u threads "
 		 "(after %u threads)\n",
