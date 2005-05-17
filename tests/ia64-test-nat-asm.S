@@ -443,12 +443,23 @@ rotate_regs:
 	mov loc4 = r4
 
 	ld8 r2 = [in1], 8;;
+	mov pr = r2, -1
+
+	ld8 r2 = [in1], 8;;
 	mov r8 = in0
 	mov r9 = in1
 	and r2 = 127, r2;;
 	mov ar.ec = 0
 	mov ar.lc = r2;;
-1:	br.ctop.dptk.few 1b;;
+
+	// use p6 to preserve p63 as it gets rotated into p16:
+(p16)	cmp.eq.unc p6,p0 = r0,r0;;
+1:
+(p6)	cmp.eq.unc p16,p0 = r0,r0
+(p63)	cmp.eq.unc p6,p0 = r0,r0
+	br.ctop.dptk.few 1b;;
+
+(p6)	cmp.eq.unc p63,p0 = r0,r0
 
 	CALL_NEXT_PTR(r4, r8, r9)
 
@@ -462,3 +473,27 @@ rotate_regs:
 	br.ret.sptk.many rp
 
 	.endp rotate_regs
+
+	.global save_pr
+	.proc save_pr
+save_pr:
+	.prologue
+	.regstk 2, 4, 2, 0
+	.save ar.pfs, loc0
+	alloc loc0 = ar.pfs, 2, 4, 2, 0
+	.save rp, loc1
+	mov loc1 = rp
+	.save pr, loc2
+	mov loc2 = pr
+
+	ld8 r2 = [in1], 8;;
+	mov pr = r2, -1
+
+	CALL_NEXT(loc3)
+
+	mov ar.pfs = loc0
+	mov rp = loc1
+	mov pr = loc2, -1
+	br.ret.sptk.many rp
+
+	.endp save_pr
