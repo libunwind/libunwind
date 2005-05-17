@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Thu Aug  5 10:00:51 CEST 2004
+.\" Manual page created with latex2man on Tue May 17 05:49:31 PDT 2005
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-IA64" "3" "05 August 2004" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-IA64" "3" "17 May 2005" "Programming Library " "Programming Library "
 .SH NAME
 libunwind\-ia64
 \-\- IA\-64\-specific support in libunwind 
@@ -207,9 +207,13 @@ UNW_IA64_PR:
 This 64\-bit wide register contains registers p0
 through 
 p63
-in the ``broad\-side\&'' format (i.e., p0
-corresponds to bit 0, p1
-to bit 1, and so on). 
+in the ``broad\-side\&'' format. Just like with the 
+``move predicates\&'' instruction, the registers are mapped as if 
+CFM.rrb.pr
+were set to 0. Thus, in general the value of 
+predicate register pN
+with N>=16 can be found 
+in bit 16 + ((N\-16)+CFM.rrb.pr) % 48\&.
 .TP
 UNW_IA64_CFM:
  Contains the current\-frame\-mask 
