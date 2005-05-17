@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2005 Hewlett-Packard Co
+   Copyright (C) 2004-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -420,7 +420,7 @@ check_static_to_mem5 (unw_cursor_t *c, unw_word_t *vals)
 static unw_word_t *
 check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
 {
-  unw_word_t r[4], nat[4];
+  unw_word_t r[4], nat[4], ec, expected;
   unw_fpreg_t f4;
   int i, ret;
 
@@ -484,6 +484,15 @@ check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
 	panic ("%s: f4=%016lx.%016lx instead of %lx!\n",
 	       __FUNCTION__, f4.raw.bits[1], f4.raw.bits[0], r[0]);
     }
+
+  if ((unw_get_reg (c, UNW_IA64_AR_EC, &ec)) < 0)
+    panic ("%s: failed to read register ar.ec, error=%d\n", __FUNCTION__, ret);
+
+  expected = vals[0] & 0x3f;
+  if (ec != expected)
+    panic ("%s: ar.ec=%016lx instead of %016lx!\n",
+	   __FUNCTION__, ec, expected);
+
   return vals;
 }
 
