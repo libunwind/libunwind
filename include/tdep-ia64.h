@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2004 Hewlett-Packard Co
+   Copyright (C) 2001-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -132,6 +132,7 @@ struct cursor
     unw_word_t sp;		/* stack pointer value */
     unw_word_t psp;		/* previous sp value */
     ia64_loc_t cfm_loc;		/* cfm save location (or NULL) */
+    ia64_loc_t ec_loc;		/* ar.ec save location (usually cfm_loc) */
     ia64_loc_t loc[IA64_NUM_PREGS];
 
     unw_word_t eh_args[4];	/* exception handler arguments */
