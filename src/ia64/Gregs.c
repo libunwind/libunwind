@@ -323,8 +323,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
   ia64_loc_t loc, reg_loc, nat_loc;
-  unw_word_t nat, mask, pr;
   int ret, readonly = 0;
+  unw_word_t nat, mask;
   uint8_t nat_bitnr;
 
   switch (reg)
@@ -385,20 +385,17 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_IA64_PR:
+      /*
+       * Note: broad-side access to the predicates is NOT rotated
+       * (i.e., it is done as if CFM.rrb.pr == 0.
+       */
       if (write)
 	{
 	  c->pr = *valp;		/* update the predicate cache */
-	  pr = pr_ltop (c, *valp);
-	  return ia64_put (c, c->loc[IA64_REG_PR], pr);
+	  return ia64_put (c, c->loc[IA64_REG_PR], *valp);
 	}
       else
-	{
-	  ret = ia64_get (c, c->loc[IA64_REG_PR], &pr);
-	  if (ret < 0)
-	    return ret;
-	  *valp = pr_ptol (c, pr);
-	}
-      return 0;
+	return ia64_get (c, c->loc[IA64_REG_PR], valp);
 
     case UNW_IA64_GR + 32 ... UNW_IA64_GR + 127:	/* stacked reg */
       reg = rotate_gr (c, reg - UNW_IA64_GR);
