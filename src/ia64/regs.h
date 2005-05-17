@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2004 Hewlett-Packard Co
+   Copyright (C) 2002-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -70,32 +70,4 @@ rotate_fr (struct cursor *c, int reg)
   if (rrb_fr)
     Debug (15, "rrb.fr=%u, f%d -> f%d\n", rrb_fr, reg, preg);
   return preg;
-}
-
-/* Apply logical-to-physical rotation.  */
-
-static inline unw_word_t
-pr_ltop (struct cursor *c, unw_word_t pr)
-{
-  unw_word_t rrb_pr, mask, rot;
-
-  rrb_pr = (c->cfm >> 32) & 0x3f;
-  rot = pr >> 16;
-  mask = ((unw_word_t) 1 << rrb_pr) - 1;
-  rot = ((pr & mask) << (48 - rrb_pr)) | ((pr >> rrb_pr) & mask);
-  return (pr & 0xffff) | (rot << 16);
-}
-
-/* Apply physical-to-logical rotation.  */
-
-static inline unw_word_t
-pr_ptol (struct cursor *c, unw_word_t pr)
-{
-  unw_word_t rrb_pr, mask, rot;
-
-  rrb_pr = 48 - ((c->cfm >> 32) & 0x3f);
-  rot = pr >> 16;
-  mask = ((unw_word_t) 1 << rrb_pr) - 1;
-  rot = ((pr & mask) << (48 - rrb_pr)) | ((pr >> rrb_pr) & mask);
-  return (pr & 0xffff) | (rot << 16);
 }
