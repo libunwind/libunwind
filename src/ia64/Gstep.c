@@ -27,7 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static inline int
-linux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
+linux_sigtramp (struct cursor *c, ia64_loc_t prev_cfm_loc,
+		unw_word_t *num_regsp)
 {
 #if defined(UNW_LOCAL_ONLY) && !defined(__linux)
   return -UNW_EINVAL;
@@ -53,13 +54,15 @@ linux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
 
   /* do what can't be described by unwind directives: */
   c->loc[IA64_REG_PFS] = IA64_LOC_ADDR (sc_addr + LINUX_SC_AR_PFS_OFF, 0);
+  c->ec_loc = prev_cfm_loc;
   *num_regsp = c->cfm & 0x7f;		/* size of frame */
   return 0;
 #endif
 }
 
 static inline int
-linux_interrupt (struct cursor *c, unw_word_t *num_regsp, int marker)
+linux_interrupt (struct cursor *c, ia64_loc_t prev_cfm_loc,
+		 unw_word_t *num_regsp, int marker)
 {
 #if defined(UNW_LOCAL_ONLY)
   /* Perhaps libunwind will some day become the Linux kernel unwinder.
@@ -83,13 +86,15 @@ linux_interrupt (struct cursor *c, unw_word_t *num_regsp, int marker)
   else
 	  pfs_loc = IA64_LOC_ADDR (sc_addr + LINUX_PT_PFS_OFF, 0);
   c->loc[IA64_REG_PFS] = pfs_loc;
+  c->ec_loc = prev_cfm_loc;
   *num_regsp = num_regs;		/* size of frame */
   return 0;
 #endif
 }
 
 static inline int
-hpux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
+hpux_sigtramp (struct cursor *c, ia64_loc_t prev_cfm_loc,
+	       unw_word_t *num_regsp)
 {
 #if defined(UNW_LOCAL_ONLY) && !defined(__hpux)
   return -UNW_EINVAL;
@@ -157,7 +162,9 @@ hpux_sigtramp (struct cursor *c, unw_word_t *num_regsp)
        itself.  We'll need to access it via uc_access(3).  */
     rbs_switch (c, bsp, bspstore, IA64_LOC_UC_ADDR (bsp | 0x1f8, 0));
 
-   *num_regsp = 0;
+  c->ec_loc = prev_cfm_loc;
+
+  *num_regsp = 0;
   return 0;
 #endif
 }
@@ -218,8 +225,10 @@ static inline int
 update_frame_state (struct cursor *c)
 {
   unw_word_t prev_ip, prev_sp, prev_bsp, ip, num_regs;
+  ia64_loc_t prev_cfm_loc;
   int ret;
 
+  prev_cfm_loc = c->cfm_loc;
   prev_ip = c->ip;
   prev_sp = c->sp;
   prev_bsp = c->bsp;
@@ -248,6 +257,17 @@ update_frame_state (struct cursor *c)
   if (ret < 0)
     return ret;
 
+  /* Normally, AR.EC is stored in the CFM save-location.  That
+     save-location contains the full function-state as defined by
+     AR.PFS.  However, interruptions only save the frame-marker, not
+     any other info in CFM.  Instead, AR.EC gets saved on the first
+     call by the interruption-handler.  Thus, interruption-related
+     frames need to track the _previous_ CFM save-location since
+     that's were AR.EC is saved.  We support this by setting ec_loc to
+     cfm_loc by default and giving frames marked with an ABI-marker
+     the chance to override this value with prev_cfm_loc.  */
+  c->ec_loc = c->cfm_loc;
+
   num_regs = 0;
   if (unlikely (c->abi_marker))
     {
@@ -257,20 +277,21 @@ update_frame_state (struct cursor *c)
 	case ABI_MARKER_LINUX_SIGTRAMP:
 	case ABI_MARKER_OLD_LINUX_SIGTRAMP:
 	  c->as->abi = ABI_LINUX;
-	  if ((ret = linux_sigtramp (c, &num_regs)) < 0)
+	  if ((ret = linux_sigtramp (c, prev_cfm_loc, &num_regs)) < 0)
 	    return ret;
 	  break;
 
 	case ABI_MARKER_OLD_LINUX_INTERRUPT:
 	case ABI_MARKER_LINUX_INTERRUPT:
 	  c->as->abi = ABI_LINUX;
-	  if ((ret = linux_interrupt (c, &num_regs, c->abi_marker)) < 0)
+	  if ((ret = linux_interrupt (c, prev_cfm_loc, &num_regs,
+				      c->abi_marker)) < 0)
 	    return ret;
 	  break;
 
 	case ABI_MARKER_HP_UX_SIGTRAMP:
 	  c->as->abi = ABI_HPUX;
-	  if ((ret = hpux_sigtramp (c, &num_regs)) < 0)
+	  if ((ret = hpux_sigtramp (c, prev_cfm_loc, &num_regs)) < 0)
 	    return ret;
 	  break;
 
