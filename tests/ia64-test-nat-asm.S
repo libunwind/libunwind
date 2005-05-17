@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2004 Hewlett-Packard Co
+   Copyright (C) 2004-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -393,6 +393,10 @@ save_static_to_scratch:
 	.spillreg f4, f6
 	mov f6 = f4;;
 	.body
+
+	ld8 r2 = [in1]
+	;;
+	mov ar.ec = r2
 
 	LOAD_VAL(r4)
 	LOAD_VAL(r5)
