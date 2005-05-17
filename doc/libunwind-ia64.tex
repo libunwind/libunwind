@@ -145,8 +145,11 @@ The following normal register name macros are available:
   \Const{UNW\_IA64\_BR}\texttt{+6} should be used.
 \item[\Const{UNW\_IA64\_PR}:] Contains the set of predicate registers.
   This 64-bit wide register contains registers \texttt{p0} through
-  \texttt{p63} in the ``broad-side'' format (i.e., \texttt{p0}
-  corresponds to bit 0, \texttt{p1} to bit 1, and so on).
+  \texttt{p63} in the ``broad-side'' format.  Just like with the
+  ``move predicates'' instruction, the registers are mapped as if
+  \texttt{CFM.rrb.pr} were set to 0.  Thus, in general the value of
+  predicate register \texttt{p}$N$ with $N$>=16 can be found
+  in bit \texttt{16 + (($N$-16)+CFM.rrb.pr) \% 48}.
 \item[\Const{UNW\_IA64\_CFM}:] Contains the current-frame-mask
   register.
 \end{Description}
