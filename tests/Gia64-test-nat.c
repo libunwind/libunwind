@@ -82,6 +82,9 @@ static check_func_t check_static_to_scratch;
 extern save_func_t rotate_regs;
 static check_func_t check_rotate_regs;
 
+extern save_func_t save_pr;
+static check_func_t check_pr;
+
 static int verbose;
 static int nerrors;
 
@@ -106,8 +109,20 @@ all_funcs[] =
     { save_static_to_mem4,	check_static_to_mem4 },
     { save_static_to_mem5,	check_static_to_mem5 },
     { save_static_to_scratch,	check_static_to_scratch },
+    { save_pr,			check_pr },
     { rotate_regs,		check_rotate_regs },
   };
+
+static unw_word_t
+random_word (void)
+{
+  unw_word_t val = random ();
+
+  if (sizeof (unw_word_t) > 4)
+    val |= ((unw_word_t) random ()) << 32;
+
+  return val;
+}
 
 void
 sighandler (int signal, void *siginfo, void *context)
@@ -473,11 +488,49 @@ check_static_to_scratch (unw_cursor_t *c, unw_word_t *vals)
 }
 
 static unw_word_t *
+check_pr (unw_cursor_t *c, unw_word_t *vals)
+{
+  unw_word_t pr, expected;
+  int ret;
+# define BIT(n) ((unw_word_t) 1 << (n))
+# define DONTCARE (BIT( 6) | BIT( 7) | BIT( 8) | BIT( 9) | BIT(10) \
+		 | BIT(11) | BIT(12) | BIT(13) | BIT(14) | BIT(15))
+
+  if (verbose)
+    printf ("  %s()\n", __FUNCTION__);
+
+  vals -= 1;
+
+  if ((ret = unw_get_reg (c, UNW_IA64_PR, &pr)) < 0)
+    panic ("%s: failed to read register pr, error=%d\n", __FUNCTION__, ret);
+
+  pr &= ~DONTCARE;
+  expected = (vals[0] & ~DONTCARE) | 1;
+
+  if (verbose)
+    printf ("    pr = %016lx (expected %016lx)\n", pr, expected);
+
+  if (pr != expected)
+    panic ("%s: pr=%lx instead of %lx!\n", __FUNCTION__, pr, expected);
+
+  if ((ret = unw_set_reg (c, UNW_IA64_PR, vals[0])) < 0)
+    panic ("%s: failed to write register pr, error=%d\n", __FUNCTION__, ret);
+
+  if ((ret = unw_get_reg (c, UNW_IA64_PR, &pr)) < 0)
+    panic ("%s: failed to read register pr, error=%d\n", __FUNCTION__, ret);
+
+  if (pr != vals[0])
+    panic ("%s: secondary pr=%lx instead of %lx!\n",
+	   __FUNCTION__, pr, vals[0]);
+  return vals;
+}
+
+static unw_word_t *
 check_rotate_regs (unw_cursor_t *c, unw_word_t *vals)
 {
   if (verbose)
     printf ("  %s()\n", __FUNCTION__);
-  return vals - 1;
+  return check_pr (c, vals - 1);
 }
 
 static void
@@ -518,7 +571,7 @@ run_check (int test)
     num_checks = (random () % MAX_CHECKS) + 1;
 
   for (i = 0; i < num_checks * MAX_VALUES_PER_FUNC; ++i)
-    values[i] = random ();
+    values[i] = random_word ();
 
   for (i = 0; i < num_checks; ++i)
     {
