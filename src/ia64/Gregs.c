@@ -323,8 +323,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
   ia64_loc_t loc, reg_loc, nat_loc;
+  unw_word_t nat, mask, val;
   int ret, readonly = 0;
-  unw_word_t nat, mask;
   uint8_t nat_bitnr;
 
   switch (reg)
@@ -418,15 +418,17 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       return update_nat (c, nat_loc, mask, valp, write);
 
     case UNW_IA64_AR_EC:
+      if ((ret = ia64_get (c, c->ec_loc, &val)) < 0)
+	return ret;
+
       if (write)
 	{
-	  c->cfm = ((c->cfm & ~((unw_word_t) 0x3f << 52))
-		    | ((*valp & 0x3f) << 52));
-	  return ia64_put (c, c->cfm_loc, c->cfm);
+	  val = ((val & ~((unw_word_t) 0x3f << 52)) | ((*valp & 0x3f) << 52));
+	  return ia64_put (c, c->ec_loc, val);
 	}
       else
 	{
-	  *valp = (c->cfm >> 52) & 0x3f;
+	  *valp = (val >> 52) & 0x3f;
 	  return 0;
 	}
 
