@@ -29,16 +29,17 @@ nodist_include_HEADERS = include/libunwind-common.h
 SUBDIRS = src tests doc
 
 EXTRA_DIST = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
-	include/internal.h include/mempool.h				\
+	include/libunwind_i.h include/mempool.h				\
 	include/remote.h						\
 	include/libunwind-common.h.in					\
-	include/libunwind-ia64.h include/tdep-ia64.h			\
-	include/ia64/jmpbuf.h include/ia64/rse.h include/ia64/script.h	\
-	include/libunwind-hppa.h include/tdep-hppa.h			\
-	include/hppa/jmpbuf.h include/hppa/dwarf-config.h		\
-	include/libunwind-x86.h include/tdep-x86.h			\
-	include/x86/jmpbuf.h include/x86/dwarf-config.h			\
-	include/libunwind-x86_64.h include/tdep-x86_64.h		\
-	include/x86_64/jmpbuf.h include/x86_64/dwarf-config.h
+	include/libunwind-ia64.h include/tdep-ia64/libunwind_i.h	\
+	include/tdep-ia64/jmpbuf.h include/tdep-ia64/rse.h 		\
+	include/tdep-ia64/script.h					\
+	include/libunwind-hppa.h include/tdep-hppa/libunwind_i.h	\
+	include/tdep-hppa/jmpbuf.h include/tdep-hppa/dwarf-config.h	\
+	include/libunwind-x86.h include/tdep-x86/libunwind_i.h		\
+	include/tdep-x86/jmpbuf.h include/tdep-x86/dwarf-config.h	\
+	include/libunwind-x86_64.h include/tdep-x86_64/libunwind_i.h	\
+	include/tdep-x86_64/jmpbuf.h include/tdep-x86_64/dwarf-config.h
 
-DISTCLEANFILES = include/libunwind.h include/tdep.h
+DISTCLEANFILES = include/libunwind.h include/tdep
