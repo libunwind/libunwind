@@ -55,7 +55,7 @@ am__CONFIG_DISTCLEAN_FILES = config.status config.cache config.log \
 mkinstalldirs = $(SHELL) $(top_srcdir)/config/mkinstalldirs
 CONFIG_HEADER = $(top_builddir)/include/config.h
 CONFIG_CLEAN_FILES = include/libunwind-common.h include/libunwind.h \
-	include/tdep.h
+	include/tdep
 SOURCES =
 DIST_SOURCES =
 RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
@@ -235,19 +235,20 @@ include_HEADERS_common = $(include_HEADERS_tdep)		\
 nodist_include_HEADERS = include/libunwind-common.h
 SUBDIRS = src tests doc
 EXTRA_DIST = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
-	include/internal.h include/mempool.h				\
+	include/libunwind_i.h include/mempool.h				\
 	include/remote.h						\
 	include/libunwind-common.h.in					\
-	include/libunwind-ia64.h include/tdep-ia64.h			\
-	include/ia64/jmpbuf.h include/ia64/rse.h include/ia64/script.h	\
-	include/libunwind-hppa.h include/tdep-hppa.h			\
-	include/hppa/jmpbuf.h include/hppa/dwarf-config.h		\
-	include/libunwind-x86.h include/tdep-x86.h			\
-	include/x86/jmpbuf.h include/x86/dwarf-config.h			\
-	include/libunwind-x86_64.h include/tdep-x86_64.h		\
-	include/x86_64/jmpbuf.h include/x86_64/dwarf-config.h
+	include/libunwind-ia64.h include/tdep-ia64/libunwind_i.h	\
+	include/tdep-ia64/jmpbuf.h include/tdep-ia64/rse.h 		\
+	include/tdep-ia64/script.h					\
+	include/libunwind-hppa.h include/tdep-hppa/libunwind_i.h	\
+	include/tdep-hppa/jmpbuf.h include/tdep-hppa/dwarf-config.h	\
+	include/libunwind-x86.h include/tdep-x86/libunwind_i.h		\
+	include/tdep-x86/jmpbuf.h include/tdep-x86/dwarf-config.h	\
+	include/libunwind-x86_64.h include/tdep-x86_64/libunwind_i.h	\
+	include/tdep-x86_64/jmpbuf.h include/tdep-x86_64/dwarf-config.h
 
-DISTCLEANFILES = include/libunwind.h include/tdep.h
+DISTCLEANFILES = include/libunwind.h include/tdep
 all: all-recursive
 
 .SUFFIXES:
@@ -483,7 +484,7 @@ distclean-tags:
 distdir: $(DISTFILES)
 	$(am__remove_distdir)
 	mkdir $(distdir)
-	$(mkdir_p) $(distdir)/config $(distdir)/doc $(distdir)/include $(distdir)/include/hppa $(distdir)/include/ia64 $(distdir)/include/x86 $(distdir)/include/x86_64 $(distdir)/tests
+	$(mkdir_p) $(distdir)/config $(distdir)/doc $(distdir)/include $(distdir)/include/tdep-hppa $(distdir)/include/tdep-ia64 $(distdir)/include/tdep-x86 $(distdir)/include/tdep-x86_64 $(distdir)/tests
 	@srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`; \
 	topsrcdirstrip=`echo "$(top_srcdir)" | sed 's|.|.|g'`; \
 	list='$(DISTFILES)'; for file in $$list; do \
