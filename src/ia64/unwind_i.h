@@ -31,9 +31,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind-ia64.h>
 
-#include "ia64/rse.h"
+#include "rse.h"
 
-#include "internal.h"
+#include "libunwind_i.h"
 
 #define IA64_UNW_VER(x)		    ((x) >> 48)
 #define IA64_UNW_FLAG_MASK	    ((unw_word_t) 0x0000ffff00000000ULL)
@@ -46,8 +46,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # undef MIN
 #endif
 #define MIN(a,b)	((a) < (b) ? (a) : (b))
-
-#include "tdep.h"
 
 #if !defined(HAVE_SYS_UC_ACCESS_H) && !defined(UNW_REMOTE_ONLY)
 
@@ -499,7 +497,6 @@ struct ia64_labeled_state
 #define ia64_install_cursor		UNW_OBJ(install_cursor)
 #define rbs_switch			UNW_OBJ(rbs_switch)
 #define rbs_find_stacked		UNW_OBJ(rbs_find_stacked)
-#define rbs_cover_and_flush		UNW_OBJ(rbs_cover_and_flush)
 
 extern int ia64_make_proc_info (struct cursor *c);
 extern int ia64_fetch_proc_info (struct cursor *c, unw_word_t ip,
@@ -530,10 +527,15 @@ extern int rbs_switch (struct cursor *c,
 		       ia64_loc_t saved_rnat_loc);
 extern int rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
 			     ia64_loc_t *locp, ia64_loc_t *rnat_locp);
-extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
-				unw_word_t *dirty_partition,
-				unw_word_t *dirty_rnat,
-				unw_word_t *bspstore);
+
+#ifndef UNW_REMOTE_ONLY
+# define NEED_RBS_COVER_AND_FLUSH
+# define rbs_cover_and_flush	UNW_OBJ(rbs_cover_and_flush)
+  extern int rbs_cover_and_flush (struct cursor *c, unw_word_t nregs,
+				  unw_word_t *dirty_partition,
+				  unw_word_t *dirty_rnat,
+				  unw_word_t *bspstore);
+#endif
 
 /* Warning: ia64_strloc() is for debugging only and it is NOT re-entrant! */
 extern const char *ia64_strloc (ia64_loc_t loc);
@@ -615,6 +617,14 @@ ia64_get_stacked (struct cursor *c, unw_word_t reg,
    but for readability/clarity, we don't want to use
    ia64_rnat_slot_num() directly.  */
 #define ia64_unat_slot_num(addr)	rse_slot_num(addr)
+
+/* The following are helper macros which makes it easier for libunwind
+   to be used in the kernel.  They allow the kernel to optimize away
+   any unused code without littering everything with #ifdefs.  */
+#define ia64_is_big_endian(c)	((c)->as->big_endian)
+#define ia64_get_abi(c)		((c)->as->abi)
+#define ia64_set_abi(c, v)	((c)->as->abi = (v))
+#define ia64_get_abi_marker(c)	((c)->last_abi_marker)
 
 /* XXX should be in glibc: */
 #ifndef IA64_SC_FLAG_ONSTACK
