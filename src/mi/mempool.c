@@ -23,14 +23,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include <assert.h>
-#include <stdlib.h>
-#include <string.h>
-#include <unistd.h>
-
-#include <sys/mman.h>
-
-#include "libunwind.h"
+#include "libunwind_i.h"
 #include "mempool.h"
 
 #define MAX_ALIGN	(sizeof (long double))
@@ -76,8 +69,7 @@ sos_alloc (size_t size)
     assert (mem < sos_memory + sizeof (sos_memory));
     sos_memp = mem;
   }
-  mutex_unlock(&sos_lock);
-  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
+  lock_release (&sos_lock, saved_mask);
 #endif
   return mem;
 }
@@ -169,7 +161,7 @@ mempool_alloc (struct mempool *pool)
     obj = pool->free_list;
     pool->free_list = obj->next;
   }
-  lock_release(&pool->lock, saved_mask);
+  lock_release (&pool->lock, saved_mask);
   return obj;
 }
 
