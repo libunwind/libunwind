@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2004 Hewlett-Packard Co
+   Copyright (C) 2002-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -37,7 +37,7 @@ backing store is expected to reserve 4 words for use by libunwind. For
 example, in the Linux sigcontext, sc_fr[0] and sc_fr[1] serve this
 purpose.  */
 
-#include "internal.h"
+#include "libunwind_i.h"
 
 /* Maintain the register names as a single string to keep the number
    of dynamic relocations in the shared object to a minimum.  */

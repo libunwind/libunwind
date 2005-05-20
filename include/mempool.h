@@ -49,7 +49,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/types.h>
 
-#include "internal.h"
+#include "libunwind_i.h"
 
 #define sos_alloc(s)		UNWI_ARCH_OBJ(_sos_alloc)(s)
 #define mempool_init(p,s,r)	UNWI_ARCH_OBJ(_mempool_init)(p,s,r)
