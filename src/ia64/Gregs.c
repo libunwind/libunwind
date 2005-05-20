@@ -344,8 +344,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 {
   ia64_loc_t loc, reg_loc, nat_loc;
   unw_word_t nat, mask, val;
-  int ret, readonly = 0;
   uint8_t nat_bitnr;
+  int ret;
 
   switch (reg)
     {
@@ -539,11 +539,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     }
 
   if (write)
-    {
-      if (readonly)
-	return -UNW_EREADONLYREG;
-      return ia64_put (c, loc, *valp);
-    }
+    return ia64_put (c, loc, *valp);
   else
     return ia64_get (c, loc, valp);
 }
