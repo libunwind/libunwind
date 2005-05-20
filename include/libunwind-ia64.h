@@ -119,7 +119,7 @@ typedef enum
     UNW_IA64_PR = UNW_IA64_BR + 8,	/* predicate registers (p0..p63) */
     UNW_IA64_CFM,
 
-    /* frame info (read-only): */
+    /* frame info: */
     UNW_IA64_BSP,
     UNW_IA64_IP,
     UNW_IA64_SP,
