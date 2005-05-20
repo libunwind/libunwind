@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static ALWAYS_INLINE int
 common_init (struct cursor *c, unw_word_t sp, unw_word_t bsp)
 {
-  unw_word_t bspstore;
+  unw_word_t bspstore, rbs_base;
   uint8_t *natp;
   int ret;
 
@@ -107,16 +107,17 @@ common_init (struct cursor *c, unw_word_t sp, unw_word_t bsp)
 
   c->rbs_curr = c->rbs_left_edge = 0;
 
-  /* There is no way to know the real size of the most recent
-     (right-most) RBS so we'll just assume it to occupy a quarter of
-     the address space (so we have a notion of "above" and "below" and
-     one bit to indicate whether the backing store needs to be
-     accessed via uc_access(3)).  */
+  /* Try to find a base of the register backing-store.  We may default
+     to a reasonable value (e.g., half the address-space down from
+     bspstore).  If the BSPSTORE looks corrupt, we fail. */
+  if ((ret = rbs_get_base (c, bspstore, &rbs_base)) < 0)
+    return ret;
+
   c->rbs_area[0].end = bspstore;
-  c->rbs_area[0].size = ((unw_word_t) 1) << 63;	/* initial guess... */
+  c->rbs_area[0].size = bspstore - rbs_base;
   c->rbs_area[0].rnat_loc = IA64_REG_LOC (c, UNW_IA64_AR_RNAT);
-  Debug (10, "initial rbs-area: [?-0x%llx), rnat@%s\n",
-	 (long long) c->rbs_area[0].end,
+  Debug (10, "initial rbs-area: [0x%llx-0x%llx), rnat@%s\n",
+	 (long long) rbs_base, (long long) c->rbs_area[0].end,
 	 ia64_strloc (c->rbs_area[0].rnat_loc));
 
   c->pi.flags = 0;
