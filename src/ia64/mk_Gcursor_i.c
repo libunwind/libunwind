@@ -26,10 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Utility to generate cursor_i.h.  */
 
 #include <stdio.h>
-#include <string.h>
 
-#include "internal.h"
-#include "tdep.h"
+#include "libunwind_i.h"
 
 #ifdef offsetof
 # undef offsetof
