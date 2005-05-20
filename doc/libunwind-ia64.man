@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Tue May 17 05:49:31 PDT 2005
+.\" Manual page created with latex2man on Fri May 20 08:11:38 PDT 2005
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-IA64" "3" "17 May 2005" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-IA64" "3" "20 May 2005" "Programming Library " "Programming Library "
 .SH NAME
 libunwind\-ia64
 \-\- IA\-64\-specific support in libunwind 
@@ -118,14 +118,15 @@ stack\-frame of a signal\-handler trampoline.
 .TP
 UNW_IA64_SP:
  Contains the (memory) stack\-pointer 
-value (SP). This frame\-register is read\-only. 
+value (SP). 
 .TP
 UNW_IA64_BSP:
  Contains the register backing\-store 
-pointer (BSP). This frame\-register is read\-only. \fBNote:\fP
-the value in this register is equal to the contents of register 
-ar.bsp
-at the time the instruction at UNW_IA64_IP
+pointer (BSP). \fBNote:\fP
+the value in this register is equal 
+to the contents of register ar.bsp
+at the time the 
+instruction at UNW_IA64_IP
 was about to begin execution. 
 .PP
 .SS NORMAL REGISTER MACROS
