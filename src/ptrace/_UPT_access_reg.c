@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # ifdef HAVE_ASM_PTRACE_OFFSETS_H
 #   include <asm/ptrace_offsets.h>
 # endif
-# include "ia64/rse.h"
+# include "tdep-ia64/rse.h"
 #endif
 
 int
