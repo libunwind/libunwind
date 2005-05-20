@@ -101,7 +101,7 @@ get_script_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (caching == UNW_CACHE_NONE)
     return NULL;
 
-#if defined(__linux) && defined(__KERNEL__)
+#ifdef HAVE_ATOMIC_H
   if (!spin_trylock_irqsave (&cache->busy, *saved_maskp))
     return NULL;
 #else
@@ -137,7 +137,7 @@ put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
   assert (as->caching_policy != UNW_CACHE_NONE);
 
   Debug (16, "unmasking signals/interrupts and releasing lock\n");
-#if defined(__linux) && defined(__KERNEL__)
+#ifdef HAVE_ATOMIC_H
   spin_unlock_irqrestore (&cache->busy, *saved_maskp);
 #else
 # ifdef HAVE_ATOMIC_OPS_H
