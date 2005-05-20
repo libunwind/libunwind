@@ -73,13 +73,6 @@ inlined_uc_addr (ucontext_t *uc, int reg, uint8_t *nat_bitnr)
     case UNW_IA64_AR_LC:	addr = &uc->uc_mcontext.sc_ar_lc; break;
     case UNW_IA64_AR_FPSR:	addr = &uc->uc_mcontext.sc_ar_fpsr; break;
     case UNW_IA64_PR:		addr = &uc->uc_mcontext.sc_pr; break;
-      /* This may look confusing, but it's correct: AR_BSPSTORE needs
-         to return the address past the last word written, which is
-         stored in sc_ar_bsp.  On the other hand, AR_BSP needs to
-         return the address that was in ar.bsp at the time the context
-         was captured.  As described in unw_init_local(), sc_ar_bsp is
-         (ab-)used for this purpose.  */
-    case UNW_IA64_AR_BSP:	addr = &uc->uc_mcontext.sc_rbs_base; break;
     case UNW_IA64_AR_BSPSTORE:	addr = &uc->uc_mcontext.sc_ar_bsp; break;
 
     case UNW_IA64_GR + 4 ... UNW_IA64_GR + 7:
