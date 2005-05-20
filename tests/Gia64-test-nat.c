@@ -36,7 +36,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <sys/uc_access.h>
 #endif
 
-#include "ia64/rse.h"
+#include "tdep-ia64/rse.h"
+
+#define ARRAY_SIZE(a)	((int) (sizeof (a) / sizeof ((a)[0])))
 
 #define NUM_RUNS		1024
 //#define NUM_RUNS		1
