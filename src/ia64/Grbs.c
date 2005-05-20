@@ -82,7 +82,8 @@ rbs_switch (struct cursor *c,
 	    ia64_loc_t saved_rnat_loc)
 {
   struct rbs_area *rbs = &c->rbs_area[c->rbs_curr];
-  unw_word_t lo, ndirty;
+  unw_word_t lo, ndirty, rbs_base;
+  int ret;
 
   Debug (10, "(left=%u, curr=%u)\n", c->rbs_left_edge, c->rbs_curr);
 
@@ -105,13 +106,17 @@ rbs_switch (struct cursor *c,
       if (c->rbs_curr == c->rbs_left_edge)
 	c->rbs_left_edge = (c->rbs_left_edge + 1) % ARRAY_SIZE (c->rbs_area);
     }
+
+  if ((ret = rbs_get_base (c, saved_bspstore, &rbs_base)) < 0)
+    return ret;
+
   rbs->end = saved_bspstore;
-  rbs->size = ((unw_word_t) 1) << 63; /* initial guess... */
+  rbs->size = saved_bspstore - rbs_base;
   rbs->rnat_loc = saved_rnat_loc;
 
   c->bsp = saved_bsp;
 
-  Debug (10, "outer=[?????????????????\?-0x%llx), rnat@%s\n",
+  Debug (10, "outer=[0x%llx-0x%llx), rnat@%s\n", (long long) rbs_base,
 	 (long long) rbs->end, ia64_strloc (rbs->rnat_loc));
   return 0;
 }
