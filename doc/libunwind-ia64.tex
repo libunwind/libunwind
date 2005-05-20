@@ -92,12 +92,11 @@ identifies a stack frame.  The IA-64 architecture defines two stacks
   the slot number is usually zero, but can be non-zero, e.g., in the
   stack-frame of a signal-handler trampoline.
 \item[\Const{UNW\_IA64\_SP}:] Contains the (memory) stack-pointer
-  value (SP).  This frame-register is read-only.
+  value (SP).
 \item[\Const{UNW\_IA64\_BSP}:] Contains the register backing-store
-  pointer (BSP).  This frame-register is read-only.  \textbf{Note:}
-  the value in this register is equal to the contents of register
-  \texttt{ar.bsp} at the time the instruction at \Const{UNW\_IA64\_IP}
-  was about to begin execution.
+  pointer (BSP).  \textbf{Note:} the value in this register is equal
+  to the contents of register \texttt{ar.bsp} at the time the
+  instruction at \Const{UNW\_IA64\_IP} was about to begin execution.
 \end{Description}
 
 
