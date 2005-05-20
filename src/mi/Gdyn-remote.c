@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2001-2002 Hewlett-Packard Co
+   Copyright (C) 2001-2002, 2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -25,9 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 
-#include "internal.h"
+#include "libunwind_i.h"
 #include "remote.h"
-#include "tdep.h"
 
 static void
 free_regions (unw_dyn_region_info_t *region)

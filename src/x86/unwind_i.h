@@ -31,8 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind-x86.h>
 
-#include "internal.h"
-#include "tdep.h"
+#include "libunwind_i.h"
 
 /* DWARF column numbers: */
 #define EAX	0

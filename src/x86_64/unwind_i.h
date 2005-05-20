@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002 Hewlett-Packard Co
+   Copyright (C) 2002, 2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
    Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
@@ -33,8 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind-x86_64.h>
 
-#include "internal.h"
-#include "tdep.h"
+#include "libunwind_i.h"
 #include <sys/ucontext.h>
 
 /* DWARF column numbers for x86_64: */
