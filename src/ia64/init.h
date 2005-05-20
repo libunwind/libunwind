@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static ALWAYS_INLINE int
-common_init (struct cursor *c)
+common_init (struct cursor *c, unw_word_t sp, unw_word_t bsp)
 {
   unw_word_t bspstore;
   uint8_t *natp;
@@ -37,7 +37,7 @@ common_init (struct cursor *c)
     ia64_validate_cache (c->as, c->as_arg);
 
   c->cfm_loc =			IA64_REG_LOC (c, UNW_IA64_CFM);
-  c->loc[IA64_REG_BSP] =	IA64_REG_LOC (c, UNW_IA64_AR_BSP);
+  c->loc[IA64_REG_BSP] =	IA64_NULL_LOC;
   c->loc[IA64_REG_BSPSTORE] =	IA64_REG_LOC (c, UNW_IA64_AR_BSPSTORE);
   c->loc[IA64_REG_PFS] =	IA64_REG_LOC (c, UNW_IA64_AR_PFS);
   c->loc[IA64_REG_RNAT] =	IA64_REG_LOC (c, UNW_IA64_AR_RNAT);
@@ -98,15 +98,8 @@ common_init (struct cursor *c)
   if (ret < 0)
     return ret;
 
-  ret = ia64_get (c, IA64_REG_LOC (c, UNW_IA64_GR + 12), &c->sp);
-  if (ret < 0)
-    return ret;
-
-  c->psp = c->sp;
-
-  ret = ia64_get (c, c->loc[IA64_REG_BSP], &c->bsp);
-  if (ret < 0)
-    return ret;
+  c->sp = c->psp = sp;
+  c->bsp = bsp;
 
   ret = ia64_get (c, c->loc[IA64_REG_BSPSTORE], &bspstore);
   if (ret < 0)
