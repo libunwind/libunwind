@@ -39,6 +39,43 @@ purpose.  */
 
 #include "unwind_i.h"
 
+#if UNW_DEBUG
+
+HIDDEN const char *
+ia64_strloc (ia64_loc_t loc)
+{
+  static char buf[128];
+
+  if (IA64_IS_NULL_LOC (loc))
+    return "<null>";
+
+  buf[0] = '\0';
+
+  if (IA64_IS_MEMSTK_NAT (loc))
+    strcat (buf, "memstk_nat(");
+  if (IA64_IS_UC_LOC (loc))
+    strcat (buf, "uc(");
+  if (IA64_IS_FP_LOC (loc))
+    strcat (buf, "fp(");
+
+  if (IA64_IS_REG_LOC (loc))
+    sprintf (buf + strlen (buf), "%s", unw_regname (IA64_GET_REG (loc)));
+  else
+    sprintf (buf + strlen (buf), "0x%llx",
+	     (unsigned long long) IA64_GET_ADDR (loc));
+
+  if (IA64_IS_FP_LOC (loc))
+    strcat (buf, ")");
+  if (IA64_IS_UC_LOC (loc))
+    strcat (buf, ")");
+  if (IA64_IS_MEMSTK_NAT (loc))
+    strcat (buf, ")");
+
+  return buf;
+}
+
+#endif /* UNW_DEBUG */
+
 HIDDEN int
 rbs_switch (struct cursor *c,
 	    unw_word_t saved_bsp, unw_word_t saved_bspstore,
@@ -132,7 +169,7 @@ rbs_find_stacked (struct cursor *c, unw_word_t regs_to_skip,
     }
 }
 
-#ifndef UNW_REMOTE_ONLY
+#ifdef NEED_RBS_COVER_AND_FLUSH
 
 static inline int
 get_rnat (struct cursor *c, struct rbs_area *rbs, unw_word_t bsp,
