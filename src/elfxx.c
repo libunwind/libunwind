@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
+   Copyright (C) 2003-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -24,12 +24,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdio.h>
-#include <string.h>
-#include <unistd.h>
 
-#include <sys/types.h>
-
-#include "tdep.h"
+#include "libunwind_i.h"
 
 HIDDEN int
 elf_w (valid_object) (struct elf_image *ei)
