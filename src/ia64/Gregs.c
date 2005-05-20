@@ -371,14 +371,16 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
     case UNW_IA64_BSP:
       if (write)
-	return -UNW_EREADONLYREG;
-      *valp = c->bsp;
+	c->bsp = *valp;
+      else
+	*valp = c->bsp;
       return 0;
 
     case UNW_REG_SP:
       if (write)
-	return -UNW_EREADONLYREG;
-      *valp = c->sp;
+	c->sp = *valp;
+      else
+	*valp = c->sp;
       return 0;
 
     case UNW_REG_IP:
