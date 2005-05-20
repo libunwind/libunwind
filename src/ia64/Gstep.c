@@ -64,10 +64,7 @@ static inline int
 linux_interrupt (struct cursor *c, ia64_loc_t prev_cfm_loc,
 		 unw_word_t *num_regsp, int marker)
 {
-#if defined(UNW_LOCAL_ONLY)
-  /* Perhaps libunwind will some day become the Linux kernel unwinder.
-     Until such time, linux_interrupt() is needed only for non-local
-     unwinding.  */
+#if defined(UNW_LOCAL_ONLY) && !(defined(__linux) && defined(__KERNEL__))
   return -UNW_EINVAL;
 #else
   unw_word_t sc_addr, num_regs;
@@ -272,25 +269,25 @@ update_frame_state (struct cursor *c)
   if (unlikely (c->abi_marker))
     {
       c->last_abi_marker = c->abi_marker;
-      switch (c->abi_marker)
+      switch (ia64_get_abi_marker (c))
 	{
 	case ABI_MARKER_LINUX_SIGTRAMP:
 	case ABI_MARKER_OLD_LINUX_SIGTRAMP:
-	  c->as->abi = ABI_LINUX;
+	  ia64_set_abi (c, ABI_LINUX);
 	  if ((ret = linux_sigtramp (c, prev_cfm_loc, &num_regs)) < 0)
 	    return ret;
 	  break;
 
 	case ABI_MARKER_OLD_LINUX_INTERRUPT:
 	case ABI_MARKER_LINUX_INTERRUPT:
-	  c->as->abi = ABI_LINUX;
+	  ia64_set_abi (c, ABI_LINUX);
 	  if ((ret = linux_interrupt (c, prev_cfm_loc, &num_regs,
 				      c->abi_marker)) < 0)
 	    return ret;
 	  break;
 
 	case ABI_MARKER_HP_UX_SIGTRAMP:
-	  c->as->abi = ABI_HPUX;
+	  ia64_set_abi (c, ABI_HPUX);
 	  if ((ret = hpux_sigtramp (c, prev_cfm_loc, &num_regs)) < 0)
 	    return ret;
 	  break;
@@ -360,6 +357,6 @@ unw_step (unw_cursor_t *cursor)
       && (ret = update_frame_state (c)) >= 0)
     ret = (c->ip == 0) ? 0 : 1;
 
-  Debug (2, "returning %d\n", ret);
+  Debug (2, "returning %d (ip=0x%016lx)\n", ret, (unsigned long) c->ip);
   return ret;
 }
