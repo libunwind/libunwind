@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003-2004 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2003-2005 Hewlett-Packard Development Company, L.P.
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -26,8 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef dwarf_h
 #define dwarf_h
 
-#include "internal.h"
-#include "mempool.h"
+#include <libunwind.h>
 
 struct dwarf_cursor;	/* forward-declaration */
 
@@ -197,9 +196,6 @@ dwarf_cfa_t;
    used on Linux:  */
 #define DW_EH_PE_funcrel	0x40	/* start-of-procedure-relative */
 #define DW_EH_PE_aligned	0x50	/* aligned pointer */
-
-extern struct mempool dwarf_reg_state_pool;
-extern struct mempool dwarf_cie_info_pool;
 
 typedef enum
   {
