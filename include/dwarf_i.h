@@ -7,7 +7,8 @@
    files are compiled with inlining disabled.  */
 
 #include "dwarf.h"
-#include "tdep.h"
+#include "libunwind_i.h"
+#include "mempool.h"
 
 #ifndef dwarf_to_unw_regnum
 # define dwarf_to_unw_regnum_map	UNW_OBJ (dwarf_to_unw_regnum_map)
@@ -18,6 +19,9 @@
 # define dwarf_to_unw_regnum(reg)					    \
     (((reg) <= DWARF_REGNUM_MAP_LENGTH) ? dwarf_to_unw_regnum_map[reg] : 0)
 #endif
+
+extern struct mempool dwarf_reg_state_pool;
+extern struct mempool dwarf_cie_info_pool;
 
 #ifdef UNW_LOCAL_ONLY
 
