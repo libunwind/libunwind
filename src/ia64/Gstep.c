@@ -244,9 +244,6 @@ update_frame_state (struct cursor *c)
       Debug (1, "rejecting bad ip=0x%lx\n", (long) c->ip);
       return -UNW_EINVALIDIP;
     }
-  if (ip == 0)
-    /* end of frame-chain reached */
-    return 0;
 
   c->cfm_loc = c->loc[IA64_REG_PFS];
   /* update the CFM cache: */
