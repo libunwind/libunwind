@@ -361,7 +361,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 		 int write)
 {
   ia64_loc_t loc, reg_loc, nat_loc;
-  unw_word_t nat, mask, val;
+  unw_word_t mask, val;
   uint8_t nat_bitnr;
   int ret;
 
@@ -498,25 +498,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	}
       if (!(IA64_IS_REG_LOC (loc) || IA64_IS_UC_LOC (loc)
 	    || IA64_IS_FP_LOC (loc)))
-	{
-	  /* We're dealing with a NaT bit stored in memory.  */
-	  mask = (unw_word_t) 1 << nat_bitnr;
-
-	  if ((ret = ia64_get (c, loc, &nat)) < 0)
-	    return ret;
-
-	  if (write)
-	    {
-	      if (*valp)
-		nat |= mask;
-	      else
-		nat &= ~mask;
-	      ret = ia64_put (c, loc, nat);
-	    }
-	  else
-	    *valp = (nat & mask) != 0;
-	  return ret;
-	}
+	/* We're dealing with a NaT bit stored in memory.  */
+	return update_nat(c, loc, (unw_word_t) 1 << nat_bitnr, valp, write);
       break;
 
     case UNW_IA64_GR + 15 ... UNW_IA64_GR + 18:
