@@ -689,6 +689,8 @@ desc_spill_sprel_p (unsigned char qp, unw_word t, unsigned char abreg,
 
 #include "unwind_decoder.h"
 
+#ifdef _U_dyn_op
+
 /* parse dynamic unwind info */
 
 static struct ia64_reg_info *
@@ -911,6 +913,9 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
     }
   return 0;
 }
+#else
+# define parse_dynamic(c,sr)	(-UNW_EINVAL)
+#endif /* _U_dyn_op */
 
 
 HIDDEN int
