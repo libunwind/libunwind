@@ -33,6 +33,8 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
   return -UNW_EINVAL;
 #else /* !UNW_LOCAL_ONLY */
   struct cursor *c = (struct cursor *) cursor;
+  unw_word_t sp, bsp;
+  int ret;
 
   if (tdep_needs_initialization)
     tdep_init ();
@@ -49,6 +51,11 @@ unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 
   c->as = as;
   c->as_arg = as_arg;
-  return common_init (c);
+
+  if ((ret = ia64_get (c, IA64_REG_LOC (c, UNW_IA64_GR + 12), &sp)) < 0
+      || (ret = ia64_get (c, IA64_REG_LOC (c, UNW_IA64_AR_BSP), &bsp)) < 0)
+    return ret;
+
+  return common_init (c, sp, bsp);
 #endif /* !UNW_LOCAL_ONLY */
 }
