@@ -24,10 +24,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
-#include "mempool.h"
 
 #define MAX_ALIGN	(sizeof (long double))
-#define SOS_MEMORY_SIZE	16384
 
 static char sos_memory[SOS_MEMORY_SIZE];
 static char *sos_memp;
