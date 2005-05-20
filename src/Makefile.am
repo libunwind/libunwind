@@ -295,7 +295,7 @@ lib_LIBRARIES = $(LIBRARIES_cdep)
 lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
 		  $(lib_LTLIBRARIES_cdep_setjmp)
 
-AM_CPPFLAGS = -I$(top_srcdir)/include/$(arch) -I$(top_srcdir)/include -I.
+AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 
 EXTRA_DIST =	elfxx.h elfxx.c unwind/unwind-internal.h	\
