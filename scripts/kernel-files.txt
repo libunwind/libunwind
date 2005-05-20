@@ -1,4 +1,4 @@
-$udir/include/ia64/rse.h	$kdir/arch/ia64/unwind/rse.h
+$udir/include/tdep-ia64/rse.h	$kdir/arch/ia64/unwind/rse.h
 $udir/src/ia64/Ginit_local.c	$kdir/arch/ia64/unwind/init_local.c
 $udir/src/ia64/Gis_signal_frame.c $kdir/arch/ia64/unwind/is_signal_frame.c
 $udir/src/ia64/Gparser.c	$kdir/arch/ia64/unwind/parser.c
