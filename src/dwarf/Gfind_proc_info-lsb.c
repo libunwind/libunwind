@@ -27,13 +27,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    (http://www.linuxbase.org/spec/).  */
 
 #include <link.h>
-#include <stdlib.h>
 #include <stddef.h>
-#include <string.h>
 
 #include "dwarf_i.h"
 #include "dwarf-eh.h"
-#include "tdep.h"
+#include "libunwind_i.h"
 
 struct table_entry
   {
