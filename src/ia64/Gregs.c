@@ -127,7 +127,16 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg, uint8_t *nat_bitnr)
 	    case UNW_IA64_AR_BSPSTORE: addr += LINUX_PT_BSPSTORE_OFF; break;
 	    case UNW_IA64_PR: addr += LINUX_PT_PR_OFF; break;
 	    case UNW_IA64_BR + 0: addr += LINUX_PT_B0_OFF; break;
-	    case UNW_IA64_GR + 1: addr += LINUX_PT_R1_OFF; break;
+
+	    case UNW_IA64_GR + 1:
+	      /* The saved r1 value is valid only in the frame in which
+		 it was saved; for everything else we need to look up
+		 the appropriate gp value.  */
+	      if (c->sigcontext_addr != c->sp + 0x10)
+		return IA64_NULL_LOC;
+	      addr += LINUX_PT_R1_OFF;
+	      break;
+
 	    case UNW_IA64_GR + 12: addr += LINUX_PT_R12_OFF; break;
 	    case UNW_IA64_GR + 13: addr += LINUX_PT_R13_OFF; break;
 	    case UNW_IA64_AR_FPSR: addr += LINUX_PT_FPSR_OFF; break;
@@ -157,8 +166,17 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg, uint8_t *nat_bitnr)
 	{
 	  switch (reg)
 	    {
-	    case UNW_IA64_GR +  1 ... UNW_IA64_GR + 3:
-	      addr += LINUX_OLD_PT_R1_OFF + 8 * (reg - (UNW_IA64_GR + 1));
+	    case UNW_IA64_GR +  1:
+	      /* The saved r1 value is valid only in the frame in which
+		 it was saved; for everything else we need to look up
+		 the appropriate gp value.  */
+	      if (c->sigcontext_addr != c->sp + 0x10)
+		return IA64_NULL_LOC;
+	      addr += LINUX_OLD_PT_R1_OFF;
+	      break;
+
+	    case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
+	      addr += LINUX_OLD_PT_R2_OFF + 8 * (reg - (UNW_IA64_GR + 2));
 	      break;
 
 	    case UNW_IA64_GR +  8 ... UNW_IA64_GR + 11:
@@ -460,26 +478,24 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       *valp = 0;
       return 0;
 
-    case UNW_IA64_GR + 1:				/* global pointer */
-      if (write)
-	return -UNW_EREADONLYREG;
-
-      /* ensure c->pi is up-to-date: */
-      if ((ret = ia64_make_proc_info (c)) < 0)
-	return ret;
-      *valp = c->pi.gp;
-      return 0;
-
     case UNW_IA64_NAT + 0:
-    case UNW_IA64_NAT + 1:				/* global pointer */
       if (write)
 	return -UNW_EREADONLYREG;
       *valp = 0;
       return 0;
 
+    case UNW_IA64_NAT + 1:
     case UNW_IA64_NAT + 2 ... UNW_IA64_NAT + 3:
     case UNW_IA64_NAT + 8 ... UNW_IA64_NAT + 31:
       loc = ia64_scratch_loc (c, reg, &nat_bitnr);
+      if (IA64_IS_NULL_LOC (loc) && reg == UNW_IA64_NAT + 1)
+	{
+	  /* access to GP */
+	  if (write)
+	    return -UNW_EREADONLYREG;
+	  *valp = 0;
+	  return 0;
+	}
       if (!(IA64_IS_REG_LOC (loc) || IA64_IS_UC_LOC (loc)
 	    || IA64_IS_FP_LOC (loc)))
 	{
@@ -520,6 +536,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 	loc = ia64_scratch_loc (c, reg, NULL);
       break;
 
+    case UNW_IA64_GR +  1:				/* global pointer */
     case UNW_IA64_GR +  2 ... UNW_IA64_GR + 3:
     case UNW_IA64_GR +  8 ... UNW_IA64_GR + 14:
     case UNW_IA64_GR + 19 ... UNW_IA64_GR + 31:
@@ -531,6 +548,18 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_IA64_AR_SSD:
     case UNW_IA64_AR_CCV:
       loc = ia64_scratch_loc (c, reg, NULL);
+      if (IA64_IS_NULL_LOC (loc) && reg == UNW_IA64_GR + 1)
+	{
+	  /* access to GP */
+	  if (write)
+	    return -UNW_EREADONLYREG;
+
+	  /* ensure c->pi is up-to-date: */
+	  if ((ret = ia64_make_proc_info (c)) < 0)
+	    return ret;
+	  *valp = c->pi.gp;
+	  return 0;
+	}
       break;
 
     default:
