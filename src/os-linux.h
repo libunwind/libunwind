@@ -233,6 +233,15 @@ maps_next (struct map_iterator *mi,
 			    mi->buf_size - bytes_left);
 	      if (nread <= 0)
 		return 0;
+	      else if (nread + bytes_left < mi->buf_size)
+		{
+		  /* Move contents to the end of the buffer so we
+		     maintain the invariant that all bytes between
+		     mi->buf and mi->buf_end are valid.  */
+		  memcpy (mi->buf_end - nread - bytes_left, mi->buf,
+			  nread + bytes_left);
+		  mi->buf = mi->buf_end - nread - bytes_left;
+		}
 
 	      eol = mi->buf + bytes_left + nread - 1;
 
