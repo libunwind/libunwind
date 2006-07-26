@@ -23,7 +23,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "libunwind_i.h"
+#include "internal.h"
 
 /* Returns the text corresponding to the given err_code or the
    text "invalid error code" if the err_code is invalid.  */

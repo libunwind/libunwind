@@ -28,33 +28,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 common_init (struct cursor *c)
 {
-  int ret, i;
+  int ret;
 
-  for (i = 0; i < 32; ++i)
-    {
-      c->dwarf.loc[UNW_HPPA_GR + i]
-	= DWARF_REG_LOC (&c->dwarf, UNW_HPPA_GR + i);
-      c->dwarf.loc[UNW_HPPA_FR + i]
-	= DWARF_REG_LOC (&c->dwarf, UNW_HPPA_FR + i);
-    }
+  c->ip_loc = HPPA_REG_LOC (c, UNW_HPPA_IP);
+  c->sp_loc = HPPA_REG_LOC (c, UNW_HPPA_SP);
 
-  c->dwarf.loc[UNW_HPPA_IP] = c->dwarf.loc[UNW_HPPA_RP];
-
-  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_HPPA_IP], &c->dwarf.ip);
+  ret = hppa_get (c, c->ip_loc, &c->ip);
   if (ret < 0)
     return ret;
 
-  ret = dwarf_get (&c->dwarf, DWARF_REG_LOC (&c->dwarf, UNW_HPPA_SP),
-		   &c->dwarf.cfa);
+  ret = hppa_get (c, HPPA_REG_LOC (c, UNW_HPPA_SP), &c->sp);
   if (ret < 0)
     return ret;
-
-  c->sigcontext_format = HPPA_SCF_NONE;
-  c->sigcontext_addr = 0;
-
-  c->dwarf.args_size = 0;
-  c->dwarf.ret_addr_column = 0;
-  c->dwarf.pi_valid = 0;
-  c->dwarf.pi_is_dynamic = 0;
   return 0;
 }

@@ -23,12 +23,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "tdep.h"
+/* Use glibc's jump-buffer indices; NPTL peeks at SP: */
 
-PROTECTED int
-unw_set_fpreg (unw_cursor_t *cursor, int regnum, unw_fpreg_t val)
-{
-  struct cursor *c = (struct cursor *) cursor;
-
-  return tdep_access_fpreg (c, regnum, &val, 1);
-}
+#define JB_SP		4
+#define JB_RP		5
+#define JB_MASK_SAVED	6
+#define JB_MASK		7

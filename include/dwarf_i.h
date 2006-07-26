@@ -7,28 +7,26 @@
    files are compiled with inlining disabled.  */
 
 #include "dwarf.h"
-#include "libunwind_i.h"
-#include "mempool.h"
+#include "tdep.h"
 
-#ifndef dwarf_to_unw_regnum
-# define dwarf_to_unw_regnum_map	UNW_OBJ (dwarf_to_unw_regnum_map)
+#define dwarf_to_unw_regnum_map		UNW_OBJ (dwarf_to_unw_regnum_map)
 
-  extern uint8_t dwarf_to_unw_regnum_map[DWARF_REGNUM_MAP_LENGTH];
+extern uint8_t dwarf_to_unw_regnum_map[DWARF_REGNUM_MAP_LENGTH];
 
-  /* REG is evaluated multiple times; it better be side-effects free!  */
-# define dwarf_to_unw_regnum(reg)					    \
-    (((reg) <= DWARF_REGNUM_MAP_LENGTH) ? dwarf_to_unw_regnum_map[reg] : 0)
-#endif
-
-extern struct mempool dwarf_reg_state_pool;
-extern struct mempool dwarf_cie_info_pool;
+static inline unw_regnum_t
+dwarf_to_unw_regnum (unw_word_t regnum)
+{
+  if (regnum <= DWARF_REGNUM_MAP_LENGTH)
+    return dwarf_to_unw_regnum_map[regnum];
+  return 0;
+}
 
 #ifdef UNW_LOCAL_ONLY
 
 /* In the local-only case, we can let the compiler directly access
    memory and don't need to worry about differing byte-order.  */
 
-typedef union __attribute__ ((packed))
+typedef union
   {
     int8_t s8;
     int16_t s16;
@@ -41,7 +39,7 @@ typedef union __attribute__ ((packed))
     unw_word_t w;
     void *ptr;
   }
-dwarf_misaligned_value_t;
+dwarf_misaligned_value_t __attribute__ ((packed));
 
 static inline int
 dwarf_reads8 (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
@@ -337,141 +335,6 @@ dwarf_read_sleb128 (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
   if (shift < 8 * sizeof (unw_word_t) && (byte & 0x40) != 0)
     /* sign-extend negative value */
     val |= ((unw_word_t) -1) << shift;
-
-  *valp = val;
-  return 0;
-}
-
-static ALWAYS_INLINE int
-dwarf_read_encoded_pointer_inlined (unw_addr_space_t as, unw_accessors_t *a,
-				    unw_word_t *addr, unsigned char encoding,
-				    const unw_proc_info_t *pi,
-				    unw_word_t *valp, void *arg)
-{
-  unw_word_t val, initial_addr = *addr;
-  uint16_t uval16;
-  uint32_t uval32;
-  uint64_t uval64;
-  int16_t sval16;
-  int32_t sval32;
-  int64_t sval64;
-  int ret;
-
-  /* DW_EH_PE_omit and DW_EH_PE_aligned don't follow the normal
-     format/application encoding.  Handle them first.  */
-  if (encoding == DW_EH_PE_omit)
-    {
-      *valp = 0;
-      return 0;
-    }
-  else if (encoding == DW_EH_PE_aligned)
-    {
-      *addr = (initial_addr + sizeof (unw_word_t) - 1) & -sizeof (unw_word_t);
-      return dwarf_readw (as, a, addr, valp, arg);
-    }
-
-  switch (encoding & DW_EH_PE_FORMAT_MASK)
-    {
-    case DW_EH_PE_ptr:
-      if ((ret = dwarf_readw (as, a, addr, &val, arg)) < 0)
-	return ret;
-      break;
-
-    case DW_EH_PE_uleb128:
-      if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
-	return ret;
-      break;
-
-    case DW_EH_PE_udata2:
-      if ((ret = dwarf_readu16 (as, a, addr, &uval16, arg)) < 0)
-	return ret;
-      val = uval16;
-      break;
-
-    case DW_EH_PE_udata4:
-      if ((ret = dwarf_readu32 (as, a, addr, &uval32, arg)) < 0)
-	return ret;
-      val = uval32;
-      break;
-
-    case DW_EH_PE_udata8:
-      if ((ret = dwarf_readu64 (as, a, addr, &uval64, arg)) < 0)
-	return ret;
-      val = uval64;
-      break;
-
-    case DW_EH_PE_sleb128:
-      if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
-	return ret;
-      break;
-
-    case DW_EH_PE_sdata2:
-      if ((ret = dwarf_reads16 (as, a, addr, &sval16, arg)) < 0)
-	return ret;
-      val = sval16;
-      break;
-
-    case DW_EH_PE_sdata4:
-      if ((ret = dwarf_reads32 (as, a, addr, &sval32, arg)) < 0)
-	return ret;
-      val = sval32;
-      break;
-
-    case DW_EH_PE_sdata8:
-      if ((ret = dwarf_reads64 (as, a, addr, &sval64, arg)) < 0)
-	return ret;
-      val = sval64;
-      break;
-
-    default:
-      Debug (1, "unexpected encoding format 0x%x\n",
-	     encoding & DW_EH_PE_FORMAT_MASK);
-      return -UNW_EINVAL;
-    }
-
-  if (val == 0)
-    {
-      /* 0 is a special value and always absolute.  */
-      *valp = 0;
-      return 0;
-    }
-
-  switch (encoding & DW_EH_PE_APPL_MASK)
-    {
-    case DW_EH_PE_absptr:
-      break;
-
-    case DW_EH_PE_pcrel:
-      val += initial_addr;
-      break;
-
-    case DW_EH_PE_datarel:
-      /* XXX For now, assume that data-relative addresses are relative
-         to the global pointer.  */
-      val += pi->gp;
-      break;
-
-    case DW_EH_PE_funcrel:
-      val += pi->start_ip;
-      break;
-
-    case DW_EH_PE_textrel:
-      /* XXX For now we don't support text-rel values.  If there is a
-         platform which needs this, we probably would have to add a
-         "segbase" member to unw_proc_info_t.  */
-    default:
-      Debug (1, "unexpected application type 0x%x\n",
-	     encoding & DW_EH_PE_APPL_MASK);
-      return -UNW_EINVAL;
-    }
-
-  if (encoding & DW_EH_PE_indirect)
-    {
-      unw_word_t indirect_addr = val;
-
-      if ((ret = dwarf_readw (as, a, &indirect_addr, &val, arg)) < 0)
-	return ret;
-    }
 
   *valp = val;
   return 0;
