@@ -376,14 +376,19 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 	 without ill effects.  */
       int ret = tdep_search_unwind_table (unw_local_addr_space, ip, di, pi,
 					  need_unwind_info, arg);
-      if (ret >= 0 && need_unwind_info)
+      if (ret >= 0)
 	{
-	  void *mem = malloc (pi->unwind_info_size);
+	  if (!need_unwind_info)
+	    pi->unwind_info = NULL;
+	  else
+	    {
+	      void *mem = malloc (pi->unwind_info_size);
 
-	  if (!mem)
-	    return -UNW_ENOMEM;
-	  memcpy (mem, pi->unwind_info, pi->unwind_info_size);
-	  pi->unwind_info = mem;
+	      if (!mem)
+		return -UNW_ENOMEM;
+	      memcpy (mem, pi->unwind_info, pi->unwind_info_size);
+	      pi->unwind_info = mem;
+	    }
 	}
       return ret;
     }
