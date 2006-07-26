@@ -34,13 +34,7 @@ test_func:
 	alloc loc0 = ar.pfs, 1, 3, 0, 0
 	mov loc1 = rp
 	.save rp, r0
-	.spillreg r5, f0
-	.spillreg r6, f1
-	.spillreg f2, f0
-	.spillreg f3, f1
 	.save ar.lc, r0
-	.spillreg b2, f0
-	.spillreg b3, f1
 	.body
 	mov loc2 = gp
 	ld8 r2 = [in0], 8;;

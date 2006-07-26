@@ -65,26 +65,8 @@ checker (void)
   if ((ret = unw_set_reg (&c, UNW_IA64_IP, 99)) != -UNW_EREADONLYREG)
     panic ("%s: unw_set_reg (ip) returned %d instead of %d\n",
 	   __FUNCTION__, ret, -UNW_EREADONLYREG);
-  if ((ret = unw_set_reg (&c, UNW_IA64_GR + 5, 99)) != -UNW_EREADONLYREG)
-    panic ("%s: unw_set_reg (r5) returned %d instead of %d\n",
-	   __FUNCTION__, ret, -UNW_EREADONLYREG);
-  if ((ret = unw_set_reg (&c, UNW_IA64_GR + 6, 99)) != -UNW_EREADONLYREG)
-    panic ("%s: unw_set_reg (r6) returned %d instead of %d\n",
-	   __FUNCTION__, ret, -UNW_EREADONLYREG);
   if ((ret = unw_set_reg (&c, UNW_IA64_AR_LC, 99)) != -UNW_EREADONLYREG)
     panic ("%s: unw_set_reg (ar.lc) returned %d instead of %d\n",
-	   __FUNCTION__, ret, -UNW_EREADONLYREG);
-  if ((ret = unw_set_reg (&c, UNW_IA64_BR + 2, 99)) != -UNW_EREADONLYREG)
-    panic ("%s: unw_set_reg (b2) returned %d instead of %d\n",
-	   __FUNCTION__, ret, -UNW_EREADONLYREG);
-  if ((ret = unw_set_reg (&c, UNW_IA64_BR + 3, 99)) != -UNW_EREADONLYREG)
-    panic ("%s: unw_set_reg (b3) returned %d instead of %d\n",
-	   __FUNCTION__, ret, -UNW_EREADONLYREG);
-  if ((ret = unw_set_fpreg (&c, UNW_IA64_FR + 2, fpval)) != -UNW_EREADONLYREG)
-    panic ("%s: unw_set_fpreg (f2) returned %d instead of %d\n",
-	   __FUNCTION__, ret, -UNW_EREADONLYREG);
-  if ((ret = unw_set_fpreg (&c, UNW_IA64_FR + 3, fpval)) != -UNW_EREADONLYREG)
-    panic ("%s: unw_set_fpreg (f3) returned %d instead of %d\n",
 	   __FUNCTION__, ret, -UNW_EREADONLYREG);
 }
 
