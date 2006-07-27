@@ -232,6 +232,7 @@ typedef struct dwarf_reg_state
     struct dwarf_reg_state *next;	/* for rs_stack */
     dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
     unw_word_t ip;		          /* ip this rs is for */
+    unw_word_t ret_addr_column;           /* indicates which column in the rule table represents return address */
     unsigned short lru_chain;	  /* used for least-recently-used chain */
     unsigned short coll_chain;	/* used for hash collisions */
     unsigned short hint;	      /* hint for next rs to try (or -1) */

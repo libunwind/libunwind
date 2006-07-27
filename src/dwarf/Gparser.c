@@ -535,7 +535,7 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 }
 
 static inline dwarf_reg_state_t *
-rs_new (struct dwarf_rs_cache *cache, unw_word_t ip)
+rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 {
   dwarf_reg_state_t *rs, *prev, *tmp;
   unw_hash_index_t index;
@@ -575,12 +575,13 @@ rs_new (struct dwarf_rs_cache *cache, unw_word_t ip)
     }
 
   /* enter new rs in the hash table */
-  index = hash (ip);
+  index = hash (c->ip);
   rs->coll_chain = cache->hash[index];
   cache->hash[index] = rs - cache->buckets;
 
   rs->hint = 0;
-  rs->ip = ip;
+  rs->ip = c->ip;
+  rs->ret_addr_column = c->ret_addr_column;
 
   return rs;
 }
@@ -771,7 +772,10 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   rs = rs_lookup(cache, c);
 
   if (rs)
-    goto apply;
+    {
+      c->ret_addr_column = rs->ret_addr_column;
+      goto apply;
+    }
 
   if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
     return ret;
@@ -782,7 +786,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   rs1 = &sr.rs_current;
   if (rs1)
     {
-      rs = rs_new (cache, c->ip);
+      rs = rs_new (cache, c);
       memcpy(rs, rs1, offsetof(struct dwarf_reg_state, ip));
       if (!rs)
         {
