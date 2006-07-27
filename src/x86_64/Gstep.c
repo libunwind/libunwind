@@ -141,9 +141,9 @@ unw_step (unw_cursor_t *cursor)
 	      rip_loc = DWARF_LOC (rbp + 8, 0);
               /* Heuristic to recognize a bogus frame pointer */
 	      ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
-              if (ret || (abs(rbp - rbp1) > 4096))
+              if (ret || ((rbp1 - rbp) > 0x4000))
                 rbp_loc = DWARF_NULL_LOC;
-	      c->dwarf.cfa = rbp;
+	      c->dwarf.cfa += 16;
 	    }
 
 	  /* Mark all registers unsaved */
