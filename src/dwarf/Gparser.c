@@ -472,10 +472,36 @@ flush_rs_cache (struct dwarf_rs_cache *cache)
     cache->hash[i] = -1;
 }
 
-static struct dwarf_rs_cache *
-get_rs_cache (unw_addr_space_t as)
+static inline struct dwarf_rs_cache *
+get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
 {
   struct dwarf_rs_cache *cache = &as->global_cache;
+  unw_caching_policy_t caching = as->caching_policy;
+
+  if (caching == UNW_CACHE_NONE)
+    return NULL;
+
+#ifdef HAVE_ATOMIC_H
+  if (!spin_trylock_irqsave (&cache->busy, *saved_maskp))
+    return NULL;
+#else
+# ifdef HAVE___THREAD
+  if (as->caching_policy == UNW_CACHE_PER_THREAD)
+    cache = &dwarf_per_thread_cache;
+# endif
+# ifdef HAVE_ATOMIC_OPS_H
+  if (AO_test_and_set (&cache->busy) == AO_TS_SET)
+    return NULL;
+# else
+  sigprocmask (SIG_SETMASK, &unwi_full_mask, saved_maskp);
+  if (likely (caching == UNW_CACHE_GLOBAL))
+    {
+      Debug (16, "%s: acquiring lock\n", __FUNCTION__);
+      mutex_lock (&cache->lock);
+    }
+# endif
+#endif
+
   if (atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
     {
       flush_rs_cache (cache);
@@ -483,6 +509,26 @@ get_rs_cache (unw_addr_space_t as)
     }
 
   return cache;
+}
+
+static inline void
+put_rs_cache (unw_addr_space_t as, struct dwarf_rs_cache *cache,
+		  intrmask_t *saved_maskp)
+{
+  assert (as->caching_policy != UNW_CACHE_NONE);
+
+  Debug (16, "unmasking signals/interrupts and releasing lock\n");
+#ifdef HAVE_ATOMIC_H
+  spin_unlock_irqrestore (&cache->busy, *saved_maskp);
+#else
+# ifdef HAVE_ATOMIC_OPS_H
+  AO_CLEAR (&cache->busy);
+# else
+  if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
+    mutex_unlock (&cache->lock);
+  sigprocmask (SIG_SETMASK, saved_maskp, NULL);
+# endif
+#endif
 }
 
 static inline unw_hash_index_t
@@ -763,12 +809,15 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   dwarf_state_record_t sr;
   dwarf_reg_state_t *rs, *rs1;
   struct dwarf_rs_cache *cache;
-  int ret;
+  int ret = 0;
+  intrmask_t saved_mask;
 
   if (c->as->caching_policy == UNW_CACHE_NONE)
     return uncached_dwarf_find_save_locs (c);
 
-  cache = get_rs_cache(c->as);
+  cache = get_rs_cache(c->as, &saved_mask);
+  if (!cache)
+    return -UNW_ENOINFO;	/* cache is busy */
   rs = rs_lookup(cache, c);
 
   if (rs)
@@ -778,10 +827,10 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
     }
 
   if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
-    return ret;
+    goto out;
 
   if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
-    return ret;
+    goto out;
 
   rs1 = &sr.rs_current;
   if (rs1)
@@ -792,7 +841,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
         {
           dprintf ("%s: failed to create unwind rs\n", __FUNCTION__);
           ret = -UNW_EUNSPEC;
-          return ret;
+	  goto out;
         }
     }
   cache->buckets[c->prev_rs].hint = rs - cache->buckets;
@@ -802,7 +851,12 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
 
   put_unwind_info (c, &c->pi);
 
+out:
+  put_rs_cache (c->as, cache, &saved_mask);
+  return ret;
+
 apply:
+  put_rs_cache (c->as, cache, &saved_mask);
   if ((ret = apply_reg_state (c, rs)) < 0)
     return ret;
 
