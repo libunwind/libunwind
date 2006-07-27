@@ -754,6 +754,8 @@ uncached_dwarf_find_save_locs (struct dwarf_cursor *c)
   return 0;
 }
 
+/* The function finds the saved locations and applies the register
+   state as well. */
 HIDDEN int
 dwarf_find_save_locs (struct dwarf_cursor *c)
 {
