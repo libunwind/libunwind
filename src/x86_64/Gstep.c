@@ -130,15 +130,20 @@ unw_step (unw_cursor_t *cursor)
 	    }
 	  else
 	    {
+	      unw_word_t rbp1;
 	      Debug (1, "[RBP=0x%Lx] = 0x%Lx (cfa = 0x%Lx)\n",
 		     (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RBP]),
 		     (unsigned long long) rbp,
 		     (unsigned long long) c->dwarf.cfa);
 
-	      rbp_loc = c->dwarf.loc[RBP];
+	      rbp_loc = DWARF_LOC(rbp, 0);
 	      rsp_loc = DWARF_NULL_LOC;
-	      rip_loc = DWARF_LOC (c->dwarf.cfa + 8, 0);
-	      c->dwarf.cfa += 8;
+	      rip_loc = DWARF_LOC (rbp + 8, 0);
+              /* Heuristic to recognize a bogus frame pointer */
+	      ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
+              if (ret || (abs(rbp - rbp1) > 4096))
+                rbp_loc = DWARF_NULL_LOC;
+	      c->dwarf.cfa = rbp;
 	    }
 
 	  /* Mark all registers unsaved */
@@ -154,6 +159,9 @@ unw_step (unw_cursor_t *cursor)
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
 	{
 	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+	  Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
+		     (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
+		     (unsigned long long) c->dwarf.ip);
 	  if (ret < 0)
 	    {
 	      Debug (2, "returning %d\n", ret);
