@@ -794,11 +794,12 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   c->hint = rs->hint;
   c->prev_rs = rs - cache->buckets;
 
+  put_unwind_info (c, &c->pi);
+
 apply:
   if ((ret = apply_reg_state (c, rs)) < 0)
     return ret;
 
-  put_unwind_info (c, &c->pi);
   return 0;
 }
 
