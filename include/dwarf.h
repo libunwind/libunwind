@@ -197,6 +197,9 @@ dwarf_cfa_t;
 #define DW_EH_PE_funcrel	0x40	/* start-of-procedure-relative */
 #define DW_EH_PE_aligned	0x50	/* aligned pointer */
 
+extern struct mempool dwarf_reg_state_pool;
+extern struct mempool dwarf_cie_info_pool;
+
 typedef enum
   {
     DWARF_WHERE_UNDEF,		/* register isn't saved at all */

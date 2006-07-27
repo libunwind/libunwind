@@ -35,6 +35,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 #include "elf64.h"
+#include "mempool.h"
 #include "dwarf.h"
 
 struct unw_addr_space
