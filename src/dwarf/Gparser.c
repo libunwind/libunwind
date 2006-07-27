@@ -850,6 +850,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   c->prev_rs = rs - cache->buckets;
 
   put_unwind_info (c, &c->pi);
+  ret = apply_reg_state (c, rs);
 
 out:
   put_rs_cache (c->as, cache, &saved_mask);
