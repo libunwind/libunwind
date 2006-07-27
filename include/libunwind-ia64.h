@@ -67,6 +67,7 @@ extern "C" {
 #define UNW_PI_FLAG_IA64_RBS_SWITCH	(1 << UNW_PI_FLAG_IA64_RBS_SWITCH_BIT)
 
 typedef uint64_t unw_word_t;
+typedef int64_t unw_sword_t;
 
 /* On IA-64, we want to access the contents of floating-point
    registers as a pair of "words", but to ensure 16-byte alignment, we

@@ -106,18 +106,7 @@ static uint8_t operands[256] =
     [DW_OP_call_ref] =		OPND1 (OFFSET)
   };
 
-static inline unw_word_t
-sword (unw_word_t val)
-{
-  switch (sizeof (unw_word_t))
-    {
-    case 1: return (int8_t) val;
-    case 2: return (int16_t) val;
-    case 4: return (int32_t) val;
-    case 8: return (int64_t) val;
-    default: abort ();
-    }
-}
+#define sword(X)	((unw_sword_t) (X))
 
 static inline unw_word_t
 read_operand (unw_addr_space_t as, unw_accessors_t *a,

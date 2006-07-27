@@ -46,6 +46,7 @@ extern "C" {
 #define UNW_TDEP_CURSOR_LEN	127
 
 typedef uint32_t unw_word_t;
+typedef int32_t unw_sword_t;
 
 typedef long double unw_tdep_fpreg_t;
 
