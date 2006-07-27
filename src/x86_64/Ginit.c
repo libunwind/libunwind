@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 #include <string.h>
+#include <sys/mman.h>
 
 #include "unwind_i.h"
 
@@ -103,6 +104,9 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
   return 0;
 }
 
+#define PAGE_SIZE 4096
+#define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
+
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 	    void *arg)
@@ -114,6 +118,9 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     }
   else
     {
+      /* validate address */
+      if (msync(PAGE_START(addr), 1, MS_SYNC) == -1)
+        return -1;
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%016lx] -> %lx\n", addr, *val);
     }
