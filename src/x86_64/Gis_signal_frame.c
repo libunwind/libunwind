@@ -52,7 +52,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   ip = c->dwarf.ip;
   if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
-    return ret;
+    return 0;
   w1 &= 0xffffffff;
   return (w0 == 0x0f0000000fc0c748 && w1 == 0x66666605);
 }
