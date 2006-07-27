@@ -78,44 +78,8 @@ struct cursor
 # define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
 				 tdep_uc_addr((c)->as_arg, (r)), 0))
-
-static inline int
-dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
-{
-  if (!DWARF_GET_LOC (loc))
-    return -1;
-  *val = *(unw_fpreg_t *) DWARF_GET_LOC (loc);
-  return 0;
-}
-
-static inline int
-dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
-{
-  if (!DWARF_GET_LOC (loc))
-    return -1;
-  *(unw_fpreg_t *) DWARF_GET_LOC (loc) = val;
-  return 0;
-}
-
-static inline int
-dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
-{
-  if (!DWARF_GET_LOC (loc))
-    return -1;
-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
-  return 0;
-}
-
-static inline int
-dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
-{
-  if (!DWARF_GET_LOC (loc))
-    return -1;
-  *(unw_word_t *) DWARF_GET_LOC (loc) = val;
-  return 0;
-}
-
 #else /* !UNW_LOCAL_ONLY */
+
 # define DWARF_LOC_TYPE_FP	(1 << 0)
 # define DWARF_LOC_TYPE_REG	(1 << 1)
 # define DWARF_NULL_LOC		DWARF_LOC (0, 0)
@@ -129,13 +93,14 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 # define DWARF_FPREG_LOC(c,r)	DWARF_LOC((r), (DWARF_LOC_TYPE_REG	\
 						| DWARF_LOC_TYPE_FP))
 
+#endif /* !UNW_LOCAL_ONLY */
+
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 {
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-//# warning fix me
   abort ();
 }
 
@@ -145,7 +110,6 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-//# warning fix me
   abort ();
 }
 
@@ -154,10 +118,6 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
-
-  if (DWARF_IS_FP_LOC (loc))
-//#   warning fix me
-    abort ();
 
   if (DWARF_IS_REG_LOC (loc))
     return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), val,
@@ -173,10 +133,6 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  if (DWARF_IS_FP_LOC (loc))
-//#   warning fix me
-    abort ();
-
   if (DWARF_IS_REG_LOC (loc))
     return (*c->as->acc.access_reg) (c->as, DWARF_GET_LOC (loc), &val,
 				     1, c->as_arg);
@@ -184,8 +140,6 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
     return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val,
 				     1, c->as_arg);
 }
-
-#endif /* !UNW_LOCAL_ONLY */
 
 #define tdep_needs_initialization	UNW_OBJ(needs_initialization)
 #define tdep_init			UNW_OBJ(init)
