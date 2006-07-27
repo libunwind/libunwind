@@ -231,6 +231,10 @@ typedef struct dwarf_reg_state
   {
     struct dwarf_reg_state *next;	/* for rs_stack */
     dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
+    unw_word_t ip;		          /* ip this rs is for */
+    unsigned short lru_chain;	  /* used for least-recently-used chain */
+    unsigned short coll_chain;	/* used for hash collisions */
+    unsigned short hint;	      /* hint for next rs to try (or -1) */
   }
 dwarf_reg_state_t;
 
@@ -280,8 +284,38 @@ typedef struct dwarf_cursor
     unsigned int pi_valid :1;	/* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
     unw_proc_info_t pi;		/* info about current procedure */
+
+    short hint; /* faster lookup of the rs cache */
+    short prev_rs;
   }
 dwarf_cursor_t;
+
+#define DWARF_LOG_UNW_CACHE_SIZE	7
+#define DWARF_UNW_CACHE_SIZE	(1 << DWARF_LOG_UNW_CACHE_SIZE)
+
+#define DWARF_LOG_UNW_HASH_SIZE	(DWARF_LOG_UNW_CACHE_SIZE + 1)
+#define DWARF_UNW_HASH_SIZE	(1 << DWARF_LOG_UNW_HASH_SIZE)
+
+typedef unsigned char unw_hash_index_t;
+
+struct dwarf_rs_cache
+  {
+#ifdef HAVE_ATOMIC_OPS_H
+    AO_TS_t busy;		/* is the rs-cache busy? */
+#else
+    pthread_mutex_t lock;
+#endif
+    unsigned short lru_head;	/* index of lead-recently used rs */
+    unsigned short lru_tail;	/* index of most-recently used rs */
+
+    /* hash table that maps instruction pointer to rs index: */
+    unsigned short hash[DWARF_UNW_HASH_SIZE];
+
+    uint32_t generation;	/* generation number */
+
+    /* rs cache: */
+    dwarf_reg_state_t buckets[DWARF_UNW_CACHE_SIZE];
+  };
 
 /* Convenience macros: */
 #define dwarf_init			UNW_ARCH_OBJ (dwarf_init)

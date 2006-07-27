@@ -23,6 +23,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <stddef.h>
 #include "dwarf_i.h"
 #include "libunwind_i.h"
 
@@ -452,6 +453,138 @@ parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
   return 0;
 }
 
+static inline void
+flush_rs_cache (struct dwarf_rs_cache *cache)
+{
+  int i;
+
+  cache->lru_head = DWARF_UNW_CACHE_SIZE - 1;
+  cache->lru_tail = 0;
+
+  for (i = 0; i < DWARF_UNW_CACHE_SIZE; ++i)
+    {
+      if (i > 0)
+	cache->buckets[i].lru_chain = (i - 1);
+      cache->buckets[i].coll_chain = -1;
+      cache->buckets[i].ip = 0;
+    }
+  for (i = 0; i<DWARF_UNW_HASH_SIZE; ++i)
+    cache->hash[i] = -1;
+}
+
+static struct dwarf_rs_cache *
+get_rs_cache (unw_addr_space_t as)
+{
+  struct dwarf_rs_cache *cache = &as->global_cache;
+  if (atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
+    {
+      flush_rs_cache (cache);
+      cache->generation = as->cache_generation;
+    }
+
+  return cache;
+}
+
+static inline unw_hash_index_t
+hash (unw_word_t ip)
+{
+  /* based on (sqrt(5)/2-1)*2^64 */
+# define magic	((unw_word_t) 0x9e3779b97f4a7c16ULL)
+
+  return (ip >> 4) * magic >> (64 - DWARF_LOG_UNW_HASH_SIZE);
+}
+
+static inline long
+cache_match (dwarf_reg_state_t *rs, unw_word_t ip)
+{
+  if (ip == rs->ip)
+    return 1;
+  return 0;
+}
+
+static dwarf_reg_state_t *
+rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
+{
+  dwarf_reg_state_t *rs = cache->buckets + c->hint;
+  unsigned short index;
+  unw_word_t ip;
+
+  ip = c->ip;
+
+  if (cache_match (rs, ip))
+    return rs;
+
+  index = cache->hash[hash (ip)];
+  if (index >= DWARF_UNW_CACHE_SIZE)
+    return 0;
+
+  rs = cache->buckets + index;
+  while (1)
+    {
+      if (cache_match (rs, ip))
+        {
+          /* update hint; no locking needed: single-word writes are atomic */
+          c->hint = cache->buckets[c->prev_rs].hint =
+            (rs - cache->buckets);
+          return rs;
+        }
+      if (rs->coll_chain >= DWARF_UNW_HASH_SIZE)
+        return 0;
+      rs = cache->buckets + rs->coll_chain;
+    }
+}
+
+static inline dwarf_reg_state_t *
+rs_new (struct dwarf_rs_cache *cache, unw_word_t ip)
+{
+  dwarf_reg_state_t *rs, *prev, *tmp;
+  unw_hash_index_t index;
+  unsigned short head;
+
+  head = cache->lru_head;
+  rs = cache->buckets + head;
+  cache->lru_head = rs->lru_chain;
+
+  /* re-insert rs at the tail of the LRU chain: */
+  cache->buckets[cache->lru_tail].lru_chain = head;
+  cache->lru_tail = head;
+
+  /* remove the old rs from the hash table (if it's there): */
+  if (rs->ip)
+    {
+      index = hash (rs->ip);
+      tmp = cache->buckets + cache->hash[index];
+      prev = 0;
+      while (1)
+	{
+	  if (tmp == rs)
+	    {
+	      if (prev)
+		prev->coll_chain = tmp->coll_chain;
+	      else
+		cache->hash[index] = tmp->coll_chain;
+	      break;
+	    }
+	  else
+	    prev = tmp;
+	  if (tmp->coll_chain >= DWARF_UNW_CACHE_SIZE)
+	    /* old rs wasn't in the hash-table */
+	    break;
+	  tmp = cache->buckets + tmp->coll_chain;
+	}
+    }
+
+  /* enter new rs in the hash table */
+  index = hash (ip);
+  rs->coll_chain = cache->hash[index];
+  cache->hash[index] = rs - cache->buckets;
+
+  rs->hint = 0;
+  rs->ip = ip;
+
+  return rs;
+}
+
 static int
 create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 			 unw_word_t ip)
@@ -509,12 +642,16 @@ eval_location_expr (struct dwarf_cursor *c, unw_addr_space_t as,
 static int
 apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 {
-  unw_word_t regnum, addr, cfa;
+  unw_word_t regnum, addr, cfa, ip;
+  unw_word_t prev_ip, prev_cfa;
   unw_addr_space_t as;
   dwarf_loc_t cfa_loc;
   unw_accessors_t *a;
   int i, ret;
   void *arg;
+
+  prev_ip = c->ip;
+  prev_cfa = c->cfa;
 
   as = c->as;
   arg = c->as_arg;
@@ -583,11 +720,23 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	}
     }
   c->cfa = cfa;
+  ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
+  if (ret < 0)
+    return ret;
+  c->ip = ip;
+  /* XXX: check for ip to be code_aligned */
+
+  if (c->ip == prev_ip && c->cfa == prev_cfa)
+    {
+      dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
+	       __FUNCTION__, (long) c->ip);
+      return -UNW_EBADFRAME;
+    }
   return 0;
 }
 
-HIDDEN int
-dwarf_find_save_locs (struct dwarf_cursor *c)
+static int
+uncached_dwarf_find_save_locs (struct dwarf_cursor *c)
 {
   dwarf_state_record_t sr;
   int ret;
@@ -599,6 +748,54 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
     return ret;
 
   if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
+    return ret;
+
+  put_unwind_info (c, &c->pi);
+  return 0;
+}
+
+HIDDEN int
+dwarf_find_save_locs (struct dwarf_cursor *c)
+{
+  dwarf_state_record_t sr;
+  dwarf_reg_state_t *rs, *rs1;
+  struct dwarf_rs_cache *cache;
+  int ret;
+
+  if (c->as->caching_policy == UNW_CACHE_NONE)
+    return uncached_dwarf_find_save_locs (c);
+
+  cache = get_rs_cache(c->as);
+  rs = rs_lookup(cache, c);
+
+  if (rs)
+    goto apply;
+
+  if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
+    return ret;
+
+  if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
+    return ret;
+
+  rs1 = &sr.rs_current;
+  if (rs1)
+    {
+      rs = rs_new (cache, c->ip);
+      memcpy(rs, rs1, offsetof(struct dwarf_reg_state, ip));
+      if (!rs)
+        {
+          dprintf ("%s: failed to create unwind rs\n", __FUNCTION__);
+          ret = -UNW_EUNSPEC;
+          return ret;
+        }
+    }
+  cache->buckets[c->prev_rs].hint = rs - cache->buckets;
+
+  c->hint = rs->hint;
+  c->prev_rs = rs - cache->buckets;
+
+apply:
+  if ((ret = apply_reg_state (c, rs)) < 0)
     return ret;
 
   put_unwind_info (c, &c->pi);

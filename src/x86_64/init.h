@@ -63,8 +63,11 @@ common_init (struct cursor *c)
   c->sigcontext_addr = 0;
 
   c->dwarf.args_size = 0;
-  c->dwarf.ret_addr_column = 0;
+  c->dwarf.ret_addr_column = RIP;
   c->dwarf.pi_valid = 0;
   c->dwarf.pi_is_dynamic = 0;
+  c->dwarf.hint = 0;
+  c->dwarf.prev_rs = 0;
+
   return 0;
 }
