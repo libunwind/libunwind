@@ -107,6 +107,43 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 #define PAGE_SIZE 4096
 #define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
 
+/* Cache of already validated addresses */
+#define NLGA 4
+static unw_word_t last_good_addr[NLGA];
+static int lga_victim;
+
+static int
+validate_mem (unw_word_t addr)
+{
+  int i, victim;
+
+  addr = PAGE_START(addr);
+
+  for (i = 0; i < NLGA; i++) {
+    if (last_good_addr[i] && (addr == last_good_addr[i]))
+      return 0;
+  }
+
+  if (msync((void *) addr, 1, MS_SYNC) == -1)
+    return -1;
+
+  victim = lga_victim;
+  for (i = 0; i < NLGA; i++) {
+    if (!last_good_addr[victim]) {
+      last_good_addr[victim++] = addr;
+      return 0;
+    }
+    victim = (victim + 1) % NLGA;
+  }
+
+  /* All slots full. Evict the victim. */
+  last_good_addr[victim] = addr;
+  victim = (victim + 1) % NLGA;
+  lga_victim = victim;
+
+  return 0;
+}
+
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 	    void *arg)
@@ -119,7 +156,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
   else
     {
       /* validate address */
-      if (msync(PAGE_START(addr), 1, MS_SYNC) == -1)
+      if (as->validate && validate_mem(addr))
         return -1;
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%016lx] -> %lx\n", addr, *val);
@@ -212,6 +249,10 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.resume = x86_64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
+
+  local_addr_space.validate = 0;
+  bzero(last_good_addr, sizeof(unw_word_t) * NLGA);
+  lga_victim = 0;
 }
 
 #endif /* !UNW_REMOTE_ONLY */
