@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef dwarf_h
 #define dwarf_h
 
+#include <config.h>
 #include <libunwind.h>
 
 struct dwarf_cursor;	/* forward-declaration */
