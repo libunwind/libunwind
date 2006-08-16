@@ -485,10 +485,6 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (!spin_trylock_irqsave (&cache->busy, *saved_maskp))
     return NULL;
 #else
-# ifdef HAVE___THREAD
-  if (as->caching_policy == UNW_CACHE_PER_THREAD)
-    cache = &dwarf_per_thread_cache;
-# endif
 # ifdef HAVE_ATOMIC_OPS_H
   if (AO_test_and_set (&cache->busy) == AO_TS_SET)
     return NULL;
