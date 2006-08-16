@@ -533,7 +533,7 @@ hash (unw_word_t ip)
   /* based on (sqrt(5)/2-1)*2^64 */
 # define magic	((unw_word_t) 0x9e3779b97f4a7c16ULL)
 
-  return (ip >> 4) * magic >> (64 - DWARF_LOG_UNW_HASH_SIZE);
+  return ip * magic >> ((sizeof(unw_word_t) * 8) - DWARF_LOG_UNW_HASH_SIZE);
 }
 
 static inline long
