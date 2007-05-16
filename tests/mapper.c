@@ -56,7 +56,7 @@ main (int argc, char **argv)
 	}
     }
 
-  alarm (30);	/* die if we don't finish in 30 seconds */
+  alarm (80);	/* die if we don't finish in 80 seconds */
 
   printf ("Turning on single-stepping...\n");
   kill (getpid (), SIGUSR1);	/* tell test-ptrace to start single-stepping */
