@@ -87,7 +87,7 @@ sighandler (int signal)
   char name[128], off[32];
   unw_word_t ip, offset;
   unw_context_t uc;
-  int count = 0;
+  int count;
 
   if (verbose)
     printf ("caught signal %d\n", signal);
@@ -95,11 +95,21 @@ sighandler (int signal)
   unw_getcontext (&uc);
   unw_init_local (&cursor, &uc);
 
+  count = 0;
   while (!unw_is_signal_frame (&cursor))
-    if (unw_step (&cursor) < 0)
-      panic ("failed to find signal frame!\n");
+    {
+      if (unw_step (&cursor) < 0)
+	panic ("failed to find signal frame!\n");
+
+      if (count++ > 20)
+	{
+	  panic ("Too many steps to the signal frame (%d)\n", count);
+	  break;
+	}
+    }
   unw_step (&cursor);
 
+  count = 0;
   do
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
@@ -111,6 +121,13 @@ sighandler (int signal)
       if (verbose)
 	printf ("ip = %lx <%s%s>\n", (long) ip, name, off);
       ++count;
+
+      if (count > 20)
+	{
+	  panic ("Too many steps (%d)\n", count);
+	  break;
+	}
+
     }
   while (unw_step (&cursor) > 0);
 

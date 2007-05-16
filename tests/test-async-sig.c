@@ -41,6 +41,7 @@ struct itimerval interval =
 
 int verbose;
 int nerrors;
+static const int nerrors_max = 100;
 int sigcount;
 
 #define panic(args...)					\
@@ -54,6 +55,7 @@ do_backtrace (int may_print, int get_proc_name)
   unw_word_t ip, sp, off;
   unw_context_t uc;
   int ret;
+  int depth = 0;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -92,6 +94,11 @@ do_backtrace (int may_print, int get_proc_name)
 	  panic ("FAILURE: unw_step() returned %d for ip=%lx\n",
 		 ret, (long) ip);
 	}
+      if (depth++ > 100)
+        {
+	  panic ("FAILURE: unw_step() looping over %d iterations\n", depth);
+	  break;
+        }
     }
   while (ret > 0);
 }
@@ -110,8 +117,10 @@ sighandler (int signal)
     unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_GLOBAL);
   else if (sigcount == 200)
     unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
-  else if (sigcount == 300)
+  else if (sigcount == 300 || nerrors > nerrors_max)
     {
+      if (nerrors > nerrors_max)
+        panic ("Too many errors (%d)\n", nerrors);
       if (nerrors)
 	{
 	  fprintf (stderr, "FAILURE: detected %d errors\n", nerrors);
@@ -147,5 +156,10 @@ main (int argc, char **argv)
       if (0 && verbose)
 	printf ("%s: starting backtrace\n", __FUNCTION__);
       do_backtrace (0, (i++ % 100) == 0);
+      if (nerrors > nerrors_max)
+        {
+	  panic ("Too many errors (%d)\n", nerrors);
+	  exit (-1);
+        }
     }
 }

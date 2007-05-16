@@ -48,6 +48,7 @@ main (int argc, char **argv)
 #include <sys/wait.h>
 
 int nerrors;
+static const int nerrors_max = 100;
 int verbose;
 int print_names = 1;
 
@@ -64,6 +65,8 @@ trace_mode = SYSCALL;
 
 static unw_addr_space_t as;
 static struct UPT_info *ui;
+
+static int killed;
 
 void
 do_backtrace (pid_t target_pid)
@@ -99,7 +102,7 @@ do_backtrace (pid_t target_pid)
 	      len = strlen (buf);
 	      if (len >= sizeof (buf) - 32)
 		len = sizeof (buf) - 32;
-	      sprintf (buf + len, "+0x%lx", off);
+	      sprintf (buf + len, "+0x%lx", (unsigned long) off);
 	    }
 	  printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 	}
@@ -139,6 +142,11 @@ do_backtrace (pid_t target_pid)
 		 (long) start_ip);
 	  break;
 	}
+      if (nerrors > nerrors_max)
+        {
+	  panic ("Too many errors (%d)!\n", nerrors);
+	  break;
+	}
     }
   while (ret > 0);
 
@@ -149,11 +157,16 @@ do_backtrace (pid_t target_pid)
     printf ("================\n\n");
 }
 
+static pid_t target_pid;
+static void target_pid_kill (void)
+{
+  kill (target_pid, SIGKILL);
+}
+
 int
 main (int argc, char **argv)
 {
   int status, pid, pending_sig, optind = 1, state = 1;
-  pid_t target_pid;
 
   as = unw_create_addr_space (&_UPT_accessors, 0);
   if (!as)
@@ -199,10 +212,11 @@ main (int argc, char **argv)
       execve (argv[optind], argv + optind, environ);
       _exit (-1);
     }
+  atexit (target_pid_kill);
 
   ui = _UPT_create (target_pid);
 
-  while (1)
+  while (nerrors <= nerrors_max)
     {
       pid = wait4 (-1, &status,  0, 0);
       if (pid == -1)
@@ -224,12 +238,16 @@ main (int argc, char **argv)
 	    }
 	  else if (WIFSIGNALED (status))
 	    {
-	      panic ("child terminated by signal %d\n", WTERMSIG (status));
+	      if (!killed)
+		panic ("child terminated by signal %d\n", WTERMSIG (status));
 	      break;
 	    }
 	  else
 	    {
 	      pending_sig = WSTOPSIG (status);
+	      /* Avoid deadlock:  */
+	      if (WSTOPSIG (status) == SIGKILL)
+	        break;
 	      if (trace_mode == TRIGGER)
 		{
 		  if (WSTOPSIG (status) == SIGUSR1)
@@ -237,6 +255,17 @@ main (int argc, char **argv)
 		  else if  (WSTOPSIG (status) == SIGUSR2)
 		    state = 1;
 		}
+	      if (WSTOPSIG (status) != SIGUSR1 && WSTOPSIG (status) != SIGUSR2)
+	        {
+		  static int count = 0;
+
+		  if (count++ > 100)
+		    {
+		      panic ("Too many child unexpected signals (now %d)\n",
+			     WSTOPSIG (status));
+			killed = 1;
+		    }
+	        }
 	    }
 	}
 
@@ -264,6 +293,8 @@ main (int argc, char **argv)
 	  ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
 	  break;
 	}
+      if (killed)
+        kill (target_pid, SIGKILL);
     }
 
   _UPT_destroy (ui);
