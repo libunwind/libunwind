@@ -47,8 +47,9 @@ main (int argc, char **argv)
 #include <sys/ptrace.h>
 #include <sys/wait.h>
 
-int nerrors;
 static const int nerrors_max = 100;
+
+int nerrors;
 int verbose;
 int print_names = 1;
 

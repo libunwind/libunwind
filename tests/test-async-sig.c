@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
 
+static const int nerrors_max = 100;
+
 struct itimerval interval =
   {
     .it_interval = { .tv_sec = 0, .tv_usec = 0 },
@@ -41,7 +43,6 @@ struct itimerval interval =
 
 int verbose;
 int nerrors;
-static const int nerrors_max = 100;
 int sigcount;
 
 #define panic(args...)					\
