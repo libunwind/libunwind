@@ -33,14 +33,7 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 #ifdef UNW_LOCAL_ONLY
   return NULL;
 #else
-  unw_addr_space_t as = malloc (sizeof (*as));
-
-  if (!as)
-    return NULL;
-
-  memset (as, 0, sizeof (*as));
-
-  as->acc = *a;
+  unw_addr_space_t as;
 
   /*
    * IA-64 supports only big or little-endian, not weird stuff like
@@ -50,6 +43,15 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
       && byte_order != __LITTLE_ENDIAN
       && byte_order != __BIG_ENDIAN)
     return NULL;
+
+  as = malloc (sizeof (*as));
+
+  if (!as)
+    return NULL;
+
+  memset (as, 0, sizeof (*as));
+
+  as->acc = *a;
 
   if (byte_order == 0)
     /* use host default: */
