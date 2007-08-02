@@ -25,7 +25,11 @@ if ARCH_IA64
 			Gia64-test-rbs Lia64-test-rbs			\
 			Gia64-test-readonly Lia64-test-readonly		\
 			ia64-test-setjmp ia64-test-sig
-endif
+else
+if ARCH_PPC64
+ noinst_PROGRAMS_arch = ppc64-test-altivec ppc64-test-wchar
+endif #ARCH_PPC64
+endif #ARCH_IA64
  check_SCRIPTS_cdep =	run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
@@ -69,6 +73,8 @@ Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Lia64_test_nat_SOURCES = Lia64-test-nat.c ia64-test-nat-asm.S
 Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
+ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
