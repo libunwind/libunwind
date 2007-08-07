@@ -37,23 +37,6 @@ should look like this:
     $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
 		LDFLAGS="-L$PWD/src/.libs"
 
-** Version 7
-
-To build libunwind with the Intel Electron compiler (ECC), it is
-recommended to run configure like this:
-
-	$ ./configure CC=ecc CXX=ecc CCAS=gcc CCASFLAGS=-g \
-		LDFLAGS="-L$PWD/src/.libs"
-
-The reason for this is that ECC uses the Intel assembler, which
-doesn't grok some of the IA-64 assembly code in the "tests" directory.
-
-For an ECC-built version of libunwind to work properly, you also need
-to ensure that /usr/include/asm/fpu.h contains a "long double" member
-called "__dummy" in the declaration of "struct ia64_fpreg".  Without
-that member, variables of type unw_context_t won't be aligned
-properly.
-
 
 * Building on HP-UX
 
