@@ -8,6 +8,7 @@ several architecture/operating-system combinations:
  Linux/x86:	Works well, but C library is missing some unwind-info.
  Linux/PARISC:	Works well, but C library missing unwind-info.
  HP-UX/IA-64:	Mostly works but known to have some serious limitations.
+ Linux/PPC64:	Newly added.
 
 
 * General Build Instructions
@@ -109,22 +110,13 @@ Note: If you get lots of errors in Gia64-test-nat and Lia64-test-nat, it's
 
 The following tests are expected to fail on x86 Linux:
 
-	Gtest-bt (see http://sources.redhat.com/bugzilla/show_bug.cgi?id=595)
-	Ltest-bt (likewise)
-	Gtest-resume-sig (likewise)
-	Ltest-resume-sig (likewise)
+	Gtest-resume-sig	(fails to get SIGUSR2)
+	Ltest-resume-sig	(likewise)
 	Gtest-dyn1		(no dynamic unwind info support yet)
 	Ltest-dyn1		(no dynamic unwind info support yet)
 	test-setjmp		(longjmp() not implemented yet)
 	run-check-namespace	(no _Ux86_getcontext yet)
-
-In addition, the following are failing on Debian (Sarge):
-
-	Gtest-init	   (lack of unwind info for __libc_start_main,
-			    libc ought to be compiled without
-			    -fno-frame-pointer or with -fexceptions)
-	Ltest-init	   (likewise)
-	test-ptrace	   (likewise?)
+	test-ptrace
 
 ** Expected results on x86-64 Linux
 
