@@ -27,7 +27,10 @@ if ARCH_IA64
 			ia64-test-setjmp ia64-test-sig
 else
 if ARCH_PPC64
- noinst_PROGRAMS_arch = ppc64-test-altivec ppc64-test-wchar
+if USE_ALTIVEC 
+ noinst_PROGRAMS_arch_altivec = ppc64-test-altivec ppc64-test-wchar
+endif #USE_ALTIVEC
+ noinst_PROGRAMS_arch = $(noinst_PROGRAMS_arch_altivec) ppc64-test-wchar 
 endif #ARCH_PPC64
 endif #ARCH_IA64
  check_SCRIPTS_cdep =	run-ptrace-mapper run-ptrace-misc

@@ -63,6 +63,16 @@ is_gcc_m64() {
  fi;
 }
 
+is_gcc_altivec() {
+ if test `echo $CFLAGS | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec;
+ else
+  if test `echo $CC | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec; else echo no_altivec; fi;
+ fi;
+}
+
+use_altivec=`is_gcc_altivec`
+AM_CONDITIONAL(USE_ALTIVEC, test x$use_altivec = xhas_altivec)
+
 get_arch() {
  case "$1" in
   i?86) echo x86;;
