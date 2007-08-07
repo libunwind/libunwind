@@ -39,7 +39,6 @@ POST_UNINSTALL = :
 build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@noinst_PROGRAMS = x86_64/gen-offsets$(EXEEXT)
 @ARCH_IA64_TRUE@noinst_PROGRAMS = ia64/mk_Gcursor_i$(EXEEXT) \
 @ARCH_IA64_TRUE@	ia64/mk_Lcursor_i$(EXEEXT)
 subdir = src
@@ -381,10 +380,6 @@ am__ia64_mk_Lcursor_i_SOURCES_DIST = ia64/mk_Lcursor_i.c
 @ARCH_IA64_TRUE@	ia64/mk_Lcursor_i.$(OBJEXT)
 ia64_mk_Lcursor_i_OBJECTS = $(am_ia64_mk_Lcursor_i_OBJECTS)
 ia64_mk_Lcursor_i_LDADD = $(LDADD)
-am__x86_64_gen_offsets_SOURCES_DIST = x86_64/gen-offsets.c
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@am_x86_64_gen_offsets_OBJECTS = x86_64/gen-offsets.$(OBJEXT)
-x86_64_gen_offsets_OBJECTS = $(am_x86_64_gen_offsets_OBJECTS)
-x86_64_gen_offsets_LDADD = $(LDADD)
 DEFAULT_INCLUDES = -I. -I$(srcdir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/config/depcomp
 am__depfiles_maybe = depfiles
@@ -403,8 +398,7 @@ SOURCES = $(libunwind_ptrace_a_SOURCES) $(libunwind_hppa_la_SOURCES) \
 	$(libunwind_ia64_la_SOURCES) $(libunwind_ppc64_la_SOURCES) \
 	$(libunwind_setjmp_la_SOURCES) $(libunwind_x86_la_SOURCES) \
 	$(libunwind_x86_64_la_SOURCES) $(libunwind_la_SOURCES) \
-	$(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES) \
-	$(x86_64_gen_offsets_SOURCES)
+	$(ia64_mk_Gcursor_i_SOURCES) $(ia64_mk_Lcursor_i_SOURCES)
 DIST_SOURCES = $(libunwind_ptrace_a_SOURCES) \
 	$(am__libunwind_hppa_la_SOURCES_DIST) \
 	$(am__libunwind_ia64_la_SOURCES_DIST) \
@@ -414,8 +408,7 @@ DIST_SOURCES = $(libunwind_ptrace_a_SOURCES) \
 	$(am__libunwind_x86_64_la_SOURCES_DIST) \
 	$(am__libunwind_la_SOURCES_DIST) \
 	$(am__ia64_mk_Gcursor_i_SOURCES_DIST) \
-	$(am__ia64_mk_Lcursor_i_SOURCES_DIST) \
-	$(am__x86_64_gen_offsets_SOURCES_DIST)
+	$(am__ia64_mk_Lcursor_i_SOURCES_DIST)
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -812,7 +805,6 @@ libunwind_ppc64_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common) \
 @OS_LINUX_TRUE@libunwind_la_SOURCES_os_local = $(libunwind_la_SOURCES_os_linux_local)
 @ARCH_IA64_TRUE@ia64_mk_Gcursor_i_SOURCES = ia64/mk_Gcursor_i.c
 @ARCH_IA64_TRUE@ia64_mk_Lcursor_i_SOURCES = ia64/mk_Lcursor_i.c
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@BUILT_SOURCES = _ucontext_i.h
 @ARCH_IA64_TRUE@BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@ARCH_X86_64_FALSE@@ARCH_X86_FALSE@lib_LTLIBRARIES_arch = libunwind-ppc64.la
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@lib_LTLIBRARIES_arch = libunwind-x86_64.la
@@ -848,7 +840,6 @@ libunwind_ppc64_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common) \
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@@REMOTE_ONLY_FALSE@libunwind_x86_la_LIBADD = libunwind.la -lc
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@x86_64_gen_offsets_SOURCES = x86_64/gen-offsets.c
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_x86_64_la_SOURCES = $(libunwind_x86_64_la_SOURCES_x86_64)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@libunwind_x86_64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_64_la_LIBADD = libunwind.la -lc
@@ -1427,11 +1418,6 @@ ia64/mk_Lcursor_i.$(OBJEXT): ia64/$(am__dirstamp) \
 ia64/mk_Lcursor_i$(EXEEXT): $(ia64_mk_Lcursor_i_OBJECTS) $(ia64_mk_Lcursor_i_DEPENDENCIES) ia64/$(am__dirstamp)
 	@rm -f ia64/mk_Lcursor_i$(EXEEXT)
 	$(LINK) $(ia64_mk_Lcursor_i_LDFLAGS) $(ia64_mk_Lcursor_i_OBJECTS) $(ia64_mk_Lcursor_i_LDADD) $(LIBS)
-x86_64/gen-offsets.$(OBJEXT): x86_64/$(am__dirstamp) \
-	x86_64/$(DEPDIR)/$(am__dirstamp)
-x86_64/gen-offsets$(EXEEXT): $(x86_64_gen_offsets_OBJECTS) $(x86_64_gen_offsets_DEPENDENCIES) x86_64/$(am__dirstamp)
-	@rm -f x86_64/gen-offsets$(EXEEXT)
-	$(LINK) $(x86_64_gen_offsets_LDFLAGS) $(x86_64_gen_offsets_OBJECTS) $(x86_64_gen_offsets_LDADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
@@ -1856,7 +1842,6 @@ mostlyclean-compile:
 	-rm -f x86_64/Lresume.lo
 	-rm -f x86_64/Lstep.$(OBJEXT)
 	-rm -f x86_64/Lstep.lo
-	-rm -f x86_64/gen-offsets.$(OBJEXT)
 	-rm -f x86_64/is_fpreg.$(OBJEXT)
 	-rm -f x86_64/is_fpreg.lo
 	-rm -f x86_64/longjmp.$(OBJEXT)
@@ -2078,7 +2063,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lregs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lresume.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/Lstep.Plo@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/gen-offsets.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/is_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@x86_64/$(DEPDIR)/regname.Plo@am__quote@
 
@@ -2348,8 +2332,6 @@ uninstall-am: uninstall-info-am uninstall-libLIBRARIES \
 @ARCH_IA64_TRUE@	ia64/mk_Gcursor_i > $@
 @ARCH_IA64_TRUE@Lcursor_i.h: ia64/mk_Lcursor_i
 @ARCH_IA64_TRUE@	ia64/mk_Lcursor_i > $@
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@_ucontext_i.h: x86_64/gen-offsets
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@	x86_64/gen-offsets > $@
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets

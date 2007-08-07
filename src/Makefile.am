@@ -298,11 +298,6 @@ endif
 				  $(libunwind_setjmp_la_SOURCES_x86)
 else
 if ARCH_X86_64
- x86_64_gen_offsets_SOURCES = x86_64/gen-offsets.c
- noinst_PROGRAMS = x86_64/gen-offsets
- BUILT_SOURCES = _ucontext_i.h
-_ucontext_i.h: x86_64/gen-offsets
-	x86_64/gen-offsets > $@
  lib_LTLIBRARIES_arch = libunwind-x86_64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86_64)
  libunwind_x86_64_la_SOURCES = $(libunwind_x86_64_la_SOURCES_x86_64)
