@@ -81,6 +81,8 @@ am__EXEEXT_4 =
 @REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) Gperf-simple$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Lperf-simple$(EXEEXT)
 @REMOTE_ONLY_TRUE@am__EXEEXT_5 = $(am__EXEEXT_4)
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_6 = ppc64-test-altivec$(EXEEXT) \
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@	ppc64-test-wchar$(EXEEXT)
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_6 =  \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-dyn1$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
@@ -201,6 +203,15 @@ mapper_SOURCES = mapper.c
 mapper_OBJECTS = mapper.$(OBJEXT)
 mapper_LDADD = $(LDADD)
 mapper_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_ppc64_test_altivec_OBJECTS = ppc64-test-altivec.$(OBJEXT) \
+	ppc64-test-altivec-utils.$(OBJEXT)
+ppc64_test_altivec_OBJECTS = $(am_ppc64_test_altivec_OBJECTS)
+ppc64_test_altivec_LDADD = $(LDADD)
+ppc64_test_altivec_DEPENDENCIES = $(am__DEPENDENCIES_2)
+am_ppc64_test_wchar_OBJECTS = ppc64-test-wchar.$(OBJEXT)
+ppc64_test_wchar_OBJECTS = $(am_ppc64_test_wchar_OBJECTS)
+ppc64_test_wchar_LDADD = $(LDADD)
+ppc64_test_wchar_DEPENDENCIES = $(am__DEPENDENCIES_2)
 test_async_sig_SOURCES = test-async-sig.c
 test_async_sig_OBJECTS = test-async-sig.$(OBJEXT)
 test_async_sig_DEPENDENCIES = $(am__DEPENDENCIES_2)
@@ -278,10 +289,12 @@ SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c \
 	$(Ltest_init_SOURCES) Ltest-resume-sig.c forker.c \
 	$(ia64_test_dyn1_SOURCES) ia64-test-setjmp.c ia64-test-sig.c \
-	mapper.c test-async-sig.c test-flush-cache.c \
-	test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c \
-	$(test_ptrace_misc_SOURCES) test-setjmp.c \
-	$(test_static_link_SOURCES) test-strerror.c test-varargs.c
+	mapper.c $(ppc64_test_altivec_SOURCES) \
+	$(ppc64_test_wchar_SOURCES) test-async-sig.c \
+	test-flush-cache.c test-init-remote.c test-mem.c \
+	test-proc-info.c test-ptrace.c $(test_ptrace_misc_SOURCES) \
+	test-setjmp.c $(test_static_link_SOURCES) test-strerror.c \
+	test-varargs.c
 DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	$(Gia64_test_readonly_SOURCES) $(Gia64_test_stack_SOURCES) \
 	Gperf-simple.c $(Gtest_bt_SOURCES) Gtest-concurrent.c \
@@ -292,10 +305,12 @@ DIST_SOURCES = $(Gia64_test_nat_SOURCES) $(Gia64_test_rbs_SOURCES) \
 	Ltest-concurrent.c $(Ltest_dyn1_SOURCES) Ltest-exc.c \
 	$(Ltest_init_SOURCES) Ltest-resume-sig.c forker.c \
 	$(ia64_test_dyn1_SOURCES) ia64-test-setjmp.c ia64-test-sig.c \
-	mapper.c test-async-sig.c test-flush-cache.c \
-	test-init-remote.c test-mem.c test-proc-info.c test-ptrace.c \
-	$(test_ptrace_misc_SOURCES) test-setjmp.c \
-	$(test_static_link_SOURCES) test-strerror.c test-varargs.c
+	mapper.c $(ppc64_test_altivec_SOURCES) \
+	$(ppc64_test_wchar_SOURCES) test-async-sig.c \
+	test-flush-cache.c test-init-remote.c test-mem.c \
+	test-proc-info.c test-ptrace.c $(test_ptrace_misc_SOURCES) \
+	test-setjmp.c $(test_static_link_SOURCES) test-strerror.c \
+	test-varargs.c
 ETAGS = etags
 CTAGS = ctags
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
@@ -309,6 +324,10 @@ ARCH_HPPA_FALSE = @ARCH_HPPA_FALSE@
 ARCH_HPPA_TRUE = @ARCH_HPPA_TRUE@
 ARCH_IA64_FALSE = @ARCH_IA64_FALSE@
 ARCH_IA64_TRUE = @ARCH_IA64_TRUE@
+ARCH_PPC32_FALSE = @ARCH_PPC32_FALSE@
+ARCH_PPC32_TRUE = @ARCH_PPC32_TRUE@
+ARCH_PPC64_FALSE = @ARCH_PPC64_FALSE@
+ARCH_PPC64_TRUE = @ARCH_PPC64_TRUE@
 ARCH_X86_64_FALSE = @ARCH_X86_64_FALSE@
 ARCH_X86_64_TRUE = @ARCH_X86_64_TRUE@
 ARCH_X86_FALSE = @ARCH_X86_FALSE@
@@ -457,6 +476,7 @@ check_SCRIPTS_common = run-check-namespace
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 @REMOTE_ONLY_FALSE@LIBUNWIND_local = ../src/libunwind.la
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ppc64-test-altivec ppc64-test-wchar
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_SCRIPTS_arch = run-ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS_arch = Gia64-test-stack Lia64-test-stack		\
@@ -482,6 +502,8 @@ Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Lia64_test_nat_SOURCES = Lia64-test-nat.c ia64-test-nat-asm.S
 Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
+ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
@@ -630,6 +652,12 @@ ia64-test-sig$(EXEEXT): $(ia64_test_sig_OBJECTS) $(ia64_test_sig_DEPENDENCIES)
 mapper$(EXEEXT): $(mapper_OBJECTS) $(mapper_DEPENDENCIES) 
 	@rm -f mapper$(EXEEXT)
 	$(LINK) $(mapper_LDFLAGS) $(mapper_OBJECTS) $(mapper_LDADD) $(LIBS)
+ppc64-test-altivec$(EXEEXT): $(ppc64_test_altivec_OBJECTS) $(ppc64_test_altivec_DEPENDENCIES) 
+	@rm -f ppc64-test-altivec$(EXEEXT)
+	$(LINK) $(ppc64_test_altivec_LDFLAGS) $(ppc64_test_altivec_OBJECTS) $(ppc64_test_altivec_LDADD) $(LIBS)
+ppc64-test-wchar$(EXEEXT): $(ppc64_test_wchar_OBJECTS) $(ppc64_test_wchar_DEPENDENCIES) 
+	@rm -f ppc64-test-wchar$(EXEEXT)
+	$(LINK) $(ppc64_test_wchar_LDFLAGS) $(ppc64_test_wchar_OBJECTS) $(ppc64_test_wchar_LDADD) $(LIBS)
 test-async-sig$(EXEEXT): $(test_async_sig_OBJECTS) $(test_async_sig_DEPENDENCIES) 
 	@rm -f test-async-sig$(EXEEXT)
 	$(LINK) $(test_async_sig_LDFLAGS) $(test_async_sig_OBJECTS) $(test_async_sig_LDADD) $(LIBS)
@@ -698,6 +726,9 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ia64-test-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ident.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64-test-altivec-utils.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64-test-altivec.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/ppc64-test-wchar.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-async-sig.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-flush-cache.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/test-init-remote.Po@am__quote@
