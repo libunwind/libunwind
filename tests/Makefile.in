@@ -38,7 +38,7 @@ build_triplet = @build@
 host_triplet = @host@
 target_triplet = @target@
 check_PROGRAMS = $(am__EXEEXT_1) $(am__EXEEXT_2) $(am__EXEEXT_3)
-noinst_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_6)
+noinst_PROGRAMS = $(am__EXEEXT_4) $(am__EXEEXT_5) $(am__EXEEXT_7)
 subdir = tests
 DIST_COMMON = $(srcdir)/Makefile.am $(srcdir)/Makefile.in \
 	$(srcdir)/check-namespace.sh.in
@@ -81,9 +81,11 @@ am__EXEEXT_4 =
 @REMOTE_ONLY_FALSE@	test-varargs$(EXEEXT) Gperf-simple$(EXEEXT) \
 @REMOTE_ONLY_FALSE@	Lperf-simple$(EXEEXT)
 @REMOTE_ONLY_TRUE@am__EXEEXT_5 = $(am__EXEEXT_4)
-@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_6 = ppc64-test-altivec$(EXEEXT) \
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@@USE_ALTIVEC_TRUE@am__EXEEXT_6 = ppc64-test-altivec$(EXEEXT) \
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@@USE_ALTIVEC_TRUE@	ppc64-test-wchar$(EXEEXT)
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_7 = $(am__EXEEXT_6) \
 @ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@	ppc64-test-wchar$(EXEEXT)
-@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_6 =  \
+@ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@am__EXEEXT_7 =  \
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@	ia64-test-dyn1$(EXEEXT)
 PROGRAMS = $(noinst_PROGRAMS)
 am_Gia64_test_nat_OBJECTS = Gia64-test-nat.$(OBJEXT) \
@@ -397,6 +399,8 @@ REMOTE_ONLY_TRUE = @REMOTE_ONLY_TRUE@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+USE_ALTIVEC_FALSE = @USE_ALTIVEC_FALSE@
+USE_ALTIVEC_TRUE = @USE_ALTIVEC_TRUE@
 VERSION = @VERSION@
 ac_ct_CC = @ac_ct_CC@
 ac_ct_CXX = @ac_ct_CXX@
@@ -476,7 +480,7 @@ check_SCRIPTS_common = run-check-namespace
 
 @REMOTE_ONLY_TRUE@noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 @REMOTE_ONLY_FALSE@LIBUNWIND_local = ../src/libunwind.la
-@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ppc64-test-altivec ppc64-test-wchar
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = $(noinst_PROGRAMS_arch_altivec) ppc64-test-wchar 
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@noinst_PROGRAMS_arch = ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_SCRIPTS_arch = run-ia64-test-dyn1
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@check_PROGRAMS_arch = Gia64-test-stack Lia64-test-stack		\
@@ -485,6 +489,7 @@ check_SCRIPTS_common = run-check-namespace
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			Gia64-test-readonly Lia64-test-readonly		\
 @ARCH_IA64_TRUE@@REMOTE_ONLY_FALSE@			ia64-test-setjmp ia64-test-sig
 
+@ARCH_IA64_FALSE@@ARCH_PPC64_TRUE@@REMOTE_ONLY_FALSE@@USE_ALTIVEC_TRUE@noinst_PROGRAMS_arch_altivec = ppc64-test-altivec ppc64-test-wchar
 check_SCRIPTS = $(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 		$(check_SCRIPTS_arch)
 
