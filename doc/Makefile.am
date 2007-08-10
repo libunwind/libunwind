@@ -60,7 +60,7 @@ L2H_CMD	= $(L2M) -H -t $(srcdir)/libunwind.trans
 html:
 	for n in $(man3_MANS); do					\
 		page=`basename $$n .man`;				\
-		$(L2H_CMD) $(srcdir)/$$page.tex "$$page(3).php";	\
+		$(L2H_CMD) $(srcdir)/$$page.tex "$$page(3).html";	\
 	done
 
 pdf:

@@ -466,7 +466,7 @@ uninstall-man: uninstall-man3
 html:
 	for n in $(man3_MANS); do					\
 		page=`basename $$n .man`;				\
-		$(L2H_CMD) $(srcdir)/$$page.tex "$$page(3).php";	\
+		$(L2H_CMD) $(srcdir)/$$page.tex "$$page(3).html";	\
 	done
 
 pdf:

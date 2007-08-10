@@ -236,23 +236,22 @@ libunwind_x86_la_OBJECTS = $(am_libunwind_x86_la_OBJECTS)
 @ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@@REMOTE_ONLY_FALSE@libunwind_x86_64_la_DEPENDENCIES = libunwind.la
 am__libunwind_x86_64_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
-	dwarf/global.c elf64.c elf64.h x86_64/setcontext.S \
-	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h \
-	x86_64/is_fpreg.c x86_64/regname.c mi/Gdyn-extract.c \
-	mi/Gdyn-remote.c mi/Gfind_dynamic_proc_info.c \
-	mi/Gget_accessors.c mi/Gget_proc_info_by_ip.c \
-	mi/Gget_proc_name.c mi/Gput_dynamic_unwind_info.c \
-	mi/Gdestroy_addr_space.c mi/Gget_reg.c mi/Gset_reg.c \
-	mi/Gget_fpreg.c mi/Gset_fpreg.c mi/Gset_caching_policy.c \
-	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c \
-	dwarf/Gstep.c dwarf/Gfind_proc_info-lsb.c \
-	x86_64/Gcreate_addr_space.c x86_64/Gget_save_loc.c \
-	x86_64/Gglobal.c x86_64/Ginit.c x86_64/Ginit_local.c \
-	x86_64/Ginit_remote.c x86_64/Gis_signal_frame.c \
-	x86_64/Gget_proc_info.c x86_64/Gregs.c x86_64/Gresume.c \
-	x86_64/Gstep.c
+	dwarf/global.c elf64.c elf64.h x86_64/init.h x86_64/unwind_i.h \
+	x86_64/ucontext_i.h x86_64/is_fpreg.c x86_64/regname.c \
+	x86_64/offsets.h mi/Gdyn-extract.c mi/Gdyn-remote.c \
+	mi/Gfind_dynamic_proc_info.c mi/Gget_accessors.c \
+	mi/Gget_proc_info_by_ip.c mi/Gget_proc_name.c \
+	mi/Gput_dynamic_unwind_info.c mi/Gdestroy_addr_space.c \
+	mi/Gget_reg.c mi/Gset_reg.c mi/Gget_fpreg.c mi/Gset_fpreg.c \
+	mi/Gset_caching_policy.c dwarf/Gexpr.c dwarf/Gfde.c \
+	dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c \
+	dwarf/Gfind_proc_info-lsb.c x86_64/Gcreate_addr_space.c \
+	x86_64/Gget_save_loc.c x86_64/Gglobal.c x86_64/Ginit.c \
+	x86_64/Ginit_local.c x86_64/Ginit_remote.c \
+	x86_64/Gis_signal_frame.c x86_64/Gget_proc_info.c \
+	x86_64/Gregs.c x86_64/Gresume.c x86_64/Gstep.c
 am__objects_22 = $(am__objects_4) $(am__objects_5) elf64.lo \
-	x86_64/setcontext.lo x86_64/is_fpreg.lo x86_64/regname.lo
+	x86_64/is_fpreg.lo x86_64/regname.lo
 am__objects_23 = $(am__objects_22) $(am__objects_7) $(am__objects_8) \
 	dwarf/Gfind_proc_info-lsb.lo x86_64/Gcreate_addr_space.lo \
 	x86_64/Gget_save_loc.lo x86_64/Gglobal.lo x86_64/Ginit.lo \
@@ -286,16 +285,17 @@ am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	dwarf/Lpe.c dwarf/Lstep.c dwarf/Lfind_proc_info-lsb.c \
 	ppc64/Lglobal.c ppc64/Linit.c ppc64/Linit_local.c \
 	ppc64/Lis_signal_frame.c ppc64/Lget_proc_info.c ppc64/Lregs.c \
-	ppc64/Lresume.c ppc64/Lstep.c x86_64/setcontext.S \
-	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h \
-	x86_64/is_fpreg.c x86_64/regname.c x86_64/Lcreate_addr_space.c \
-	x86_64/Lget_save_loc.c x86_64/Lglobal.c x86_64/Linit.c \
-	x86_64/Linit_local.c x86_64/Linit_remote.c \
-	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c \
-	x86_64/Lregs.c x86_64/Lresume.c x86_64/Lstep.c elf32.c elf32.h \
-	x86/init.h x86/offsets.h x86/unwind_i.h x86/is_fpreg.c \
-	x86/regname.c x86/Lcreate_addr_space.c x86/Lget_save_loc.c \
-	x86/Lglobal.c x86/Linit.c x86/Linit_local.c x86/Linit_remote.c \
+	ppc64/Lresume.c ppc64/Lstep.c x86_64/init.h x86_64/unwind_i.h \
+	x86_64/ucontext_i.h x86_64/is_fpreg.c x86_64/regname.c \
+	x86_64/offsets.h x86_64/setcontext.S \
+	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c \
+	x86_64/Lglobal.c x86_64/Linit.c x86_64/Linit_local.c \
+	x86_64/Linit_remote.c x86_64/Lis_signal_frame.c \
+	x86_64/Lget_proc_info.c x86_64/Lregs.c x86_64/Lresume.c \
+	x86_64/Lstep.c elf32.c elf32.h x86/init.h x86/offsets.h \
+	x86/unwind_i.h x86/is_fpreg.c x86/regname.c \
+	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c \
+	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c \
 	x86/Lis_signal_frame.c x86/Lget_proc_info.c x86/Lregs.c \
 	x86/Lresume.c x86/Lstep.c hppa/init.h hppa/offsets.h \
 	hppa/unwind_i.h hppa/regname.c hppa/getcontext.S \
@@ -336,11 +336,12 @@ am__objects_28 = $(am__objects_12) $(am__objects_26) $(am__objects_27) \
 	ppc64/Lget_proc_info.lo ppc64/Lregs.lo ppc64/Lresume.lo \
 	ppc64/Lstep.lo
 am__objects_29 = $(am__objects_22) $(am__objects_26) $(am__objects_27) \
-	dwarf/Lfind_proc_info-lsb.lo x86_64/Lcreate_addr_space.lo \
-	x86_64/Lget_save_loc.lo x86_64/Lglobal.lo x86_64/Linit.lo \
-	x86_64/Linit_local.lo x86_64/Linit_remote.lo \
-	x86_64/Lis_signal_frame.lo x86_64/Lget_proc_info.lo \
-	x86_64/Lregs.lo x86_64/Lresume.lo x86_64/Lstep.lo
+	dwarf/Lfind_proc_info-lsb.lo x86_64/setcontext.lo \
+	x86_64/Lcreate_addr_space.lo x86_64/Lget_save_loc.lo \
+	x86_64/Lglobal.lo x86_64/Linit.lo x86_64/Linit_local.lo \
+	x86_64/Linit_remote.lo x86_64/Lis_signal_frame.lo \
+	x86_64/Lget_proc_info.lo x86_64/Lregs.lo x86_64/Lresume.lo \
+	x86_64/Lstep.lo
 am__objects_30 = $(am__objects_20) $(am__objects_26) $(am__objects_27) \
 	dwarf/Lfind_proc_info-lsb.lo x86/Lcreate_addr_space.lo \
 	x86/Lget_save_loc.lo x86/Lglobal.lo x86/Linit.lo \
@@ -744,9 +745,8 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
 	elf64.c elf64.h							\
-	x86_64/setcontext.S						\
 	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h		\
-	x86_64/is_fpreg.c x86_64/regname.c
+	x86_64/is_fpreg.c x86_64/regname.c x86_64/offsets.h
 
 
 # The list of files that go into libunwind:
@@ -754,13 +754,14 @@ libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
 	$(libunwind_la_SOURCES_local)					    \
 	$(dwarf_SOURCES_local)						    \
 	dwarf/Lfind_proc_info-lsb.c					    \
+	x86_64/setcontext.S						\
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
 	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
 	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c x86_64/Lregs.c    \
 	x86_64/Lresume.c x86_64/Lstep.c
 
 
-# The list of files that go into libunwind:
+# The list of files that go into libunwind-x86_64:
 libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
 	$(libunwind_la_SOURCES_generic)					    \
 	$(dwarf_SOURCES_generic)					    \
@@ -1202,8 +1203,6 @@ x86/Gresume.lo: x86/$(am__dirstamp) x86/$(DEPDIR)/$(am__dirstamp)
 x86/Gstep.lo: x86/$(am__dirstamp) x86/$(DEPDIR)/$(am__dirstamp)
 libunwind-x86.la: $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_DEPENDENCIES) 
 	$(LINK) $(am_libunwind_x86_la_rpath) $(libunwind_x86_la_LDFLAGS) $(libunwind_x86_la_OBJECTS) $(libunwind_x86_la_LIBADD) $(LIBS)
-x86_64/setcontext.lo: x86_64/$(am__dirstamp) \
-	x86_64/$(DEPDIR)/$(am__dirstamp)
 x86_64/is_fpreg.lo: x86_64/$(am__dirstamp) \
 	x86_64/$(DEPDIR)/$(am__dirstamp)
 x86_64/regname.lo: x86_64/$(am__dirstamp) \
@@ -1316,6 +1315,8 @@ ppc64/Lregs.lo: ppc64/$(am__dirstamp) ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Lresume.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Lstep.lo: ppc64/$(am__dirstamp) ppc64/$(DEPDIR)/$(am__dirstamp)
+x86_64/setcontext.lo: x86_64/$(am__dirstamp) \
+	x86_64/$(DEPDIR)/$(am__dirstamp)
 x86_64/Lcreate_addr_space.lo: x86_64/$(am__dirstamp) \
 	x86_64/$(DEPDIR)/$(am__dirstamp)
 x86_64/Lget_save_loc.lo: x86_64/$(am__dirstamp) \
