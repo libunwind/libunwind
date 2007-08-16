@@ -27,7 +27,7 @@ $manMacro1a{'SeeAlso'}		= $manMacro1a{File};
 	$manMacro1b{'SeeAlso'}	= $manMacro1b{File};
 # special handling of SeeAlso in latex2man, so that argument gets doubled:
 $htmlMacro2a{'SeeAlso'}		= "<a href=\"";
-	$htmlMacro2b{'SeeAlso'}	= ".php\">$htmlMacro1a{File}";
+	$htmlMacro2b{'SeeAlso'}	= ".html\">$htmlMacro1a{File}";
 	$htmlMacro2c{'SeeAlso'}	= "$htmlMacro1b{File}</a>";
 $texiMacro1a{'SeeAlso'}		= $texiMacro1a{File};
 	$texiMacro1b{'SeeAlso'}	= $texiMacro1b{File};
