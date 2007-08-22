@@ -54,7 +54,6 @@ L2H_CMD	= $(L2M) -H -t $(srcdir)/libunwind.trans
 
 .tex.man:
 	$(L2M_CMD) $< $@
-	-bk get -e $(srcdir)/$@
 	-cp $@ $(srcdir)/$@
 
 html:

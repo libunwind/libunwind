@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Thu Aug  5 10:20:31 CEST 2004
+.\" Manual page created with latex2man on Thu Aug 16 09:44:44 MDT 2007
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_GET\\_PROC\\_INFO" "3" "05 August 2004" "Programming Library " "Programming Library "
+.TH "UNW\\_GET\\_PROC\\_INFO" "3" "16 August 2007" "Programming Library " "Programming Library "
 .SH NAME
 unw_get_proc_info
 \-\- get info on current procedure 
@@ -46,7 +46,7 @@ unw_word_t start_ip
 instruction of the procedure. If this address cannot be determined 
 (e.g., due to lack of unwind information), the start_ip
 member is cleared to 0. 
-.br 
+.br
 .TP
 unw_word_t end_ip
  The address of the first 
@@ -55,14 +55,14 @@ the end of the procedure. If this address
 cannot be determined (e.g., due to lack of unwind information), 
 the end_ip
 member is cleared to 0. 
-.br 
+.br
 .TP
 unw_word_t lsda
  The address of the 
 language\-specific data\-area (LSDA). This area normally contains 
 language\-specific information needed during exception handling. If 
 the procedure has no such area, this member is cleared to 0. 
-.br 
+.br
 .TP
 unw_word_t handler
  The address of the exception 
@@ -70,7 +70,7 @@ handler routine. This is sometimes called the \fIpersonality\fP
 routine. If the procedure does not define 
 a personality routine, the handler
 member is cleared to 0. 
-.br 
+.br
 .TP
 unw_word_t gp
  The global\-pointer of the 
@@ -79,7 +79,7 @@ member may contain an undefined value. On all other platforms, it
 must be set either to the correct global\-pointer value of the 
 procedure or to 0 if the proper global\-pointer cannot be 
 obtained for some reason. 
-.br 
+.br
 .TP
 unw_word_t flags
  A set of flags. There are 
@@ -87,7 +87,7 @@ currently no target\-independent flags. For the IA\-64 target, the
 flag UNW_PI_FLAG_IA64_RBS_SWITCH
 is set if the 
 procedure may switch the register\-backing store.
-.br 
+.br
 .TP
 int format
  The format of the unwind\-info for this 
@@ -107,7 +107,7 @@ The
 unw_get_proc_info()
 routine 
 may return an undefined value in this member. 
-.br 
+.br
 .TP
 int unwind_info_size
  The size of the unwind\-info 
@@ -119,7 +119,7 @@ The
 unw_get_proc_info()
 routine 
 may return an undefined value in this member.
-.br 
+.br
 .TP
 void *unwind_info
  The pointer to the unwind\-info. 
@@ -133,7 +133,7 @@ The
 unw_get_proc_info()
 routine 
 may return an undefined value in this member.
-.br 
+.br
 .PP
 Note that for the purposes of libunwind,
 the code of a 
@@ -196,12 +196,8 @@ unw_get_proc_name(3)
 
 .PP
 David Mosberger\-Tang
-.br 
-Hewlett\-Packard Labs
-.br 
-Palo\-Alto, CA 94304
-.br 
-Email: \fBdavidm@hpl.hp.com\fP
 .br
-WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+Email: \fBdmosberger@gmail.com\fP
+.br
+WWW: \fBhttp://www.nongnu.org/libunwind/\fP\&.
 .\" NOTE: This file is generated, DO NOT EDIT.

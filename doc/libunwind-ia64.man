@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Fri May 20 08:11:38 PDT 2005
+.\" Manual page created with latex2man on Thu Aug 16 09:44:44 MDT 2007
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-IA64" "3" "20 May 2005" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-IA64" "3" "16 August 2007" "Programming Library " "Programming Library "
 .SH NAME
 libunwind\-ia64
 \-\- IA\-64\-specific support in libunwind 
@@ -307,12 +307,8 @@ libunwind(3)
 
 .PP
 David Mosberger\-Tang
-.br 
-Hewlett\-Packard Labs
-.br 
-Palo\-Alto, CA 94304
-.br 
-Email: \fBdavidm@hpl.hp.com\fP
 .br
-WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+Email: \fBdmosberger@gmail.com\fP
+.br
+WWW: \fBhttp://www.nongnu.org/libunwind/\fP\&.
 .\" NOTE: This file is generated, DO NOT EDIT.

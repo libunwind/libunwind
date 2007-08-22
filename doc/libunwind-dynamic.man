@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Thu Aug  5 10:00:51 CEST 2004
+.\" Manual page created with latex2man on Thu Aug 16 09:44:44 MDT 2007
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "LIBUNWIND\-DYNAMIC" "3" "05 August 2004" "Programming Library " "Programming Library "
+.TH "LIBUNWIND\-DYNAMIC" "3" "16 August 2007" "Programming Library " "Programming Library "
 .SH NAME
 libunwind\-dynamic
 \-\- libunwind\-support for runtime\-generated code 
@@ -531,12 +531,8 @@ _U_dyn_cancel(3)
 
 .PP
 David Mosberger\-Tang
-.br 
-Hewlett\-Packard Labs
-.br 
-Palo\-Alto, CA 94304
-.br 
-Email: \fBdavidm@hpl.hp.com\fP
 .br
-WWW: \fBhttp://www.hpl.hp.com/research/linux/libunwind/\fP\&.
+Email: \fBdmosberger@gmail.com\fP
+.br
+WWW: \fBhttp://www.nongnu.org/libunwind/\fP\&.
 .\" NOTE: This file is generated, DO NOT EDIT.
