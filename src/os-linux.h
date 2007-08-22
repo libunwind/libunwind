@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2007 David Mosberger-Tang
+	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -71,6 +72,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
 
   mi->fd = open (path, O_RDONLY);
   mi->offset = 0;
+  mi->buf_size = 0;
 
   cp = NULL;
   if (mi->fd >= 0)
@@ -233,7 +235,7 @@ maps_next (struct map_iterator *mi,
 			    mi->buf_size - bytes_left);
 	      if (nread <= 0)
 		return 0;
-	      else if (nread + bytes_left < mi->buf_size)
+	      else if ((size_t) (nread + bytes_left) < mi->buf_size)
 		{
 		  /* Move contents to the end of the buffer so we
 		     maintain the invariant that all bytes between
