@@ -155,7 +155,7 @@ am__libunwind_ppc64_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
 	dwarf/global.c elf64.c elf64.h ppc64/init.h ppc64/unwind_i.h \
 	ppc64/ucontext_i.h ppc64/is_fpreg.c ppc64/regname.c \
-	mi/Gdyn-extract.c mi/Gdyn-remote.c \
+	ppc64/get_func_addr.c mi/Gdyn-extract.c mi/Gdyn-remote.c \
 	mi/Gfind_dynamic_proc_info.c mi/Gget_accessors.c \
 	mi/Gget_proc_info_by_ip.c mi/Gget_proc_name.c \
 	mi/Gput_dynamic_unwind_info.c mi/Gdestroy_addr_space.c \
@@ -168,7 +168,7 @@ am__libunwind_ppc64_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	ppc64/Gis_signal_frame.c ppc64/Gregs.c ppc64/Gresume.c \
 	ppc64/Gstep.c
 am__objects_12 = $(am__objects_4) $(am__objects_5) elf64.lo \
-	ppc64/is_fpreg.lo ppc64/regname.lo
+	ppc64/is_fpreg.lo ppc64/regname.lo ppc64/get_func_addr.lo
 am__objects_13 = $(am__objects_12) $(am__objects_7) $(am__objects_8) \
 	dwarf/Gfind_proc_info-lsb.lo ppc64/Gcreate_addr_space.lo \
 	ppc64/Gget_proc_info.lo ppc64/Gget_save_loc.lo \
@@ -268,8 +268,9 @@ am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	mi/init.c mi/flush_cache.c mi/mempool.c mi/strerror.c \
 	dwarf/global.c elf64.c elf64.h ppc64/init.h ppc64/unwind_i.h \
 	ppc64/ucontext_i.h ppc64/is_fpreg.c ppc64/regname.c \
-	mi/_ReadULEB.c mi/_ReadSLEB.c mi/backtrace.c mi/dyn-cancel.c \
-	mi/dyn-info-list.c mi/dyn-register.c mi/Ldyn-extract.c \
+	ppc64/get_func_addr.c mi/_ReadULEB.c mi/_ReadSLEB.c \
+	mi/backtrace.c mi/dyn-cancel.c mi/dyn-info-list.c \
+	mi/dyn-register.c mi/Ldyn-extract.c \
 	mi/Lfind_dynamic_proc_info.c mi/Lget_accessors.c \
 	mi/Lget_proc_info_by_ip.c mi/Lget_proc_name.c \
 	mi/Lput_dynamic_unwind_info.c mi/Ldestroy_addr_space.c \
@@ -777,7 +778,7 @@ libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
         $(dwarf_SOURCES_common)                                         \
         elf64.c elf64.h                                                 \
         ppc64/init.h ppc64/unwind_i.h ppc64/ucontext_i.h		\
-        ppc64/is_fpreg.c ppc64/regname.c
+        ppc64/is_fpreg.c ppc64/regname.c ppc64/get_func_addr.c
 
 
 # The list of files that go into libunwind:
@@ -1121,6 +1122,8 @@ ppc64/$(DEPDIR)/$(am__dirstamp):
 ppc64/is_fpreg.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/regname.lo: ppc64/$(am__dirstamp) \
+	ppc64/$(DEPDIR)/$(am__dirstamp)
+ppc64/get_func_addr.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Gcreate_addr_space.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
@@ -1690,6 +1693,8 @@ mostlyclean-compile:
 	-rm -f ppc64/Lresume.lo
 	-rm -f ppc64/Lstep.$(OBJEXT)
 	-rm -f ppc64/Lstep.lo
+	-rm -f ppc64/get_func_addr.$(OBJEXT)
+	-rm -f ppc64/get_func_addr.lo
 	-rm -f ppc64/is_fpreg.$(OBJEXT)
 	-rm -f ppc64/is_fpreg.lo
 	-rm -f ppc64/longjmp.$(OBJEXT)
@@ -1986,6 +1991,7 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lregs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lresume.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lstep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/get_func_addr.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/is_fpreg.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/regname.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ptrace/$(DEPDIR)/_UPT_access_fpreg.Po@am__quote@

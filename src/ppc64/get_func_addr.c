@@ -1,7 +1,8 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
-   Copyright (C) 2007 David Mosberger-Tang
-	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
+   Copyright (C) 2006-2007 IBM
+   Contributed by
+     Corey Ashford <cjashfor@us.ibm.com>
+     Jose Flavio Aguilar Paulino <jflavio@br.ibm.com> <joseflavio@gmail.com>
 
 This file is part of libunwind.
 
@@ -24,19 +25,19 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "_UPT_internal.h"
+#include "unwind_i.h"
 
 int
-_UPT_get_proc_name (unw_addr_space_t as, unw_word_t ip,
-		    char *buf, size_t buf_len, unw_word_t *offp, void *arg)
+tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
+		    unw_word_t *entry_point)
 {
-  struct UPT_info *ui = arg;
+  unw_accessors_t *a;
+  int ret;
 
-#if ELF_CLASS == ELFCLASS64
-  return _Uelf64_get_proc_name (as, ui->pid, ip, buf, buf_len, offp);
-#elif ELF_CLASS == ELFCLASS32
-  return _Uelf32_get_proc_name (as, ui->pid, ip, buf, buf_len, offp);
-#else
-  return -UNW_ENOINFO;
-#endif
+  a = unw_get_accessors (as);
+  /* entry-point is stored in the 1st word of the function descriptor: */
+  ret = (a->access_mem) (as, addr + offset, entry_point, 0, NULL);
+  if (ret < 0)
+	  return ret;
+  return 0;
 }

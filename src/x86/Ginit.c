@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2002 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2007 David Mosberger-Tang
+	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -186,7 +187,7 @@ get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
 		      char *buf, size_t buf_len, unw_word_t *offp,
 		      void *arg)
 {
-  return _Uelf32_get_proc_name (getpid (), ip, buf, buf_len, offp);
+  return _Uelf32_get_proc_name (as, getpid (), ip, buf, buf_len, offp);
 }
 
 HIDDEN void

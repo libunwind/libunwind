@@ -255,7 +255,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
 #define tdep_access_reg			UNW_OBJ(access_reg)
 #define tdep_access_fpreg		UNW_OBJ(access_fpreg)
-#define tdep_access_vreg		UNW_OBJ(access_vreg)
+#define tdep_get_func_addr		UNW_OBJ(get_func_addr)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
@@ -293,5 +293,7 @@ extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t * valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t * valp, int write);
+extern int tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
+			       unw_word_t *entry_point);
 
 #endif /* PPC64_LIBUNWIND_I_H */

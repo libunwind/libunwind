@@ -209,7 +209,7 @@ libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
         $(dwarf_SOURCES_common)                                         \
         elf64.c elf64.h                                                 \
         ppc64/init.h ppc64/unwind_i.h ppc64/ucontext_i.h		\
-        ppc64/is_fpreg.c ppc64/regname.c
+        ppc64/is_fpreg.c ppc64/regname.c ppc64/get_func_addr.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \

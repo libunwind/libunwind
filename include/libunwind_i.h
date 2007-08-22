@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2001-2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2007 David Mosberger-Tang
+	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -284,5 +285,9 @@ struct elf_image
   };
 
 #include "tdep/libunwind_i.h"
+
+#ifndef tdep_get_func_addr
+# define tdep_get_func_addr(as,addr,v)		(*(v) = addr, 0)
+#endif
 
 #endif /* libunwind_i_h */

@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003, 2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2007 David Mosberger-Tang
+	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -68,6 +69,7 @@ elf_map_image (struct elf_image *ei, const char *path)
 }
 
 extern int elf_w (valid_object) (struct elf_image *ei);
-extern int elf_w (get_proc_name) (pid_t pid, unw_word_t ip,
+extern int elf_w (get_proc_name) (unw_addr_space_t as,
+				  pid_t pid, unw_word_t ip,
 				  char *buf, size_t len,
 				  unw_word_t *offp);

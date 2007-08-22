@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2007 David Mosberger-Tang
+	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -39,7 +40,8 @@ elf_w (valid_object) (struct elf_image *ei)
 
 
 static int
-elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
+elf_w (lookup_symbol) (unw_addr_space_t as,
+		       unw_word_t ip, struct elf_image *ei,
 		       Elf_W (Addr) load_offset,
 		       char *buf, size_t buf_len, unw_word_t *offp)
 {
@@ -98,7 +100,8 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
 	      if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
 		  && sym->st_shndx != SHN_UNDEF)
 		{
-		  val = sym->st_value;
+		  if (tdep_get_func_addr (as, sym->st_value, &val) < 0)
+		    continue;
 		  if (sym->st_shndx != SHN_ABS)
 		    val += load_offset;
 		  Debug (16, "0x%016lx info=0x%02x %s\n",
@@ -134,8 +137,8 @@ elf_w (lookup_symbol) (unw_word_t ip, struct elf_image *ei,
    sensitive to the performance of this routine, why bother...  */
 
 HIDDEN int
-elf_w (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
-		       unw_word_t *offp)
+elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
+		       char *buf, size_t buf_len, unw_word_t *offp)
 {
   unsigned long segbase, mapoff;
   Elf_W (Addr) load_offset = 0;
@@ -158,7 +161,7 @@ elf_w (get_proc_name) (pid_t pid, unw_word_t ip, char *buf, size_t buf_len,
 	break;
       }
 
-  ret = elf_w (lookup_symbol) (ip, &ei, load_offset, buf, buf_len, offp);
+  ret = elf_w (lookup_symbol) (as, ip, &ei, load_offset, buf, buf_len, offp);
 
   munmap (ei.image, ei.size);
   ei.image = NULL;
