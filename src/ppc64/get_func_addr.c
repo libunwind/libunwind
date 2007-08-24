@@ -35,9 +35,11 @@ tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
   int ret;
 
   a = unw_get_accessors (as);
-  /* entry-point is stored in the 1st word of the function descriptor: */
-  ret = (a->access_mem) (as, addr + offset, entry_point, 0, NULL);
+  /* Entry-point is stored in the 1st word of the function descriptor.
+     In case that changes in the future, we'd have to update the line
+     below and read the word at addr + offset: */
+  ret = (*a->access_mem) (as, addr, entry_point, 0, NULL);
   if (ret < 0)
-	  return ret;
+    return ret;
   return 0;
 }

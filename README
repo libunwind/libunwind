@@ -61,6 +61,24 @@ workaround is to issue the following commands before running
 GCC v3.3.2 or later have been fixed and do not require this
 workaround.
 
+* Building for PowerPC64 / Linux
+
+For building for power64 you should use:
+
+  $ ./configure CFLAGS="-g -O2 -m64" CXXFLAGS="-g -O2 -m64"
+
+If your power support altivec registers:
+  $ ./configure CFLAGS="-g -O2 -m64 -maltivec" CXXFLAGS="-g -O2 -m64 -maltivec"
+
+To check if your processor has support for vector registers (altivec):
+    cat /proc/cpuinfo | grep altivec
+and should have something like this:
+    cpu             : PPC970, altivec supported
+
+If libunwind seems to not work (backtracing failing), try to compile
+it with -O0, without optimizations. There are some compiler problems
+depending on the version of your gcc.
+
 
 * Regression Testing
 
