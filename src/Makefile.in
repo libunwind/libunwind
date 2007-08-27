@@ -284,9 +284,11 @@ am__libunwind_la_SOURCES_DIST = os-hpux.c os-linux.h os-linux.c \
 	unwind/Resume.c unwind/Resume_or_Rethrow.c unwind/SetGR.c \
 	unwind/SetIP.c dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c \
 	dwarf/Lpe.c dwarf/Lstep.c dwarf/Lfind_proc_info-lsb.c \
+	ppc64/Lcreate_addr_space.c ppc64/Lget_save_loc.c \
 	ppc64/Lglobal.c ppc64/Linit.c ppc64/Linit_local.c \
-	ppc64/Lis_signal_frame.c ppc64/Lget_proc_info.c ppc64/Lregs.c \
-	ppc64/Lresume.c ppc64/Lstep.c x86_64/init.h x86_64/unwind_i.h \
+	ppc64/Linit_remote.c ppc64/Lis_signal_frame.c \
+	ppc64/Lget_proc_info.c ppc64/Lregs.c ppc64/Lresume.c \
+	ppc64/Lstep.c x86_64/init.h x86_64/unwind_i.h \
 	x86_64/ucontext_i.h x86_64/is_fpreg.c x86_64/regname.c \
 	x86_64/offsets.h x86_64/setcontext.S \
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c \
@@ -332,10 +334,11 @@ am__objects_26 = $(am__objects_25) mi/backtrace.lo mi/dyn-cancel.lo \
 am__objects_27 = dwarf/Lexpr.lo dwarf/Lfde.lo dwarf/Lparser.lo \
 	dwarf/Lpe.lo dwarf/Lstep.lo
 am__objects_28 = $(am__objects_12) $(am__objects_26) $(am__objects_27) \
-	dwarf/Lfind_proc_info-lsb.lo ppc64/Lglobal.lo ppc64/Linit.lo \
-	ppc64/Linit_local.lo ppc64/Lis_signal_frame.lo \
-	ppc64/Lget_proc_info.lo ppc64/Lregs.lo ppc64/Lresume.lo \
-	ppc64/Lstep.lo
+	dwarf/Lfind_proc_info-lsb.lo ppc64/Lcreate_addr_space.lo \
+	ppc64/Lget_save_loc.lo ppc64/Lglobal.lo ppc64/Linit.lo \
+	ppc64/Linit_local.lo ppc64/Linit_remote.lo \
+	ppc64/Lis_signal_frame.lo ppc64/Lget_proc_info.lo \
+	ppc64/Lregs.lo ppc64/Lresume.lo ppc64/Lstep.lo
 am__objects_29 = $(am__objects_22) $(am__objects_26) $(am__objects_27) \
 	dwarf/Lfind_proc_info-lsb.lo x86_64/setcontext.lo \
 	x86_64/Lcreate_addr_space.lo x86_64/Lget_save_loc.lo \
@@ -786,8 +789,10 @@ libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
         $(libunwind_la_SOURCES_local)                                   \
         $(dwarf_SOURCES_local)                                          \
         dwarf/Lfind_proc_info-lsb.c                                     \
+	ppc64/Lcreate_addr_space.c ppc64/Lget_save_loc.c		\
         ppc64/Lglobal.c ppc64/Linit.c ppc64/Linit_local.c               \
-        ppc64/Lis_signal_frame.c ppc64/Lget_proc_info.c ppc64/Lregs.c   \
+	ppc64/Linit_remote.c ppc64/Lis_signal_frame.c 			\
+	ppc64/Lget_proc_info.c ppc64/Lregs.c   				\
         ppc64/Lresume.c ppc64/Lstep.c
 
 
@@ -1305,10 +1310,16 @@ dwarf/Lpe.lo: dwarf/$(am__dirstamp) dwarf/$(DEPDIR)/$(am__dirstamp)
 dwarf/Lstep.lo: dwarf/$(am__dirstamp) dwarf/$(DEPDIR)/$(am__dirstamp)
 dwarf/Lfind_proc_info-lsb.lo: dwarf/$(am__dirstamp) \
 	dwarf/$(DEPDIR)/$(am__dirstamp)
+ppc64/Lcreate_addr_space.lo: ppc64/$(am__dirstamp) \
+	ppc64/$(DEPDIR)/$(am__dirstamp)
+ppc64/Lget_save_loc.lo: ppc64/$(am__dirstamp) \
+	ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Lglobal.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Linit.lo: ppc64/$(am__dirstamp) ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Linit_local.lo: ppc64/$(am__dirstamp) \
+	ppc64/$(DEPDIR)/$(am__dirstamp)
+ppc64/Linit_remote.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
 ppc64/Lis_signal_frame.lo: ppc64/$(am__dirstamp) \
 	ppc64/$(DEPDIR)/$(am__dirstamp)
@@ -1677,14 +1688,20 @@ mostlyclean-compile:
 	-rm -f ppc64/Gresume.lo
 	-rm -f ppc64/Gstep.$(OBJEXT)
 	-rm -f ppc64/Gstep.lo
+	-rm -f ppc64/Lcreate_addr_space.$(OBJEXT)
+	-rm -f ppc64/Lcreate_addr_space.lo
 	-rm -f ppc64/Lget_proc_info.$(OBJEXT)
 	-rm -f ppc64/Lget_proc_info.lo
+	-rm -f ppc64/Lget_save_loc.$(OBJEXT)
+	-rm -f ppc64/Lget_save_loc.lo
 	-rm -f ppc64/Lglobal.$(OBJEXT)
 	-rm -f ppc64/Lglobal.lo
 	-rm -f ppc64/Linit.$(OBJEXT)
 	-rm -f ppc64/Linit.lo
 	-rm -f ppc64/Linit_local.$(OBJEXT)
 	-rm -f ppc64/Linit_local.lo
+	-rm -f ppc64/Linit_remote.$(OBJEXT)
+	-rm -f ppc64/Linit_remote.lo
 	-rm -f ppc64/Lis_signal_frame.$(OBJEXT)
 	-rm -f ppc64/Lis_signal_frame.lo
 	-rm -f ppc64/Lregs.$(OBJEXT)
@@ -1983,10 +2000,13 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Gregs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Gresume.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Gstep.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lcreate_addr_space.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lget_proc_info.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lget_save_loc.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lglobal.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Linit.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Linit_local.Plo@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Linit_remote.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lis_signal_frame.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lregs.Plo@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@ppc64/$(DEPDIR)/Lresume.Plo@am__quote@
