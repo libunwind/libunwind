@@ -46,7 +46,16 @@ flush_cache:
         .callinfo
         bv      %r0(%rp)
         .procend
-
+#elif defined(__powerpc64__)
+# warning IMPLEMENT ME!!
+	.globl flush_cache
+flush_cache:
+	lwz    11,  0(1)  ;
+	lwz     0,  4(11) ;
+	mtlr    0         ;
+	lwz    31, -4(11) ;
+	mr      1, 11     ;
+	blr
 #else
 # error Need flush_cache code for this architecture.
 #endif

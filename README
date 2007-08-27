@@ -168,6 +168,11 @@ only test programs that are known to work at this time are:
      tests/Gtest-resume-sig
      tests/Ltest-resume-sig
 
+** Expected results on PPC64 Linux
+
+"make check" should run with no more than 10 out of 24 tests failed.
+
+
 * Performance Testing
 
 This distribution includes a few simple performance tests which give

@@ -216,8 +216,10 @@ libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
         $(libunwind_la_SOURCES_local)                                   \
         $(dwarf_SOURCES_local)                                          \
         dwarf/Lfind_proc_info-lsb.c                                     \
+	ppc64/Lcreate_addr_space.c ppc64/Lget_save_loc.c		\
         ppc64/Lglobal.c ppc64/Linit.c ppc64/Linit_local.c               \
-        ppc64/Lis_signal_frame.c ppc64/Lget_proc_info.c ppc64/Lregs.c   \
+	ppc64/Linit_remote.c ppc64/Lis_signal_frame.c 			\
+	ppc64/Lget_proc_info.c ppc64/Lregs.c   				\
         ppc64/Lresume.c ppc64/Lstep.c
 
 # The list of files that go into libunwind-ppc64:
