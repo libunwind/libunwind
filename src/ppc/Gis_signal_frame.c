@@ -25,24 +25,42 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "init.h"
-#include "unwind_i.h"
+#include <libunwind_i.h>
 
 PROTECTED int
-unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
+unw_is_signal_frame (unw_cursor_t * cursor)
 {
-#ifdef UNW_LOCAL_ONLY
-  return -UNW_EINVAL;
-#else /* !UNW_LOCAL_ONLY */
   struct cursor *c = (struct cursor *) cursor;
+  unw_word_t w0, w1, ip;
+  unw_addr_space_t as;
+  unw_accessors_t *a;
+  void *arg;
+  int ret;
 
-  if (tdep_needs_initialization)
-    tdep_init ();
+  as = c->dwarf.as;
+  as->validate = 1;		/* Don't trust the ip */
+  arg = c->dwarf.as_arg;
 
-  Debug (1, "(cursor=%p)\n", c);
+  /* Check if return address points at sigreturn sequence.
+     on ppc64 Linux that is (see libc.so):
+     0x38210080  addi r1, r1, 128  // pop the stack
+     0x380000ac  li r0, 172        // invoke system service 172
+     0x44000002  sc
+   */
 
-  c->dwarf.as = as;
-  c->dwarf.as_arg = as_arg;
-  return common_init (c);
-#endif /* !UNW_LOCAL_ONLY */
+  ip = c->dwarf.ip;
+  if (ip == 0)
+    return 0;
+
+  /* Read up two 8-byte words at the IP.  We are only looking at 3
+     consecutive 32-bit words, so the second 8-byte word needs to be
+     shifted right by 32 bits (think big-endian) */
+
+  a = unw_get_accessors (as);
+  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
+    return 0;
+  w1 >>= 32;
+  return (w0 == 0x38210080380000ac && w1 == 0x44000002);
+
 }

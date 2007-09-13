@@ -38,7 +38,8 @@ libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S  ia64/sigsetjmp.S  \
 libunwind_setjmp_la_SOURCES_hppa	= hppa/siglongjmp.S
 libunwind_setjmp_la_SOURCES_x86		= x86/longjmp.S x86/siglongjmp.S
 libunwind_setjmp_la_SOURCES_x86_64	= x86_64/longjmp.S x86_64/siglongjmp.S
-libunwind_setjmp_la_SOURCES_ppc64       = ppc64/longjmp.S ppc64/siglongjmp.S
+libunwind_setjmp_la_SOURCES_ppc64       = ppc/longjmp.S ppc/siglongjmp.S
+libunwind_setjmp_la_SOURCES_ppc32       = ppc/longjmp.S ppc/siglongjmp.S
 
 ### libunwind:
 
@@ -204,6 +205,41 @@ libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
 	x86_64/Gis_signal_frame.c x86_64/Gget_proc_info.c x86_64/Gregs.c    \
 	x86_64/Gresume.c x86_64/Gstep.c
 
+# The list of local files that go to Power 64 and 32:
+libunwind_la_SOURCES_ppc = ppc/Lcreate_addr_space.c 			\
+	ppc/Lget_proc_info.c ppc/Lget_save_loc.c ppc/Linit_local.c	\
+	ppc/Linit_remote.c ppc/Lis_signal_frame.c
+
+# The list of generic files that go to Power 64 and 32:
+libunwind_ppc_la_SOURCES_ppc_generic = ppc/Gcreate_addr_space.c		\
+	ppc/Gget_proc_info.c ppc/Gget_save_loc.c ppc/Ginit_local.c	\
+	ppc/Ginit_remote.c ppc/Gis_signal_frame.c
+
+# The list of files that go both into libunwind and libunwind-ppc32:
+libunwind_la_SOURCES_ppc32_common = $(libunwind_la_SOURCES_common)      \
+	$(dwarf_SOURCES_common)                                         \
+	elf32.c elf32.h                                                 \
+	ppc32/init.h ppc32/unwind_i.h ppc32/ucontext_i.h		\
+	ppc32/is_fpreg.c ppc32/regname.c ppc32/get_func_addr.c
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common)       \
+	$(libunwind_la_SOURCES_local)                                   \
+	$(dwarf_SOURCES_local)                                          \
+	$(libunwind_la_SOURCES_ppc)					\
+	dwarf/Lfind_proc_info-lsb.c                                     \
+	ppc32/Lglobal.c ppc32/Linit.c					\
+	ppc32/Lregs.c ppc32/Lresume.c ppc32/Lstep.c
+
+# The list of files that go into libunwind-ppc32:
+libunwind_ppc32_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common) \
+	$(libunwind_la_SOURCES_generic)                                 \
+	$(dwarf_SOURCES_generic)                                        \
+	$(libunwind_ppc_la_SOURCES_ppc_generic)				\
+	dwarf/Gfind_proc_info-lsb.c                                     \
+	ppc32/Gglobal.c ppc32/Ginit.c					\
+	ppc32/Gregs.c ppc32/Gresume.c ppc32/Gstep.c
+
 # The list of files that go both into libunwind and libunwind-ppc64:
 libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
         $(dwarf_SOURCES_common)                                         \
@@ -215,24 +251,19 @@ libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
 libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
         $(libunwind_la_SOURCES_local)                                   \
         $(dwarf_SOURCES_local)                                          \
+	$(libunwind_la_SOURCES_ppc)					\
         dwarf/Lfind_proc_info-lsb.c                                     \
-	ppc64/Lcreate_addr_space.c ppc64/Lget_save_loc.c		\
-        ppc64/Lglobal.c ppc64/Linit.c ppc64/Linit_local.c               \
-	ppc64/Linit_remote.c ppc64/Lis_signal_frame.c 			\
-	ppc64/Lget_proc_info.c ppc64/Lregs.c   				\
-        ppc64/Lresume.c ppc64/Lstep.c
+	ppc64/Lglobal.c ppc64/Linit.c					\
+	ppc64/Lregs.c ppc64/Lresume.c ppc64/Lstep.c
 
 # The list of files that go into libunwind-ppc64:
 libunwind_ppc64_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common) \
         $(libunwind_la_SOURCES_generic)                                 \
         $(dwarf_SOURCES_generic)                                        \
+	$(libunwind_ppc_la_SOURCES_ppc_generic)				\
         dwarf/Gfind_proc_info-lsb.c                                     \
-        ppc64/Gcreate_addr_space.c                                      \
-        ppc64/Gget_proc_info.c 				                \
-        ppc64/Gget_save_loc.c ppc64/Gglobal.c                           \
-        ppc64/Ginit.c ppc64/Ginit_local.c ppc64/Ginit_remote.c          \
-        ppc64/Gis_signal_frame.c ppc64/Gregs.c ppc64/Gresume.c          \
-        ppc64/Gstep.c
+	ppc64/Gglobal.c ppc64/Ginit.c					\
+	ppc64/Gregs.c ppc64/Gresume.c ppc64/Gstep.c
 
 if REMOTE_ONLY
 install-exec-hook:
@@ -309,7 +340,17 @@ if !REMOTE_ONLY
 endif
  libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
 				  $(libunwind_setjmp_la_SOURCES_x86_64)
-
+else
+if ARCH_PPC32
+ lib_LTLIBRARIES_arch = libunwind-ppc32.la
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_ppc32)
+ libunwind_ppc32_la_SOURCES = $(libunwind_ppc32_la_SOURCES_ppc32)
+ libunwind_ppc32_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+if !REMOTE_ONLY
+ libunwind_ppc32_la_LIBADD = libunwind.la -lc
+endif
+ libunwind_setjmp_la_SOURCES    = $(libunwind_setjmp_la_SOURCES_common) \
+                                  $(libunwind_setjmp_la_SOURCES_ppc32)
 else
 if ARCH_PPC64
  lib_LTLIBRARIES_arch = libunwind-ppc64.la
@@ -323,6 +364,7 @@ endif
                                   $(libunwind_setjmp_la_SOURCES_ppc64)
 
 endif # ARCH_PPC64
+endif # ARCH_PPC32
 endif # ARCH_X86_64
 endif # ARCH_X86
 endif # ARCH_HPPA
@@ -362,6 +404,7 @@ EXTRA_DIST =	elfxx.h elfxx.c unwind/unwind-internal.h	\
 		$(libunwind_setjmp_la_SOURCES_ia64)		\
 		$(libunwind_setjmp_la_SOURCES_x86)		\
 		$(libunwind_setjmp_la_SOURCES_x86_64)		\
+		$(libunwind_setjmp_la_SOURCES_ppc32)		\
 		$(libunwind_setjmp_la_SOURCES_ppc64)
 
 

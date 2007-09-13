@@ -160,275 +160,156 @@ unw_step (unw_cursor_t * cursor)
 	     of the registers for now.  This will incur a performance hit,
 	     but it's rare enough not to cause too much of a problem, and
 	     might be useful in some cases.  */
-	  c->dwarf.loc[UNW_PPC64_R0] =
+	  c->dwarf.loc[UNW_PPC32_R0] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R0, 0);
-	  c->dwarf.loc[UNW_PPC64_R1] =
+	  c->dwarf.loc[UNW_PPC32_R1] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R1, 0);
-	  c->dwarf.loc[UNW_PPC64_R2] =
+	  c->dwarf.loc[UNW_PPC32_R2] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R2, 0);
-	  c->dwarf.loc[UNW_PPC64_R3] =
+	  c->dwarf.loc[UNW_PPC32_R3] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R3, 0);
-	  c->dwarf.loc[UNW_PPC64_R4] =
+	  c->dwarf.loc[UNW_PPC32_R4] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R4, 0);
-	  c->dwarf.loc[UNW_PPC64_R5] =
+	  c->dwarf.loc[UNW_PPC32_R5] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R5, 0);
-	  c->dwarf.loc[UNW_PPC64_R6] =
+	  c->dwarf.loc[UNW_PPC32_R6] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R6, 0);
-	  c->dwarf.loc[UNW_PPC64_R7] =
+	  c->dwarf.loc[UNW_PPC32_R7] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R7, 0);
-	  c->dwarf.loc[UNW_PPC64_R8] =
+	  c->dwarf.loc[UNW_PPC32_R8] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
-	  c->dwarf.loc[UNW_PPC64_R9] =
+	  c->dwarf.loc[UNW_PPC32_R9] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
-	  c->dwarf.loc[UNW_PPC64_R10] =
+	  c->dwarf.loc[UNW_PPC32_R10] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
-	  c->dwarf.loc[UNW_PPC64_R11] =
+	  c->dwarf.loc[UNW_PPC32_R11] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
-	  c->dwarf.loc[UNW_PPC64_R12] =
+	  c->dwarf.loc[UNW_PPC32_R12] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
-	  c->dwarf.loc[UNW_PPC64_R13] =
+	  c->dwarf.loc[UNW_PPC32_R13] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
-	  c->dwarf.loc[UNW_PPC64_R14] =
+	  c->dwarf.loc[UNW_PPC32_R14] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
-	  c->dwarf.loc[UNW_PPC64_R15] =
+	  c->dwarf.loc[UNW_PPC32_R15] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
-	  c->dwarf.loc[UNW_PPC64_R16] =
+	  c->dwarf.loc[UNW_PPC32_R16] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R16, 0);
-	  c->dwarf.loc[UNW_PPC64_R17] =
+	  c->dwarf.loc[UNW_PPC32_R17] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R17, 0);
-	  c->dwarf.loc[UNW_PPC64_R18] =
+	  c->dwarf.loc[UNW_PPC32_R18] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R18, 0);
-	  c->dwarf.loc[UNW_PPC64_R19] =
+	  c->dwarf.loc[UNW_PPC32_R19] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R19, 0);
-	  c->dwarf.loc[UNW_PPC64_R20] =
+	  c->dwarf.loc[UNW_PPC32_R20] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R20, 0);
-	  c->dwarf.loc[UNW_PPC64_R21] =
+	  c->dwarf.loc[UNW_PPC32_R21] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R21, 0);
-	  c->dwarf.loc[UNW_PPC64_R22] =
+	  c->dwarf.loc[UNW_PPC32_R22] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R22, 0);
-	  c->dwarf.loc[UNW_PPC64_R23] =
+	  c->dwarf.loc[UNW_PPC32_R23] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R23, 0);
-	  c->dwarf.loc[UNW_PPC64_R24] =
+	  c->dwarf.loc[UNW_PPC32_R24] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R24, 0);
-	  c->dwarf.loc[UNW_PPC64_R25] =
+	  c->dwarf.loc[UNW_PPC32_R25] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R25, 0);
-	  c->dwarf.loc[UNW_PPC64_R26] =
+	  c->dwarf.loc[UNW_PPC32_R26] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R26, 0);
-	  c->dwarf.loc[UNW_PPC64_R27] =
+	  c->dwarf.loc[UNW_PPC32_R27] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R27, 0);
-	  c->dwarf.loc[UNW_PPC64_R28] =
+	  c->dwarf.loc[UNW_PPC32_R28] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R28, 0);
-	  c->dwarf.loc[UNW_PPC64_R29] =
+	  c->dwarf.loc[UNW_PPC32_R29] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R29, 0);
-	  c->dwarf.loc[UNW_PPC64_R30] =
+	  c->dwarf.loc[UNW_PPC32_R30] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R30, 0);
-	  c->dwarf.loc[UNW_PPC64_R31] =
+	  c->dwarf.loc[UNW_PPC32_R31] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R31, 0);
 
-	  c->dwarf.loc[UNW_PPC64_LR] =
+	  c->dwarf.loc[UNW_PPC32_LR] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_LINK, 0);
-	  c->dwarf.loc[UNW_PPC64_CTR] =
+	  c->dwarf.loc[UNW_PPC32_CTR] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_CTR, 0);
 	  /* This CR0 assignment is probably wrong.  There are 8 dwarf columns
 	     assigned to the CR registers, but only one CR register in the
 	     mcontext structure */
-	  c->dwarf.loc[UNW_PPC64_CR0] =
+	  c->dwarf.loc[UNW_PPC32_CR0] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_CCR, 0);
-	  c->dwarf.loc[UNW_PPC64_XER] =
+	  c->dwarf.loc[UNW_PPC32_XER] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_XER, 0);
-	  c->dwarf.loc[UNW_PPC64_NIP] =
+	  c->dwarf.loc[UNW_PPC32_NIP] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_NIP, 0);
 
 	  /* TODO: Is there a way of obtaining the value of the
 	     pseudo frame pointer (which is sp + some fixed offset, I
 	     assume), based on the contents of the ucontext record
 	     structure?  For now, set this loc to null. */
-	  c->dwarf.loc[UNW_PPC64_FRAME_POINTER] = DWARF_NULL_LOC;
+	  c->dwarf.loc[UNW_PPC32_FRAME_POINTER] = DWARF_NULL_LOC;
 
-	  c->dwarf.loc[UNW_PPC64_F0] =
+	  c->dwarf.loc[UNW_PPC32_F0] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R0, 0);
-	  c->dwarf.loc[UNW_PPC64_F1] =
+	  c->dwarf.loc[UNW_PPC32_F1] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R1, 0);
-	  c->dwarf.loc[UNW_PPC64_F2] =
+	  c->dwarf.loc[UNW_PPC32_F2] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R2, 0);
-	  c->dwarf.loc[UNW_PPC64_F3] =
+	  c->dwarf.loc[UNW_PPC32_F3] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R3, 0);
-	  c->dwarf.loc[UNW_PPC64_F4] =
+	  c->dwarf.loc[UNW_PPC32_F4] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R4, 0);
-	  c->dwarf.loc[UNW_PPC64_F5] =
+	  c->dwarf.loc[UNW_PPC32_F5] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R5, 0);
-	  c->dwarf.loc[UNW_PPC64_F6] =
+	  c->dwarf.loc[UNW_PPC32_F6] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R6, 0);
-	  c->dwarf.loc[UNW_PPC64_F7] =
+	  c->dwarf.loc[UNW_PPC32_F7] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R7, 0);
-	  c->dwarf.loc[UNW_PPC64_F8] =
+	  c->dwarf.loc[UNW_PPC32_F8] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R8, 0);
-	  c->dwarf.loc[UNW_PPC64_F9] =
+	  c->dwarf.loc[UNW_PPC32_F9] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R9, 0);
-	  c->dwarf.loc[UNW_PPC64_F10] =
+	  c->dwarf.loc[UNW_PPC32_F10] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R10, 0);
-	  c->dwarf.loc[UNW_PPC64_F11] =
+	  c->dwarf.loc[UNW_PPC32_F11] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R11, 0);
-	  c->dwarf.loc[UNW_PPC64_F12] =
+	  c->dwarf.loc[UNW_PPC32_F12] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R12, 0);
-	  c->dwarf.loc[UNW_PPC64_F13] =
+	  c->dwarf.loc[UNW_PPC32_F13] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R13, 0);
-	  c->dwarf.loc[UNW_PPC64_F14] =
+	  c->dwarf.loc[UNW_PPC32_F14] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R14, 0);
-	  c->dwarf.loc[UNW_PPC64_F15] =
+	  c->dwarf.loc[UNW_PPC32_F15] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R15, 0);
-	  c->dwarf.loc[UNW_PPC64_F16] =
+	  c->dwarf.loc[UNW_PPC32_F16] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R16, 0);
-	  c->dwarf.loc[UNW_PPC64_F17] =
+	  c->dwarf.loc[UNW_PPC32_F17] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R17, 0);
-	  c->dwarf.loc[UNW_PPC64_F18] =
+	  c->dwarf.loc[UNW_PPC32_F18] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R18, 0);
-	  c->dwarf.loc[UNW_PPC64_F19] =
+	  c->dwarf.loc[UNW_PPC32_F19] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R19, 0);
-	  c->dwarf.loc[UNW_PPC64_F20] =
+	  c->dwarf.loc[UNW_PPC32_F20] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R20, 0);
-	  c->dwarf.loc[UNW_PPC64_F21] =
+	  c->dwarf.loc[UNW_PPC32_F21] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R21, 0);
-	  c->dwarf.loc[UNW_PPC64_F22] =
+	  c->dwarf.loc[UNW_PPC32_F22] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R22, 0);
-	  c->dwarf.loc[UNW_PPC64_F23] =
+	  c->dwarf.loc[UNW_PPC32_F23] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R23, 0);
-	  c->dwarf.loc[UNW_PPC64_F24] =
+	  c->dwarf.loc[UNW_PPC32_F24] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R24, 0);
-	  c->dwarf.loc[UNW_PPC64_F25] =
+	  c->dwarf.loc[UNW_PPC32_F25] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R25, 0);
-	  c->dwarf.loc[UNW_PPC64_F26] =
+	  c->dwarf.loc[UNW_PPC32_F26] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R26, 0);
-	  c->dwarf.loc[UNW_PPC64_F27] =
+	  c->dwarf.loc[UNW_PPC32_F27] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R27, 0);
-	  c->dwarf.loc[UNW_PPC64_F28] =
+	  c->dwarf.loc[UNW_PPC32_F28] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R28, 0);
-	  c->dwarf.loc[UNW_PPC64_F29] =
+	  c->dwarf.loc[UNW_PPC32_F29] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R29, 0);
-	  c->dwarf.loc[UNW_PPC64_F30] =
+	  c->dwarf.loc[UNW_PPC32_F30] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R30, 0);
-	  c->dwarf.loc[UNW_PPC64_F31] =
+	  c->dwarf.loc[UNW_PPC32_F31] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R31, 0);
-	  /* Note that there is no .eh_section register column for the
-	     FPSCR register.  I don't know why this is.  */
 
-	  v_regs_loc = DWARF_LOC (ucontext + UC_MCONTEXT_V_REGS, 0);
-	  ret = dwarf_get (&c->dwarf, v_regs_loc, &v_regs_ptr);
-	  if (ret < 0)
-	    {
-	      Debug (2, "returning %d\n", ret);
-	      return ret;
-	    }
-	  if (v_regs_ptr != 0)
-	    {
-	      /* The v_regs_ptr is not null.  Set all of the AltiVec locs */
-
-	      c->dwarf.loc[UNW_PPC64_V0] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R0, 0);
-	      c->dwarf.loc[UNW_PPC64_V1] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R1, 0);
-	      c->dwarf.loc[UNW_PPC64_V2] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R2, 0);
-	      c->dwarf.loc[UNW_PPC64_V3] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R3, 0);
-	      c->dwarf.loc[UNW_PPC64_V4] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R4, 0);
-	      c->dwarf.loc[UNW_PPC64_V5] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R5, 0);
-	      c->dwarf.loc[UNW_PPC64_V6] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R6, 0);
-	      c->dwarf.loc[UNW_PPC64_V7] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R7, 0);
-	      c->dwarf.loc[UNW_PPC64_V8] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R8, 0);
-	      c->dwarf.loc[UNW_PPC64_V9] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R9, 0);
-	      c->dwarf.loc[UNW_PPC64_V10] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R10, 0);
-	      c->dwarf.loc[UNW_PPC64_V11] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R11, 0);
-	      c->dwarf.loc[UNW_PPC64_V12] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R12, 0);
-	      c->dwarf.loc[UNW_PPC64_V13] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R13, 0);
-	      c->dwarf.loc[UNW_PPC64_V14] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R14, 0);
-	      c->dwarf.loc[UNW_PPC64_V15] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R15, 0);
-	      c->dwarf.loc[UNW_PPC64_V16] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R16, 0);
-	      c->dwarf.loc[UNW_PPC64_V17] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R17, 0);
-	      c->dwarf.loc[UNW_PPC64_V18] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R18, 0);
-	      c->dwarf.loc[UNW_PPC64_V19] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R19, 0);
-	      c->dwarf.loc[UNW_PPC64_V20] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R20, 0);
-	      c->dwarf.loc[UNW_PPC64_V21] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R21, 0);
-	      c->dwarf.loc[UNW_PPC64_V22] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R22, 0);
-	      c->dwarf.loc[UNW_PPC64_V23] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R23, 0);
-	      c->dwarf.loc[UNW_PPC64_V24] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R24, 0);
-	      c->dwarf.loc[UNW_PPC64_V25] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R25, 0);
-	      c->dwarf.loc[UNW_PPC64_V26] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R26, 0);
-	      c->dwarf.loc[UNW_PPC64_V27] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R27, 0);
-	      c->dwarf.loc[UNW_PPC64_V28] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R28, 0);
-	      c->dwarf.loc[UNW_PPC64_V29] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R29, 0);
-	      c->dwarf.loc[UNW_PPC64_V30] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R30, 0);
-	      c->dwarf.loc[UNW_PPC64_V31] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_R31, 0);
-	      c->dwarf.loc[UNW_PPC64_VRSAVE] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_VRSAVE, 0);
-	      c->dwarf.loc[UNW_PPC64_VSCR] =
-		DWARF_LOC (v_regs_ptr + UC_MCONTEXT_VREGS_VSCR, 0);
-	    }
-	  else
-	    {
-	      c->dwarf.loc[UNW_PPC64_V0] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V1] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V2] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V3] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V4] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V5] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V6] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V7] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V8] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V9] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V10] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V11] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V12] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V13] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V14] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V15] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V16] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V17] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V18] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V19] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V20] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V21] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V22] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V23] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V24] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V25] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V26] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V27] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V28] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V29] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V30] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_V31] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_VRSAVE] = DWARF_NULL_LOC;
-	      c->dwarf.loc[UNW_PPC64_VSCR] = DWARF_NULL_LOC;
-	    }
 	  ret = 1;
 	}
     }

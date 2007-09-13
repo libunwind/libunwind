@@ -24,10 +24,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "unwind_i.h"
+#include <libunwind_i.h>
 
 PROTECTED int
-unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
+unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
 {
   /* XXX: empty stub.  */
   return 0;

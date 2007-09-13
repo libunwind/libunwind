@@ -27,42 +27,41 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
+/* Here is the "common" init, for remote and local debuging" */
+
 static inline int
-common_init_ppc64 (struct cursor *c)
+common_init_ppc32 (struct cursor *c)
 {
   int ret;
   int i;
 
-  for (i = UNW_PPC64_R0; i <= UNW_PPC64_R31; i++) {
+  for (i = UNW_PPC32_R0; i <= UNW_PPC32_R31; i++) {
     c->dwarf.loc[i] = DWARF_REG_LOC (&c->dwarf, i);
   }
-  for (i = UNW_PPC64_F0; i <= UNW_PPC64_F31; i++) {
+  for (i = UNW_PPC32_F0; i <= UNW_PPC32_F31; i++) {
     c->dwarf.loc[i] = DWARF_FPREG_LOC (&c->dwarf, i);
   }
-  for (i = UNW_PPC64_V0; i <= UNW_PPC64_V31; i++) {
-    c->dwarf.loc[i] = DWARF_VREG_LOC (&c->dwarf, i);
-  }
 
-  for (i = UNW_PPC64_CR0; i <= UNW_PPC64_CR7; i++) {
+  for (i = UNW_PPC32_CR0; i <= UNW_PPC32_CR7; i++) {
     c->dwarf.loc[i] = DWARF_REG_LOC (&c->dwarf, i);
   }
-  c->dwarf.loc[UNW_PPC64_ARG_POINTER] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_ARG_POINTER);
-  c->dwarf.loc[UNW_PPC64_CTR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_CTR);
-  c->dwarf.loc[UNW_PPC64_VSCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_VSCR);
+  c->dwarf.loc[UNW_PPC32_ARG_POINTER] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_ARG_POINTER);
+  c->dwarf.loc[UNW_PPC32_CTR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_CTR);
+  c->dwarf.loc[UNW_PPC32_VSCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_VSCR);
 
-  c->dwarf.loc[UNW_PPC64_XER] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_XER);
-  c->dwarf.loc[UNW_PPC64_LR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_LR);
-  c->dwarf.loc[UNW_PPC64_VRSAVE] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_VRSAVE);
-  c->dwarf.loc[UNW_PPC64_SPEFSCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_SPEFSCR);
-  c->dwarf.loc[UNW_PPC64_SPE_ACC] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_SPE_ACC);
+  c->dwarf.loc[UNW_PPC32_XER] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_XER);
+  c->dwarf.loc[UNW_PPC32_LR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_LR);
+  c->dwarf.loc[UNW_PPC32_VRSAVE] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_VRSAVE);
+  c->dwarf.loc[UNW_PPC32_SPEFSCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_SPEFSCR);
+  c->dwarf.loc[UNW_PPC32_SPE_ACC] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_SPE_ACC);
 
-  c->dwarf.loc[UNW_PPC64_NIP] = DWARF_REG_LOC (&c->dwarf, UNW_PPC64_NIP);
+  c->dwarf.loc[UNW_PPC32_NIP] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_NIP);
 
-  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_PPC64_NIP], &c->dwarf.ip);
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_PPC32_NIP], &c->dwarf.ip);
   if (ret < 0)
     return ret;
 
-  ret = dwarf_get (&c->dwarf, DWARF_REG_LOC (&c->dwarf, UNW_PPC64_R1),
+  ret = dwarf_get (&c->dwarf, DWARF_REG_LOC (&c->dwarf, UNW_PPC32_R1),
 		   &c->dwarf.cfa);
   if (ret < 0)
     return ret;

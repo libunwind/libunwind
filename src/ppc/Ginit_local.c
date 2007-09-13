@@ -24,8 +24,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "unwind_i.h"
-#include "init.h"
+#include <libunwind_i.h>
+
+#ifdef UNW_TARGET_PPC64
+#include "../ppc64/init.h"
+#else
+#include "../ppc32/init.h"
+#endif
 
 #ifdef UNW_REMOTE_ONLY
 
@@ -50,7 +55,11 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = uc;
-  return common_init (c);
+  #ifdef UNW_TARGET_PPC64
+    return common_init_ppc64 (c);
+  #else
+    return common_init_ppc32 (c);
+  #endif
 }
 
 #endif /* !UNW_REMOTE_ONLY */

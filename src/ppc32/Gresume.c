@@ -1,7 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2006-2007 IBM
    Contributed by
-     Corey Ashford <cjashfor@us.ibm.com>
+     Corey Ashford cjashfor@us.ibm.com
      Jose Flavio Aguilar Paulino <jflavio@br.ibm.com> <joseflavio@gmail.com>
 
 This file is part of libunwind.
@@ -29,26 +29,49 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-PROTECTED unw_addr_space_t
-unw_create_addr_space (unw_accessors_t *a, int byte_order)
+#ifndef UNW_REMOTE_ONLY
+
+#include <sys/syscall.h>
+
+/* sigreturn() is a no-op on x86_64 glibc.  */
+
+static NORETURN inline long
+my_rt_sigreturn (void *new_sp)
 {
-#ifdef UNW_LOCAL_ONLY
-  return NULL;
-#else
-  unw_addr_space_t as = malloc (sizeof (*as));
+  /* XXX: empty stub.  */
+  abort ();
+}
 
-  if (!as)
-    return NULL;
+HIDDEN inline int
+ppc32_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+{
+  /* XXX: empty stub.  */
+  return -UNW_EINVAL;
+}
 
-  memset (as, 0, sizeof (*as));
+#endif /* !UNW_REMOTE_ONLY */
 
-  as->acc = *a;
+/* This routine is responsible for copying the register values in
+   cursor C and establishing them as the current machine state. */
 
-  /*
-   * Linux ppc64 supports only big-endian.
-   */
-  if (byte_order != 0 && byte_order != __BIG_ENDIAN)
-    return NULL;
-  return as;
-#endif
+static inline int
+establish_machine_state (struct cursor *c)
+{
+  /* XXX: empty stub.  */
+  return 0;
+}
+
+PROTECTED int
+unw_resume (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  int ret;
+
+  Debug (1, "(cursor=%p)\n", c);
+
+  if ((ret = establish_machine_state (c)) < 0)
+    return ret;
+
+  return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
+				     c->dwarf.as_arg);
 }

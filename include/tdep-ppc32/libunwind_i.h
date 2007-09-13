@@ -29,8 +29,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef PPC64_LIBUNWIND_I_H
-#define PPC64_LIBUNWIND_I_H
+#ifndef PPC32_LIBUNWIND_I_H
+#define PPC32_LIBUNWIND_I_H
 
 /* Target-dependent definitions that are internal to libunwind but need
    to be shared with target-independent code.  */
@@ -38,7 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <libunwind.h>
 
-#include "elf64.h"
+#include "elf32.h"
 #include "mempool.h"
 #include "dwarf.h"
 
