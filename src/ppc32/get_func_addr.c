@@ -28,18 +28,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 int
-tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
-		    unw_word_t *entry_point)
+tdep_get_func_addr (unw_addr_space_t as, unw_word_t symbol_val_addr,
+		    unw_word_t *real_func_addr)
 {
-  unw_accessors_t *a;
-  int ret;
-
-  a = unw_get_accessors (as);
-  /* Entry-point is stored in the 1st word of the function descriptor.
-     In case that changes in the future, we'd have to update the line
-     below and read the word at addr + offset: */
-  ret = (*a->access_mem) (as, addr, entry_point, 0, NULL);
-  if (ret < 0)
-    return ret;
+  *real_func_addr = symbol_val_addr;
   return 0;
 }

@@ -20858,6 +20858,13 @@ else
 fi
 
 
+if test x$target_arch = xppc64; then
+        libdir='${exec_prefix}/lib64'
+        { echo "$as_me:$LINENO: PowerPC64 detected, lib will be installed ${libdir}" >&5
+echo "$as_me: PowerPC64 detected, lib will be installed ${libdir}" >&6;};
+
+fi
+
 if test x$target_arch != x$build_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
 fi
