@@ -63,3 +63,7 @@ _UI_siglongjmp_cont:		// non-function label for siglongjmp.c
 	mov r8 = loc2
 	br.ret.sptk.many rp
 	.endp siglongjmp_continuation
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

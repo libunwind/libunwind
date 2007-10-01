@@ -68,3 +68,7 @@ _Uhppa_getcontext:
 
 	bv,n	%r0(%rp)
 	.procend
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

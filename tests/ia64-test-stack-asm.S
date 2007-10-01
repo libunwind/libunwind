@@ -176,3 +176,8 @@ touch_all:
 	mov ar.pfs = loc1
 	br.ret.sptk.many rp
 	.endp touch_all
+
+#ifdef __linux__
+        /* We do not need executable stack.  */
+        .section        .note.GNU-stack,"",@progbits
+#endif

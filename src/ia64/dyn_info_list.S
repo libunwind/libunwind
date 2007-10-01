@@ -20,3 +20,7 @@
 	data8 0, 0, @segrel(.info)
 
 #endif
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

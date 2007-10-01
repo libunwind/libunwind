@@ -10,3 +10,7 @@ _UI_longjmp_cont:
 #warning fix me
 	bv	%r0(%rp)
 	.procend
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

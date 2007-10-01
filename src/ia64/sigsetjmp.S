@@ -63,3 +63,7 @@ __sigsetjmp:
 	br.ret.sptk.many rp
 
 	.endp __sigsetjmp
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

@@ -31,3 +31,7 @@ _UI_longjmp_cont:
 	mov %rdx, %rax		/* set up return-value */
 	retq
 	.size _UI_longjmp_cont, .-_UI_longjmp_cont
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

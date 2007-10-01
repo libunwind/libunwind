@@ -45,3 +45,7 @@ _setjmp:
 	br.ret.sptk.many rp
 
 	.endp _setjmp
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

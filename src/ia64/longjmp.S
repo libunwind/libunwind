@@ -36,3 +36,7 @@ _UI_longjmp_cont:		// non-function label for {sig,}longjmp.c
 	mov r8 = r16
 	br.sptk.many rp
 	.endp longjmp_continuation
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

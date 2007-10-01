@@ -268,3 +268,8 @@ resumption_point_label:
 	;;
 	br.cond.sptk.many b6
 	.endp resumption_point
+
+#ifdef __linux__
+        /* We do not need executable stack.  */
+        .section        .note.GNU-stack,"",@progbits
+#endif

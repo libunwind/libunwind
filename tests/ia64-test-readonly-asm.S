@@ -48,3 +48,8 @@ test_func:
 	br.ret.sptk.many rp
 
 	.endp test_func
+
+#ifdef __linux__
+        /* We do not need executable stack.  */
+        .section        .note.GNU-stack,"",@progbits
+#endif

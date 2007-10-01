@@ -29,3 +29,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.type _UI_longjmp_cont, @function
 _UI_longjmp_cont:
 	.size _UI_longjmp_cont, .-_UI_longjmp_cont
+
+#ifdef __linux__
+        /* We do not need executable stack.  */
+        .section        .note.GNU-stack,"",@progbits
+#endif

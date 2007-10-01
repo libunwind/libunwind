@@ -342,3 +342,7 @@ ia64_install_cursor:
 	.endp ia64_install_cursor
 
 #endif /* !UNW_REMOTE_ONLY */
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

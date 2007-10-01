@@ -35,3 +35,7 @@ _UI_longjmp_cont:
 	ret
 	.cfi_endproc
 	.size _UI_siglongjmp_cont, .-_UI_longjmp_cont
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif

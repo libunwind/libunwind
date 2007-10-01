@@ -57,3 +57,7 @@ _x86_64_setcontext:
 	mov    REG_OFFSET_RDI(%rdi),%rdi
 	retq
 
+#ifdef __linux__
+      /* We do not need executable stack.  */
+      .section        .note.GNU-stack,"",@progbits
+#endif

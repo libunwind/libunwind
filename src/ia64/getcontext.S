@@ -171,3 +171,7 @@ _Uia64_getcontext:
 	mov r8 = 0
 	br.ret.sptk.many rp
 	.endp _Uia64_getcontext
+#ifdef __linux__
+	/* We do not need executable stack.  */
+	.section	.note.GNU-stack,"",@progbits
+#endif
