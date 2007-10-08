@@ -33,21 +33,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    /usr/src/linux-2.6.18-1.8/arch/powerpc/kernel/ppc32.h
 */
 
-#define NIP_IDX		32
-#define MSR_IDX		33
-#define ORIG_GPR3_IDX	34
-#define CTR_IDX		35
+//#define NIP_IDX		32
+#define CTR_IDX		32
+#define XER_IDX		33
+#define CCR_IDX		34
+#define MSR_IDX		35
+//#define MQ_IDX		36
 #define LINK_IDX	36
-#define XER_IDX		37
-#define CCR_IDX		38
-#define SOFTE_IDX	39
-#define TRAP_IDX	40
-#define DAR_IDX		41
-#define DSISR_IDX	42
-#define RESULT_IDX	43
-
-#define VSCR_IDX        32
-#define VRSAVE_IDX      33
 
 /* These are dummy structures used only for obtaining the offsets of the
    various structure members. */
@@ -86,7 +78,7 @@ static vrregset_t dmy_vrregset;
 #define UC_MCONTEXT_GREGS_R29 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[29] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_GREGS_R30 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[30] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_GREGS_R31 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[31] - (void *)&dmy_ctxt)
-#define UC_MCONTEXT_GREGS_NIP ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[NIP_IDX] - (void *)&dmy_ctxt)
+
 #define UC_MCONTEXT_GREGS_MSR ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[MSR_IDX] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_GREGS_ORIG_GPR3 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[ORIG_GPR3_IDX] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_GREGS_CTR ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[CTR_IDX] - (void *)&dmy_ctxt)
@@ -132,42 +124,5 @@ static vrregset_t dmy_vrregset;
 #define UC_MCONTEXT_FREGS_R30 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->fpregs.fpregs[30] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_FREGS_R31 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->fpregs.fpregs[31] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_FREGS_FPSCR ((void *)&dmy_ctxt.uc_mcontext.uc_regs->fpregs.fpregs[32] - (void *)&dmy_ctxt)
-
-#define UC_MCONTEXT_V_REGS ((void *)&dmy_ctxt.uc_mcontext.v_regs - (void *)&dmy_ctxt)
-
-#define UC_MCONTEXT_VREGS_R0 ((void *)&dmy_vrregset.vrregs[0] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R1 ((void *)&dmy_vrregset.vrregs[1] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R2 ((void *)&dmy_vrregset.vrregs[2] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R3 ((void *)&dmy_vrregset.vrregs[3] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R4 ((void *)&dmy_vrregset.vrregs[4] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R5 ((void *)&dmy_vrregset.vrregs[5] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R6 ((void *)&dmy_vrregset.vrregs[6] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R7 ((void *)&dmy_vrregset.vrregs[7] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R8 ((void *)&dmy_vrregset.vrregs[8] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R9 ((void *)&dmy_vrregset.vrregs[9] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R10 ((void *)&dmy_vrregset.vrregs[10] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R11 ((void *)&dmy_vrregset.vrregs[11] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R12 ((void *)&dmy_vrregset.vrregs[12] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R13 ((void *)&dmy_vrregset.vrregs[13] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R14 ((void *)&dmy_vrregset.vrregs[14] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R15 ((void *)&dmy_vrregset.vrregs[15] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R16 ((void *)&dmy_vrregset.vrregs[16] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R17 ((void *)&dmy_vrregset.vrregs[17] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R18 ((void *)&dmy_vrregset.vrregs[18] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R19 ((void *)&dmy_vrregset.vrregs[19] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R20 ((void *)&dmy_vrregset.vrregs[20] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R21 ((void *)&dmy_vrregset.vrregs[21] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R22 ((void *)&dmy_vrregset.vrregs[22] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R23 ((void *)&dmy_vrregset.vrregs[23] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R24 ((void *)&dmy_vrregset.vrregs[24] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R25 ((void *)&dmy_vrregset.vrregs[25] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R26 ((void *)&dmy_vrregset.vrregs[26] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R27 ((void *)&dmy_vrregset.vrregs[27] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R28 ((void *)&dmy_vrregset.vrregs[28] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R29 ((void *)&dmy_vrregset.vrregs[29] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R30 ((void *)&dmy_vrregset.vrregs[30] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_R31 ((void *)&dmy_vrregset.vrregs[31] - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_VSCR ((void *)&dmy_vrregset.vscr - (void *)&dmy_vrregset)
-#define UC_MCONTEXT_VREGS_VRSAVE ((void *)&dmy_vrregset.vrsave - (void *)&dmy_vrregset)
 
 #endif

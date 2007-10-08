@@ -62,7 +62,7 @@ extern "C" {
  * round that up to 280.
  */
 
-#define UNW_TDEP_CURSOR_LEN 280
+#define UNW_TDEP_CURSOR_LEN 200
 
 #if __WORDSIZE==32
 typedef uint32_t unw_word_t;
@@ -109,7 +109,22 @@ typedef enum
     UNW_PPC32_R30,
     UNW_PPC32_R31, /* called HARD_FRAME_POINTER in gcc */
 
-    UNW_PPC32_F0 = 32,
+    /* Count Register */
+    UNW_PPC32_CTR = 32,
+    /* Fixed-Point Status and Control Register */
+    UNW_PPC32_XER = 33,
+    /* Condition Register */
+    UNW_PPC32_CCR = 34,
+    /* Machine State Register */
+    //UNW_PPC32_MSR = 35,
+    /* MQ or SPR0, not part of generic Power, part of MPC601 */
+    //UNW_PPC32_MQ = 36,
+    /* Link Register */
+    UNW_PPC32_LR = 36,
+    /* Floating Pointer Status and Control Register */
+    UNW_PPC32_FPSCR = 37,
+
+    UNW_PPC32_F0 = 48,
     UNW_PPC32_F1,
     UNW_PPC32_F2,
     UNW_PPC32_F3,
@@ -142,43 +157,9 @@ typedef enum
     UNW_PPC32_F30,
     UNW_PPC32_F31,
 
-/* Note that there doesn't appear to be an .eh_frame register column
-       for the FPSCR register.  I don't know why this is.  Since .eh_frame
-       info is what this implementation uses for unwinding, we have no way
-       to unwind this register, and so we will not expose an FPSCR register
-       number in the libunwind API.
-     */
+    UNW_TDEP_LAST_REG = UNW_PPC32_F31,
 
-    UNW_PPC32_LR = 65,
-    UNW_PPC32_CTR = 66,
-    UNW_PPC32_ARG_POINTER = 67,
-
-    UNW_PPC32_CR0 = 68,
-    UNW_PPC32_CR1,
-    UNW_PPC32_CR2,
-    UNW_PPC32_CR3,
-    UNW_PPC32_CR4,
-
-    /* CR5 .. CR7 are currently unused */
-    UNW_PPC32_CR5,
-    UNW_PPC32_CR6,
-    UNW_PPC32_CR7,
-
-    UNW_PPC32_XER = 76,
-
-    UNW_PPC32_VRSAVE = 109,
-    UNW_PPC32_VSCR = 110,
-    UNW_PPC32_SPE_ACC = 111,
-    UNW_PPC32_SPEFSCR = 112,
-
-    /* frame info (read-only) */
-    UNW_PPC32_FRAME_POINTER,
-    UNW_PPC32_NIP,
-
-
-    UNW_TDEP_LAST_REG = UNW_PPC32_NIP,
-
-    UNW_TDEP_IP = UNW_PPC32_NIP,
+    UNW_TDEP_IP = UNW_PPC32_LR,
     UNW_TDEP_SP = UNW_PPC32_R1,
     UNW_TDEP_EH = UNW_PPC32_R12
   }

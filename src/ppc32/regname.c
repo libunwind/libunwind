@@ -62,6 +62,12 @@ static const char *regname[] =
     [UNW_PPC32_R30]="GPR30",
     [UNW_PPC32_R31]="GPR31",
 
+    [UNW_PPC32_CTR]="CTR",
+    [UNW_PPC32_XER]="XER",
+    [UNW_PPC32_CCR]="CCR",
+    [UNW_PPC32_LR]="LR",
+    [UNW_PPC32_FPSCR]="FPSCR",
+
     [UNW_PPC32_F0]="FPR0",
     [UNW_PPC32_F1]="FPR1",
     [UNW_PPC32_F2]="FPR2",
@@ -93,30 +99,8 @@ static const char *regname[] =
     [UNW_PPC32_F28]="FPR28",
     [UNW_PPC32_F29]="FPR29",
     [UNW_PPC32_F30]="FPR30",
-    [UNW_PPC32_F31]="FPR31",
-
-    [UNW_PPC32_LR]="LR",
-    [UNW_PPC32_CTR]="CTR",
-    [UNW_PPC32_ARG_POINTER]="ARG_POINTER",
-
-    [UNW_PPC32_CR0]="CR0",
-    [UNW_PPC32_CR1]="CR1",
-    [UNW_PPC32_CR2]="CR2",
-    [UNW_PPC32_CR3]="CR3",
-    [UNW_PPC32_CR4]="CR4",
-    [UNW_PPC32_CR5]="CR5",
-    [UNW_PPC32_CR6]="CR6",
-    [UNW_PPC32_CR7]="CR7",
-
-    [UNW_PPC32_XER]="XER",
-
-    [UNW_PPC32_VSCR]="VSCR",
-
-    [UNW_PPC32_VRSAVE]="VRSAVE",
-    [UNW_PPC32_SPE_ACC]="SPE_ACC",
-    [UNW_PPC32_SPEFSCR]="SPEFSCR",
-
-   };
+    [UNW_PPC32_F31]="FPR31"
+};
 
 PROTECTED const char *
 unw_regname (unw_regnum_t reg)

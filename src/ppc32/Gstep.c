@@ -44,7 +44,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 typedef struct
 {
   long unsigned back_chain;
-  long unsigned cr_save;
   long unsigned lr_save;
   /* many more fields here, but they are unused by this code */
 } stack_frame_t;
@@ -55,8 +54,8 @@ unw_step (unw_cursor_t * cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   stack_frame_t dummy;
-  unw_word_t back_chain_offset, lr_save_offset, v_regs_ptr;
-  struct dwarf_loc back_chain_loc, lr_save_loc, sp_loc, ip_loc, v_regs_loc;
+  unw_word_t back_chain_offset, lr_save_offset;
+  struct dwarf_loc back_chain_loc, lr_save_loc, sp_loc, ip_loc;
   int ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx)\n", c, (unsigned long) c->dwarf.ip);
@@ -141,7 +140,7 @@ unw_step (unw_cursor_t * cursor)
 	  c->sigcontext_addr = ucontext;
 
 	  sp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R1, 0);
-	  ip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_NIP, 0);
+	  ip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_LINK, 0);
 
 	  ret = dwarf_get (&c->dwarf, sp_loc, &c->dwarf.cfa);
 	  if (ret < 0)
@@ -229,21 +228,14 @@ unw_step (unw_cursor_t * cursor)
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_LINK, 0);
 	  c->dwarf.loc[UNW_PPC32_CTR] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_CTR, 0);
+
 	  /* This CR0 assignment is probably wrong.  There are 8 dwarf columns
 	     assigned to the CR registers, but only one CR register in the
 	     mcontext structure */
-	  c->dwarf.loc[UNW_PPC32_CR0] =
+	  c->dwarf.loc[UNW_PPC32_CCR] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_CCR, 0);
 	  c->dwarf.loc[UNW_PPC32_XER] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_XER, 0);
-	  c->dwarf.loc[UNW_PPC32_NIP] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_NIP, 0);
-
-	  /* TODO: Is there a way of obtaining the value of the
-	     pseudo frame pointer (which is sp + some fixed offset, I
-	     assume), based on the contents of the ucontext record
-	     structure?  For now, set this loc to null. */
-	  c->dwarf.loc[UNW_PPC32_FRAME_POINTER] = DWARF_NULL_LOC;
 
 	  c->dwarf.loc[UNW_PPC32_F0] =
 	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R0, 0);

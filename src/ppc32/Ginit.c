@@ -55,7 +55,9 @@ uc_addr (ucontext_t *uc, int reg)
   if ((unsigned) (reg - UNW_PPC32_R0) < 32)
     addr = &uc->uc_mcontext.uc_regs->gregs[reg - UNW_PPC32_R0];
 
-  else if ((unsigned) (reg - UNW_PPC32_F0) < 32)
+  else
+  if ( ((unsigned) (reg - UNW_PPC32_F0) < 32) &&
+       ((unsigned) (reg - UNW_PPC32_F0) >= 0) )
     addr = &uc->uc_mcontext.uc_regs->fpregs.fpregs[reg - UNW_PPC32_F0];
 
   else
@@ -64,9 +66,6 @@ uc_addr (ucontext_t *uc, int reg)
 
       switch (reg)
 	{
-	case UNW_PPC32_NIP:
-	  gregs_idx = NIP_IDX;
-	  break;
 	case UNW_PPC32_CTR:
 	  gregs_idx = CTR_IDX;
 	  break;
@@ -76,7 +75,7 @@ uc_addr (ucontext_t *uc, int reg)
 	case UNW_PPC32_XER:
 	  gregs_idx = XER_IDX;
 	  break;
-	case UNW_PPC32_CR0:
+	case UNW_PPC32_CCR:
 	  gregs_idx = CCR_IDX;
 	  break;
 	default:
@@ -138,7 +137,8 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   unw_word_t *addr;
   ucontext_t *uc = arg;
 
-  if ((unsigned int) (reg - UNW_PPC32_F0) < 32)
+  if ( ((unsigned int) (reg - UNW_PPC32_F0) < 32) &&
+       ((unsigned int) (reg - UNW_PPC32_F0) >= 0))
     goto badreg;
 
   addr = uc_addr (uc, reg);
