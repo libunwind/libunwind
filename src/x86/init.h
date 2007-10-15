@@ -36,7 +36,7 @@ common_init (struct cursor *c)
   c->dwarf.loc[EBX] = DWARF_REG_LOC (&c->dwarf, UNW_X86_EBX);
   c->dwarf.loc[ESP] = DWARF_REG_LOC (&c->dwarf, UNW_X86_ESP);
   c->dwarf.loc[EBP] = DWARF_REG_LOC (&c->dwarf, UNW_X86_EBP);
-  c->dwarf.loc[ESI] = DWARF_REG_LOC (&c->dwarf, UNW_X86_EDI);
+  c->dwarf.loc[ESI] = DWARF_REG_LOC (&c->dwarf, UNW_X86_ESI);
   c->dwarf.loc[EDI] = DWARF_REG_LOC (&c->dwarf, UNW_X86_EDI);
   c->dwarf.loc[EIP] = DWARF_REG_LOC (&c->dwarf, UNW_X86_EIP);
   c->dwarf.loc[EFLAGS] = DWARF_REG_LOC (&c->dwarf, UNW_X86_EFLAGS);
