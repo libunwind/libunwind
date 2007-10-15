@@ -187,16 +187,14 @@ commands:
 
 Please direct all questions regarding this library to:
 
-	libunwind@linux.hpl.hp.com
+	libunwind-devel@nongnu.org
 
-For spam protection, you'll have to subscribe to this list before
-posting a question.  You can do this by sending a mail to
-libunwind-request@linux.hpl.hp.com with a body of:
+You can do this by sending a mail to libunwind-request@nongnu.org with
+a body of:
 
-	subscribe libunwind
+	subscribe libunwind-devel
 
-Note: the host that is running this list is behind a firewall, so
-you'll not be able to use the Web interface to manage your
-subscription.  Send a mail containing "help" to
-libunwind-request@linux.hpl.hp.com for information on how to manage
-your subscription via email.
+or you can subscribe and manage your subscription via the
+web-interface at:
+
+	https://savannah.nongnu.org/mail/?group=libunwind
