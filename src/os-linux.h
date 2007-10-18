@@ -228,7 +228,7 @@ maps_next (struct map_iterator *mi,
 	    {
 	      /* copy down the remaining bytes, if any */
 	      if (bytes_left > 0)
-		memcpy (mi->buf_end - mi->buf_size, mi->buf, bytes_left);
+		memmove (mi->buf_end - mi->buf_size, mi->buf, bytes_left);
 
 	      mi->buf = mi->buf_end - mi->buf_size;
 	      nread = read (mi->fd, mi->buf + bytes_left,
@@ -240,7 +240,7 @@ maps_next (struct map_iterator *mi,
 		  /* Move contents to the end of the buffer so we
 		     maintain the invariant that all bytes between
 		     mi->buf and mi->buf_end are valid.  */
-		  memcpy (mi->buf_end - nread - bytes_left, mi->buf,
+		  memmove (mi->buf_end - nread - bytes_left, mi->buf,
 			  nread + bytes_left);
 		  mi->buf = mi->buf_end - nread - bytes_left;
 		}
