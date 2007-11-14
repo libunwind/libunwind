@@ -348,11 +348,6 @@ get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
 		      char *buf, size_t buf_len, unw_word_t *offp,
 		      void *arg)
 {
-#ifndef _UNW_LOCAL_ONLY
-# pragma weak _Uelf64_get_proc_name
-  if (!_Uelf64_get_proc_name)
-    return -UNW_EINVAL;
-#endif
   return _Uelf64_get_proc_name (as, getpid (), ip, buf, buf_len, offp);
 }
 

@@ -8,6 +8,10 @@
 * News for v0.98.6:
 
 ** Fix address-leak triggered by invalid byte-order.  Fixed by Andreas Schwab.
+** On ia64, get_static_proc_name() no longer uses a weak reference to
+   _Uelf64_get_proc_name(), since that was causing problems with archive
+   libraries and no longer served any apparent purpose.  Fixed by
+   Curt Wohlgemuth.
 
 * News for v0.98.5:
 
