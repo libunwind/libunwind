@@ -30,5 +30,12 @@ unw_get_reg (unw_cursor_t *cursor, int regnum, unw_word_t *valp)
 {
   struct cursor *c = (struct cursor *) cursor;
 
+  // We can get the IP value directly without needing a lookup.
+  if (regnum == UNW_REG_IP)
+    {
+      *valp = tdep_get_ip (c);
+      return 0;
+    }
+
   return tdep_access_reg (c, regnum, valp, 0);
 }
