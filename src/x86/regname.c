@@ -12,7 +12,9 @@ static const char *regname[] =
     "xmm6_lo", "xmm6_hi", "xmm7_lo", "xmm7_hi",
     "mxcsr",
     "gs", "fs", "es", "ds", "ss", "cs",
-    "tss", "ldt"
+    "tss", "ldt",
+    "cfi",
+    "xmm0", "xmm1", "xmm2", "xmm3", "xmm4", "xmm5", "xmm6", "xmm7",
   };
 
 PROTECTED const char *

@@ -97,6 +97,17 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
       is_fpstate = 1;
       off = LINUX_FPSTATE_XMM0_OFF + 8*(reg - UNW_X86_XMM0_lo);
       break;
+    case UNW_X86_XMM0:
+    case UNW_X86_XMM1:
+    case UNW_X86_XMM2:
+    case UNW_X86_XMM3:
+    case UNW_X86_XMM4:
+    case UNW_X86_XMM5:
+    case UNW_X86_XMM6:
+    case UNW_X86_XMM7:
+      is_fpstate = 1;
+      off = LINUX_FPSTATE_XMM0_OFF + 16*(reg - UNW_X86_XMM0);
+      break;
 
     case UNW_X86_FOP:
     case UNW_X86_TSS:
@@ -235,6 +246,14 @@ tdep_access_fpreg (struct cursor *c, unw_regnum_t reg, unw_fpreg_t *valp,
     case UNW_X86_ST6:
     case UNW_X86_ST7:
       /* SSE fp registers */
+    case UNW_X86_XMM0:
+    case UNW_X86_XMM1:
+    case UNW_X86_XMM2:
+    case UNW_X86_XMM3:
+    case UNW_X86_XMM4:
+    case UNW_X86_XMM5:
+    case UNW_X86_XMM6:
+    case UNW_X86_XMM7:
     case UNW_X86_XMM0_lo:
     case UNW_X86_XMM0_hi:
     case UNW_X86_XMM1_lo:

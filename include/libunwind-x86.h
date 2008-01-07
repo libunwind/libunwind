@@ -48,7 +48,11 @@ extern "C" {
 typedef uint32_t unw_word_t;
 typedef int32_t unw_sword_t;
 
-typedef long double unw_tdep_fpreg_t;
+typedef union {
+  struct { uint8_t b[4]; } val32;
+  struct { uint8_t b[10]; } val80;
+  struct { uint8_t b[16]; } val128;
+} unw_tdep_fpreg_t;
 
 typedef enum
   {
@@ -131,7 +135,16 @@ typedef enum
     /* frame info (read-only) */
     UNW_X86_CFA,
 
-    UNW_TDEP_LAST_REG = UNW_X86_LDT,
+    UNW_X86_XMM0,	/* scratch */
+    UNW_X86_XMM1,	/* scratch */
+    UNW_X86_XMM2,	/* scratch */
+    UNW_X86_XMM3,	/* scratch */
+    UNW_X86_XMM4,	/* scratch */
+    UNW_X86_XMM5,	/* scratch */
+    UNW_X86_XMM6,	/* scratch */
+    UNW_X86_XMM7,	/* scratch */
+
+    UNW_TDEP_LAST_REG = UNW_X86_XMM7,
 
     UNW_TDEP_IP = UNW_X86_EIP,
     UNW_TDEP_SP = UNW_X86_CFA,

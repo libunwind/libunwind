@@ -94,6 +94,14 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
     case UNW_X86_XMM6_hi:
     case UNW_X86_XMM7_lo:
     case UNW_X86_XMM7_hi:
+    case UNW_X86_XMM0:
+    case UNW_X86_XMM1:
+    case UNW_X86_XMM2:
+    case UNW_X86_XMM3:
+    case UNW_X86_XMM4:
+    case UNW_X86_XMM5:
+    case UNW_X86_XMM6:
+    case UNW_X86_XMM7:
       loc = x86_scratch_loc (c, reg);
       break;
 
