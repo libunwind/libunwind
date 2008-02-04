@@ -313,7 +313,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
       pi->unwind_info_size = sizeof (dci);
       pi->unwind_info = mempool_alloc (&dwarf_cie_info_pool);
       if (!pi->unwind_info)
-	return UNW_ENOMEM;
+	return -UNW_ENOMEM;
 
       if (dci.have_abi_marker)
 	{
