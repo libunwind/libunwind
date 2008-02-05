@@ -60,7 +60,7 @@ _Unwind_RaiseException (struct _Unwind_Exception *exception_object)
       if (unw_get_proc_info (&context.cursor, &pi) < 0)
 	return _URC_FATAL_PHASE1_ERROR;
 
-      personality = (_Unwind_Personality_Fn) pi.handler;
+      personality = (_Unwind_Personality_Fn) (uintptr_t) pi.handler;
       if (personality)
 	{
 	  reason = (*personality) (_U_VERSION, _UA_SEARCH_PHASE,

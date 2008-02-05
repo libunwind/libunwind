@@ -49,7 +49,7 @@ backtrace (void **buffer, int size)
 
       if (unw_get_reg (&cursor, UNW_REG_IP, &ip) < 0)
 	return n;
-      buffer[n++] = (void *) ip;
+      buffer[n++] = (void *) (uintptr_t) ip;
     }
   return n;
 }

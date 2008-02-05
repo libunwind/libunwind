@@ -26,12 +26,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 
 static inline int
-is_cie_id (unw_word_t val)
+is_cie_id (unw_word_t val, int is_debug_frame)
 {
-  /* DWARF spec says CIE_id is 0xffffffff (for 32-bit ELF) or
-     0xffffffffffffffff (for 64-bit ELF).  However, the GNU toolchain
+  /* The CIE ID is normally 0xffffffff (for 32-bit ELF) or
+     0xffffffffffffffff (for 64-bit ELF).  However, .eh_frame
      uses 0.  */
-  return (val == 0 || val == - (unw_word_t) 1);
+  if (is_debug_frame)
+    return (val == - (uint32_t) 1 || val == - (uint64_t) 1);
+  else
+    return (val == 0);
 }
 
 /* Note: we don't need to keep track of more than the first four
@@ -41,7 +44,8 @@ is_cie_id (unw_word_t val)
    repeated.  */
 static inline int
 parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
-	   const unw_proc_info_t *pi, struct dwarf_cie_info *dci, void *arg)
+	   const unw_proc_info_t *pi, struct dwarf_cie_info *dci,
+	   unw_word_t base, void *arg)
 {
   uint8_t version, ch, augstr[5], fde_encoding, handler_encoding;
   unw_word_t len, cie_end_addr, aug_size;
@@ -57,7 +61,7 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
      "address-unit sized constants".  The `R' augmentation can be used
      to override this, but by default, we pick an address-sized unit
      for fde_encoding.  */
-  switch (sizeof (unw_word_t))
+  switch (dwarf_addr_size (as))
     {
     case 4:	fde_encoding = DW_EH_PE_udata4; break;
     case 8:	fde_encoding = DW_EH_PE_udata8; break;
@@ -74,13 +78,14 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
     {
       /* the CIE is in the 32-bit DWARF format */
       uint32_t cie_id;
+      /* DWARF says CIE id should be 0xffffffff, but in .eh_frame, it's 0 */
+      const uint32_t expected_id = (base) ? 0xffffffff : 0;
 
       len = u32val;
       cie_end_addr = addr + len;
       if ((ret = dwarf_readu32 (as, a, &addr, &cie_id, arg)) < 0)
 	return ret;
-      /* DWARF says CIE id should be 0xffffffff, but in .eh_frame, it's 0 */
-      if (cie_id != 0)
+      if (cie_id != expected_id)
 	{
 	  Debug (1, "Unexpected CIE id %x\n", cie_id);
 	  return -UNW_EINVAL;
@@ -90,6 +95,9 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
     {
       /* the CIE is in the 64-bit DWARF format */
       uint64_t cie_id;
+      /* DWARF says CIE id should be 0xffffffffffffffff, but in
+	 .eh_frame, it's 0 */
+      const uint64_t expected_id = (base) ? 0xffffffffffffffffull : 0;
 
       if ((ret = dwarf_readu64 (as, a, &addr, &u64val, arg)) < 0)
 	return ret;
@@ -97,9 +105,7 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
       cie_end_addr = addr + len;
       if ((ret = dwarf_readu64 (as, a, &addr, &cie_id, arg)) < 0)
 	return ret;
-      /* DWARF says CIE id should be 0xffffffffffffffff, but in
-	 .eh_frame, it's 0 */
-      if (cie_id != 0)
+      if (cie_id != expected_id)
 	{
 	  Debug (1, "Unexpected CIE id %llx\n", (long long) cie_id);
 	  return -UNW_EINVAL;
@@ -146,14 +152,16 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
 				      arg)) < 0)
     return ret;
 
+  i = 0;
   if (augstr[0] == 'z')
     {
       dci->sized_augmentation = 1;
       if ((ret = dwarf_read_uleb128 (as, a, &addr, &aug_size, arg)) < 0)
 	return ret;
+      i++;
     }
 
-  for (i = 1; i < sizeof (augstr) && augstr[i]; ++i)
+  for (; i < sizeof (augstr) && augstr[i]; ++i)
     switch (augstr[i])
       {
       case 'L':
@@ -185,16 +193,15 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
 	break;
 
       default:
+	Debug (1, "Unexpected augmentation string `%s'\n", augstr);
 	if (dci->sized_augmentation)
 	  /* If we have the size of the augmentation body, we can skip
 	     over the parts that we don't understand, so we're OK. */
-	  return 0;
+	  goto done;
 	else
-	  {
-	    Debug (1, "Unexpected augmentation string `%s'\n", augstr);
-	    return -UNW_EINVAL;
-	  }
+	  return -UNW_EINVAL;
       }
+ done:
   dci->fde_encoding = fde_encoding;
   dci->cie_instr_start = addr;
   Debug (15, "CIE parsed OK, augmentation = \"%s\", handler=0x%lx\n",
@@ -202,12 +209,15 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
   return 0;
 }
 
-/* Extract proc-info from the FDE starting at adress ADDR.  */
+/* Extract proc-info from the FDE starting at adress ADDR.
+   
+   Pass BASE as zero for eh_frame behaviour, or a pointer to
+   debug_frame base for debug_frame behaviour.  */
 
 HIDDEN int
 dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 				  unw_word_t *addrp, unw_proc_info_t *pi,
-				  int need_unwind_info,
+				  int need_unwind_info, unw_word_t base,
 				  void *arg)
 {
   unw_word_t fde_end_addr, cie_addr, cie_offset_addr, aug_end_addr = 0;
@@ -226,7 +236,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 
   if (u32val != 0xffffffff)
     {
-      uint32_t cie_offset;
+      int32_t cie_offset;
 
       /* In some configurations, an FDE with a 0 length indicates the
 	 end of the FDE-table.  */
@@ -241,19 +251,22 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
       if ((ret = dwarf_reads32 (as, a, &addr, &cie_offset, arg)) < 0)
 	return ret;
 
-      if (is_cie_id (cie_offset))
+      if (is_cie_id (cie_offset, base != 0))
 	/* ignore CIEs (happens during linear searches) */
 	return 0;
 
-      /* DWARF says that the CIE_pointer in the FDE is a
-	 .debug_frame-relative offset, but the GCC-generated .eh_frame
-	 sections instead store a "pcrelative" offset, which is just
-	 as fine as it's self-contained.  */
-      cie_addr = cie_offset_addr - cie_offset;
+      if (base != 0)
+        cie_addr = base + cie_offset;
+      else
+	/* DWARF says that the CIE_pointer in the FDE is a
+	   .debug_frame-relative offset, but the GCC-generated .eh_frame
+	   sections instead store a "pcrelative" offset, which is just
+	   as fine as it's self-contained.  */
+	cie_addr = cie_offset_addr - cie_offset;
     }
   else
     {
-      uint64_t cie_offset;
+      int64_t cie_offset;
 
       /* the FDE is in the 64-bit DWARF format */
 
@@ -266,18 +279,23 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
       if ((ret = dwarf_reads64 (as, a, &addr, &cie_offset, arg)) < 0)
 	return ret;
 
-      if (is_cie_id (cie_offset))
+      if (is_cie_id (cie_offset, base != 0))
 	/* ignore CIEs (happens during linear searches) */
 	return 0;
 
-      /* DWARF says that the CIE_pointer in the FDE is a
-	 .debug_frame-relative offset, but the GCC-generated .eh_frame
-	 sections instead store a "pcrelative" offset, which is just
-	 as fine as it's self-contained.  */
-      cie_addr = (unw_word_t) ((uint64_t) cie_offset_addr - cie_offset);
+      if (base != 0)
+	cie_addr = base + cie_offset;
+      else
+	/* DWARF says that the CIE_pointer in the FDE is a
+	   .debug_frame-relative offset, but the GCC-generated .eh_frame
+	   sections instead store a "pcrelative" offset, which is just
+	   as fine as it's self-contained.  */
+	cie_addr = (unw_word_t) ((uint64_t) cie_offset_addr - cie_offset);
     }
 
-  if ((ret = parse_cie (as, a, cie_addr, pi, &dci, arg)) < 0)
+  Debug (15, "looking for CIE at address %x\n", (int) cie_addr);
+
+  if ((ret = parse_cie (as, a, cie_addr, pi, &dci, base, arg)) < 0)
     return ret;
 
   /* IP-range has same encoding as FDE pointers, except that it's

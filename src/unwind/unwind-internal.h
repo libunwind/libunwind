@@ -103,7 +103,7 @@ _Unwind_Phase2 (struct _Unwind_Exception *exception_object,
 	  || unw_get_proc_info (&context->cursor, &pi) < 0)
 	return _URC_FATAL_PHASE2_ERROR;
 
-      personality = (_Unwind_Personality_Fn) pi.handler;
+      personality = (_Unwind_Personality_Fn) (uintptr_t) pi.handler;
       if (personality)
 	{
 	  if (!stop)

@@ -1,8 +1,14 @@
+if ARCH_ARM
+include_HEADERS_tdep = include/libunwind-arm.h
+else
 if ARCH_IA64
 include_HEADERS_tdep = include/libunwind-ia64.h
 else
 if ARCH_HPPA
 include_HEADERS_tdep = include/libunwind-hppa.h
+else
+if ARCH_MIPS
+include_HEADERS_tdep = include/libunwind-mips.h
 else
 if ARCH_X86
 include_HEADERS_tdep = include/libunwind-x86.h
@@ -19,8 +25,10 @@ endif # ARCH_PPC64
 endif # ARCH_PPC32
 endif # ARCH_X86_64
 endif # ARCH_X86
+endif # ARCH_MIPS
 endif # ARCH_HPPA
 endif # ARCH_IA64
+endif # ARCH_ARM
 
 include_HEADERS_common = $(include_HEADERS_tdep)		\
 	include/libunwind-dynamic.h include/libunwind-ptrace.h

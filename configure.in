@@ -75,19 +75,24 @@ AM_CONDITIONAL(USE_ALTIVEC, test x$use_altivec = xhas_altivec)
 
 get_arch() {
  case "$1" in
+  arm*) echo arm;;
   i?86) echo x86;;
   hppa*) echo hppa;;
+  mips*) echo mips;;
   powerpc64) is_gcc_m64;;
   *) echo $1;;
  esac
 }
 
 build_arch=`get_arch $build_cpu`
+host_arch=`get_arch $host_cpu`
 target_arch=`get_arch $target_cpu`
 
-AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$build_arch)
+AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
+AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
 AM_CONDITIONAL(ARCH_HPPA, test x$target_arch = xhppa)
+AM_CONDITIONAL(ARCH_MIPS, test x$target_arch = xmips)
 AM_CONDITIONAL(ARCH_X86, test x$target_arch = xx86)
 AM_CONDITIONAL(ARCH_X86_64, test x$target_arch = xx86_64)
 AM_CONDITIONAL(ARCH_PPC32, test x$target_arch = xppc32)
@@ -101,7 +106,7 @@ if test x$target_arch = xppc64; then
         AC_SUBST([libdir])
 fi
 
-if test x$target_arch != x$build_arch; then
+if test x$target_arch != x$host_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
 fi
 AC_CONFIG_LINKS(include/libunwind.h:include/libunwind-$target_arch.h

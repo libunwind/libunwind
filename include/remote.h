@@ -11,7 +11,7 @@ static inline int
 fetch8 (unw_addr_space_t as, unw_accessors_t *a,
 	unw_word_t *addr, int8_t *valp, void *arg)
 {
-  *valp = *(int8_t *) *addr;
+  *valp = *(int8_t *) (uintptr_t) *addr;
   *addr += 1;
   return 0;
 }
@@ -20,7 +20,7 @@ static inline int
 fetch16 (unw_addr_space_t as, unw_accessors_t *a,
 	 unw_word_t *addr, int16_t *valp, void *arg)
 {
-  *valp = *(int16_t *) *addr;
+  *valp = *(int16_t *) (uintptr_t) *addr;
   *addr += 2;
   return 0;
 }
@@ -29,7 +29,7 @@ static inline int
 fetch32 (unw_addr_space_t as, unw_accessors_t *a,
 	 unw_word_t *addr, int32_t *valp, void *arg)
 {
-  *valp = *(int32_t *) *addr;
+  *valp = *(int32_t *) (uintptr_t) *addr;
   *addr += 4;
   return 0;
 }
@@ -38,7 +38,7 @@ static inline int
 fetchw (unw_addr_space_t as, unw_accessors_t *a,
 	unw_word_t *addr, unw_word_t *valp, void *arg)
 {
-  *valp = *(unw_word_t *) *addr;
+  *valp = *(unw_word_t *) (uintptr_t) *addr;
   *addr += sizeof (unw_word_t);
   return 0;
 }

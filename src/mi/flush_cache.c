@@ -28,8 +28,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 PROTECTED void
 unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
 {
+#if !UNW_TARGET_IA64
+  struct unw_debug_frame_list *w = as->debug_frames;
+#endif
+
   /* clear dyn_info_list_addr cache: */
   as->dyn_info_list_addr = 0;
+
+#if !UNW_TARGET_IA64
+  for (; w; w = w->next)
+    {
+      if (w->index)
+        free (w->index);
+      free (w->debug_frame);
+    }
+  as->debug_frames = NULL;
+#endif
 
   /* This lets us flush caches lazily.  The implementation currently
      ignores the flush range arguments (lo-hi).  This is OK because

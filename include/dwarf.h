@@ -329,6 +329,23 @@ struct dwarf_rs_cache
     dwarf_reg_state_t buckets[DWARF_UNW_CACHE_SIZE];
   };
 
+/* A list of descriptors for loaded .debug_frame sections.  */
+
+struct unw_debug_frame_list
+  {
+    /* The start (inclusive) and end (exclusive) of the described region.  */
+    unw_word_t start;
+    unw_word_t end;
+    /* The debug frame itself.  */
+    char *debug_frame;
+    size_t debug_frame_size;
+    /* Index (for binary search).  */
+    struct table_entry *index;
+    size_t index_size;
+    /* Pointer to next descriptor.  */
+    struct unw_debug_frame_list *next;
+  };
+
 /* Convenience macros: */
 #define dwarf_init			UNW_ARCH_OBJ (dwarf_init)
 #define dwarf_find_proc_info		UNW_OBJ (dwarf_find_proc_info)
@@ -363,6 +380,7 @@ extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
 					     unw_word_t *fde_addr,
 					     unw_proc_info_t *pi,
 					     int need_unwind_info,
+					     unw_word_t base,
 					     void *arg);
 extern int dwarf_find_save_locs (struct dwarf_cursor *c);
 extern int dwarf_create_state_record (struct dwarf_cursor *c,

@@ -47,10 +47,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define ULEB128	0x4
 #define SLEB128	0x5
 #define OFFSET	0x6	/* 32-bit offset for 32-bit DWARF, 64-bit otherwise */
+#define ADDR	0x7	/* Machine address.  */
 
 static uint8_t operands[256] =
   {
-    [DW_OP_addr] =	OPND1 (sizeof (unw_word_t) == 4 ? VAL32 : VAL64),
+    [DW_OP_addr] =		OPND1 (ADDR),
     [DW_OP_const1u] =		OPND1 (VAL8),
     [DW_OP_const1s] =		OPND1 (VAL8),
     [DW_OP_const2u] =		OPND1 (VAL16),
@@ -106,7 +107,18 @@ static uint8_t operands[256] =
     [DW_OP_call_ref] =		OPND1 (OFFSET)
   };
 
-#define sword(X)	((unw_sword_t) (X))
+static inline unw_sword_t
+sword (unw_addr_space_t as, unw_word_t val)
+{
+  switch (dwarf_addr_size (as))
+    {
+    case 1: return (int8_t) val;
+    case 2: return (int16_t) val;
+    case 4: return (int32_t) val;
+    case 8: return (int64_t) val;
+    default: abort ();
+    }
+}
 
 static inline unw_word_t
 read_operand (unw_addr_space_t as, unw_accessors_t *a,
@@ -118,25 +130,43 @@ read_operand (unw_addr_space_t as, unw_accessors_t *a,
   uint64_t u64;
   int ret;
 
+  if (operand_type == ADDR)
+    switch (dwarf_addr_size (as))
+      {
+      case 1: operand_type = VAL8; break;
+      case 2: operand_type = VAL16; break;
+      case 4: operand_type = VAL32; break;
+      case 8: operand_type = VAL64; break;
+      default: abort ();
+      }
+
   switch (operand_type)
     {
     case VAL8:
       ret = dwarf_readu8 (as, a, addr, &u8, arg);
+      if (ret < 0)
+	return ret;
       *val = u8;
       break;
 
     case VAL16:
       ret = dwarf_readu16 (as, a, addr, &u16, arg);
+      if (ret < 0)
+	return ret;
       *val = u16;
       break;
 
     case VAL32:
       ret = dwarf_readu32 (as, a, addr, &u32, arg);
+      if (ret < 0)
+	return ret;
       *val = u32;
       break;
 
     case VAL64:
       ret = dwarf_readu64 (as, a, addr, &u64, arg);
+      if (ret < 0)
+	return ret;
       *val = u64;
       break;
 
@@ -345,8 +375,10 @@ do {						\
 	  tmp1 = pop ();
 	  switch (operand1)
 	    {
-	    case 0:
-	      break;
+	    default:
+	      Debug (1, "Unexpected DW_OP_deref_size size %d\n",
+		     (int) operand1);
+	      return -UNW_EINVAL;
 
 	    case 1:
 	      if ((ret = dwarf_readu8 (as, a, &tmp1, &u8, arg)) < 0)
@@ -379,7 +411,7 @@ do {						\
 	    case 8:
 	      if ((ret = dwarf_readu64 (as, a, &tmp1, &u64, arg)) < 0)
 		return ret;
-	      tmp2 = u16;
+	      tmp2 = u64;
 	      if (operand1 != 8)
 		{
 		  if (dwarf_is_big_endian (as))
@@ -433,7 +465,7 @@ do {						\
 	case DW_OP_abs:
 	  Debug (15, "OP_abs\n");
 	  tmp1 = pop ();
-	  if (tmp1 & ((unw_word_t) 1 << (8 * sizeof (unw_word_t) - 1)))
+	  if (tmp1 & ((unw_word_t) 1 << (8 * dwarf_addr_size (as) - 1)))
 	    tmp1 = -tmp1;
 	  push (tmp1);
 	  break;
@@ -450,7 +482,7 @@ do {						\
 	  tmp1 = pop ();
 	  tmp2 = pop ();
 	  if (tmp1)
-	    tmp1 = sword (tmp2) / sword (tmp1);
+	    tmp1 = sword (as, tmp2) / sword (as, tmp1);
 	  push (tmp1);
 	  break;
 
@@ -528,7 +560,7 @@ do {						\
 	  Debug (15, "OP_shra\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp2) >> tmp1);
+	  push (sword (as, tmp2) >> tmp1);
 	  break;
 
 	case DW_OP_xor:
@@ -542,42 +574,42 @@ do {						\
 	  Debug (15, "OP_le\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp1) <= sword (tmp2));
+	  push (sword (as, tmp1) <= sword (as, tmp2));
 	  break;
 
 	case DW_OP_ge:
 	  Debug (15, "OP_ge\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp1) >= sword (tmp2));
+	  push (sword (as, tmp1) >= sword (as, tmp2));
 	  break;
 
 	case DW_OP_eq:
 	  Debug (15, "OP_eq\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp1) == sword (tmp2));
+	  push (sword (as, tmp1) == sword (as, tmp2));
 	  break;
 
 	case DW_OP_lt:
 	  Debug (15, "OP_lt\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp1) < sword (tmp2));
+	  push (sword (as, tmp1) < sword (as, tmp2));
 	  break;
 
 	case DW_OP_gt:
 	  Debug (15, "OP_gt\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp1) > sword (tmp2));
+	  push (sword (as, tmp1) > sword (as, tmp2));
 	  break;
 
 	case DW_OP_ne:
 	  Debug (15, "OP_ne\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (tmp1) != sword (tmp2));
+	  push (sword (as, tmp1) != sword (as, tmp2));
 	  break;
 
 	case DW_OP_skip:

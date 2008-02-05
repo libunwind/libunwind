@@ -66,8 +66,9 @@ RECURSIVE_TARGETS = all-recursive check-recursive dvi-recursive \
 	uninstall-recursive
 am__include_HEADERS_DIST = include/libunwind-ppc64.h \
 	include/libunwind-ppc32.h include/libunwind-x86_64.h \
-	include/libunwind-x86.h include/libunwind-hppa.h \
-	include/libunwind-ia64.h include/libunwind-dynamic.h \
+	include/libunwind-x86.h include/libunwind-mips.h \
+	include/libunwind-hppa.h include/libunwind-ia64.h \
+	include/libunwind-arm.h include/libunwind-dynamic.h \
 	include/libunwind-ptrace.h include/libunwind.h \
 	include/unwind.h
 am__vpath_adj_setup = srcdirstrip=`echo "$(srcdir)" | sed 's|.|.|g'`;
@@ -100,10 +101,14 @@ AMDEP_TRUE = @AMDEP_TRUE@
 AMTAR = @AMTAR@
 AR = @AR@
 ARCH = @ARCH@
+ARCH_ARM_FALSE = @ARCH_ARM_FALSE@
+ARCH_ARM_TRUE = @ARCH_ARM_TRUE@
 ARCH_HPPA_FALSE = @ARCH_HPPA_FALSE@
 ARCH_HPPA_TRUE = @ARCH_HPPA_TRUE@
 ARCH_IA64_FALSE = @ARCH_IA64_FALSE@
 ARCH_IA64_TRUE = @ARCH_IA64_TRUE@
+ARCH_MIPS_FALSE = @ARCH_MIPS_FALSE@
+ARCH_MIPS_TRUE = @ARCH_MIPS_TRUE@
 ARCH_PPC32_FALSE = @ARCH_PPC32_FALSE@
 ARCH_PPC32_TRUE = @ARCH_PPC32_TRUE@
 ARCH_PPC64_FALSE = @ARCH_PPC64_FALSE@
@@ -174,6 +179,7 @@ PKG_MINOR = @PKG_MINOR@
 RANLIB = @RANLIB@
 REMOTE_ONLY_FALSE = @REMOTE_ONLY_FALSE@
 REMOTE_ONLY_TRUE = @REMOTE_ONLY_TRUE@
+SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
@@ -233,12 +239,14 @@ target_alias = @target_alias@
 target_cpu = @target_cpu@
 target_os = @target_os@
 target_vendor = @target_vendor@
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_PPC32_FALSE@@ARCH_PPC64_TRUE@@ARCH_X86_64_FALSE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-ppc64.h
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_PPC32_TRUE@@ARCH_X86_64_FALSE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-ppc32.h
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-x86_64.h
-@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_X86_TRUE@include_HEADERS_tdep = include/libunwind-x86.h
-@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@include_HEADERS_tdep = include/libunwind-hppa.h
-@ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
+@ARCH_ARM_FALSE@@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_MIPS_FALSE@@ARCH_PPC32_FALSE@@ARCH_PPC64_TRUE@@ARCH_X86_64_FALSE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-ppc64.h
+@ARCH_ARM_FALSE@@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_MIPS_FALSE@@ARCH_PPC32_TRUE@@ARCH_X86_64_FALSE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-ppc32.h
+@ARCH_ARM_FALSE@@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_MIPS_FALSE@@ARCH_X86_64_TRUE@@ARCH_X86_FALSE@include_HEADERS_tdep = include/libunwind-x86_64.h
+@ARCH_ARM_FALSE@@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_MIPS_FALSE@@ARCH_X86_TRUE@include_HEADERS_tdep = include/libunwind-x86.h
+@ARCH_ARM_FALSE@@ARCH_HPPA_FALSE@@ARCH_IA64_FALSE@@ARCH_MIPS_TRUE@include_HEADERS_tdep = include/libunwind-mips.h
+@ARCH_ARM_FALSE@@ARCH_HPPA_TRUE@@ARCH_IA64_FALSE@include_HEADERS_tdep = include/libunwind-hppa.h
+@ARCH_ARM_FALSE@@ARCH_IA64_TRUE@include_HEADERS_tdep = include/libunwind-ia64.h
+@ARCH_ARM_TRUE@include_HEADERS_tdep = include/libunwind-arm.h
 include_HEADERS_common = $(include_HEADERS_tdep)		\
 	include/libunwind-dynamic.h include/libunwind-ptrace.h
 

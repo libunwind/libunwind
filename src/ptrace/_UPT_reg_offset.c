@@ -288,6 +288,8 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 //  [UNW_X86_64_SS]	= 0xa0
 #elif defined(UNW_TARGET_PPC32)
 #elif defined(UNW_TARGET_PPC64)
+#elif defined(UNW_TARGET_ARM)
+#elif defined(UNW_TARGET_MIPS)
 #else
 # error Fix me.
 #endif

@@ -81,7 +81,7 @@ siglongjmp (sigjmp_buf env, int val)
 
       if (unw_set_reg (&c, UNW_REG_EH + 0, wp[JB_RP]) < 0
 	  || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
-	  || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) cont))
+	  || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) (uintptr_t) cont))
 	abort ();
 
       unw_resume (&c);
