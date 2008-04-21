@@ -13,7 +13,7 @@ num_errors=0
 LIBUNWIND=../src/.libs/libunwind.so
 LIBUNWIND_GENERIC=../src/.libs/libunwind-${plat}.so
 
-function fetch_symtab {
+fetch_symtab () {
     filename=$1
 
     if [ ! -r $filename ]; then
@@ -38,12 +38,12 @@ function fetch_symtab {
     IFS="$saved_IFS"
 }
 
-function ignore {
+ignore () {
     sym=$1
     symtab=`echo "$symtab" | grep -v " ${sym}\$"`
 }
 
-function match {
+match () {
     sym=$1
     if `echo "$symtab" | grep -q " ${sym}\$"`; then
 	symtab=`echo "$symtab" | grep -v " ${sym}\$"`
@@ -57,7 +57,7 @@ function match {
 # Filter out miscellaneous symbols that get defined by the
 # linker for each shared object.
 #
-function filter_misc {
+filter_misc () {
     ignore _DYNAMIC
     ignore _GLOBAL_OFFSET_TABLE_
     ignore __bss_start
@@ -71,7 +71,7 @@ function filter_misc {
     ignore ICRT.INTERNAL	# ICC 8.x defines this
 }
 
-function check_local_unw_abi {
+check_local_unw_abi () {
     match _UL${plat}_create_addr_space
     match _UL${plat}_destroy_addr_space
     match _UL${plat}_get_fpreg
@@ -129,7 +129,7 @@ function check_local_unw_abi {
     esac
 }
 
-function check_generic_unw_abi {
+check_generic_unw_abi () {
     match _U${plat}_create_addr_space
     match _U${plat}_destroy_addr_space
     match _U${plat}_flush_cache
@@ -186,7 +186,7 @@ function check_generic_unw_abi {
     esac
 }
 
-function check_cxx_abi {
+check_cxx_abi () {
     match _Unwind_Backtrace
     match _Unwind_DeleteException
     match _Unwind_FindEnclosingFunction
@@ -230,7 +230,7 @@ function check_cxx_abi {
     esac
 }
 
-function check_empty {
+check_empty () {
     if [ -n "$symtab" ]; then
 	echo -e "  ERROR: Extraneous symbols:\n$symtab"
 	num_errors=`expr $num_errors + 1`
@@ -252,7 +252,7 @@ check_empty
 
 if [ $num_errors -gt 0 ]; then
     echo "FAILURE: Detected $num_errors errors"
-    exit -1
+    exit 1
 fi
 
 if $verbose; then

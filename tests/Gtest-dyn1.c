@@ -34,7 +34,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/mman.h>
 
+#if UNW_TARGET_ARM
+#define MAX_FUNC_SIZE   96 	/* FIXME: arch/compiler dependent */
+#else
 #define MAX_FUNC_SIZE	2048	/* max. size of cloned function */
+#endif
 
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
