@@ -32,6 +32,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+#define arm_lock			UNW_OBJ(lock)
+#define arm_local_resume		UNW_OBJ(local_resume)
 #define arm_local_addr_space_init	UNW_OBJ(local_addr_space_init)
 
 extern void arm_local_addr_space_init (void);

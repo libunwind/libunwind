@@ -66,11 +66,17 @@ flush_cache:
 	lwz    31, -4(11) ;
 	mr      1, 11     ;
 	blr
+#elif defined(__arm__)
+	.text
+	.globl flush_cache
+flush_cache:
+	bx    lr
+
 #else
 # error Need flush_cache code for this architecture.
 #endif
 
-#ifdef __linux__
+#if defined ( __linux__) && !defined (__arm__)
         /* We do not need executable stack.  */
         .section        .note.GNU-stack,"",@progbits
 #endif
