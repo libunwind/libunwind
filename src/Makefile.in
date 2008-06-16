@@ -430,14 +430,20 @@ am__objects_35 = $(am__objects_34) mi/backtrace.lo mi/dyn-cancel.lo \
 	mi/Lput_dynamic_unwind_info.lo mi/Ldestroy_addr_space.lo \
 	mi/Lget_reg.lo mi/Lset_reg.lo mi/Lget_fpreg.lo \
 	mi/Lset_fpreg.lo mi/Lset_caching_policy.lo
-am__objects_36 = unwind/Backtrace.lo unwind/DeleteException.lo \
-	unwind/FindEnclosingFunction.lo unwind/ForcedUnwind.lo \
-	unwind/GetBSP.lo unwind/GetCFA.lo unwind/GetDataRelBase.lo \
-	unwind/GetGR.lo unwind/GetIP.lo \
-	unwind/GetLanguageSpecificData.lo unwind/GetRegionStart.lo \
-	unwind/GetTextRelBase.lo unwind/RaiseException.lo \
-	unwind/Resume.lo unwind/Resume_or_Rethrow.lo unwind/SetGR.lo \
-	unwind/SetIP.lo
+@SUPPORT_CXX_EXCEPTIONS_TRUE@am__objects_36 = unwind/Backtrace.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/DeleteException.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/FindEnclosingFunction.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/ForcedUnwind.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetBSP.lo unwind/GetCFA.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetDataRelBase.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetGR.lo unwind/GetIP.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetLanguageSpecificData.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetRegionStart.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetTextRelBase.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/RaiseException.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/Resume.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/Resume_or_Rethrow.lo \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/SetGR.lo unwind/SetIP.lo
 @ARCH_ARM_FALSE@@ARCH_MIPS_FALSE@am__objects_37 = $(am__objects_35) \
 @ARCH_ARM_FALSE@@ARCH_MIPS_FALSE@	$(am__objects_36)
 @ARCH_ARM_FALSE@@ARCH_MIPS_TRUE@am__objects_37 = $(am__objects_35)
@@ -594,6 +600,7 @@ CXXFLAGS = @CXXFLAGS@
 CYGPATH_W = @CYGPATH_W@
 DEFS = @DEFS@
 DEPDIR = @DEPDIR@
+DSYMUTIL = @DSYMUTIL@
 ECHO = @ECHO@
 ECHO_C = @ECHO_C@
 ECHO_N = @ECHO_N@
@@ -619,6 +626,7 @@ MAINT = @MAINT@
 MAINTAINER_MODE_FALSE = @MAINTAINER_MODE_FALSE@
 MAINTAINER_MODE_TRUE = @MAINTAINER_MODE_TRUE@
 MAKEINFO = @MAKEINFO@
+NMEDIT = @NMEDIT@
 OBJEXT = @OBJEXT@
 OS_HPUX_FALSE = @OS_HPUX_FALSE@
 OS_HPUX_TRUE = @OS_HPUX_TRUE@
@@ -642,6 +650,8 @@ SED = @SED@
 SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 STRIP = @STRIP@
+SUPPORT_CXX_EXCEPTIONS_FALSE = @SUPPORT_CXX_EXCEPTIONS_FALSE@
+SUPPORT_CXX_EXCEPTIONS_TRUE = @SUPPORT_CXX_EXCEPTIONS_TRUE@
 USE_ALTIVEC_FALSE = @USE_ALTIVEC_FALSE@
 USE_ALTIVEC_TRUE = @USE_ALTIVEC_TRUE@
 VERSION = @VERSION@
@@ -762,14 +772,14 @@ libunwind_la_SOURCES_generic = \
 	mi/Gget_fpreg.c mi/Gset_fpreg.c					\
 	mi/Gset_caching_policy.c
 
-libunwind_la_SOURCES_local_unwind = \
-	unwind/Backtrace.c unwind/DeleteException.c			\
-	unwind/FindEnclosingFunction.c unwind/ForcedUnwind.c		\
-	unwind/GetBSP.c unwind/GetCFA.c unwind/GetDataRelBase.c		\
-	unwind/GetGR.c unwind/GetIP.c unwind/GetLanguageSpecificData.c	\
-	unwind/GetRegionStart.c unwind/GetTextRelBase.c			\
-	unwind/RaiseException.c unwind/Resume.c				\
-	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
+@SUPPORT_CXX_EXCEPTIONS_TRUE@libunwind_la_SOURCES_local_unwind = \
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/Backtrace.c unwind/DeleteException.c			\
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/FindEnclosingFunction.c unwind/ForcedUnwind.c		\
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetBSP.c unwind/GetCFA.c unwind/GetDataRelBase.c		\
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetGR.c unwind/GetIP.c unwind/GetLanguageSpecificData.c	\
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/GetRegionStart.c unwind/GetTextRelBase.c			\
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/RaiseException.c unwind/Resume.c				\
+@SUPPORT_CXX_EXCEPTIONS_TRUE@	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
 
 
 # List of arch-independent files needed by local-only library (libunwind):
