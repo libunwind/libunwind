@@ -116,6 +116,14 @@ AC_ARG_ENABLE(debug,
 [  --enable-debug          turn on debug support (slows down execution)],
 [enable_debug=yes], [])
 
+AC_ARG_ENABLE(cxx_exceptions,
+[  --enable-cxx-exceptions use libunwind to handle C++ exceptions],
+[enable_cxx_exceptions=$enableval], [enable_cxx_exceptions=yes])
+if test x$enable_cxx_exceptions = xyes; then
+  AC_MSG_NOTICE([Enabling C++ exception support])
+fi
+AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
+
 LIBUNWIND___THREAD
 
 save_LDFLAGS="$LDFLAGS"

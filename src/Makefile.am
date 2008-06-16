@@ -61,6 +61,7 @@ libunwind_la_SOURCES_generic =						\
 	mi/Gget_fpreg.c mi/Gset_fpreg.c					\
 	mi/Gset_caching_policy.c
 
+if SUPPORT_CXX_EXCEPTIONS
 libunwind_la_SOURCES_local_unwind =					\
 	unwind/Backtrace.c unwind/DeleteException.c			\
 	unwind/FindEnclosingFunction.c unwind/ForcedUnwind.c		\
@@ -69,6 +70,7 @@ libunwind_la_SOURCES_local_unwind =					\
 	unwind/GetRegionStart.c unwind/GetTextRelBase.c			\
 	unwind/RaiseException.c unwind/Resume.c				\
 	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
+endif
 
 # List of arch-independent files needed by local-only library (libunwind):
 libunwind_la_SOURCES_local_nounwind =					\
