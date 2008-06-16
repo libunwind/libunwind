@@ -71,6 +71,10 @@ unw_step (unw_cursor_t *cursor)
       unw_word_t prev_ip = c->dwarf.ip, prev_cfa = c->dwarf.cfa;
       struct dwarf_loc rbp_loc, rsp_loc, rip_loc;
 
+      /* We could get here because of missing/bad unwind information.
+         Validate all addresses before dereferencing. */
+      c->validate = 1;
+
       Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
       if (unw_is_signal_frame (cursor))

@@ -40,7 +40,6 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 
   as = c->dwarf.as;
   a = unw_get_accessors (as);
-  as->validate = 1;	/* Don't trust the ip */
   arg = c->dwarf.as_arg;
 
   /* Check if RIP points at sigreturn sequence.

@@ -158,7 +158,8 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
   else
     {
       /* validate address */
-      if (as->validate && validate_mem(addr))
+      const struct cursor *c = (const struct cursor *)arg;
+      if (c && c->validate && validate_mem(addr))
         return -1;
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%016lx] -> %lx\n", addr, *val);
@@ -171,7 +172,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 	    void *arg)
 {
   unw_word_t *addr;
-  ucontext_t *uc = arg;
+  ucontext_t *uc = ((struct cursor *)arg)->uc;
 
   if (unw_is_fpreg (reg))
     goto badreg;
@@ -200,7 +201,7 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 	      int write, void *arg)
 {
-  ucontext_t *uc = arg;
+  ucontext_t *uc = ((struct cursor *)arg)->uc;
   unw_fpreg_t *addr;
 
   if (!unw_is_fpreg (reg))
@@ -252,7 +253,6 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
 
-  local_addr_space.validate = 0;
   memset (last_good_addr, 0, sizeof (unw_word_t) * NLGA);
   lga_victim = 0;
 }
