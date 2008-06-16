@@ -97,21 +97,17 @@ unw_tdep_save_loc_t;
 /* On x86_64, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
-/* XXX this is not ideal: an application should not be prevented from
-   using the "getcontext" name just because it's using libunwind.  We
-   can't just use __getcontext() either, because that isn't exported
-   by glibc...  */
-#define unw_tdep_getcontext(uc)		(getcontext (uc), 0)
-
-#include "libunwind-dynamic.h"
-
 typedef struct
   {
     /* no x86-64-specific auxiliary proc-info */
   }
 unw_tdep_proc_info_t;
 
+#include "libunwind-dynamic.h"
 #include "libunwind-common.h"
+
+#define unw_tdep_getcontext		UNW_ARCH_OBJ(getcontext)
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
 
 #define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);

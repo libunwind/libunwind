@@ -23,38 +23,45 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "offsets.h"
+#include "ucontext_i.h"
 
-	.global _x86_64_setcontext
 
-_x86_64_setcontext:
+/*  int _Ux86_64_setcontext (const ucontext_t *ucp)
+
+  Restores the machine context provided.
+  Unlike the libc implementation, doesn't clobber %rax
+  
+*/
+	.global _Ux86_64_setcontext
+
+_Ux86_64_setcontext:
 
         /* restore fp state */
-	mov    REG_OFFSET_FPREGS_PTR(%rdi),%r8
+	mov    UC_MCONTEXT_FPREGS_PTR(%rdi),%r8
 	fldenv (%r8)
-	ldmxcsr FPREG_OFFSET_MXCR(%r8)
+	ldmxcsr FPREGS_OFFSET_MXCSR(%r8)
 
 	/* restore the rest of the state */
-	mov    REG_OFFSET_R8(%rdi),%r8
-	mov    REG_OFFSET_R9(%rdi),%r9
-	mov    REG_OFFSET_RBX(%rdi),%rbx
-	mov    REG_OFFSET_RBP(%rdi),%rbp
-	mov    REG_OFFSET_R12(%rdi),%r12
-	mov    REG_OFFSET_R13(%rdi),%r13
-	mov    REG_OFFSET_R14(%rdi),%r14
-	mov    REG_OFFSET_R15(%rdi),%r15
-	mov    REG_OFFSET_RSI(%rdi),%rsi
-	mov    REG_OFFSET_RDX(%rdi),%rdx
-	mov    REG_OFFSET_RAX(%rdi),%rax
-	mov    REG_OFFSET_RCX(%rdi),%rcx
-	mov    REG_OFFSET_RSP(%rdi),%rsp
+	mov    UC_MCONTEXT_GREGS_R8(%rdi),%r8
+	mov    UC_MCONTEXT_GREGS_R9(%rdi),%r9
+	mov    UC_MCONTEXT_GREGS_RBX(%rdi),%rbx
+	mov    UC_MCONTEXT_GREGS_RBP(%rdi),%rbp
+	mov    UC_MCONTEXT_GREGS_R12(%rdi),%r12
+	mov    UC_MCONTEXT_GREGS_R13(%rdi),%r13
+	mov    UC_MCONTEXT_GREGS_R14(%rdi),%r14
+	mov    UC_MCONTEXT_GREGS_R15(%rdi),%r15
+	mov    UC_MCONTEXT_GREGS_RSI(%rdi),%rsi
+	mov    UC_MCONTEXT_GREGS_RDX(%rdi),%rdx
+	mov    UC_MCONTEXT_GREGS_RAX(%rdi),%rax
+	mov    UC_MCONTEXT_GREGS_RCX(%rdi),%rcx
+	mov    UC_MCONTEXT_GREGS_RSP(%rdi),%rsp
 
         /* push the return address on the stack */
-	mov    REG_OFFSET_RIP(%rdi),%rcx
+	mov    UC_MCONTEXT_GREGS_RIP(%rdi),%rcx
 	push   %rcx
 
-	mov    REG_OFFSET_RCX(%rdi),%rcx
-	mov    REG_OFFSET_RDI(%rdi),%rdi
+	mov    UC_MCONTEXT_GREGS_RCX(%rdi),%rcx
+	mov    UC_MCONTEXT_GREGS_RDI(%rdi),%rdi
 	retq
 
 #ifdef __linux__

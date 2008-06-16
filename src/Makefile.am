@@ -254,7 +254,7 @@ libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
 	elf64.c elf64.h							\
 	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h		\
-	x86_64/is_fpreg.c x86_64/regname.c x86_64/offsets.h
+	x86_64/is_fpreg.c x86_64/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
@@ -265,7 +265,7 @@ libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
 	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
 	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c x86_64/Lregs.c    \
-	x86_64/Lresume.c x86_64/Lstep.c
+	x86_64/Lresume.c x86_64/Lstep.c x86_64/getcontext.S
 
 # The list of files that go into libunwind-x86_64:
 libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
