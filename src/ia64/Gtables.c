@@ -411,7 +411,7 @@ get_kernel_table (unw_dyn_info_t *di)
   ktab = sos_alloc (size);
   if (!ktab)
     {
-      dprintf (__FILE__".%s: failed to allocate %zu bytes",
+      Dprintf (__FILE__".%s: failed to allocate %zu bytes",
 	       __FUNCTION__, size);
       return -UNW_ENOMEM;
     }

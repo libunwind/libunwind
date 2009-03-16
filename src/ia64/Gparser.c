@@ -147,7 +147,7 @@ decode_abreg (unsigned char abreg, int memory)
     default:
       break;
     }
-  dprintf ("libunwind: bad abreg=0x%x\n", abreg);
+  Dprintf ("libunwind: bad abreg=0x%x\n", abreg);
   return IA64_REG_LC;
 }
 
@@ -193,7 +193,7 @@ spill_next_when (struct ia64_reg_info **regp, struct ia64_reg_info *lim,
 	  return;
 	}
     }
-  dprintf ("libunwind: excess spill!\n");
+  Dprintf ("libunwind: excess spill!\n");
 }
 
 static inline void
@@ -735,7 +735,7 @@ lookup_preg (int regnum, int memory, struct ia64_state_record *sr)
       break;
 
     default:
-      dprintf ("%s: invalid register number %d\n", __FUNCTION__, regnum);
+      Dprintf ("%s: invalid register number %d\n", __FUNCTION__, regnum);
       return NULL;
     }
   return sr->curr.reg + preg;
@@ -842,7 +842,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		where = IA64_WHERE_BR;
 	      else
 		{
-		  dprintf ("%s: can't save to register number %d\n",
+		  Dprintf ("%s: can't save to register number %d\n",
 			   __FUNCTION__, (int) op->reg);
 		  return -UNW_EBADREG;
 		}
@@ -872,7 +872,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		{
 		  if (val & 0xf)
 		    {
-		      dprintf ("%s: frame-size %ld not an integer "
+		      Dprintf ("%s: frame-size %ld not an integer "
 			       "multiple of 16\n",
 			       __FUNCTION__, (long) op->val);
 		      return -UNW_EINVAL;
@@ -881,7 +881,7 @@ parse_dynamic (struct cursor *c, struct ia64_state_record *sr)
 		}
 	      else
 		{
-		  dprintf ("%s: can only ADD to stack-pointer\n",
+		  Dprintf ("%s: can only ADD to stack-pointer\n",
 			   __FUNCTION__);
 		  return -UNW_EBADREG;
 		}
@@ -1047,40 +1047,40 @@ create_state_record_for (struct cursor *c, struct ia64_state_record *sr,
 #if UNW_DEBUG
   if (unwi_debug_level > 2)
     {
-      dprintf ("%s: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
+      Dprintf ("%s: state record for func 0x%lx, t=%u (flags=0x%lx):\n",
 	       __FUNCTION__,
 	       (long) c->pi.start_ip, sr->when_target, (long) c->pi.flags);
       for (r = sr->curr.reg; r < sr->curr.reg + IA64_NUM_PREGS; ++r)
 	{
 	  if (r->where != IA64_WHERE_NONE || r->when != IA64_WHEN_NEVER)
 	    {
-	      dprintf ("  %s <- ", unw.preg_name[r - sr->curr.reg]);
+	      Dprintf ("  %s <- ", unw.preg_name[r - sr->curr.reg]);
 	      switch (r->where)
 		{
 		case IA64_WHERE_GR:
-		  dprintf ("r%lu", (long) r->val);
+		  Dprintf ("r%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_FR:
-		  dprintf ("f%lu", (long) r->val);
+		  Dprintf ("f%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_BR:
-		  dprintf ("b%lu", (long) r->val);
+		  Dprintf ("b%lu", (long) r->val);
 		  break;
 		case IA64_WHERE_SPREL:
-		  dprintf ("[sp+0x%lx]", (long) r->val);
+		  Dprintf ("[sp+0x%lx]", (long) r->val);
 		  break;
 		case IA64_WHERE_PSPREL:
-		  dprintf ("[psp+0x%lx]", (long) r->val);
+		  Dprintf ("[psp+0x%lx]", (long) r->val);
 		  break;
 		case IA64_WHERE_NONE:
-		  dprintf ("%s+0x%lx",
+		  Dprintf ("%s+0x%lx",
 			   unw.preg_name[r - sr->curr.reg], (long) r->val);
 		  break;
 		default:
-		  dprintf ("BADWHERE(%d)", r->where);
+		  Dprintf ("BADWHERE(%d)", r->where);
 		  break;
 		}
-	      dprintf ("\t\t%d\n", r->when);
+	      Dprintf ("\t\t%d\n", r->when);
 	    }
 	}
     }

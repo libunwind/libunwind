@@ -255,7 +255,7 @@ script_emit (struct ia64_script *script, struct ia64_script_insn insn)
 {
   if (script->count >= IA64_MAX_SCRIPT_LEN)
     {
-      dprintf ("%s: script exceeds maximum size of %u instructions!\n",
+      Dprintf ("%s: script exceeds maximum size of %u instructions!\n",
 	       __FUNCTION__, IA64_MAX_SCRIPT_LEN);
       return;
     }
@@ -366,7 +366,7 @@ compile_reg (struct ia64_state_record *sr, int i, struct ia64_reg_info *r,
 	  break;
 
 	default:
-	  dprintf ("%s: register %u has unexpected `where' value of %u\n",
+	  Dprintf ("%s: register %u has unexpected `where' value of %u\n",
 		   __FUNCTION__, i, r->where);
 	  break;
 	}
@@ -631,7 +631,7 @@ uncached_find_save_locs (struct cursor *c)
   if ((ret = build_script (c, &script)) < 0)
     {
       if (ret != -UNW_ESTOPUNWIND)
-	dprintf ("%s: failed to build unwind script for ip %lx\n",
+	Dprintf ("%s: failed to build unwind script for ip %lx\n",
 		 __FUNCTION__, (long) c->ip);
       return ret;
     }
@@ -671,7 +671,7 @@ ia64_find_save_locs (struct cursor *c)
 	script = script_new (cache, c->ip);
 	if (!script)
 	  {
-	    dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
+	    Dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
 	    ret = -UNW_EUNSPEC;
 	    goto out;
 	  }
@@ -689,7 +689,7 @@ ia64_find_save_locs (struct cursor *c)
     if (ret < 0)
       {
 	if (ret != -UNW_ESTOPUNWIND)
-	  dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
+	  Dprintf ("%s: failed to locate/build unwind script for ip %lx\n",
 		   __FUNCTION__, (long) c->ip);
 	goto out;
       }
@@ -735,7 +735,7 @@ ia64_cache_proc_info (struct cursor *c)
   script = script_new (cache, c->ip);
   if (!script)
     {
-      dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
+      Dprintf ("%s: failed to create unwind script\n", __FUNCTION__);
       ret = -UNW_EUNSPEC;
       goto out;
     }

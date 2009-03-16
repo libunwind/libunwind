@@ -324,7 +324,7 @@ update_frame_state (struct cursor *c)
 
   if (c->ip == prev_ip && c->sp == prev_sp && c->bsp == prev_bsp)
     {
-      dprintf ("%s: ip, sp, and bsp unchanged; stopping here (ip=0x%lx)\n",
+      Dprintf ("%s: ip, sp, and bsp unchanged; stopping here (ip=0x%lx)\n",
 	       __FUNCTION__, (long) ip);
       return -UNW_EBADFRAME;
     }
