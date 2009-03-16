@@ -70,6 +70,9 @@ libunwind_la_SOURCES_local_unwind =					\
 	unwind/GetRegionStart.c unwind/GetTextRelBase.c			\
 	unwind/RaiseException.c unwind/Resume.c				\
 	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
+
+#  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
+libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
 endif
 
 # List of arch-independent files needed by local-only library (libunwind):
@@ -103,8 +106,6 @@ endif # ARCH_ARM
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 
-#  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
-libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 dwarf_SOURCES_common =				\
