@@ -65,7 +65,16 @@ struct cursor
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;
+    int validate;
+    ucontext_t *uc;
   };
+
+static inline ucontext_t *
+dwarf_get_uc(const struct dwarf_cursor *cursor)
+{
+  const struct cursor *c = (struct cursor *) cursor->as_arg;
+  return c->uc;
+}
 
 #define DWARF_GET_LOC(l)	((l).val)
 
@@ -75,10 +84,10 @@ struct cursor
 # define DWARF_LOC(r, t)	((dwarf_loc_t) { .val = (r) })
 # define DWARF_IS_REG_LOC(l)	0
 # define DWARF_REG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
-				 tdep_uc_addr((c)->as_arg, (r)), 0))
+				 tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
 # define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
-				 tdep_uc_addr((c)->as_arg, (r)), 0))
+				 tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
 
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
@@ -103,8 +112,8 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
-  return 0;
+  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), val,
+				   0, c->as_arg);
 }
 
 static inline int
@@ -112,8 +121,8 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *(unw_word_t *) DWARF_GET_LOC (loc) = val;
-  return 0;
+  return (*c->as->acc.access_mem) (c->as, DWARF_GET_LOC (loc), &val,
+				   1, c->as_arg);
 }
 
 #else /* !UNW_LOCAL_ONLY */
