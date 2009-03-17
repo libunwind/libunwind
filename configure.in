@@ -118,7 +118,15 @@ AC_ARG_ENABLE(debug,
 
 AC_ARG_ENABLE(cxx_exceptions,
 [  --enable-cxx-exceptions use libunwind to handle C++ exceptions],
-[enable_cxx_exceptions=$enableval], [enable_cxx_exceptions=yes])
+[enable_cxx_exceptions=$enableval], 
+[
+# C++ exception handling doesn't work too well on x86
+case $target_arch in
+  x86*) enable_cxx_exceptions=no;;
+  *) enable_cxx_exceptions=yes;;
+esac
+])
+
 if test x$enable_cxx_exceptions = xyes; then
   AC_MSG_NOTICE([Enabling C++ exception support])
 fi

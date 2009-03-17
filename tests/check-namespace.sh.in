@@ -242,7 +242,7 @@ if [ $plat = $build_plat ]; then
     fetch_symtab $LIBUNWIND
     filter_misc
     check_local_unw_abi
-    if [ x@enable_cxx_exceptions@ = yes ]; then
+    if [ x@enable_cxx_exceptions@ = xyes ]; then
       check_cxx_abi
     fi
     check_empty
