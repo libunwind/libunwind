@@ -124,6 +124,10 @@ if test x$enable_cxx_exceptions = xyes; then
 fi
 AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
 
+AC_ARG_ENABLE(debug_frame,
+[  --enable-debug-frame Load the ".debug_frame" section if available],
+[enable_debug_frame=$enableval], [enable_debug_frame=yes])
+AM_CONDITIONAL([CONFIG_DEBUG_FRAME], [test x$enable_debug_frame = xyes])
 LIBUNWIND___THREAD
 
 save_LDFLAGS="$LDFLAGS"

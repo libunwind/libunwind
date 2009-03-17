@@ -92,6 +92,7 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
   return -UNW_ENOINFO;
 }
 
+#ifdef CONFIG_DEBUG_FRAME
 /* Load .debug_frame section from FILE.  Allocates and returns space
    in *BUF, and sets *BUFSIZE to its size.  IS_LOCAL is 1 if using the
    local process, in which case we can search the system debug file
@@ -132,7 +133,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   sec_hdrs = calloc (ehdr.e_shnum, sizeof (Elf_W (Shdr)));
   fread (sec_hdrs, sizeof (Elf_W (Shdr)), ehdr.e_shnum, f);
   
-  Debug (4, "loading string table of size %d\n",
+  Debug (4, "loading string table of size %zd\n",
 	   sec_hdrs[shstrndx].sh_size);
   stringtab = malloc (sec_hdrs[shstrndx].sh_size);
   fseek (f, sec_hdrs[shstrndx].sh_offset, SEEK_SET);
@@ -150,7 +151,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 	  fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
 	  fread (*buf, 1, *bufsize, f);
 
-	  Debug (4, "read %d bytes of .debug_frame from offset %d\n",
+	  Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
 		 *bufsize, sec_hdrs[i].sh_offset);
 	}
       else if (is_local >= 0 && strcmp (secname, ".gnu_debuglink") == 0)
@@ -161,7 +162,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 	  fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
 	  fread (linkbuf, 1, linksize, f);
 
-	  Debug (4, "read %d bytes of .gnu_debuglink from offset %d\n",
+	  Debug (4, "read %zd bytes of .gnu_debuglink from offset %zd\n",
 		 *bufsize, sec_hdrs[i].sh_offset);
 	}
     }
@@ -220,36 +221,37 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 
   return 0;
 }
+#else
+static int
+load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
+{
+  return 1;
+}
+#endif /* CONFIG_DEBUG_FRAME */
+
 
 /* Locate the binary which originated the contents of address ADDR. Return
-   the name of the binary in *name (which is allocated on the heap, and must
-   be freed by the caller).  Returns 0 if a binary is successfully found, or 1
-   if an error occurs.  */
+   the name of the binary in *name (space is allocated by the caller)
+   Returns 0 if a binary is successfully found, or 1 if an error occurs.  */
 
 static int
-find_binary_for_address (unw_word_t ip, char **name)
+find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
 {
 #ifdef __linux
   struct map_iterator mi;
-  char path[PATH_MAX];
   int found = 0;
   int pid = getpid ();
   unsigned long segbase, mapoff, hi;
 
   maps_init (&mi, pid);
-  while (maps_next (&mi, &segbase, &hi, &mapoff, path, sizeof (path)))
+  while (maps_next (&mi, &segbase, &hi, &mapoff, name, name_size))
     if (ip >= segbase && ip < hi)
       {
 	found = 1;
 	break;
       }
   maps_close (&mi);
-
-  if (found)
-    {
-      *name = strdup (path);
-      return 0;
-    }
+  return ~found;
 #endif
 
   return 1;
@@ -263,7 +265,8 @@ locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
 		   unw_word_t addr, const char *dlname)
 {
   struct unw_debug_frame_list *w, *fdesc = 0;
-  char *name = 0;
+  char path[PATH_MAX];
+  char *name = path;
   int err;
   uint64_t start = 0, end = 0;
   char *buf;
@@ -284,7 +287,7 @@ locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
 
   if (strcmp (dlname, "") == 0)
     {
-      err = find_binary_for_address (addr, &name);
+      err = find_binary_for_address (addr, name, sizeof(path));
       if (err)
         {
 	  Debug (15, "tried to locate binary for 0x%" PRIx64 ", but no luck\n",
@@ -333,9 +336,6 @@ locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
       
       as->debug_frames = fdesc;
     }
-  
-  if (name && name != dlname)
-    free (name);
   
   return fdesc;
 }
