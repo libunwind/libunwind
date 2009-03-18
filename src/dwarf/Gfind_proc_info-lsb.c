@@ -251,7 +251,7 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
 	break;
       }
   maps_close (&mi);
-  return ~found;
+  return !found;
 #endif
 
   return 1;

@@ -1,5 +1,8 @@
 /* include/config.h.in.  Generated from configure.in by autoheader.  */
 
+/* Enable Debug Frame */
+#undef CONFIG_DEBUG_FRAME
+
 /* Define to 1 if you have the <asm/ptrace_offsets.h> header file. */
 #undef HAVE_ASM_PTRACE_OFFSETS_H
 
