@@ -71,6 +71,12 @@ libunwind_la_SOURCES_local_unwind =					\
 	unwind/RaiseException.c unwind/Resume.c				\
 	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
 
+if ARCH_IA64
+libunwind_la_SOURCES_local_unwind += ia64/unwind_GetIPInfo.c
+else
+libunwind_la_SOURCES_local_unwind += unwind/GetIPInfo.c
+endif # ARCH_IA64
+
 #  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
 endif
@@ -88,21 +94,9 @@ libunwind_la_SOURCES_local_nounwind =					\
 	mi/Lget_fpreg.c mi/Lset_fpreg.c					\
 	mi/Lset_caching_policy.c
 
-# On some platforms, defining _Unwind replacements really upsets
-# exception-handling.  Turn off those functions for those platforms.
-if ARCH_ARM
-libunwind_la_SOURCES_local =						\
-	$(libunwind_la_SOURCES_local_nounwind)
-else
-if ARCH_MIPS
-libunwind_la_SOURCES_local =						\
-	$(libunwind_la_SOURCES_local_nounwind)
-else
 libunwind_la_SOURCES_local =						\
 	$(libunwind_la_SOURCES_local_nounwind)				\
 	$(libunwind_la_SOURCES_local_unwind)
-endif # ARCH_MIPS
-endif # ARCH_ARM
 
 libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 

@@ -88,6 +88,7 @@ extern void _Unwind_DeleteException (struct _Unwind_Exception *);
 extern unsigned long _Unwind_GetGR (struct _Unwind_Context *, int);
 extern void _Unwind_SetGR (struct _Unwind_Context *, int, unsigned long);
 extern unsigned long _Unwind_GetIP (struct _Unwind_Context *);
+extern unsigned long _Unwind_GetIPInfo (struct _Unwind_Context *, int *);
 extern void _Unwind_SetIP (struct _Unwind_Context *, unsigned long);
 extern unsigned long _Unwind_GetLanguageSpecificData (struct _Unwind_Context*);
 extern unsigned long _Unwind_GetRegionStart (struct _Unwind_Context *);

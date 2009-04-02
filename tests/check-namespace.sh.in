@@ -197,6 +197,7 @@ check_cxx_abi () {
     match _Unwind_GetDataRelBase
     match _Unwind_GetGR
     match _Unwind_GetIP
+    match _Unwind_GetIPInfo
     match _Unwind_GetLanguageSpecificData
     match _Unwind_GetRegionStart
     match _Unwind_GetTextRelBase
@@ -214,6 +215,7 @@ check_cxx_abi () {
     match __libunwind_Unwind_GetDataRelBase
     match __libunwind_Unwind_GetGR
     match __libunwind_Unwind_GetIP
+    match __libunwind_Unwind_GetIPInfo
     match __libunwind_Unwind_GetLanguageSpecificData
     match __libunwind_Unwind_GetRegionStart
     match __libunwind_Unwind_GetTextRelBase
