@@ -79,7 +79,7 @@ get_arch() {
   i?86) echo x86;;
   hppa*) echo hppa;;
   mips*) echo mips;;
-  powerpc64) is_gcc_m64;;
+  powerpc*) is_gcc_m64;;
   *) echo $1;;
  esac
 }
