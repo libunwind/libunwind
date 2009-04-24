@@ -69,13 +69,8 @@ libunwind_la_SOURCES_local_unwind =					\
 	unwind/GetGR.c unwind/GetIP.c unwind/GetLanguageSpecificData.c	\
 	unwind/GetRegionStart.c unwind/GetTextRelBase.c			\
 	unwind/RaiseException.c unwind/Resume.c				\
-	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c
-
-if ARCH_IA64
-libunwind_la_SOURCES_local_unwind += ia64/unwind_GetIPInfo.c
-else
-libunwind_la_SOURCES_local_unwind += unwind/GetIPInfo.c
-endif # ARCH_IA64
+	unwind/Resume_or_Rethrow.c unwind/SetGR.c unwind/SetIP.c	\
+	unwind/GetIPInfo.c
 
 #  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 libunwind_la_SOURCES_os_linux_local = mi/_ReadULEB.c mi/_ReadSLEB.c
