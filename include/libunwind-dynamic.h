@@ -75,7 +75,7 @@ typedef enum
   {
     UNW_INFO_FORMAT_DYNAMIC,		/* unw_dyn_proc_info_t */
     UNW_INFO_FORMAT_TABLE,		/* unw_dyn_table_t */
-    UNW_INFO_FORMAT_REMOTE_TABLE,	/* unw_dyn_remote_table_t */
+    UNW_INFO_FORMAT_REMOTE_TABLE	/* unw_dyn_remote_table_t */
   }
 unw_dyn_info_format_t;
 
