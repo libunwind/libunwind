@@ -113,11 +113,10 @@ get_script_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (AO_test_and_set (&cache->busy) == AO_TS_SET)
     return NULL;
 # else
-  sigprocmask (SIG_SETMASK, &unwi_full_mask, saved_maskp);
   if (likely (caching == UNW_CACHE_GLOBAL))
     {
       Debug (16, "%s: acquiring lock\n", __FUNCTION__);
-      mutex_lock (&cache->lock);
+      lock_acquire (&cache->lock, *saved_maskp);
     }
 # endif
 #endif
@@ -144,8 +143,7 @@ put_script_cache (unw_addr_space_t as, struct ia64_script_cache *cache,
   AO_CLEAR (&cache->busy);
 # else
   if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
-    mutex_unlock (&cache->lock);
-  sigprocmask (SIG_SETMASK, saved_maskp, NULL);
+    lock_release (&cache->lock, *saved_maskp);
 # endif
 #endif
 }

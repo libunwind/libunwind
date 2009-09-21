@@ -61,8 +61,7 @@ tdep_init (void)
 
   sigfillset (&unwi_full_mask);
 
-  sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-  mutex_lock (&x86_64_lock);
+  lock_acquire (&x86_64_lock, saved_mask);
   {
     if (!tdep_needs_initialization)
       /* another thread else beat us to it... */
@@ -78,6 +77,5 @@ tdep_init (void)
     tdep_needs_initialization = 0;	/* signal that we're initialized... */
   }
  out:
-  mutex_unlock (&x86_64_lock);
-  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
+  lock_release (&x86_64_lock, saved_mask);
 }
