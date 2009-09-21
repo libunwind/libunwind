@@ -178,18 +178,25 @@ typedef sigset_t intrmask_t;
 
 extern intrmask_t unwi_full_mask;
 
+#if defined(CONFIG_BLOCK_SIGNALS)
+# define SIGPROCMASK(how, old_mask, new_mask) \
+  sigprocmask((how), (old_mask), (new_mask))
+#else
+# define SIGPROCMASK(how, old_mask, new_mask) /**/
+#endif
+
 #define define_lock(name) \
   pthread_mutex_t name = PTHREAD_MUTEX_INITIALIZER
 #define lock_init(l)		mutex_init (l)
 #define lock_acquire(l,m)				\
 do {							\
-  sigprocmask (SIG_SETMASK, &unwi_full_mask, &(m));	\
+  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &(m));	\
   mutex_lock (l);					\
 } while (0)
 #define lock_release(l,m)			\
 do {						\
   mutex_unlock (l);				\
-  sigprocmask (SIG_SETMASK, &(m), NULL);	\
+  SIGPROCMASK (SIG_SETMASK, &(m), NULL);	\
 } while (0)
 
 #define SOS_MEMORY_SIZE 16384	/* see src/mi/mempool.c */
