@@ -481,21 +481,11 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (caching == UNW_CACHE_NONE)
     return NULL;
 
-#ifdef HAVE_ATOMIC_H
-  if (!spin_trylock_irqsave (&cache->busy, *saved_maskp))
-    return NULL;
-#else
-# ifdef HAVE_ATOMIC_OPS_H
-  if (AO_test_and_set (&cache->busy) == AO_TS_SET)
-    return NULL;
-# else
   if (likely (caching == UNW_CACHE_GLOBAL))
     {
       Debug (16, "%s: acquiring lock\n", __FUNCTION__);
       lock_acquire (&cache->lock, *saved_maskp);
     }
-# endif
-#endif
 
   if (atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
     {
@@ -513,16 +503,8 @@ put_rs_cache (unw_addr_space_t as, struct dwarf_rs_cache *cache,
   assert (as->caching_policy != UNW_CACHE_NONE);
 
   Debug (16, "unmasking signals/interrupts and releasing lock\n");
-#ifdef HAVE_ATOMIC_H
-  spin_unlock_irqrestore (&cache->busy, *saved_maskp);
-#else
-# ifdef HAVE_ATOMIC_OPS_H
-  AO_CLEAR (&cache->busy);
-# else
   if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
     lock_release (&cache->lock, *saved_maskp);
-# endif
-#endif
 }
 
 static inline unw_hash_index_t
