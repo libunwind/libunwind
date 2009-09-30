@@ -728,9 +728,9 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.di.format = -1;
   cb_data.di_debug.format = -1;
 
-  sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
+  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
   ret = dl_iterate_phdr (callback, &cb_data);
-  sigprocmask (SIG_SETMASK, &saved_mask, NULL);
+  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 
   if (ret <= 0)
     {
