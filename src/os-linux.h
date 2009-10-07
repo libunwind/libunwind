@@ -34,6 +34,7 @@ struct map_iterator
     size_t buf_size;
     char *buf;
     char *buf_end;
+    char *path;
   };
 
 static inline char *
@@ -61,33 +62,33 @@ ltoa (char *buf, long val)
   return buf + len;
 }
 
-static inline void
+static inline int
 maps_init (struct map_iterator *mi, pid_t pid)
 {
-  char path[PATH_MAX], *cp;
+  char path[sizeof ("/proc/0123456789/maps")], *cp;
 
   memcpy (path, "/proc/", 6);
   cp = ltoa (path + 6, pid);
+  assert (cp + 6 < path + sizeof (path));
   memcpy (cp, "/maps", 6);
 
   mi->fd = open (path, O_RDONLY);
-  mi->offset = 0;
-  mi->buf_size = 0;
-
-  cp = NULL;
   if (mi->fd >= 0)
     {
-      /* Try to allocate a page-sized buffer.  If that fails, we'll
-	 fall back on reading one line at a time.  */
+      /* Try to allocate a page-sized buffer.  */
       mi->buf_size = getpagesize ();
       cp = mmap (0, mi->buf_size, PROT_READ | PROT_WRITE,
 		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       if (cp == MAP_FAILED)
-	cp = NULL;
+	return -1;
       else
-	cp += mi->buf_size;
+	{
+	  mi->offset = 0;
+	  mi->buf = mi->buf_end = cp + mi->buf_size;
+	  return 0;
+	}
     }
-  mi->buf = mi->buf_end = cp;
+  return -1;
 }
 
 static inline char *
@@ -184,7 +185,7 @@ scan_string (char *cp, char *valp, size_t buf_size)
 
   while (*cp != ' ' && *cp != '\t' && *cp != '\0')
     {
-      if (i < buf_size - 1)
+      if ((valp != NULL) && (i < buf_size - 1))
 	valp[i++] = *cp;
       ++cp;
     }
@@ -196,12 +197,10 @@ scan_string (char *cp, char *valp, size_t buf_size)
 
 static inline int
 maps_next (struct map_iterator *mi,
-	   unsigned long *low, unsigned long *high, unsigned long *offset,
-	   char *path, size_t path_size)
+	   unsigned long *low, unsigned long *high, unsigned long *offset)
 {
-  char line[256 + PATH_MAX], perm[16], dash, colon, *cp;
+  char perm[16], dash, colon, *cp;
   unsigned long major, minor, inum;
-  size_t to_read = 256;	/* most lines fit in 256 characters easy */
   ssize_t i, nread;
 
   if (mi->fd < 0)
@@ -209,80 +208,52 @@ maps_next (struct map_iterator *mi,
 
   while (1)
     {
-      if (mi->buf)
+      ssize_t bytes_left = mi->buf_end - mi->buf;
+      char *eol = NULL;
+
+      for (i = 0; i < bytes_left; ++i)
 	{
-	  ssize_t bytes_left = mi->buf_end - mi->buf;
-	  char *eol = NULL;
-
-	  for (i = 0; i < bytes_left; ++i)
+	  if (mi->buf[i] == '\n')
 	    {
-	      if (mi->buf[i] == '\n')
-		{
-		  eol = mi->buf + i;
-		  break;
-		}
-	      else if (mi->buf[i] == '\0')
-		break;
+	      eol = mi->buf + i;
+	      break;
 	    }
-	  if (!eol)
-	    {
-	      /* copy down the remaining bytes, if any */
-	      if (bytes_left > 0)
-		memmove (mi->buf_end - mi->buf_size, mi->buf, bytes_left);
-
-	      mi->buf = mi->buf_end - mi->buf_size;
-	      nread = read (mi->fd, mi->buf + bytes_left,
-			    mi->buf_size - bytes_left);
-	      if (nread <= 0)
-		return 0;
-	      else if ((size_t) (nread + bytes_left) < mi->buf_size)
-		{
-		  /* Move contents to the end of the buffer so we
-		     maintain the invariant that all bytes between
-		     mi->buf and mi->buf_end are valid.  */
-		  memmove (mi->buf_end - nread - bytes_left, mi->buf,
-			  nread + bytes_left);
-		  mi->buf = mi->buf_end - nread - bytes_left;
-		}
-
-	      eol = mi->buf + bytes_left + nread - 1;
-
-	      for (i = bytes_left; i < bytes_left + nread; ++i)
-		if (mi->buf[i] == '\n')
-		  {
-		    eol = mi->buf + i;
-		    break;
-		  }
-	    }
-	  cp = mi->buf;
-	  mi->buf = eol + 1;
-	  *eol = '\0';
+	  else if (mi->buf[i] == '\0')
+	    break;
 	}
-      else
+      if (!eol)
 	{
-	  /* maps_init() wasn't able to allocate a buffer; do it the
-	     slow way.  */
-	  lseek (mi->fd, mi->offset, SEEK_SET);
+	  /* copy down the remaining bytes, if any */
+	  if (bytes_left > 0)
+	    memmove (mi->buf_end - mi->buf_size, mi->buf, bytes_left);
 
-	  if ((nread = read (mi->fd, line, to_read)) <= 0)
+	  mi->buf = mi->buf_end - mi->buf_size;
+	  nread = read (mi->fd, mi->buf + bytes_left,
+			mi->buf_size - bytes_left);
+	  if (nread <= 0)
 	    return 0;
-	  for (i = 0; i < nread && line[i] != '\n'; ++i)
-	    /* skip */;
-	  if (i < nread)
+	  else if ((size_t) (nread + bytes_left) < mi->buf_size)
 	    {
-	      line[i] = '\0';
-	      mi->offset += i + 1;
+	      /* Move contents to the end of the buffer so we
+		 maintain the invariant that all bytes between
+		 mi->buf and mi->buf_end are valid.  */
+	      memmove (mi->buf_end - nread - bytes_left, mi->buf,
+		       nread + bytes_left);
+	      mi->buf = mi->buf_end - nread - bytes_left;
 	    }
-	  else
-	    {
-	      if (to_read < sizeof (line))
-		to_read = sizeof (line) - 1;
-	      else
-		mi->offset += nread;	/* not supposed to happen... */
-	      continue;	/* duh, no newline found */
-	    }
-	  cp = line;
+
+	  eol = mi->buf + bytes_left + nread - 1;
+
+	  for (i = bytes_left; i < bytes_left + nread; ++i)
+	    if (mi->buf[i] == '\n')
+	      {
+		eol = mi->buf + i;
+		break;
+	      }
 	}
+      cp = mi->buf;
+      mi->buf = eol + 1;
+      *eol = '\0';
 
       /* scan: "LOW-HIGH PERM OFFSET MAJOR:MINOR INUM PATH" */
       cp = scan_hex (cp, low);
@@ -294,7 +265,10 @@ maps_next (struct map_iterator *mi,
       cp = scan_char (cp, &colon);
       cp = scan_hex (cp, &minor);
       cp = scan_dec (cp, &inum);
-      cp = scan_string (cp, path, path_size);
+      cp = mi->path = skip_whitespace (cp);
+      if (!cp)
+	continue;
+      cp = scan_string (cp, NULL, 0);
       if (!cp || dash != '-' || colon != ':')
 	continue;	/* skip line with unknown or bad format */
       return 1;

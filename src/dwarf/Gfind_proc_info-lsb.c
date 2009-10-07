@@ -221,14 +221,6 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 
   return 0;
 }
-#else
-static int
-load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
-{
-  return 1;
-}
-#endif /* CONFIG_DEBUG_FRAME */
-
 
 /* Locate the binary which originated the contents of address ADDR. Return
    the name of the binary in *name (space is allocated by the caller)
@@ -244,10 +236,16 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
   unsigned long segbase, mapoff, hi;
 
   maps_init (&mi, pid);
-  while (maps_next (&mi, &segbase, &hi, &mapoff, name, name_size))
+  while (maps_next (&mi, &segbase, &hi, &mapoff))
     if (ip >= segbase && ip < hi)
       {
-	found = 1;
+	size_t len = strlen (mi.path);
+
+	if (len + 1 <= name_size)
+	  {
+	    memcpy (name, mi.path, len + 1);
+	    found = 1;
+	  }
 	break;
       }
   maps_close (&mi);
@@ -399,6 +397,8 @@ debug_frame_tab_compare (const void *a, const void *b)
   else
     return 0;
 }
+
+#endif /* CONFIG_DEBUG_FRAME */
 
 /* ptr is a pointer to a callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
@@ -575,6 +575,8 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	}
     }
 
+#ifdef CONFIG_DEBUG_FRAME
+
   Debug (15, "Trying to find .debug_frame\n");
   di = &cb_data->di_debug;
   fdesc = locate_debug_info (unw_local_addr_space, info, ip, info->dlpi_name);
@@ -707,6 +709,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	     (long) di->u.ti.segbase, (long) di->u.ti.table_len,
 	     (long) di->gp, (long) di->u.ti.table_data);
     }
+#endif  /* CONFIG_DEBUG_FRAME */
 
   return found;
 }
