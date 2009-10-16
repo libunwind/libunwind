@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define x86_64_lock			UNW_OBJ(lock)
 #define x86_64_local_resume		UNW_OBJ(local_resume)
 #define x86_64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
+#define setcontext			UNW_ARCH_OBJ (setcontext)
 #if 0
 #define x86_64_scratch_loc		UNW_OBJ(scratch_loc)
 #endif
@@ -65,6 +66,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern void x86_64_local_addr_space_init (void);
 extern int x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			     void *arg);
+extern int setcontext (const ucontext_t *ucp);
+
 #if 0
 extern dwarf_loc_t x86_64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 #endif

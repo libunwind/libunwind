@@ -178,6 +178,11 @@ typedef sigset_t intrmask_t;
 
 extern intrmask_t unwi_full_mask;
 
+/* Silence compiler warnings about variables which are used only if libunwind
+   is configured in a certain way */
+static inline void mark_as_used(void *v) {
+}
+
 #if defined(CONFIG_BLOCK_SIGNALS)
 # define SIGPROCMASK(how, new_mask, old_mask) \
   sigprocmask((how), (new_mask), (old_mask))
@@ -191,11 +196,13 @@ extern intrmask_t unwi_full_mask;
 #define lock_acquire(l,m)				\
 do {							\
   SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &(m));	\
+  mark_as_used(&(m)); 					\
   mutex_lock (l);					\
 } while (0)
 #define lock_release(l,m)			\
 do {						\
   mutex_unlock (l);				\
+  mark_as_used(&(m)); 				\
   SIGPROCMASK (SIG_SETMASK, &(m), NULL);	\
 } while (0)
 
@@ -272,10 +279,10 @@ do {									\
 # define Dprintf(format...)
 #endif
 
-static ALWAYS_INLINE void
+static ALWAYS_INLINE int
 print_error (const char *string)
 {
-  write (2, string, strlen (string));
+  return write (2, string, strlen (string));
 }
 
 #define mi_init		UNWI_ARCH_OBJ(mi_init)
