@@ -179,10 +179,10 @@ typedef sigset_t intrmask_t;
 extern intrmask_t unwi_full_mask;
 
 #if defined(CONFIG_BLOCK_SIGNALS)
-# define SIGPROCMASK(how, old_mask, new_mask) \
-  sigprocmask((how), (old_mask), (new_mask))
+# define SIGPROCMASK(how, new_mask, old_mask) \
+  sigprocmask((how), (new_mask), (old_mask))
 #else
-# define SIGPROCMASK(how, old_mask, new_mask) /**/
+# define SIGPROCMASK(how, new_mask, old_mask) /**/
 #endif
 
 #define define_lock(name) \
