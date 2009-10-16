@@ -187,7 +187,7 @@ static inline void mark_as_used(void *v) {
 # define SIGPROCMASK(how, new_mask, old_mask) \
   sigprocmask((how), (new_mask), (old_mask))
 #else
-# define SIGPROCMASK(how, new_mask, old_mask) /**/
+# define SIGPROCMASK(how, new_mask, old_mask) mark_as_used(old_mask)
 #endif
 
 #define define_lock(name) \
