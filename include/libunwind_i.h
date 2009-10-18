@@ -196,13 +196,11 @@ static inline void mark_as_used(void *v) {
 #define lock_acquire(l,m)				\
 do {							\
   SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &(m));	\
-  mark_as_used(&(m)); 					\
   mutex_lock (l);					\
 } while (0)
 #define lock_release(l,m)			\
 do {						\
   mutex_unlock (l);				\
-  mark_as_used(&(m)); 				\
   SIGPROCMASK (SIG_SETMASK, &(m), NULL);	\
 } while (0)
 
