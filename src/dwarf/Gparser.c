@@ -691,6 +691,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	 stack-pointer wasn't saved, popping the CFA implicitly pops
 	 the stack-pointer as well.  */
       if ((rs->reg[DWARF_CFA_REG_COLUMN].val == UNW_TDEP_SP)
+          && (UNW_TDEP_SP < ARRAY_SIZE(rs->reg))
 	  && (rs->reg[UNW_TDEP_SP].where == DWARF_WHERE_SAME))
 	  cfa = c->cfa;
       else
