@@ -147,7 +147,7 @@ typedef enum
     UNW_TDEP_LAST_REG = UNW_X86_XMM7,
 
     UNW_TDEP_IP = UNW_X86_EIP,
-    UNW_TDEP_SP = UNW_X86_CFA,
+    UNW_TDEP_SP = UNW_X86_ESP,
     UNW_TDEP_EH = UNW_X86_EAX
   }
 x86_regnum_t;
