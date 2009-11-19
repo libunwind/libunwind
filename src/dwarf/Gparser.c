@@ -793,37 +793,29 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
     return uncached_dwarf_find_save_locs (c);
 
   cache = get_rs_cache(c->as, &saved_mask);
-  if (!cache)
-    return -UNW_ENOINFO;	/* cache is busy */
   rs = rs_lookup(cache, c);
 
   if (rs)
-    {
       c->ret_addr_column = rs->ret_addr_column;
-      goto apply;
+  else
+    {
+      if ((ret = fetch_proc_info (c, c->ip, 1)) < 0 ||
+	  (ret = create_state_record_for (c, &sr, c->ip)) < 0)
+	{
+	  put_rs_cache (c->as, cache, &saved_mask);
+	  return ret;
+	}
+
+      rs = rs_new (cache, c);
+      memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
+      cache->buckets[c->prev_rs].hint = rs - cache->buckets;
+
+      c->hint = rs->hint;
+      c->prev_rs = rs - cache->buckets;
+
+      put_unwind_info (c, &c->pi);
     }
 
-  if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
-    goto out;
-
-  if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
-    goto out;
-
-  rs = rs_new (cache, c);
-  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
-  cache->buckets[c->prev_rs].hint = rs - cache->buckets;
-
-  c->hint = rs->hint;
-  c->prev_rs = rs - cache->buckets;
-
-  put_unwind_info (c, &c->pi);
-  ret = apply_reg_state (c, rs);
-
-out:
-  put_rs_cache (c->as, cache, &saved_mask);
-  return ret;
-
-apply:
   put_rs_cache (c->as, cache, &saved_mask);
   if ((ret = apply_reg_state (c, rs)) < 0)
     return ret;
