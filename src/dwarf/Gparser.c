@@ -784,7 +784,7 @@ HIDDEN int
 dwarf_find_save_locs (struct dwarf_cursor *c)
 {
   dwarf_state_record_t sr;
-  dwarf_reg_state_t *rs, *rs1;
+  dwarf_reg_state_t *rs;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
@@ -809,18 +809,8 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
     goto out;
 
-  rs1 = &sr.rs_current;
-  if (rs1)
-    {
-      rs = rs_new (cache, c);
-      memcpy(rs, rs1, offsetof(struct dwarf_reg_state, ip));
-      if (!rs)
-        {
-          Dprintf ("%s: failed to create unwind rs\n", __FUNCTION__);
-          ret = -UNW_EUNSPEC;
-	  goto out;
-        }
-    }
+  rs = rs_new (cache, c);
+  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
   cache->buckets[c->prev_rs].hint = rs - cache->buckets;
 
   c->hint = rs->hint;
