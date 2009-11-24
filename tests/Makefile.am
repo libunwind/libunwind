@@ -41,7 +41,7 @@ endif #ARCH_IA64
 			Gtest-dyn1 Ltest-dyn1				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
-			Ltest-nomalloc
+			Ltest-nomalloc rs-race
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
 			Gperf-simple Lperf-simple
 
@@ -99,6 +99,7 @@ test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
 Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 test_async_sig_LDADD = $(LIBUNWIND) -lpthread
+rs_race_LDADD = $(LIBUNWIND) -lpthread
 
 LDADD += -ldl
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c

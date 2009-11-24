@@ -784,7 +784,7 @@ HIDDEN int
 dwarf_find_save_locs (struct dwarf_cursor *c)
 {
   dwarf_state_record_t sr;
-  dwarf_reg_state_t *rs;
+  dwarf_reg_state_t *rs, rs_copy;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
@@ -796,7 +796,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   rs = rs_lookup(cache, c);
 
   if (rs)
-      c->ret_addr_column = rs->ret_addr_column;
+    c->ret_addr_column = rs->ret_addr_column;
   else
     {
       if ((ret = fetch_proc_info (c, c->ip, 1)) < 0 ||
@@ -816,8 +816,9 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       put_unwind_info (c, &c->pi);
     }
 
+  memcpy (&rs_copy, rs, sizeof (rs_copy));
   put_rs_cache (c->as, cache, &saved_mask);
-  if ((ret = apply_reg_state (c, rs)) < 0)
+  if ((ret = apply_reg_state (c, &rs_copy)) < 0)
     return ret;
 
   return 0;
