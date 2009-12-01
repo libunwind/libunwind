@@ -120,6 +120,9 @@ validate_mem (unw_word_t addr)
 
   addr = PAGE_START(addr);
 
+  if (addr == 0)
+    return -1;
+
   for (i = 0; i < NLGA; i++)
     {
       if (last_good_addr[i] && (addr == last_good_addr[i]))
