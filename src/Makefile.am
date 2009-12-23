@@ -227,7 +227,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
 	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c	\
 	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c		\
 	x86/Lis_signal_frame.c x86/Lget_proc_info.c x86/Lregs.c		\
-	x86/Lresume.c x86/Lstep.c
+	x86/Lresume.c x86/Lstep.c x86/getcontext.S
 
 # The list of files that go into libunwind-x86:
 libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
