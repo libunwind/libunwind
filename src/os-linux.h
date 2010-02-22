@@ -269,7 +269,7 @@ maps_next (struct map_iterator *mi,
       if (!cp)
 	continue;
       cp = scan_string (cp, NULL, 0);
-      if (!cp || dash != '-' || colon != ':')
+      if (dash != '-' || colon != ':')
 	continue;	/* skip line with unknown or bad format */
       return 1;
     }
