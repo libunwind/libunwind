@@ -129,7 +129,7 @@ validate_mem (unw_word_t addr)
 	return 0;
     }
 
-  if (msync ((void *) addr, 1, MS_SYNC) == -1)
+  if (msync ((void *) addr, 1, MS_ASYNC) == -1)
     return -1;
 
   victim = lga_victim;
