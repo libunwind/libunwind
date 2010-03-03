@@ -16,6 +16,7 @@ several architecture/operating-system combinations:
 In general, this library can be built and installed with the following
 commands:
 
+	$ autoreconf -i # Needed only for building from git. Depends on libtool.
 	$ ./configure
 	$ make
 	$ make install prefix=PREFIX
