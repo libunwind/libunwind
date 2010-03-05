@@ -54,8 +54,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 
-#ifdef HAVE_ENDIAN_H
+#if defined(HAVE_ENDIAN_H)
 # include <endian.h>
+#elif defined(HAVE_SYS_ENDIAN_H)
+# include <sys/endian.h>
 #else
 # define __LITTLE_ENDIAN	1234
 # define __BIG_ENDIAN		4321

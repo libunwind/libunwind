@@ -351,6 +351,11 @@ if OS_HPUX
  libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_hpux_local)
 endif
 
+if OS_FREEBSD
+ libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_freebsd)
+ libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_freebsd_local)
+endif
+
 if ARCH_ARM
  lib_LTLIBRARIES_arch = libunwind-arm.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_arm)

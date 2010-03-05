@@ -15,7 +15,7 @@
 # include "tdep-ppc64/dwarf-config.h"
 #elif defined __i386__
 # include "tdep-x86/dwarf-config.h"
-#elif defined __x86_64__
+#elif defined __x86_64__ || defined __amd64__
 # include "tdep-x86_64/dwarf-config.h"
 #else
 # error "Unsupported arch"

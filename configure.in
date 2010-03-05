@@ -27,8 +27,8 @@ CHECK_ATOMIC_OPS
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h execinfo.h ia64intrin.h \
-		 sys/uc_access.h unistd.h signal.h)
+AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h sys/endian.h execinfo.h \
+		ia64intrin.h sys/uc_access.h unistd.h signal.h sys/types.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -80,6 +80,7 @@ get_arch() {
   hppa*) echo hppa;;
   mips*) echo mips;;
   powerpc*) is_gcc_m64;;
+  amd64) echo x86_64;;
   *) echo $1;;
  esac
 }
@@ -99,6 +100,7 @@ AM_CONDITIONAL(ARCH_PPC32, test x$target_arch = xppc32)
 AM_CONDITIONAL(ARCH_PPC64, test x$target_arch = xppc64)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
+AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
 
 if test x$target_arch = xppc64; then
         libdir='${exec_prefix}/lib64'
