@@ -72,8 +72,35 @@ PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   /* XXXKIB */
-  printf ("%s: implement me\n", __FUNCTION__);
-  return -UNW_ENOINFO;
+  struct cursor *c = (struct cursor *) cursor;
+  unw_word_t w0, w1, w2, w3, w4, ip;
+  unw_addr_space_t as;
+  unw_accessors_t *a;
+  void *arg;
+  int ret;
+
+  as = c->dwarf.as;
+  a = unw_get_accessors (as);
+  arg = c->dwarf.as_arg;
+
+  /* Check if RIP points at sigreturn sequence.
+48 8d 7c 24 10		lea	SIGF_UC(%rsp),%rdi
+6a 00			pushq	$0
+48 c7 c0 a1 01 00 00	movq	$SYS_sigreturn,%rax
+0f 05			syscall
+f4		0:	hlt
+eb fd			jmp	0b
+  */
+
+  ip = c->dwarf.ip;
+  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 16, &w2, 0, arg)) < 0)
+    return 0;
+  w2 &= 0xffffff;
+  return (w0 == 0x48006a10247c8d48 &&
+	  w1 == 0x050f000001a1c0c7 &&
+	  w2 == 0x0000000000fdebf4);
 }
 
 #else /* __linux__ */
