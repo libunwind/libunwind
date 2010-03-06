@@ -208,6 +208,9 @@ do {						\
 
 #define SOS_MEMORY_SIZE 16384	/* see src/mi/mempool.c */
 
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
+#endif
 #define GET_MEMORY(mem, size_in_bytes)				    \
 do {									    \
   /* Hopefully, mmap() goes straight through to a system call stub...  */   \
