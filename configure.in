@@ -66,6 +66,13 @@ AC_CHECK_DECLS(PTRACE_POKEDATA, [], [],
 #endif
 #include <sys/ptrace.h>
 ])
+AC_CHECK_DECLS(PTRACE_CONT, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
 AC_CHECK_DECLS(PT_IO, [], [],
 [$ac_includes_default
 #if HAVE_SYS_TYPES_H
@@ -81,6 +88,13 @@ AC_CHECK_DECLS(PT_GETREGS, [], [],
 #include <sys/ptrace.h>
 ])
 AC_CHECK_DECLS(PT_GETFPREGS, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PT_CONTINUE, [], [],
 [$ac_includes_default
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
