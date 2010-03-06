@@ -25,6 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#if HAVE_DECL_PTRACE_POKEUSER || HAVE_TTRACE
 int
 _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 		   int write, void *arg)
@@ -64,3 +65,41 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
       }
   return 0;
 }
+#elif HAVE_DECL_PT_GETFPREGS
+int
+_UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+		   int write, void *arg)
+{
+  unw_word_t *wp = (unw_word_t *) val;
+  struct UPT_info *ui = arg;
+  pid_t pid = ui->pid;
+  fpregset_t fpreg;
+
+  if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
+    return -UNW_EBADREG;
+
+  if (ptrace(PT_GETFPREGS, pid, &fpreg, 0) == -1)
+	  return -UNW_EBADREG;
+  if (write) {
+#if defined(__amd64__)
+	  memcpy(&fpreg.fpr_xacc[reg], val, sizeof(unw_fpreg_t));
+#elif defined(__i386__)
+	  memcpy(&fpreg.fpr_acc[reg], val, sizeof(unw_fpreg_t));
+#else
+#error Fix me
+#endif
+	  if (ptrace(PT_SETFPREGS, pid, &fpreg, 0) == -1)
+		  return -UNW_EBADREG;
+  } else
+#if defined(__amd64__)
+	  memcpy(val, &fpreg.fpr_xacc[reg], sizeof(unw_fpreg_t));
+#elif defined(__i386__)
+	  memcpy(val, &fpreg.fpr_acc[reg], sizeof(unw_fpreg_t));
+#else
+#error Fix me
+#endif
+  return 0;
+}
+#else
+#error Fix me
+#endif

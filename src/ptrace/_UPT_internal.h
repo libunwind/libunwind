@@ -33,14 +33,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#include <sys/ptrace.h>
+#ifdef HAVE_SYS_PROCFS_H
+#include <sys/procfs.h>
+#endif
 
 #include <errno.h>
 #include <libunwind-ptrace.h>
 #include <limits.h>
 #include <stdio.h>
 #include <stdlib.h>
-
-#include <sys/ptrace.h>
 
 #include "libunwind_i.h"
 
