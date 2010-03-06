@@ -50,6 +50,25 @@ uc_addr (ucontext_t *uc, int reg)
 
   switch (reg)
     {
+#ifdef __FreeBSD__
+    case UNW_X86_64_R8: addr = &uc->uc_mcontext.mc_r8; break;
+    case UNW_X86_64_R9: addr = &uc->uc_mcontext.mc_r9; break;
+    case UNW_X86_64_R10: addr = &uc->uc_mcontext.mc_r10; break;
+    case UNW_X86_64_R11: addr = &uc->uc_mcontext.mc_r11; break;
+    case UNW_X86_64_R12: addr = &uc->uc_mcontext.mc_r12; break;
+    case UNW_X86_64_R13: addr = &uc->uc_mcontext.mc_r13; break;
+    case UNW_X86_64_R14: addr = &uc->uc_mcontext.mc_r14; break;
+    case UNW_X86_64_R15: addr = &uc->uc_mcontext.mc_r15; break;
+    case UNW_X86_64_RDI: addr = &uc->uc_mcontext.mc_rdi; break;
+    case UNW_X86_64_RSI: addr = &uc->uc_mcontext.mc_rsi; break;
+    case UNW_X86_64_RBP: addr = &uc->uc_mcontext.mc_rbp; break;
+    case UNW_X86_64_RBX: addr = &uc->uc_mcontext.mc_rbx; break;
+    case UNW_X86_64_RDX: addr = &uc->uc_mcontext.mc_rdx; break;
+    case UNW_X86_64_RAX: addr = &uc->uc_mcontext.mc_rax; break;
+    case UNW_X86_64_RCX: addr = &uc->uc_mcontext.mc_rcx; break;
+    case UNW_X86_64_RSP: addr = &uc->uc_mcontext.mc_rsp; break;
+    case UNW_X86_64_RIP: addr = &uc->uc_mcontext.mc_rip; break;
+#else
     case UNW_X86_64_R8: addr = &uc->uc_mcontext.gregs[REG_R8]; break;
     case UNW_X86_64_R9: addr = &uc->uc_mcontext.gregs[REG_R9]; break;
     case UNW_X86_64_R10: addr = &uc->uc_mcontext.gregs[REG_R10]; break;
@@ -67,6 +86,7 @@ uc_addr (ucontext_t *uc, int reg)
     case UNW_X86_64_RCX: addr = &uc->uc_mcontext.gregs[REG_RCX]; break;
     case UNW_X86_64_RSP: addr = &uc->uc_mcontext.gregs[REG_RSP]; break;
     case UNW_X86_64_RIP: addr = &uc->uc_mcontext.gregs[REG_RIP]; break;
+#endif
 
     default:
       addr = NULL;
