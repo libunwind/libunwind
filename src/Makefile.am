@@ -97,6 +97,8 @@ libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
+libunwind_la_SOURCES_os_freebsd = os-freebsd.c
+
 dwarf_SOURCES_common =				\
 	dwarf/global.c
 
