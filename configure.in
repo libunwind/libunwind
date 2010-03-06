@@ -73,6 +73,13 @@ AC_CHECK_DECLS(PT_IO, [], [],
 #endif
 #include <sys/ptrace.h>
 ])
+AC_CHECK_DECLS(PT_GETREGS, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
 AC_CHECK_DECLS(PT_GETFPREGS, [], [],
 [$ac_includes_default
 #if HAVE_SYS_TYPES_H

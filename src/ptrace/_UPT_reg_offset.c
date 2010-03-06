@@ -25,6 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#include <stddef.h>
+
 #ifdef HAVE_ASM_PTRACE_OFFSETS_H
 # include <asm/ptrace_offsets.h>
 #endif
@@ -265,6 +267,31 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 /*  EFLAGS		= 0x38, */
 /*  SS			= 0x40 */
 #elif defined(UNW_TARGET_X86_64)
+#if defined(__FreeBSD__)
+#define UNW_R_OFF(R, r) \
+    [UNW_X86_64_##R]	= offsetof(gregset_t, r_##r),
+    UNW_R_OFF(RAX, rax)
+    UNW_R_OFF(RDX, rdx)
+    UNW_R_OFF(RCX, rcx)
+    UNW_R_OFF(RBX, rbx)
+    UNW_R_OFF(RSI, rsi)
+    UNW_R_OFF(RDI, rdi)
+    UNW_R_OFF(RBP, rbp)
+    UNW_R_OFF(RSP, rsp)
+    UNW_R_OFF(R8, r8)
+    UNW_R_OFF(R9, r9)
+    UNW_R_OFF(R10, r10)
+    UNW_R_OFF(R11, r11)
+    UNW_R_OFF(R12, r12)
+    UNW_R_OFF(R13, r13)
+    UNW_R_OFF(R14, r14)
+    UNW_R_OFF(R15, r15)
+    UNW_R_OFF(RIP, rip)
+//  UNW_R_OFF(CS, cs)
+//  UNW_R_OFF(EFLAGS, rflags)
+//  UNW_R_OFF(SS, ss)
+#undef UNW_R_OFF
+#else
     [UNW_X86_64_RAX]	= 0x50,
     [UNW_X86_64_RDX]	= 0x60,
     [UNW_X86_64_RCX]	= 0x58,
@@ -286,6 +313,7 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 //  [UNW_X86_64_EFLAGS]	= 0x90,
 //  [UNW_X86_64_RSP]	= 0x98,
 //  [UNW_X86_64_SS]	= 0xa0
+#endif
 #elif defined(UNW_TARGET_PPC32)
 #elif defined(UNW_TARGET_PPC64)
 #elif defined(UNW_TARGET_ARM)
