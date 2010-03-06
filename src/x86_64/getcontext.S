@@ -55,12 +55,20 @@ _Ux86_64_getcontext:
 	movq %rax, UC_MCONTEXT_GREGS_RAX(%rdi)
 	movq %rcx, UC_MCONTEXT_GREGS_RCX(%rdi)
 
+#if defined __linux__
 	/* Save fp state (not needed, except for setcontext not
 	   restoring garbage).  */
 	leaq UC_MCONTEXT_FPREGS_MEM(%rdi),%r8
 	movq %r8, UC_MCONTEXT_FPREGS_PTR(%rdi)
 	fnstenv (%r8)
 	stmxcsr FPREGS_OFFSET_MXCSR(%r8)
+#elif defined __FreeBSD__
+	fxsave UC_MCONTEXT_FPSTATE(%rdi)
+	movq $UC_MCONTEXT_FPOWNED_FPU,UC_MCONTEXT_OWNEDFP(%rdi)
+	movq $UC_MCONTEXT_FPFMT_XMM,UC_MCONTEXT_FPFORMAT(%rdi)
+#else
+#error Port me
+#endif
 
 	leaq 8(%rsp), %rax /* exclude this call.  */
 	movq %rax, UC_MCONTEXT_GREGS_RSP(%rdi)
@@ -71,7 +79,5 @@ _Ux86_64_getcontext:
 	xorq	%rax, %rax
 	retq
 
-#ifdef __linux__
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits
-#endif

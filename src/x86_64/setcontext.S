@@ -37,9 +37,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 _Ux86_64_setcontext:
 
         /* restore fp state */
+#if defined __linux__
 	mov    UC_MCONTEXT_FPREGS_PTR(%rdi),%r8
 	fldenv (%r8)
 	ldmxcsr FPREGS_OFFSET_MXCSR(%r8)
+#elif defined __FreeBSD__
+	cmpq $UC_MCONTEXT_FPOWNED_FPU,UC_MCONTEXT_OWNEDFP(%rdi)
+	jne 1f
+	cmpq $UC_MCONTEXT_FPFMT_XMM,UC_MCONTEXT_FPFORMAT(%rdi)
+	jne 1f
+	fxrstor UC_MCONTEXT_FPSTATE(%rdi)
+1:	
+#else
+#error Port me
+#endif
 
 	/* restore the rest of the state */
 	mov    UC_MCONTEXT_GREGS_R8(%rdi),%r8
