@@ -31,6 +31,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "jmpbuf.h"
 #include "setjmp_i.h"
 
+#if !defined(_NSIG) && defined(_SIG_MAXSIG)
+# define _NSIG (_SIG_MAXSIG - 1)
+#endif
+
 void
 siglongjmp (sigjmp_buf env, int val)
 {
