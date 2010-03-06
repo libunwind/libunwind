@@ -67,6 +67,15 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   return (w0 == 0x0f0000000fc0c748 && w1 == 0x05);
 }
 
+#elif defined(__FreeBSD__)
+PROTECTED int
+unw_is_signal_frame (unw_cursor_t *cursor)
+{
+  /* XXXKIB */
+  printf ("%s: implement me\n", __FUNCTION__);
+  return -UNW_ENOINFO;
+}
+
 #else /* __linux__ */
 
 PROTECTED int
