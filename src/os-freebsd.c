@@ -26,9 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/types.h>
 #include <sys/user.h>
-#include <dlfcn.h>
-#include <unistd.h>
 #include <libutil.h>
+#include <stdio.h>
 
 #include "libunwind_i.h"
 
@@ -50,8 +49,8 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			free(freep);
 			return (-1);
 		}
-		segbase = kve->kve_start;
-		mapoff = kve->kve_offset;
+		*segbase = kve->kve_start;
+		*mapoff = kve->kve_offset;
 		rc = elf_map_image(ei, kve->kve_path);
 		free(freep);
 		return (rc);
