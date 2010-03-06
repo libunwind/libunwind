@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/syscall.h>
 
+#if defined(__linux)
 /* sigreturn() is a no-op on x86_64 glibc.  */
 
 static NORETURN inline long
@@ -45,6 +46,7 @@ my_rt_sigreturn (void *new_sp)
 			: "memory");
   abort ();
 }
+#endif
 
 HIDDEN inline int
 x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
@@ -73,6 +75,8 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	     (unsigned long long) c->dwarf.ip);
       setcontext (uc);
     }
+#elif defined(__FreeBSD__)
+  /* XXXKIB */
 #else
 # warning Implement me!
 #endif

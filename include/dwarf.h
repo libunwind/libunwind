@@ -34,6 +34,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <atomic_ops.h>
 #endif
 
+#ifdef HAVE_SYS_TYPES_H
+# include <sys/types.h>
+#endif
+
 #include <libunwind.h>
 
 struct dwarf_cursor;	/* forward-declaration */
