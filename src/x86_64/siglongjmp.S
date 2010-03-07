@@ -24,10 +24,9 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 	.globl _UI_siglongjmp_cont
-
+	.type _ui_siglongjmp_cont, @function
 _UI_siglongjmp_cont:
 	retq
-#ifdef __linux__
+	.size _UI_siglongjmp_cont, . - _UI_siglongjmp_cont
 	/* We do not need executable stack.  */
 	.section	.note.GNU-stack,"",@progbits
-#endif

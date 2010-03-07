@@ -33,7 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
   
 */
 	.global _Ux86_64_setcontext
-
+	.type _Ux86_64_setcontext, @function
+	
 _Ux86_64_setcontext:
 
         /* restore fp state */
@@ -75,7 +76,7 @@ _Ux86_64_setcontext:
 	mov    UC_MCONTEXT_GREGS_RDI(%rdi),%rdi
 	retq
 
-#ifdef __linux__
+	.size _Ux86_64_setcontext, . - _Ux86_64_setcontext
+
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits
-#endif

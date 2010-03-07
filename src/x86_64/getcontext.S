@@ -78,6 +78,7 @@ _Ux86_64_getcontext:
 
 	xorq	%rax, %rax
 	retq
+	.size _Ux86_64_getcontext, . - _Ux86_64_getcontext
 
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits
