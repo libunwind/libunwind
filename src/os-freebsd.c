@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-HIDDEN int
+int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 		    unsigned long *segbase, unsigned long *mapoff)
 {
