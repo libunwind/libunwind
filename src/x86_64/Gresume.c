@@ -27,13 +27,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 
+#include "offsets.h"
 #include "unwind_i.h"
 
 #ifndef UNW_REMOTE_ONLY
 
 #include <sys/syscall.h>
 
-#if defined(__linux)
+#if defined __linux
 /* sigreturn() is a no-op on x86_64 glibc.  */
 
 static NORETURN inline long
@@ -51,7 +52,6 @@ my_rt_sigreturn (void *new_sp)
 HIDDEN inline int
 x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-#if defined(__linux)
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = c->uc;
 
@@ -67,7 +67,13 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
       Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
 	     (unsigned long long) c->dwarf.ip, sc);
+#if defined __linux__
       my_rt_sigreturn (sc);
+#elif defined __FreeBSD__
+      sigreturn((char *)(c->uc) - FREEBSD_UC_MCONTEXT_OFF);
+#else
+#error Port me
+#endif
     }
   else
     {
@@ -75,11 +81,6 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	     (unsigned long long) c->dwarf.ip);
       setcontext (uc);
     }
-#elif defined(__FreeBSD__)
-  /* XXXKIB */
-#else
-# warning Implement me!
-#endif
   return -UNW_EINVAL;
 }
 

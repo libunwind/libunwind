@@ -82,6 +82,3 @@
 #define LINUX_FPSTATE_XMM5_OFF		0x160
 #define LINUX_FPSTATE_XMM6_OFF		0x170
 #define LINUX_FPSTATE_XMM7_OFF		0x180
-
-/* FreeBSD specific definitions */
-#define FREEBSD_UC_MCONTEXT_OFF		0x10
