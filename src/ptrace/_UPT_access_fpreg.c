@@ -78,7 +78,7 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
     return -UNW_EBADREG;
 
-  if (ptrace(PT_GETFPREGS, pid, &fpreg, 0) == -1)
+  if (ptrace(PT_GETFPREGS, pid, (caddr_t)&fpreg, 0) == -1)
 	  return -UNW_EBADREG;
   if (write) {
 #if defined(__amd64__)
@@ -88,7 +88,7 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 #else
 #error Fix me
 #endif
-	  if (ptrace(PT_SETFPREGS, pid, &fpreg, 0) == -1)
+	  if (ptrace(PT_SETFPREGS, pid, (caddr_t)&fpreg, 0) == -1)
 		  return -UNW_EBADREG;
   } else
 #if defined(__amd64__)
