@@ -97,6 +97,10 @@ eb fd			jmp	0b
       || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 16, &w2, 0, arg)) < 0)
     return 0;
+#if 0
+  fprintf(stderr, "is_signal_frame: ip %lx w0 %lx w1 %lx w2 %lx\n",
+	  ip, w0, w1, w2);
+#endif
   w2 &= 0xffffff;
   return (w0 == 0x48006a10247c8d48 &&
 	  w1 == 0x050f000001a1c0c7 &&
