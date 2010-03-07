@@ -101,6 +101,6 @@ Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 test_async_sig_LDADD = $(LIBUNWIND) -lpthread
 rs_race_LDADD = $(LIBUNWIND) -lpthread
 
-LDADD += -ldl
+LDADD += @DLLIB@
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 

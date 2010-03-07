@@ -23,6 +23,15 @@ AM_PROG_CC_C_O
 
 dnl Checks for libraries.
 AC_CHECK_LIB(uca, __uc_get_grs)
+AC_CHECK_LIB(util, kinfo_getvmmap)
+OLD_LIBS=${LIBS}
+AC_SEARCH_LIBS(dl, dlopen)
+LIBS=${OLD_LIBS}
+case "$ac_cv_search_dlopen" in
+  -l*) DLLIB=$ac_cv_search_dlopen;;
+  *) DLLIB="";;
+esac
+
 CHECK_ATOMIC_OPS
 
 dnl Checks for header files.
@@ -241,6 +250,7 @@ AC_SUBST(PKG_MINOR)
 AC_SUBST(PKG_EXTRA)
 AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
+AC_SUBST(DLLIB)
 
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
 		doc/Makefile doc/common.tex include/libunwind-common.h)
