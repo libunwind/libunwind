@@ -28,6 +28,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "ucontext_i.h"
 #include <signal.h>
+#include <stddef.h>
+
+#if defined __FreeBSD__
+#include <sys/ucontext.h>
+#include <machine/sigframe.h>
+#endif
 
 PROTECTED int
 unw_step (unw_cursor_t *cursor)
@@ -79,11 +85,17 @@ unw_step (unw_cursor_t *cursor)
 
       if (unw_is_signal_frame (cursor))
 	{
-	  unw_word_t ucontext = c->dwarf.cfa;
+	  unw_word_t ucontext;
 
 	  Debug(1, "signal frame, skip over trampoline\n");
 
+#if defined __linux__
+	  ucontext = c->dwarf.cfa;
 	  c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+#elif defined __FreeBSD__
+	  ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
+	  c->sigcontext_format = X86_64_SCF_FREEBSD_SIGFRAME;
+#endif
 	  c->sigcontext_addr = c->dwarf.cfa;
 
 	  rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);

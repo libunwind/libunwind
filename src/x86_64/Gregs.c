@@ -41,6 +41,10 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
     case X86_64_SCF_LINUX_RT_SIGFRAME:
       addr += LINUX_UC_MCONTEXT_OFF;
       break;
+
+    case X86_64_SCF_FREEBSD_SIGFRAME:
+      addr += FREEBSD_UC_MCONTEXT_OFF;
+      break;
     }
 
   return DWARF_REG_LOC (&c->dwarf, reg);

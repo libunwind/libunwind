@@ -62,7 +62,8 @@ struct cursor
     enum
       {
 	X86_64_SCF_NONE,		/* no signal frame encountered */
-	X86_64_SCF_LINUX_RT_SIGFRAME	/* POSIX ucontext_t */
+	X86_64_SCF_LINUX_RT_SIGFRAME,	/* Linux ucontext_t */
+	X86_64_SCF_FREEBSD_SIGFRAME,	/* FreeBSD ucontext_t */
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;
