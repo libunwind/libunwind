@@ -24,16 +24,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
+
 #define UNW_LOCAL_ONLY
-
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#ifdef HAVE_SYS_TYPES_H
-# include <sys/types.h>
-#endif
-
 #include <libunwind.h>
 
 /* See glibc manual for a description of this function.  */
