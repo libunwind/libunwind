@@ -39,6 +39,7 @@ main (int argc, char **argv)
 #include <errno.h>
 #include <fcntl.h>
 #include <libunwind-ptrace.h>
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -46,6 +47,8 @@ main (int argc, char **argv)
 
 #include <sys/ptrace.h>
 #include <sys/wait.h>
+
+extern char **environ;
 
 static const int nerrors_max = 100;
 
@@ -209,7 +212,13 @@ main (int argc, char **argv)
       if (!verbose)
 	dup2 (open ("/dev/null", O_WRONLY), 1);
 
+#if HAVE_DECL_PTRACE_TRACEME
       ptrace (PTRACE_TRACEME, 0, 0, 0);
+#elif HAVE_DECL_PT_TRACE_ME
+      ptrace (PT_TRACE_ME, 0, 0, 0);
+#else
+#error Trace me
+#endif
       execve (argv[optind], argv + optind, environ);
       _exit (-1);
     }
@@ -274,11 +283,23 @@ main (int argc, char **argv)
 	{
 	case TRIGGER:
 	  if (state)
+#if HAVE_DECL_PTRACE_CONT
 	    ptrace (PTRACE_CONT, target_pid, 0, 0);
+#elif HAVE_DECL_PT_CONTINUE
+	    ptrace (PT_CONTINUE, target_pid, (caddr_t)1, 0);
+#else
+#error Port me
+#endif
 	  else
 	    {
 	      do_backtrace (target_pid);
+#if HAVE_DECL_PTRACE_SINGLESTEP
 	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+#elif HAVE_DECL_PT_STEP
+	      ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig);
+#else
+#error Singlestep me
+#endif
 	    }
 	  break;
 
@@ -286,12 +307,24 @@ main (int argc, char **argv)
 	  if (!state)
 	    do_backtrace (target_pid);
 	  state ^= 1;
+#if HAVE_DECL_PTRACE_SYSCALL
 	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
+#elif HAVE_DECL_PT_SYSCALL
+	  ptrace (PT_SYSCALL, target_pid, 0, pending_sig);
+#else
+#error Syscall me
+#endif
 	  break;
 
 	case INSTRUCTION:
 	  do_backtrace (target_pid);
-	  ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+#if HAVE_DECL_PTRACE_SINGLESTEP
+	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+#elif HAVE_DECL_PT_STEP
+	      ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig);
+#else
+#error Singlestep me
+#endif
 	  break;
 	}
       if (killed)

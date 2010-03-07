@@ -82,6 +82,34 @@ AC_CHECK_DECLS(PTRACE_CONT, [], [],
 #endif
 #include <sys/ptrace.h>
 ])
+AC_CHECK_DECLS(PTRACE_TRACEME, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PTRACE_CONT, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PTRACE_SINGLESTEP, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PTRACE_SYSCALL, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
 AC_CHECK_DECLS(PT_IO, [], [],
 [$ac_includes_default
 #if HAVE_SYS_TYPES_H
@@ -104,6 +132,34 @@ AC_CHECK_DECLS(PT_GETFPREGS, [], [],
 #include <sys/ptrace.h>
 ])
 AC_CHECK_DECLS(PT_CONTINUE, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PT_TRACE_ME, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PT_CONTINUE, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PT_STEP, [], [],
+[$ac_includes_default
+#if HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#include <sys/ptrace.h>
+])
+AC_CHECK_DECLS(PT_SYSCALL, [], [],
 [$ac_includes_default
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
