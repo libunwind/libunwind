@@ -310,7 +310,7 @@ main (int argc, char **argv)
 #if HAVE_DECL_PTRACE_SYSCALL
 	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
 #elif HAVE_DECL_PT_SYSCALL
-	  ptrace (PT_SYSCALL, target_pid, 0, pending_sig);
+	  ptrace (PT_SYSCALL, target_pid, (caddr_t)1, pending_sig);
 #else
 #error Syscall me
 #endif
