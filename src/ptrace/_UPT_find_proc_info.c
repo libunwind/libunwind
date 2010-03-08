@@ -168,7 +168,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
-  unw_word_t addr, eh_frame_start, fde_count, load_base;
+  unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, load_base;
+  unw_word_t max_load_addr = 0;
   struct dwarf_eh_frame_hdr *hdr;
   unw_proc_info_t pi;
   unw_accessors_t *a;
@@ -190,6 +191,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	case PT_LOAD:
 	  if (phdr[i].p_offset == mapoff)
 	    ptxt = phdr + i;
+	  if ((uintptr_t) ui->ei.image + phdr->p_filesz > max_load_addr)
+	    max_load_addr = (uintptr_t) ui->ei.image + phdr->p_filesz;
 	  break;
 
 	case PT_GNU_EH_FRAME:
@@ -268,11 +271,10 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
       /* If there is no search table or it has an unsupported
 	 encoding, fall back on linear search.  */
       if (hdr->table_enc == DW_EH_PE_omit)
-	Debug (4, "table `%s' lacks search table; doing linear search\n",
-	       info->dlpi_name);
+        Debug (4, "EH lacks search table; doing linear search\n");
       else
-	Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
-	       info->dlpi_name, hdr->table_enc);
+	Debug (4, "EH table has encoding 0x%x; doing linear search\n",
+	       hdr->table_enc);
 
       eh_frame_end = max_load_addr;	/* XXX can we do better? */
 
@@ -281,7 +283,6 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
       if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
 	abort ();
 
-      cb_data->single_fde = 1;
       return linear_search (unw_local_addr_space, ip,
 			    eh_frame_start, eh_frame_end, fde_count,
 			    pi, need_unwind_info, NULL);
