@@ -45,7 +45,6 @@ my_rt_sigreturn (void *new_sp)
 			"syscall"
 			:: "r"(new_sp), "i"(SYS_rt_sigreturn)
 			: "memory");
-  abort ();
 }
 #endif
 
@@ -63,17 +62,20 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (unlikely (c->sigcontext_format != X86_64_SCF_NONE))
     {
+#if defined __linux__
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
       Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
 	     (unsigned long long) c->dwarf.ip, sc);
-#if defined __linux__
       my_rt_sigreturn (sc);
 #elif defined __FreeBSD__
-      sigreturn((char *)(c->uc) - FREEBSD_UC_MCONTEXT_OFF);
+      Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
+	     (unsigned long long) c->dwarf.ip, uc);
+      sigreturn(uc);
 #else
 #error Port me
 #endif
+      abort();
     }
   else
     {

@@ -66,6 +66,22 @@ _Ux86_64_getcontext:
 	fxsave UC_MCONTEXT_FPSTATE(%rdi)
 	movq $UC_MCONTEXT_FPOWNED_FPU,UC_MCONTEXT_OWNEDFP(%rdi)
 	movq $UC_MCONTEXT_FPFMT_XMM,UC_MCONTEXT_FPFORMAT(%rdi)
+	/* Save rflags and segment registers, so that sigreturn(2)
+	does not complain. */
+	pushfq
+	popq UC_MCONTEXT_RFLAGS(%rdi)
+	movl $0, UC_MCONTEXT_FLAGS(%rdi)
+	movw %cs, UC_MCONTEXT_CS(%rdi)
+	movw %ss, UC_MCONTEXT_SS(%rdi)
+#if 0
+	/* Setting the flags to 0 above disables restore of segment
+	   registers from the context */
+	movw %ds, UC_MCONTEXT_DS(%rdi)
+	movw %es, UC_MCONTEXT_ES(%rdi)
+	movw %fs, UC_MCONTEXT_FS(%rdi)
+	movw %gs, UC_MCONTEXT_GS(%rdi)
+#endif
+	movq $UC_MCONTEXT_MC_LEN_VAL, UC_MCONTEXT_MC_LEN(%rdi)
 #else
 #error Port me
 #endif
