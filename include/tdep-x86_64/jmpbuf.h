@@ -23,9 +23,22 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#if defined __linux__
+
 /* Use glibc's jump-buffer indices; NPTL peeks at SP: */
 
 #define JB_SP		6
 #define JB_RP		7
 #define JB_MASK_SAVED	8
 #define JB_MASK		9
+
+#elif defined __FreeBSD__
+
+#define JB_SP		2
+#define JB_RP		0
+/* Pretend the ip cannot be 0 and mask is always saved */
+#define JB_MASK_SAVED	0
+#define JB_MASK		9
+
+#endif
+
