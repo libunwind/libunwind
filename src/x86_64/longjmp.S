@@ -24,7 +24,6 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 	.globl _UI_longjmp_cont
-
 	.type _UI_longjmp_cont, @function
 _UI_longjmp_cont:
 	push %rax		/* push target IP as return address */

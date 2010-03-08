@@ -24,7 +24,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 	.globl _UI_siglongjmp_cont
-	.type _ui_siglongjmp_cont, @function
+	.type _UI_siglongjmp_cont, @function
 _UI_siglongjmp_cont:
 	retq
 	.size _UI_siglongjmp_cont, . - _UI_siglongjmp_cont
