@@ -55,6 +55,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 		free(freep);
 		return (rc);
 	}
+	free(freep);
 	return (-1);
 }
 
