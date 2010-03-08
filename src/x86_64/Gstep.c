@@ -83,7 +83,24 @@ unw_step (unw_cursor_t *cursor)
 
       Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
-      if (unw_is_signal_frame (cursor))
+      c->sigcontext_format = unw_is_signal_frame (cursor);
+      if (c->sigcontext_format == X86_64_SCF_FREEBSD_SYSCALL) {
+	  c->dwarf.loc[RCX] = c->dwarf.loc[R10];
+//	  rsp_loc = DWARF_LOC(c->dwarf.cfa - 8, 0);
+//	  rbp_loc = c->dwarf.loc[RBP];
+	  c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
+	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+	  Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
+		     (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
+		     (unsigned long long) c->dwarf.ip);
+	  if (ret < 0)
+	    {
+	      Debug (2, "returning %d\n", ret);
+	      return ret;
+	    }
+	  c->dwarf.cfa += 8;
+	  return 1;
+      } else if (c->sigcontext_format != X86_64_SCF_NONE)
 	{
 	  unw_word_t ucontext;
 
@@ -91,10 +108,13 @@ unw_step (unw_cursor_t *cursor)
 
 #if defined __linux__
 	  ucontext = c->dwarf.cfa;
-	  c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+	  if (c->sigcontext_format != X86_64_SCF_LINUX_RT_SIGFRAME)
+	    return -UNW_EBADFRAME;
 #elif defined __FreeBSD__
-	  ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
-	  c->sigcontext_format = X86_64_SCF_FREEBSD_SIGFRAME;
+	  if (c->sigcontext_format == X86_64_SCF_FREEBSD_SIGFRAME)
+	    ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
+	  else
+	    return -UNW_EBADFRAME;
 #endif
 	  c->sigcontext_addr = c->dwarf.cfa;
 

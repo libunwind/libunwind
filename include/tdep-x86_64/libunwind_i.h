@@ -63,7 +63,8 @@ struct cursor
       {
 	X86_64_SCF_NONE,		/* no signal frame encountered */
 	X86_64_SCF_LINUX_RT_SIGFRAME,	/* Linux ucontext_t */
-	X86_64_SCF_FREEBSD_SIGFRAME,	/* FreeBSD ucontext_t */
+	X86_64_SCF_FREEBSD_SIGFRAME,	/* FreeBSD signal frame */
+	X86_64_SCF_FREEBSD_SYSCALL,	/* FreeBSD syscall */
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;

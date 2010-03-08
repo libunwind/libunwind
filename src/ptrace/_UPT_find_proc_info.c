@@ -262,8 +262,9 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 
   if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
     {
+#if 1
       abort ();
-#if 0
+#else
       /* If there is no search table or it has an unsupported
 	 encoding, fall back on linear search.  */
       if (hdr->table_enc == DW_EH_PE_omit)

@@ -54,7 +54,8 @@ unw_is_signal_frame (unw_cursor_t *cursor)
       || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
     return 0;
   w1 &= 0xff;
-  return (w0 == 0x0f0000000fc0c748 && w1 == 0x05);
+  return (w0 == 0x0f0000000fc0c748 && w1 == 0x05) ?
+	  X86_64_SCF_LINUX_RT_SIGFRAME : X86_64_SCF_NONE;
 }
 
 #elif defined(__FreeBSD__)
@@ -63,7 +64,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 {
   /* XXXKIB */
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t w0, w1, w2, w3, w4, ip;
+  unw_word_t w0, w1, w2, b0, ip;
   unw_addr_space_t as;
   unw_accessors_t *a;
   void *arg;
@@ -88,10 +89,20 @@ eb fd			jmp	0b
       || (ret = (*a->access_mem) (as, ip + 16, &w2, 0, arg)) < 0)
     return 0;
   w2 &= 0xffffff;
-  ret = w0 == 0x48006a10247c8d48 &&
-	  w1 == 0x050f000001a1c0c7 &&
-	  w2 == 0x0000000000fdebf4;
-  return ret;
+  if (w0 == 0x48006a10247c8d48 &&
+      w1 == 0x050f000001a1c0c7 &&
+      w2 == 0x0000000000fdebf4)
+	  return X86_64_SCF_FREEBSD_SIGFRAME;
+  /* Check if RIP points at standard syscall sequence.
+49 89 ca	mov    %rcx,%r10
+0f 05		syscall
+  */
+  if ((ret = (*a->access_mem) (as, ip - 5, &b0, 0, arg)) < 0)
+    return (0);
+  b0 &= 0xffffffffff;
+  if (b0 == 0x000000050fca8949)
+    return X86_64_SCF_FREEBSD_SYSCALL;
+  return X86_64_SCF_NONE;
 }
 
 #else /* !__linux__ && !__FreeBSD__ */
