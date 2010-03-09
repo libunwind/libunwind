@@ -38,6 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 _Ux86_getcontext:
 	mov	4(%esp),%eax  /* ucontext_t* */
 
+#if defined __linux__
 	/* EAX is not preserved. */
 	movl	$0, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EAX_OFF)(%eax)
 
@@ -63,11 +64,54 @@ _Ux86_getcontext:
 	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FPSTATE_OFF)(%eax)
 	fnstenv	(%ecx)
 	fldenv	(%ecx)
+#elif defined __FreeBSD__
+	/* EAX is not preserved. */
+	movl	$0, (FREEBSD_UC_MCONTEXT_EAX_OFF)(%eax)
+
+	movl	%ebx, (FREEBSD_UC_MCONTEXT_EBX_OFF)(%eax)
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_ECX_OFF)(%eax)
+	movl	%edx, (FREEBSD_UC_MCONTEXT_EDX_OFF)(%eax)
+	movl	%edi, (FREEBSD_UC_MCONTEXT_EDI_OFF)(%eax)
+	movl	%esi, (FREEBSD_UC_MCONTEXT_ESI_OFF)(%eax)
+	movl	%ebp, (FREEBSD_UC_MCONTEXT_EBP_OFF)(%eax)
+
+	movl	(%esp), %ecx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_EIP)(%eax)
+
+	leal	4(%esp), %ecx		/* Exclude the return address.  */
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_ESP)(%eax)
+
+	xorl	%ecx, %ecx
+	movw	%fs, %cx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_FS)(%eax)
+	movw	%gs, %cx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_GS)(%eax)
+	movw	%ds, %cx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_DS)(%eax)
+	movw	%es, %cx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_ES)(%eax)
+	movw	%ss, %cx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_SS)(%eax)
+	movw	%cs, %cx
+	movl	%ecx, (FREEBSD_UC_MCONTEXT_OFF_CS)(%eax)
+
+	pushfl
+	popl	(FREEBSD_UC_MCONTEXT_OFF_EFLAGS)(%eax)
+
+	movl	$FREEBSD_UC_MCONTEXT_FPOWNED_FPU,FREEBSD_UC_MCONTEXT_OWNEDFP(%eax)
+	movl	$FREEBSD_UC_MCONTEXT_FPFMT_XMM,FREEBSD_UC_MCONTEXT_FPFORMAT(%eax)
+
+	leal	LINUX_UC_FPREGS_MEM_OFF(%eax), %ecx
+	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FPSTATE_OFF)(%eax)
+	fnstenv	(%ecx)
+	fldenv	(%ecx)
+
+	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL, FREEBSD_UC_MCONTEXT_MC_LEN(%eax)
+#endif
 
 	xor	%eax, %eax
 	ret
+	.size	_Ux86_getcontext, . - _Ux86_getcontext
 
-#ifdef __linux__
-      /* We do not need executable stack.  */
-      .section        .note.GNU-stack,"",@progbits
-#endif
+	/* We do not need executable stack.  */
+	.section        .note.GNU-stack,"",@progbits
