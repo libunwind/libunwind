@@ -30,6 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern "C" {
 #endif
 
+#include <sys/types.h>
 #include <inttypes.h>
 #include <ucontext.h>
 
