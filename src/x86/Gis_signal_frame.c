@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
-#ifdef __linux__
+#if defined __linux__
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t w0, w1, ip;
   unw_addr_space_t as;
@@ -64,8 +64,50 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 	 || (w0 == 0x0000adb8 && w1 == 0x9080cd00));
   Debug (16, "returning %d\n", ret);
   return ret;
+#elif defined __FreeBSD__
+  struct cursor *c = (struct cursor *) cursor;
+  unw_word_t w0, w1, w2, w3, w4, w5, ip;
+  unw_addr_space_t as;
+  unw_accessors_t *a;
+  void *arg;
+  int ret;
+
+  as = c->dwarf.as;
+  a = unw_get_accessors (as);
+  arg = c->dwarf.as_arg;
+
+  /* Check if EIP points at sigreturn() sequence.  It can be:
+sigcode+4:
+8d 44 24 20		lea    0x20(%esp),%eax
+50			push   %eax
+f7 40 54 00 02 00	testl  $0x20000,0x54(%eax)
+75 03			jne    sigcode+21
+8e 68 14		mov    0x14(%eax),%gs
+b8 a1 01 00 00		mov    $0x1a1,%eax
+50			push   %eax
+cd 80			int    $0x80
+
+freebsd4_sigcode+4:
+XXX
+osigcode:
+XXX
+  */
+  ip = c->dwarf.ip;
+  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0 ||
+      (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0 ||
+      (ret = (*a->access_mem) (as, ip + 8, &w2, 0, arg)) < 0 ||
+      (ret = (*a->access_mem) (as, ip + 16, &w3, 0, arg)) < 0 ||
+      (ret = (*a->access_mem) (as, ip + 20, &w4, 0, arg)) < 0 ||
+      (ret = (*a->access_mem) (as, ip + 24, &w5, 0, arg)) < 0)
+    return ret;
+  ret = (w0 == 0x2024448d && w1 == 0x5440f750 && w2 == 0x75000200 &&
+	  w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000);
+  if (ret != 0)
+	  return (1);
+  Debug (16, "returning %d\n", ret);
+  return (0);
 #else
-  printf ("%s: implement me\n", __FUNCTION__);
+#error Port me
 #endif
   return -UNW_ENOINFO;
 }
