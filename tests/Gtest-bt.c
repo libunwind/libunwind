@@ -181,7 +181,10 @@ sighandler (int signal, void *siginfo, void *context)
       }
 # endif
 #elif UNW_TARGET_X86
+#if defined __linux__
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_EIP]);
+#elif defined __FreeBSD__
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_eip);
 #endif
       printf ("\n");
     }
