@@ -186,6 +186,7 @@ sighandler (int signal, void *siginfo, void *context)
 #elif defined __FreeBSD__
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_eip);
 #endif
+#endif
       printf ("\n");
     }
   do_backtrace();
