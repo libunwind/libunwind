@@ -29,6 +29,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <execinfo.h>
 
+/* ITERS=1000, NTHREAD=10 caught some bugs in the past */
+#ifndef ITERS 
+#define ITERS 100
+#endif
+
+#ifndef NTHREAD
+#define NTHREAD 2
+#endif
+
 int verbose;
 
 void
@@ -1325,7 +1334,7 @@ void *
 bar(void *p)
 {
   int i;
-  for (i = 0; i < 1000; ++i) {
+  for (i = 0; i < ITERS; ++i) {
     foo_0 ();
     foo_1 ();
     foo_2 ();
@@ -1458,10 +1467,6 @@ bar(void *p)
   }
   return NULL;
 }
-
-#ifndef NTHREAD
-#define NTHREAD 10
-#endif
 
 int doit ()
 {
