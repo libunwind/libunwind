@@ -24,7 +24,10 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "ucontext_i.h"
+#include <asm/unistd.h>
 
+#define	SIG_SETMASK   2
+#define	SIGSET_BYTE_SIZE   (64/8)
 
 /*  int _Ux86_64_setcontext (const ucontext_t *ucp)
 
@@ -35,6 +38,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _Ux86_64_setcontext
 
 _Ux86_64_setcontext:
+
+	/* restore signal mask
+           sigprocmask(SIG_SETMASK, ucp->uc_sigmask, NULL, sizeof(sigset_t)) */
+	push %rdi
+	mov $__NR_rt_sigprocmask, %rax
+	lea UC_SIGMASK(%rdi), %rsi
+	mov $SIG_SETMASK, %rdi
+	xor %rdx, %rdx
+	mov $SIGSET_BYTE_SIZE, %r10
+	syscall
+	pop %rdi
 
         /* restore fp state */
 	mov    UC_MCONTEXT_FPREGS_PTR(%rdi),%r8

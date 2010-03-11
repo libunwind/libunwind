@@ -63,7 +63,7 @@ void
 handler (int sig)
 {
   unw_word_t ip;
-  sigset_t mask;
+  sigset_t mask, oldmask;
   unw_context_t uc;
   unw_cursor_t c;
   char foo;
@@ -84,7 +84,7 @@ handler (int sig)
 
       sigemptyset (&mask);
       sigaddset (&mask, SIGUSR2);
-      sigprocmask (SIG_BLOCK, &mask, NULL);
+      sigprocmask (SIG_BLOCK, &mask, &oldmask);
       kill (getpid (), SIGUSR2);	/* pend SIGUSR2 */
 
       signal (SIGUSR1, SIG_IGN);
@@ -92,6 +92,10 @@ handler (int sig)
 
       if ((ret = unw_getcontext (&uc)) < 0)
 	panic ("unw_getcontext() failed: ret=%d\n", ret);
+#if UNW_TARGET_X86_64
+      /* unw_getcontext() doesn't save signal mask to avoid a syscall */
+      uc.uc_sigmask = oldmask; 
+#endif
       if ((ret = unw_init_local (&c, &uc)) < 0)
 	panic ("unw_init_local() failed: ret=%d\n", ret);
 
@@ -113,10 +117,7 @@ handler (int sig)
       ++got_usr2;
       if (got_usr1)
 	{
-	  if (sigusr1_sp != &foo)
-	    panic ("Stack pointer changed from %p to %p between signals\n",
-		   sigusr1_sp, &foo);
-	  else if (verbose)
+	  if (verbose)
 	    printf ("OK: stack still at %p\n", &foo);
 	}
       signal (SIGUSR2, SIG_IGN);
