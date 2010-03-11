@@ -48,14 +48,17 @@ typedef RETSIGTYPE (*sighandler_t) (int);
 int verbose;
 int num_errors;
 
+/* These variables are global because they
+ * cause the signal stack to overflow */
+char buf[512], name[256];
+unw_cursor_t cursor;
+ucontext_t uc;
+
 static void
 do_backtrace (void)
 {
-  char buf[512], name[256];
   unw_word_t ip, sp, off;
-  unw_cursor_t cursor;
   unw_proc_info_t pi;
-  unw_context_t uc;
   int ret;
 
   if (verbose)
@@ -182,6 +185,8 @@ sighandler (int signal, void *siginfo, void *context)
 # endif
 #elif UNW_TARGET_X86
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_EIP]);
+#elif UNW_TARGET_X86_64
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_RIP]);
 #endif
       printf ("\n");
     }
