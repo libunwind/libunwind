@@ -26,8 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "offsets.h"
 #include "unwind_i.h"
 
+#if defined __linux__
 static inline dwarf_loc_t
-linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
+get_scratch_loc (struct cursor *c, unw_regnum_t reg)
 {
   unw_word_t addr = c->sigcontext_addr, fpstate_addr, off;
   int ret, is_fpstate = 0;
@@ -132,12 +133,138 @@ linux_scratch_loc (struct cursor *c, unw_regnum_t reg)
   else
     return DWARF_MEM_LOC (c, addr + off);
 }
+#elif defined __FreeBSD__
+static inline dwarf_loc_t
+get_scratch_loc (struct cursor *c, unw_regnum_t reg)
+{
+  unw_word_t addr = c->sigcontext_addr, fpstate_addr, off;
+  int ret, is_fpstate = 0;
+
+  switch (c->sigcontext_format)
+    {
+    case X86_SCF_NONE:
+      return DWARF_REG_LOC (&c->dwarf, reg);
+
+    case X86_SCF_FREEBSD_SIGFRAME:
+      addr += FREEBSD_UC_MCONTEXT_OFF;
+      break;
+
+    case X86_SCF_FREEBSD_SIGFRAME4:
+      abort();
+      break;
+
+    case X86_SCF_FREEBSD_OSIGFRAME:
+      /* XXXKIB */
+      abort();
+      break;
+
+    case X86_SCF_FREEBSD_SYSCALL:
+      /* XXXKIB */
+      abort();
+      break;
+
+    default:
+      /* XXXKIB */
+      abort();
+      break;
+    }
+
+  switch (reg)
+    {
+    case UNW_X86_GS: off = FREEBSD_UC_MCONTEXT_GS_OFF; break;
+    case UNW_X86_FS: off = FREEBSD_UC_MCONTEXT_FS_OFF; break;
+    case UNW_X86_ES: off = FREEBSD_UC_MCONTEXT_ES_OFF; break;
+    case UNW_X86_DS: off = FREEBSD_UC_MCONTEXT_SS_OFF; break;
+    case UNW_X86_EDI: off = FREEBSD_UC_MCONTEXT_EDI_OFF; break;
+    case UNW_X86_ESI: off = FREEBSD_UC_MCONTEXT_ESI_OFF; break;
+    case UNW_X86_EBP: off = FREEBSD_UC_MCONTEXT_EBP_OFF; break;
+    case UNW_X86_ESP: off = FREEBSD_UC_MCONTEXT_ESP_OFF; break;
+    case UNW_X86_EBX: off = FREEBSD_UC_MCONTEXT_EBX_OFF; break;
+    case UNW_X86_EDX: off = FREEBSD_UC_MCONTEXT_EDX_OFF; break;
+    case UNW_X86_ECX: off = FREEBSD_UC_MCONTEXT_ECX_OFF; break;
+    case UNW_X86_EAX: off = FREEBSD_UC_MCONTEXT_EAX_OFF; break;
+    case UNW_X86_TRAPNO: off = FREEBSD_UC_MCONTEXT_TRAPNO_OFF; break;
+    case UNW_X86_EIP: off = FREEBSD_UC_MCONTEXT_EIP_OFF; break;
+    case UNW_X86_CS: off = FREEBSD_UC_MCONTEXT_CS_OFF; break;
+    case UNW_X86_EFLAGS: off = FREEBSD_UC_MCONTEXT_EFLAGS_OFF; break;
+    case UNW_X86_SS: off = FREEBSD_UC_MCONTEXT_SS_OFF; break;
+
+      /* The following is probably not correct for all possible cases.
+	 Somebody who understands this better should review this for
+	 correctness.  */
+
+    case UNW_X86_FCW: is_fpstate = 1; off = LINUX_FPSTATE_CW_OFF; break;
+    case UNW_X86_FSW: is_fpstate = 1; off = LINUX_FPSTATE_SW_OFF; break;
+    case UNW_X86_FTW: is_fpstate = 1; off = LINUX_FPSTATE_TAG_OFF; break;
+    case UNW_X86_FCS: is_fpstate = 1; off = LINUX_FPSTATE_CSSEL_OFF; break;
+    case UNW_X86_FIP: is_fpstate = 1; off = LINUX_FPSTATE_IPOFF_OFF; break;
+    case UNW_X86_FEA: is_fpstate = 1; off = LINUX_FPSTATE_DATAOFF_OFF; break;
+    case UNW_X86_FDS: is_fpstate = 1; off = LINUX_FPSTATE_DATASEL_OFF; break;
+    case UNW_X86_MXCSR: is_fpstate = 1; off = LINUX_FPSTATE_MXCSR_OFF; break;
+
+      /* stacked fp registers */
+    case UNW_X86_ST0: case UNW_X86_ST1: case UNW_X86_ST2: case UNW_X86_ST3:
+    case UNW_X86_ST4: case UNW_X86_ST5: case UNW_X86_ST6: case UNW_X86_ST7:
+      is_fpstate = 1;
+      off = LINUX_FPSTATE_ST0_OFF + 10*(reg - UNW_X86_ST0);
+      break;
+
+     /* SSE fp registers */
+    case UNW_X86_XMM0_lo: case UNW_X86_XMM0_hi:
+    case UNW_X86_XMM1_lo: case UNW_X86_XMM1_hi:
+    case UNW_X86_XMM2_lo: case UNW_X86_XMM2_hi:
+    case UNW_X86_XMM3_lo: case UNW_X86_XMM3_hi:
+    case UNW_X86_XMM4_lo: case UNW_X86_XMM4_hi:
+    case UNW_X86_XMM5_lo: case UNW_X86_XMM5_hi:
+    case UNW_X86_XMM6_lo: case UNW_X86_XMM6_hi:
+    case UNW_X86_XMM7_lo: case UNW_X86_XMM7_hi:
+      is_fpstate = 1;
+      off = LINUX_FPSTATE_XMM0_OFF + 8*(reg - UNW_X86_XMM0_lo);
+      break;
+    case UNW_X86_XMM0:
+    case UNW_X86_XMM1:
+    case UNW_X86_XMM2:
+    case UNW_X86_XMM3:
+    case UNW_X86_XMM4:
+    case UNW_X86_XMM5:
+    case UNW_X86_XMM6:
+    case UNW_X86_XMM7:
+      is_fpstate = 1;
+      off = LINUX_FPSTATE_XMM0_OFF + 16*(reg - UNW_X86_XMM0);
+      break;
+
+    case UNW_X86_FOP:
+    case UNW_X86_TSS:
+    case UNW_X86_LDT:
+    default:
+      return DWARF_REG_LOC (&c->dwarf, reg);
+    }
+
+  if (is_fpstate)
+    {
+      if ((ret = dwarf_get (&c->dwarf,
+			    DWARF_MEM_LOC (&c->dwarf,
+					   addr + LINUX_SC_FPSTATE_OFF),
+			    &fpstate_addr)) < 0)
+	return DWARF_NULL_LOC;
+
+      if (!fpstate_addr)
+	return DWARF_NULL_LOC;
+
+      return DWARF_MEM_LOC (c, fpstate_addr + off);
+    }
+  else
+    return DWARF_MEM_LOC (c, addr + off);
+}
+#else
+#error Port me
+#endif
 
 HIDDEN dwarf_loc_t
 x86_scratch_loc (struct cursor *c, unw_regnum_t reg)
 {
   if (c->sigcontext_addr)
-    return linux_scratch_loc (c, reg);
+    return get_scratch_loc (c, reg);
   else
     return DWARF_REG_LOC (&c->dwarf, reg);
 }

@@ -59,9 +59,12 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   ip = c->dwarf.ip;
   if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0)
-    return ret;
-  ret = ((w0 == 0x0077b858 && w1 == 0x80cd0000)
-	 || (w0 == 0x0000adb8 && w1 == 0x9080cd00));
+     return ret;
+  ret = X86_SCF_NONE;
+  if (w0 == 0x0077b858 && w1 == 0x80cd0000)
+     ret = X86_SCF_LINUX_SIGFRAME;
+  else if (w0 == 0x0000adb8 && w1 == 0x9080cd00)
+     ret = X86_SCF_LINUX_RT_SIGFRAME;
   Debug (16, "returning %d\n", ret);
   return ret;
 #elif defined __FreeBSD__
@@ -100,12 +103,12 @@ XXX
       (ret = (*a->access_mem) (as, ip + 20, &w4, 0, arg)) < 0 ||
       (ret = (*a->access_mem) (as, ip + 24, &w5, 0, arg)) < 0)
     return ret;
-  ret = (w0 == 0x2024448d && w1 == 0x5440f750 && w2 == 0x75000200 &&
-	  w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000);
-  if (ret != 0)
-	  return (1);
+  ret = X86_SCF_NONE;
+  if (w0 == 0x2024448d && w1 == 0x5440f750 && w2 == 0x75000200 &&
+	  w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000)
+    ret = X86_SCF_FREEBSD_SIGFRAME;
   Debug (16, "returning %d\n", ret);
-  return (0);
+  return (ret);
 #else
 #error Port me
 #endif

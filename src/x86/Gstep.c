@@ -23,6 +23,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <sys/types.h>
+#include <signal.h>
+#ifdef __FreeBSD__
+#include <ucontext.h>
+#include <machine/sigframe.h>
+#endif
+
 #include "unwind_i.h"
 #include "offsets.h"
 
@@ -30,7 +41,7 @@ PROTECTED int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  int ret, i;
+  int ret, i, format;
 
   Debug (1, "(cursor=%p, ip=0x%08x)\n", c, (unsigned) c->dwarf.ip);
 
@@ -55,8 +66,10 @@ unw_step (unw_cursor_t *cursor)
 
       Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
-      if (unw_is_signal_frame (cursor))
+      format = unw_is_signal_frame (cursor);
+      if (format != X86_SCF_NONE)
 	{
+#if defined __linux__
 	  /* XXX This code is Linux-specific! */
 
 	  /* c->esp points at the arguments to the handler.  Without
@@ -119,6 +132,51 @@ unw_step (unw_cursor_t *cursor)
 	  c->dwarf.loc[EFLAGS] = DWARF_NULL_LOC;
 	  c->dwarf.loc[TRAPNO] = DWARF_NULL_LOC;
 	  c->dwarf.loc[ST0] = DWARF_NULL_LOC;
+#elif defined __FreeBSD__
+	  if (format == X86_SCF_FREEBSD_SIGFRAME) {
+		  struct sigframe *sf;
+		  uintptr_t uc_addr;
+		  struct dwarf_loc esp_loc;
+
+		  sf = (struct sigframe *)c->dwarf.cfa;
+		  uc_addr = (uintptr_t)&(sf->sf_uc);
+
+		  esp_loc = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ESP_OFF, 0);
+		  ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
+		  if (ret < 0)
+		  {
+			  Debug (2, "returning 0\n");
+			  return 0;
+		  }
+		  ebp_loc = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EBP_OFF, 0);
+		  eip_loc = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EIP_OFF, 0);
+
+		  c->dwarf.loc[EAX] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EAX_OFF, 0);
+		  c->dwarf.loc[ECX] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_ECX_OFF, 0);
+		  c->dwarf.loc[EDX] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EDX_OFF, 0);
+		  c->dwarf.loc[EBX] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EBX_OFF, 0);
+		  c->dwarf.loc[EBP] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EBP_OFF, 0);
+		  c->dwarf.loc[ESI] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_ESI_OFF, 0);
+		  c->dwarf.loc[EDI] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EDI_OFF, 0);
+		  c->dwarf.loc[EFLAGS] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EFLAGS_OFF, 0);
+		  c->dwarf.loc[TRAPNO] = DWARF_LOC (uc_addr +
+		       FREEBSD_UC_MCONTEXT_EFLAGS_OFF, 0);
+		  c->dwarf.loc[ST0] = DWARF_NULL_LOC;
+	  } else {
+		  Debug (8, "Gstep: not handling frame format %d\n", format);
+		  abort();
+	  }
+#else
+#error Port me
+#endif
 	}
       else
 	{

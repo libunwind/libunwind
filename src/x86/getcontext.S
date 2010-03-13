@@ -76,37 +76,41 @@ _Ux86_getcontext:
 	movl	%ebp, FREEBSD_UC_MCONTEXT_EBP_OFF(%eax)
 
 	movl	(%esp), %ecx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_EIP(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_EIP_OFF(%eax)
 
 	leal	4(%esp), %ecx		/* Exclude the return address.  */
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_ESP(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_ESP_OFF(%eax)
 
 	xorl	%ecx, %ecx
 	movw	%fs, %cx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_FS(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_FS_OFF(%eax)
 	movw	%gs, %cx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_GS(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_GS_OFF(%eax)
 	movw	%ds, %cx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_DS(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_DS_OFF(%eax)
 	movw	%es, %cx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_ES(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_ES_OFF(%eax)
 	movw	%ss, %cx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_SS(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_SS_OFF(%eax)
 	movw	%cs, %cx
-	movl	%ecx, FREEBSD_UC_MCONTEXT_OFF_CS(%eax)
+	movl	%ecx, FREEBSD_UC_MCONTEXT_CS_OFF(%eax)
 
 	pushfl
-	popl	FREEBSD_UC_MCONTEXT_OFF_EFLAGS(%eax)
+	popl	FREEBSD_UC_MCONTEXT_EFLAGS_OFF(%eax)
 
-	movl	$FREEBSD_UC_MCONTEXT_FPOWNED_FPU,FREEBSD_UC_MCONTEXT_OWNEDFP(%eax)
-	movl	$FREEBSD_UC_MCONTEXT_FPFMT_XMM,FREEBSD_UC_MCONTEXT_FPFORMAT(%eax)
-
+	movl	$0, FREEBSD_UC_MCONTEXT_TRAPNO_OFF(%eax)
+	movl	$FREEBSD_UC_MCONTEXT_FPOWNED_FPU,\
+		FREEBSD_UC_MCONTEXT_OWNEDFP_OFF(%eax)
+	movl	$FREEBSD_UC_MCONTEXT_FPFMT_XMM,\
+		FREEBSD_UC_MCONTEXT_FPFORMAT_OFF(%eax)
+/*
 	leal	LINUX_UC_FPREGS_MEM_OFF(%eax), %ecx
 	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FPSTATE_OFF)(%eax)
 	fnstenv	(%ecx)
 	fldenv	(%ecx)
-
-	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL, FREEBSD_UC_MCONTEXT_MC_LEN(%eax)
+*/
+	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL,\
+		FREEBSD_UC_MCONTEXT_MC_LEN_OFF(%eax)
 #endif
 
 	xor	%eax, %eax

@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 
 #include "unwind_i.h"
+#include "offsets.h"
 
 #ifndef UNW_REMOTE_ONLY
 
@@ -67,13 +68,16 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   if (c->sigcontext_format == X86_SCF_NONE) {
       Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
       setcontext (uc);
-  } else if (c->sigcontext_format == XXX) {
+  } else if (c->sigcontext_format == X86_SCF_FREEBSD_SIGFRAME) {
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
       Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
-      sigreturn(sc);
+      sigreturn((const char *)sc + FREEBSD_UC_MCONTEXT_OFF);
+  } else {
+      Debug (8, "resuming at ip=%x for sigcontext format %d not implemented\n",
+       c->sigcontext_format);
+      abort();
   }
-  else
 #else
 # warning Implement me!
 #endif
