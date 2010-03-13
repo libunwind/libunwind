@@ -67,6 +67,10 @@ unw_step (unw_cursor_t *cursor)
       Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
       format = unw_is_signal_frame (cursor);
+      if (format < 0) {
+	      Debug (13, "unw_is_signal_frame() failed (ret=%d)\n", ret);
+	      return format;
+      }
       if (format != X86_SCF_NONE)
 	{
 #if defined __linux__
