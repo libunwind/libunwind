@@ -54,6 +54,26 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
       setcontext (uc);
     }
+#elif defined __FreeBSD__
+  struct cursor *c = (struct cursor *) cursor;
+  ucontext_t *uc = c->uc;
+
+  /* Ensure c->pi is up-to-date.  On x86, it's relatively common to be
+     missing DWARF unwind info.  We don't want to fail in that case,
+     because the frame-chain still would let us do a backtrace at
+     least.  */
+  dwarf_make_proc_info (&c->dwarf);
+
+  if (c->sigcontext_format == X86_SCF_NONE) {
+      Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
+      setcontext (uc);
+  } else if (c->sigcontext_format == XXX) {
+      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+
+      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
+      sigreturn(sc);
+  }
+  else
 #else
 # warning Implement me!
 #endif
