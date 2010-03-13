@@ -80,7 +80,14 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   arg = c->dwarf.as_arg;
 
   /* Check if EIP points at sigreturn() sequence.  It can be:
-sigcode+4:
+sigcode+4: from amd64 freebsd32 environment
+8d 44 24 20		lea    0x20(%esp),%eax
+50			push   %eax
+b8 a1 01 00 00		mov    $0x1a1,%ea
+50			push   %eax
+cd 80			int    $0x80
+
+sigcode+4: from real i386
 8d 44 24 20		lea    0x20(%esp),%eax
 50			push   %eax
 f7 40 54 00 02 00	testl  $0x20000,0x54(%eax)
@@ -96,17 +103,23 @@ osigcode:
 XXX
   */
   ip = c->dwarf.ip;
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0 ||
-      (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0 ||
-      (ret = (*a->access_mem) (as, ip + 8, &w2, 0, arg)) < 0 ||
-      (ret = (*a->access_mem) (as, ip + 16, &w3, 0, arg)) < 0 ||
-      (ret = (*a->access_mem) (as, ip + 20, &w4, 0, arg)) < 0 ||
-      (ret = (*a->access_mem) (as, ip + 24, &w5, 0, arg)) < 0)
-    return ret;
   ret = X86_SCF_NONE;
-  if (w0 == 0x2024448d && w1 == 0x5440f750 && w2 == 0x75000200 &&
-	  w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000)
+  if ((*a->access_mem) (as, ip, &w0, 0, arg) < 0 ||
+      (*a->access_mem) (as, ip + 4, &w1, 0, arg) < 0 ||
+      (*a->access_mem) (as, ip + 8, &w2, 0, arg) < 0 ||
+      (*a->access_mem) (as, ip + 12, &w3, 0, arg) < 0)
+    return ret;
+  if (w0 == 0x2024448d && w1 == 0x01a1b850 && w2 == 0xcd500000 &&
+      (w3 & 0xff) == 0x80)
     ret = X86_SCF_FREEBSD_SIGFRAME;
+  else {
+    if ((*a->access_mem) (as, ip + 16, &w4, 0, arg) < 0 ||
+	(*a->access_mem) (as, ip + 20, &w5, 0, arg) < 0)
+      return ret;
+    if (w0 == 0x2024448d && w1 == 0x5440f750 && w2 == 0x75000200 &&
+	w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000)
+      ret = X86_SCF_FREEBSD_SIGFRAME;
+  }
   Debug (16, "returning %d\n", ret);
   return (ret);
 #else
