@@ -25,7 +25,7 @@ dnl Checks for libraries.
 AC_CHECK_LIB(uca, __uc_get_grs)
 AC_CHECK_LIB(util, kinfo_getvmmap)
 OLD_LIBS=${LIBS}
-AC_SEARCH_LIBS(dl, dlopen)
+AC_SEARCH_LIBS(dlopen, dl)
 LIBS=${OLD_LIBS}
 case "$ac_cv_search_dlopen" in
   -l*) DLLIB=$ac_cv_search_dlopen;;
