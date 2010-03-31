@@ -24,7 +24,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "ucontext_i.h"
-
+#if defined __linux__
+#include <asm/unistd.h>
+#define	SIG_SETMASK   2
+#define	SIGSET_BYTE_SIZE   (64/8)
+#elif defined __FreeBSD__
+#include <sys/syscall.h>
+#endif
 
 /*  int _Ux86_64_setcontext (const ucontext_t *ucp)
 
@@ -37,12 +43,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	
 _Ux86_64_setcontext:
 
-        /* restore fp state */
 #if defined __linux__
+	/* restore signal mask
+           sigprocmask(SIG_SETMASK, ucp->uc_sigmask, NULL, sizeof(sigset_t)) */
+	push %rdi
+	mov $__NR_rt_sigprocmask, %rax
+	lea UC_SIGMASK(%rdi), %rsi
+	mov $SIG_SETMASK, %rdi
+	xor %rdx, %rdx
+	mov $SIGSET_BYTE_SIZE, %r10
+	syscall
+	pop %rdi
+
+        /* restore fp state */
 	mov    UC_MCONTEXT_FPREGS_PTR(%rdi),%r8
 	fldenv (%r8)
 	ldmxcsr FPREGS_OFFSET_MXCSR(%r8)
 #elif defined __FreeBSD__
+	/* restore signal mask */
+	pushq	%rdi
+	xorl	%edx,%edx
+	movq	UC_SIGMASK(%rdi),%rsi
+	movl	$3,%edi/* SIG_SETMASK */
+	movl	$SYS_sigprocmask,%eax
+	movq	%rcx,%r10
+	sysenter
+	popq	%rdi
+
+	/* restore fp state */
 	cmpq $UC_MCONTEXT_FPOWNED_FPU,UC_MCONTEXT_OWNEDFP(%rdi)
 	jne 1f
 	cmpq $UC_MCONTEXT_FPFMT_XMM,UC_MCONTEXT_FPFORMAT(%rdi)
