@@ -63,11 +63,11 @@ _Ux86_64_setcontext:
 	/* restore signal mask */
 	pushq	%rdi
 	xorl	%edx,%edx
-	movq	UC_SIGMASK(%rdi),%rsi
+	leaq	UC_SIGMASK(%rdi),%rsi
 	movl	$3,%edi/* SIG_SETMASK */
 	movl	$SYS_sigprocmask,%eax
 	movq	%rcx,%r10
-	sysenter
+	syscall
 	popq	%rdi
 
 	/* restore fp state */
