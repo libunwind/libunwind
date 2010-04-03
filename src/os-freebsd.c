@@ -31,32 +31,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-int
+PROTECTED int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 		    unsigned long *segbase, unsigned long *mapoff)
 {
-	struct kinfo_vmentry *freep, *kve;
-	int cnt, rc, i;
+  struct kinfo_vmentry *freep, *kve;
+  int cnt, rc, i;
 
-	freep = kinfo_getvmmap(pid, &cnt);
-	if (freep == NULL)
-		return (-1);
-	for (i = 0; i < cnt; i++) {
-		kve = &freep[i];
-		if (ip < kve->kve_start || ip >= kve->kve_end)
-			continue;
-		if (kve->kve_type != KVME_TYPE_VNODE) {
-			free(freep);
-			return (-1);
-		}
-		*segbase = kve->kve_start;
-		*mapoff = kve->kve_offset;
-		rc = elf_map_image(ei, kve->kve_path);
-		free(freep);
-		return (rc);
+  freep = kinfo_getvmmap(pid, &cnt);
+  if (freep == NULL)
+    return (-1);
+  for (i = 0; i < cnt; i++)
+    {
+      kve = &freep[i];
+      if (ip < kve->kve_start || ip >= kve->kve_end)
+        continue;
+      if (kve->kve_type != KVME_TYPE_VNODE)
+        {
+	  free(freep);
+	  return (-1);
 	}
-	free(freep);
-	return (-1);
+      *segbase = kve->kve_start;
+      *mapoff = kve->kve_offset;
+      rc = elf_map_image(ei, kve->kve_path);
+      free(freep);
+      return (rc);
+    }
+  free(freep);
+  return (-1);
 }
 
 #endif /* UNW_REMOTE_ONLY */
