@@ -23,6 +23,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* Check whether basic unwinding truly is async-signal safe.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -32,7 +37,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
-#include "config.h"
 
 static const int nerrors_max = 100;
 
@@ -182,4 +186,5 @@ main (int argc, char **argv)
 	  exit (-1);
         }
     }
+  return (0);
 }
