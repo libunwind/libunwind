@@ -87,7 +87,9 @@ depending on the version of your gcc.
 General building instructions apply. To build and execute several tests,
 you need libexecinfo library available in ports as devel/libexecinfo.
 
-Development of the port was done of FreeBSD 8.0-STABLE.
+Development of the port was done of FreeBSD 8.0-STABLE. The library
+was build with the system compiler that is modified version of gcc 4.2.1,
+as well as the gcc 4.4.3.
 
 * Regression Testing
 
