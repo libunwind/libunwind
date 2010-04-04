@@ -50,9 +50,9 @@ unw_is_signal_frame (unw_cursor_t *cursor)
      without SA_SIGINFO, and
 
     __restore_rt:
-       0xb8 0xad 0x00 0x00 0x00        movl 0x80,%eax
+       0xb8 0xad 0x00 0x00 0x00        movl 0xad,%eax
        0xcd 0x80                       int 0x80
-       0x90                            nop
+       0x00                            
 
      if SA_SIGINFO is specified.
   */
@@ -63,7 +63,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   ret = X86_SCF_NONE;
   if (w0 == 0x0077b858 && w1 == 0x80cd0000)
      ret = X86_SCF_LINUX_SIGFRAME;
-  else if (w0 == 0x0000adb8 && w1 == 0x9080cd00)
+  else if (w0 == 0x0000adb8 && (w1 & 0xffffff) == 0x80cd00)
      ret = X86_SCF_LINUX_RT_SIGFRAME;
   Debug (16, "returning %d\n", ret);
   return ret;
