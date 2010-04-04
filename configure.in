@@ -61,111 +61,21 @@ AC_CHECK_TYPES([sighandler_t], [], [],
 #endif
 ])
 
-AC_CHECK_DECLS(PTRACE_POKEUSER, [], [],
+AC_DEFUN([AC_CHECK_PTRACE_DECL],
+[for pxxx in $1; do
+AC_CHECK_DECLS($pxxx, [], [],
 [$ac_includes_default
 #if HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
 #include <sys/ptrace.h>
 ])
-AC_CHECK_DECLS(PTRACE_POKEDATA, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PTRACE_CONT, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PTRACE_TRACEME, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PTRACE_CONT, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PTRACE_SINGLESTEP, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PTRACE_SYSCALL, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_IO, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_GETREGS, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_GETFPREGS, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_CONTINUE, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_TRACE_ME, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_CONTINUE, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_STEP, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
-AC_CHECK_DECLS(PT_SYSCALL, [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
+done]
+)
+
+AC_CHECK_PTRACE_DECL([PTRACE_POKEUSER PTRACE_POKEDATA PTRACE_CONT \
+PTRACE_TRACEME PTRACE_CONT PTRACE_SIGNLESTEP PTRACE_SYSCALL PT_IO PT_GETREGS \
+PT_GETFPREGS PT_CONTINUE PT_TRACE_ME PT_STEP PT_SYSCALL])
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
