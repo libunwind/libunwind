@@ -27,7 +27,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 #include <signal.h>
-#include <stddef.h>
 
 PROTECTED int
 unw_step (unw_cursor_t *cursor)
