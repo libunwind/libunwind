@@ -28,64 +28,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-#ifndef UNW_REMOTE_ONLY
-
-HIDDEN inline int
-x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
-{
-#if defined(__linux)
-  struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->uc;
-
-  /* Ensure c->pi is up-to-date.  On x86, it's relatively common to be
-     missing DWARF unwind info.  We don't want to fail in that case,
-     because the frame-chain still would let us do a backtrace at
-     least.  */
-  dwarf_make_proc_info (&c->dwarf);
-
-  if (unlikely (c->sigcontext_format != X86_SCF_NONE))
-    {
-      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
-
-      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
-      sigreturn (sc);
-    }
-  else
-    {
-      Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
-      setcontext (uc);
-    }
-#elif defined __FreeBSD__
-  struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->uc;
-
-  /* Ensure c->pi is up-to-date.  On x86, it's relatively common to be
-     missing DWARF unwind info.  We don't want to fail in that case,
-     because the frame-chain still would let us do a backtrace at
-     least.  */
-  dwarf_make_proc_info (&c->dwarf);
-
-  if (c->sigcontext_format == X86_SCF_NONE) {
-      Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
-      setcontext (uc);
-  } else if (c->sigcontext_format == X86_SCF_FREEBSD_SIGFRAME) {
-      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
-
-      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
-      sigreturn((const char *)sc + FREEBSD_UC_MCONTEXT_OFF);
-  } else {
-      Debug (8, "resuming at ip=%x for sigcontext format %d not implemented\n",
-       c->sigcontext_format);
-      abort();
-  }
-#else
-# warning Implement me!
-#endif
-  return -UNW_EINVAL;
-}
-
-#endif /* !UNW_REMOTE_ONLY */
-
 /* This routine is responsible for copying the register values in
    cursor C and establishing them as the current machine state. */
 

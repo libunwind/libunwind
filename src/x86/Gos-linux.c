@@ -275,4 +275,31 @@ x86_r_uc_addr (ucontext_t *uc, int reg)
     }
   return addr;
 }
+
+HIDDEN int
+x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  ucontext_t *uc = c->uc;
+
+  /* Ensure c->pi is up-to-date.  On x86, it's relatively common to be
+     missing DWARF unwind info.  We don't want to fail in that case,
+     because the frame-chain still would let us do a backtrace at
+     least.  */
+  dwarf_make_proc_info (&c->dwarf);
+
+  if (unlikely (c->sigcontext_format != X86_SCF_NONE))
+    {
+      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+
+      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
+      sigreturn (sc);
+    }
+  else
+    {
+      Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
+      setcontext (uc);
+    }
+  return -UNW_EINVAL;
+}
 #endif

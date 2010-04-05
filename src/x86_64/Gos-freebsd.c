@@ -180,4 +180,15 @@ x86_64_r_uc_addr (ucontext_t *uc, int reg)
     }
   return addr;
 }
+
+HIDDEN NORETURN void
+x86_64_sigreturn (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  ucontext_t *uc = c->uc;
+
+  Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
+	     (unsigned long long) c->dwarf.ip, uc);
+  sigreturn(uc);
+}
 #endif

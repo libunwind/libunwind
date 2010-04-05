@@ -28,6 +28,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "ucontext_i.h"
 
+#include <sys/syscall.h>
+
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
@@ -129,4 +131,21 @@ x86_64_r_uc_addr (ucontext_t *uc, int reg)
     }
   return addr;
 }
+
+/* sigreturn() is a no-op on x86_64 glibc.  */
+HIDDEN NORETURN void
+x86_64_sigreturn (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+
+  Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
+	     (unsigned long long) c->dwarf.ip, sc);
+  __asm__ __volatile__ ("mov %0, %%rsp;"
+			"mov %1, %%rax;"
+			"syscall"
+			:: "r"(sc), "i"(SYS_rt_sigreturn)
+			: "memory");
+}
+
 #endif
