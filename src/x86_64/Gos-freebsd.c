@@ -94,37 +94,57 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   int ret;
 
   if (c->sigcontext_format == X86_64_SCF_FREEBSD_SIGFRAME)
+   {
     ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
+    Debug(1, "signal frame, skip over trampoline\n");
+
+    struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+    ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
+    if (ret < 0)
+     {
+       Debug (2, "returning %d\n", ret);
+       return ret;
+     }
+
+    c->dwarf.loc[RAX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RAX, 0);
+    c->dwarf.loc[RDX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDX, 0);
+    c->dwarf.loc[RCX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RCX, 0);
+    c->dwarf.loc[RBX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBX, 0);
+    c->dwarf.loc[RSI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSI, 0);
+    c->dwarf.loc[RDI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDI, 0);
+    c->dwarf.loc[RBP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
+    c->dwarf.loc[RSP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+    c->dwarf.loc[ R8] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
+    c->dwarf.loc[ R9] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
+    c->dwarf.loc[R10] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
+    c->dwarf.loc[R11] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
+    c->dwarf.loc[R12] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
+    c->dwarf.loc[R13] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
+    c->dwarf.loc[R14] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
+    c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
+    c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
+
+    return 0;
+   }
+  else if (c->sigcontext_format == X86_64_SCF_FREEBSD_SYSCALL)
+   {
+    c->dwarf.loc[RCX] = c->dwarf.loc[R10];
+    /*  rsp_loc = DWARF_LOC(c->dwarf.cfa - 8, 0);	*/
+    /*	rbp_loc = c->dwarf.loc[RBP];			*/
+    c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
+    ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+    Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
+	   (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
+	   (unsigned long long) c->dwarf.ip);
+    if (ret < 0)
+     {
+       Debug (2, "returning %d\n", ret);
+       return ret;
+     }
+    c->dwarf.cfa += 8;
+    return 1;
+   }
   else
     return -UNW_EBADFRAME;
 
-  Debug(1, "signal frame, skip over trampoline\n");
-
-  struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
-  ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
-  if (ret < 0)
-    {
-      Debug (2, "returning %d\n", ret);
-      return ret;
-    }
-
-  c->dwarf.loc[RAX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RAX, 0);
-  c->dwarf.loc[RDX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDX, 0);
-  c->dwarf.loc[RCX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RCX, 0);
-  c->dwarf.loc[RBX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBX, 0);
-  c->dwarf.loc[RSI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSI, 0);
-  c->dwarf.loc[RDI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDI, 0);
-  c->dwarf.loc[RBP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
-  c->dwarf.loc[RSP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
-  c->dwarf.loc[ R8] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
-  c->dwarf.loc[ R9] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
-  c->dwarf.loc[R10] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
-  c->dwarf.loc[R11] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
-  c->dwarf.loc[R12] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
-  c->dwarf.loc[R13] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
-  c->dwarf.loc[R14] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
-  c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
-  c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
-
-  return 0;
 }
