@@ -40,7 +40,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 */
 	.global _Ux86_64_setcontext
 	.type _Ux86_64_setcontext, @function
-	
+
 _Ux86_64_setcontext:
 
 #if defined __linux__
@@ -76,7 +76,7 @@ _Ux86_64_setcontext:
 	cmpq $UC_MCONTEXT_FPFMT_XMM,UC_MCONTEXT_FPFORMAT(%rdi)
 	jne 1f
 	fxrstor UC_MCONTEXT_FPSTATE(%rdi)
-1:	
+1:
 #else
 #error Port me
 #endif
