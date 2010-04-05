@@ -51,10 +51,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define x86_local_resume		UNW_OBJ(local_resume)
 #define x86_local_addr_space_init	UNW_OBJ(local_addr_space_init)
 #define x86_scratch_loc			UNW_OBJ(scratch_loc)
+#define x86_get_scratch_loc		UNW_OBJ(get_scratch_loc)
 
 extern void x86_local_addr_space_init (void);
 extern int x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			     void *arg);
 extern dwarf_loc_t x86_scratch_loc (struct cursor *c, unw_regnum_t reg);
+extern dwarf_loc_t x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg);
 
 #endif /* unwind_i_h */
