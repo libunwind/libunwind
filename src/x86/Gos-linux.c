@@ -242,3 +242,37 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
   else
     return DWARF_MEM_LOC (c, addr + off);
 }
+
+#ifndef UNW_REMOTE_ONLY
+
+HIDDEN void *
+x86_r_uc_addr (ucontext_t *uc, int reg)
+{
+  void *addr;
+
+  switch (reg)
+    {
+    case UNW_X86_GS:  addr = &uc->uc_mcontext.gregs[REG_GS]; break;
+    case UNW_X86_FS:  addr = &uc->uc_mcontext.gregs[REG_FS]; break;
+    case UNW_X86_ES:  addr = &uc->uc_mcontext.gregs[REG_ES]; break;
+    case UNW_X86_DS:  addr = &uc->uc_mcontext.gregs[REG_DS]; break;
+    case UNW_X86_EAX: addr = &uc->uc_mcontext.gregs[REG_EAX]; break;
+    case UNW_X86_EBX: addr = &uc->uc_mcontext.gregs[REG_EBX]; break;
+    case UNW_X86_ECX: addr = &uc->uc_mcontext.gregs[REG_ECX]; break;
+    case UNW_X86_EDX: addr = &uc->uc_mcontext.gregs[REG_EDX]; break;
+    case UNW_X86_ESI: addr = &uc->uc_mcontext.gregs[REG_ESI]; break;
+    case UNW_X86_EDI: addr = &uc->uc_mcontext.gregs[REG_EDI]; break;
+    case UNW_X86_EBP: addr = &uc->uc_mcontext.gregs[REG_EBP]; break;
+    case UNW_X86_EIP: addr = &uc->uc_mcontext.gregs[REG_EIP]; break;
+    case UNW_X86_ESP: addr = &uc->uc_mcontext.gregs[REG_ESP]; break;
+    case UNW_X86_TRAPNO:  addr = &uc->uc_mcontext.gregs[REG_TRAPNO]; break;
+    case UNW_X86_CS:  addr = &uc->uc_mcontext.gregs[REG_CS]; break;
+    case UNW_X86_EFLAGS:  addr = &uc->uc_mcontext.gregs[REG_EFL]; break;
+    case UNW_X86_SS:  addr = &uc->uc_mcontext.gregs[REG_SS]; break;
+
+    default:
+      addr = NULL;
+    }
+  return addr;
+}
+#endif

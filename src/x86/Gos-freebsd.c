@@ -255,3 +255,36 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
   else
     return DWARF_MEM_LOC (c, addr + off);
 }
+
+#ifndef UNW_REMOTE_ONLY
+HIDDEN void *
+x86_r_uc_addr (ucontext_t *uc, int reg)
+{
+  void *addr;
+
+  switch (reg)
+    {
+    case UNW_X86_GS:  addr = &uc->uc_mcontext.mc_gs; break;
+    case UNW_X86_FS:  addr = &uc->uc_mcontext.mc_fs; break;
+    case UNW_X86_ES:  addr = &uc->uc_mcontext.mc_es; break;
+    case UNW_X86_DS:  addr = &uc->uc_mcontext.mc_ds; break;
+    case UNW_X86_EAX: addr = &uc->uc_mcontext.mc_eax; break;
+    case UNW_X86_EBX: addr = &uc->uc_mcontext.mc_ebx; break;
+    case UNW_X86_ECX: addr = &uc->uc_mcontext.mc_ecx; break;
+    case UNW_X86_EDX: addr = &uc->uc_mcontext.mc_edx; break;
+    case UNW_X86_ESI: addr = &uc->uc_mcontext.mc_esi; break;
+    case UNW_X86_EDI: addr = &uc->uc_mcontext.mc_edi; break;
+    case UNW_X86_EBP: addr = &uc->uc_mcontext.mc_ebp; break;
+    case UNW_X86_EIP: addr = &uc->uc_mcontext.mc_eip; break;
+    case UNW_X86_ESP: addr = &uc->uc_mcontext.mc_esp; break;
+    case UNW_X86_TRAPNO:  addr = &uc->uc_mcontext.mc_trapno; break;
+    case UNW_X86_CS:  addr = &uc->uc_mcontext.mc_cs; break;
+    case UNW_X86_EFLAGS:  addr = &uc->uc_mcontext.mc_eflags; break;
+    case UNW_X86_SS:  addr = &uc->uc_mcontext.mc_ss; break;
+
+    default:
+      addr = NULL;
+    }
+  return addr;
+}
+#endif

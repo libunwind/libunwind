@@ -40,65 +40,12 @@ static struct unw_addr_space local_addr_space;
 
 PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
-static inline void *
-uc_addr (ucontext_t *uc, int reg)
-{
-  void *addr;
-
-  switch (reg)
-    {
-#if defined __linux__
-    case UNW_X86_GS:  addr = &uc->uc_mcontext.gregs[REG_GS]; break;
-    case UNW_X86_FS:  addr = &uc->uc_mcontext.gregs[REG_FS]; break;
-    case UNW_X86_ES:  addr = &uc->uc_mcontext.gregs[REG_ES]; break;
-    case UNW_X86_DS:  addr = &uc->uc_mcontext.gregs[REG_DS]; break;
-    case UNW_X86_EAX: addr = &uc->uc_mcontext.gregs[REG_EAX]; break;
-    case UNW_X86_EBX: addr = &uc->uc_mcontext.gregs[REG_EBX]; break;
-    case UNW_X86_ECX: addr = &uc->uc_mcontext.gregs[REG_ECX]; break;
-    case UNW_X86_EDX: addr = &uc->uc_mcontext.gregs[REG_EDX]; break;
-    case UNW_X86_ESI: addr = &uc->uc_mcontext.gregs[REG_ESI]; break;
-    case UNW_X86_EDI: addr = &uc->uc_mcontext.gregs[REG_EDI]; break;
-    case UNW_X86_EBP: addr = &uc->uc_mcontext.gregs[REG_EBP]; break;
-    case UNW_X86_EIP: addr = &uc->uc_mcontext.gregs[REG_EIP]; break;
-    case UNW_X86_ESP: addr = &uc->uc_mcontext.gregs[REG_ESP]; break;
-    case UNW_X86_TRAPNO:  addr = &uc->uc_mcontext.gregs[REG_TRAPNO]; break;
-    case UNW_X86_CS:  addr = &uc->uc_mcontext.gregs[REG_CS]; break;
-    case UNW_X86_EFLAGS:  addr = &uc->uc_mcontext.gregs[REG_EFL]; break;
-    case UNW_X86_SS:  addr = &uc->uc_mcontext.gregs[REG_SS]; break;
-#elif defined __FreeBSD__
-    case UNW_X86_GS:  addr = &uc->uc_mcontext.mc_gs; break;
-    case UNW_X86_FS:  addr = &uc->uc_mcontext.mc_fs; break;
-    case UNW_X86_ES:  addr = &uc->uc_mcontext.mc_es; break;
-    case UNW_X86_DS:  addr = &uc->uc_mcontext.mc_ds; break;
-    case UNW_X86_EAX: addr = &uc->uc_mcontext.mc_eax; break;
-    case UNW_X86_EBX: addr = &uc->uc_mcontext.mc_ebx; break;
-    case UNW_X86_ECX: addr = &uc->uc_mcontext.mc_ecx; break;
-    case UNW_X86_EDX: addr = &uc->uc_mcontext.mc_edx; break;
-    case UNW_X86_ESI: addr = &uc->uc_mcontext.mc_esi; break;
-    case UNW_X86_EDI: addr = &uc->uc_mcontext.mc_edi; break;
-    case UNW_X86_EBP: addr = &uc->uc_mcontext.mc_ebp; break;
-    case UNW_X86_EIP: addr = &uc->uc_mcontext.mc_eip; break;
-    case UNW_X86_ESP: addr = &uc->uc_mcontext.mc_esp; break;
-    case UNW_X86_TRAPNO:  addr = &uc->uc_mcontext.mc_trapno; break;
-    case UNW_X86_CS:  addr = &uc->uc_mcontext.mc_cs; break;
-    case UNW_X86_EFLAGS:  addr = &uc->uc_mcontext.mc_eflags; break;
-    case UNW_X86_SS:  addr = &uc->uc_mcontext.mc_ss; break;
-#else
-#error Port me
-#endif
-
-    default:
-      addr = NULL;
-    }
-  return addr;
-}
-
 # ifdef UNW_LOCAL_ONLY
 
 HIDDEN void *
 tdep_uc_addr (ucontext_t *uc, int reg)
 {
-  return uc_addr (uc, reg);
+  return x86_r_uc_addr (uc, reg);
 }
 
 # endif /* UNW_LOCAL_ONLY */
@@ -199,7 +146,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (unw_is_fpreg (reg))
     goto badreg;
 
-  if (!(addr = uc_addr (uc, reg)))
+  if (!(addr = x86_r_uc_addr (uc, reg)))
     goto badreg;
 
   if (write)
@@ -229,7 +176,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (!unw_is_fpreg (reg))
     goto badreg;
 
-  if (!(addr = uc_addr (uc, reg)))
+  if (!(addr = x86_r_uc_addr (uc, reg)))
     goto badreg;
 
   if (write)
