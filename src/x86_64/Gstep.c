@@ -26,14 +26,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
-#include "ucontext_i.h"
 #include <signal.h>
 #include <stddef.h>
-
-#if defined __FreeBSD__
-#include <sys/ucontext.h>
-#include <machine/sigframe.h>
-#endif
 
 PROTECTED int
 unw_step (unw_cursor_t *cursor)
@@ -102,49 +96,12 @@ unw_step (unw_cursor_t *cursor)
 	  return 1;
       } else if (c->sigcontext_format != X86_64_SCF_NONE)
 	{
-	  unw_word_t ucontext;
-
-	  Debug(1, "signal frame, skip over trampoline\n");
-
-#if defined __linux__
-	  ucontext = c->dwarf.cfa;
-	  if (c->sigcontext_format != X86_64_SCF_LINUX_RT_SIGFRAME)
-	    return -UNW_EBADFRAME;
-#elif defined __FreeBSD__
-	  if (c->sigcontext_format == X86_64_SCF_FREEBSD_SIGFRAME)
-	    ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
-	  else
-	    return -UNW_EBADFRAME;
-#endif
-	  c->sigcontext_addr = c->dwarf.cfa;
-
-	  rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
-	  rbp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
-	  rip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
-
-	  ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
+          ret = unw_handle_signal_frame(cursor);
 	  if (ret < 0)
 	    {
-	      Debug (2, "returning %d\n", ret);
-	      return ret;
+	      Debug (2, "returning 0\n");
+	      return 0;
 	    }
-
-	  c->dwarf.loc[RAX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RAX, 0);
-	  c->dwarf.loc[RDX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDX, 0);
-	  c->dwarf.loc[RCX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RCX, 0);
-	  c->dwarf.loc[RBX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBX, 0);
-	  c->dwarf.loc[RSI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSI, 0);
-	  c->dwarf.loc[RDI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDI, 0);
-	  c->dwarf.loc[RBP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
-	  c->dwarf.loc[ R8] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
-	  c->dwarf.loc[ R9] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
-	  c->dwarf.loc[R10] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
-	  c->dwarf.loc[R11] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
-	  c->dwarf.loc[R12] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
-	  c->dwarf.loc[R13] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
-	  c->dwarf.loc[R14] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
-	  c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
-	  c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
 	}
       else
 	{
@@ -185,11 +142,12 @@ unw_step (unw_cursor_t *cursor)
 	  /* Mark all registers unsaved */
 	  for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
 	    c->dwarf.loc[i] = DWARF_NULL_LOC;
+
+          c->dwarf.loc[RBP] = rbp_loc;
+          c->dwarf.loc[RSP] = rsp_loc;
+          c->dwarf.loc[RIP] = rip_loc;
 	}
 
-      c->dwarf.loc[RBP] = rbp_loc;
-      c->dwarf.loc[RSP] = rsp_loc;
-      c->dwarf.loc[RIP] = rip_loc;
       c->dwarf.ret_addr_column = RIP;
 
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))

@@ -1,6 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2003 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
 
@@ -23,51 +22,21 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <sys/types.h>
+#include <signal.h>
+#include <ucontext.h>
+#include <machine/sigframe.h>
+
 #include "unwind_i.h"
+#include "offsets.h"
 
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
-#if defined __linux__
-  struct cursor *c = (struct cursor *) cursor;
-  unw_word_t w0, w1, ip;
-  unw_addr_space_t as;
-  unw_accessors_t *a;
-  void *arg;
-  int ret;
-
-  as = c->dwarf.as;
-  a = unw_get_accessors (as);
-  arg = c->dwarf.as_arg;
-
-  /* Check if EIP points at sigreturn() sequence.  On Linux, this is:
-
-    __restore:
-	0x58				pop %eax
-	0xb8 0x77 0x00 0x00 0x00	movl 0x77,%eax
-	0xcd 0x80			int 0x80
-
-     without SA_SIGINFO, and
-
-    __restore_rt:
-       0xb8 0xad 0x00 0x00 0x00        movl 0xad,%eax
-       0xcd 0x80                       int 0x80
-       0x00                            
-
-     if SA_SIGINFO is specified.
-  */
-  ip = c->dwarf.ip;
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0)
-     return ret;
-  ret = X86_SCF_NONE;
-  if (w0 == 0x0077b858 && w1 == 0x80cd0000)
-     ret = X86_SCF_LINUX_SIGFRAME;
-  else if (w0 == 0x0000adb8 && (w1 & 0xffffff) == 0x80cd00)
-     ret = X86_SCF_LINUX_RT_SIGFRAME;
-  Debug (16, "returning %d\n", ret);
-  return ret;
-#elif defined __FreeBSD__
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t w0, w1, w2, w3, w4, w5, ip;
   unw_addr_space_t as;
@@ -104,6 +73,7 @@ XXX
   */
   ip = c->dwarf.ip;
   ret = X86_SCF_NONE;
+  c->sigcontext_format = ret;
   if ((*a->access_mem) (as, ip, &w0, 0, arg) < 0 ||
       (*a->access_mem) (as, ip + 4, &w1, 0, arg) < 0 ||
       (*a->access_mem) (as, ip + 8, &w2, 0, arg) < 0 ||
@@ -121,9 +91,47 @@ XXX
       ret = X86_SCF_FREEBSD_SIGFRAME;
   }
   Debug (16, "returning %d\n", ret);
+  c->sigcontext_format = ret;
   return (ret);
-#else
-#error Port me
-#endif
-  return -UNW_ENOINFO;
+}
+
+PROTECTED int
+unw_handle_signal_frame (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  int ret;
+
+  if (c->sigcontext_format == X86_SCF_FREEBSD_SIGFRAME) {
+    struct sigframe *sf;
+    uintptr_t uc_addr;
+    struct dwarf_loc esp_loc;
+
+    sf = (struct sigframe *)c->dwarf.cfa;
+    uc_addr = (uintptr_t)&(sf->sf_uc);
+
+    esp_loc = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ESP_OFF, 0);
+    ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
+    if (ret < 0)
+    {
+	    Debug (2, "returning 0\n");
+	    return 0;
+    }
+
+    c->dwarf.loc[EIP] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EIP_OFF, 0);
+    c->dwarf.loc[ESP] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ESP_OFF, 0);
+    c->dwarf.loc[EAX] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EAX_OFF, 0);
+    c->dwarf.loc[ECX] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ECX_OFF, 0);
+    c->dwarf.loc[EDX] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EDX_OFF, 0);
+    c->dwarf.loc[EBX] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EBX_OFF, 0);
+    c->dwarf.loc[EBP] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EBP_OFF, 0);
+    c->dwarf.loc[ESI] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ESI_OFF, 0);
+    c->dwarf.loc[EDI] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EDI_OFF, 0);
+    c->dwarf.loc[EFLAGS] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EFLAGS_OFF, 0);
+    c->dwarf.loc[TRAPNO] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_TRAPNO_OFF, 0);
+    c->dwarf.loc[ST0] = DWARF_NULL_LOC;
+  } else {
+    Debug (8, "Gstep: not handling frame format %d\n", c->sigcontext_format);
+    abort();
+  }
+  return 0;
 }

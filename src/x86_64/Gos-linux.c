@@ -26,8 +26,8 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
+#include "ucontext_i.h"
 
-#ifdef __linux__
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
@@ -54,63 +54,46 @@ unw_is_signal_frame (unw_cursor_t *cursor)
       || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
     return 0;
   w1 &= 0xff;
-  return (w0 == 0x0f0000000fc0c748 && w1 == 0x05) ?
-	  X86_64_SCF_LINUX_RT_SIGFRAME : X86_64_SCF_NONE;
+  return (w0 == 0x0f0000000fc0c748 && w1 == 0x05);
 }
 
-#elif defined(__FreeBSD__)
 PROTECTED int
-unw_is_signal_frame (unw_cursor_t *cursor)
+unw_handle_signal_frame (unw_cursor_t *cursor)
 {
-  /* XXXKIB */
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t w0, w1, w2, b0, ip;
-  unw_addr_space_t as;
-  unw_accessors_t *a;
-  void *arg;
   int ret;
+  unw_word_t ucontext = c->dwarf.cfa;
 
-  as = c->dwarf.as;
-  a = unw_get_accessors (as);
-  arg = c->dwarf.as_arg;
+  Debug(1, "signal frame, skip over trampoline\n");
 
-  /* Check if RIP points at sigreturn sequence.
-48 8d 7c 24 10		lea	SIGF_UC(%rsp),%rdi
-6a 00			pushq	$0
-48 c7 c0 a1 01 00 00	movq	$SYS_sigreturn,%rax
-0f 05			syscall
-f4		0:	hlt
-eb fd			jmp	0b
-  */
+  c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+  c->sigcontext_addr = c->dwarf.cfa;
 
-  ip = c->dwarf.ip;
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 16, &w2, 0, arg)) < 0)
-    return 0;
-  w2 &= 0xffffff;
-  if (w0 == 0x48006a10247c8d48 &&
-      w1 == 0x050f000001a1c0c7 &&
-      w2 == 0x0000000000fdebf4)
-	  return X86_64_SCF_FREEBSD_SIGFRAME;
-  /* Check if RIP points at standard syscall sequence.
-49 89 ca	mov    %rcx,%r10
-0f 05		syscall
-  */
-  if ((ret = (*a->access_mem) (as, ip - 5, &b0, 0, arg)) < 0)
-    return (0);
-  b0 &= 0xffffffffff;
-  if (b0 == 0x000000050fca8949)
-    return X86_64_SCF_FREEBSD_SYSCALL;
-  return X86_64_SCF_NONE;
+  struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+  ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
+  if (ret < 0)
+    {
+      Debug (2, "returning %d\n", ret);
+      return ret;
+    }
+
+  c->dwarf.loc[RAX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RAX, 0);
+  c->dwarf.loc[RDX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDX, 0);
+  c->dwarf.loc[RCX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RCX, 0);
+  c->dwarf.loc[RBX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBX, 0);
+  c->dwarf.loc[RSI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSI, 0);
+  c->dwarf.loc[RDI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDI, 0);
+  c->dwarf.loc[RBP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
+  c->dwarf.loc[RSP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+  c->dwarf.loc[ R8] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
+  c->dwarf.loc[ R9] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
+  c->dwarf.loc[R10] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
+  c->dwarf.loc[R11] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
+  c->dwarf.loc[R12] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
+  c->dwarf.loc[R13] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
+  c->dwarf.loc[R14] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
+  c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
+  c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
+
+  return 0;
 }
-
-#else /* !__linux__ && !__FreeBSD__ */
-
-PROTECTED int
-unw_is_signal_frame (unw_cursor_t *cursor)
-{
-  printf ("%s: implement me\n", __FUNCTION__);
-  return -UNW_ENOINFO;
-}
-#endif
