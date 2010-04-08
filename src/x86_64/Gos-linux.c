@@ -101,7 +101,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 }
 
 #ifndef UNW_REMOTE_ONLY
-static inline void *
+HIDDEN void *
 x86_64_r_uc_addr (ucontext_t *uc, int reg)
 {
   void *addr;

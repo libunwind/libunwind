@@ -244,7 +244,6 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
 }
 
 #ifndef UNW_REMOTE_ONLY
-
 HIDDEN void *
 x86_r_uc_addr (ucontext_t *uc, int reg)
 {
