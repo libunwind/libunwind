@@ -103,12 +103,10 @@ _Ux86_getcontext:
 		FREEBSD_UC_MCONTEXT_OWNEDFP_OFF(%eax)
 	movl	$FREEBSD_UC_MCONTEXT_FPFMT_XMM,\
 		FREEBSD_UC_MCONTEXT_FPFORMAT_OFF(%eax)
-/*
-	leal	LINUX_UC_FPREGS_MEM_OFF(%eax), %ecx
-	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FPSTATE_OFF)(%eax)
-	fnstenv	(%ecx)
-	fldenv	(%ecx)
-*/
+
+	/* Require CPU with fxsave implemented, and enabled by OS. */
+	fxsave	FREEBSD_UC_MCONTEXT_FPSTATE_OFF(%eax)
+
 	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL,\
 		FREEBSD_UC_MCONTEXT_MC_LEN_OFF(%eax)
 #endif
