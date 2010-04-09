@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
 

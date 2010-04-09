@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2007 Google, Inc
 	Contributed by Arun Sharma <arun.sharma@google.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
 
