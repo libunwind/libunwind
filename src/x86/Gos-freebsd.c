@@ -139,8 +139,9 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 HIDDEN dwarf_loc_t
 x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
 {
-  unw_word_t addr = c->sigcontext_addr, fpstate_addr, off;
-  int ret, is_fpstate = 0;
+  unw_word_t addr = c->sigcontext_addr, off, xmm_off;
+  unw_word_t fpstate, fpformat;
+  int ret, is_fpstate = 0, is_xmmstate = 0;
 
   switch (c->sigcontext_format)
     {
@@ -171,6 +172,7 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
       break;
     }
 
+  off = 0; /* shut gcc warning */
   switch (reg)
     {
     case UNW_X86_GS: off = FREEBSD_UC_MCONTEXT_GS_OFF; break;
@@ -191,21 +193,53 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
     case UNW_X86_EFLAGS: off = FREEBSD_UC_MCONTEXT_EFLAGS_OFF; break;
     case UNW_X86_SS: off = FREEBSD_UC_MCONTEXT_SS_OFF; break;
 
-    /* XXXKIB fix */
-    case UNW_X86_FCW: is_fpstate = 1; off = LINUX_FPSTATE_CW_OFF; break;
-    case UNW_X86_FSW: is_fpstate = 1; off = LINUX_FPSTATE_SW_OFF; break;
-    case UNW_X86_FTW: is_fpstate = 1; off = LINUX_FPSTATE_TAG_OFF; break;
-    case UNW_X86_FCS: is_fpstate = 1; off = LINUX_FPSTATE_CSSEL_OFF; break;
-    case UNW_X86_FIP: is_fpstate = 1; off = LINUX_FPSTATE_IPOFF_OFF; break;
-    case UNW_X86_FEA: is_fpstate = 1; off = LINUX_FPSTATE_DATAOFF_OFF; break;
-    case UNW_X86_FDS: is_fpstate = 1; off = LINUX_FPSTATE_DATASEL_OFF; break;
-    case UNW_X86_MXCSR: is_fpstate = 1; off = LINUX_FPSTATE_MXCSR_OFF; break;
+    case UNW_X86_FCW:
+      is_fpstate = 1;
+      off = FREEBSD_UC_MCONTEXT_CW_OFF;
+      xmm_off = FREEBSD_UC_MCONTEXT_CW_XMM_OFF;
+      break;
+    case UNW_X86_FSW:
+      is_fpstate = 1;
+      off = FREEBSD_UC_MCONTEXT_SW_OFF;
+      xmm_off = FREEBSD_UC_MCONTEXT_SW_XMM_OFF;
+      break;
+    case UNW_X86_FTW:
+      is_fpstate = 1;
+      xmm_off = FREEBSD_UC_MCONTEXT_TAG_XMM_OFF;
+      off = FREEBSD_UC_MCONTEXT_TAG_OFF;
+      break;
+    case UNW_X86_FCS:
+      is_fpstate = 1;
+      off = FREEBSD_UC_MCONTEXT_CSSEL_OFF;
+      xmm_off = FREEBSD_UC_MCONTEXT_CSSEL_XMM_OFF;
+      break;
+    case UNW_X86_FIP:
+      is_fpstate = 1;
+      off = FREEBSD_UC_MCONTEXT_IPOFF_OFF;
+      xmm_off = FREEBSD_UC_MCONTEXT_IPOFF_XMM_OFF;
+      break;
+    case UNW_X86_FEA:
+      is_fpstate = 1;
+      off = FREEBSD_UC_MCONTEXT_DATAOFF_OFF;
+      xmm_off = FREEBSD_UC_MCONTEXT_DATAOFF_XMM_OFF;
+      break;
+    case UNW_X86_FDS:
+      is_fpstate = 1;
+      off = FREEBSD_US_MCONTEXT_DATASEL_OFF;
+      xmm_off = FREEBSD_US_MCONTEXT_DATASEL_XMM_OFF;
+      break;
+    case UNW_X86_MXCSR:
+      is_fpstate = 1;
+      off = FREEBSD_UC_MCONTEXT_MXCSR_OFF;
+      xmm_off = FREEBSD_UC_MCONTEXT_MXCSR_XMM_OFF;
+      break;
 
       /* stacked fp registers */
     case UNW_X86_ST0: case UNW_X86_ST1: case UNW_X86_ST2: case UNW_X86_ST3:
     case UNW_X86_ST4: case UNW_X86_ST5: case UNW_X86_ST6: case UNW_X86_ST7:
       is_fpstate = 1;
-      off = LINUX_FPSTATE_ST0_OFF + 10*(reg - UNW_X86_ST0);
+      off = FREEBSD_UC_MCONTEXT_ST0_OFF + 10*(reg - UNW_X86_ST0);
+      xmm_off = FREEBSD_UC_MCONTEXT_ST0_XMM_OFF + 10*(reg - UNW_X86_ST0);
       break;
 
      /* SSE fp registers */
@@ -218,7 +252,8 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
     case UNW_X86_XMM6_lo: case UNW_X86_XMM6_hi:
     case UNW_X86_XMM7_lo: case UNW_X86_XMM7_hi:
       is_fpstate = 1;
-      off = LINUX_FPSTATE_XMM0_OFF + 8*(reg - UNW_X86_XMM0_lo);
+      is_xmmstate = 1;
+      xmm_off = FREEBSD_UC_MCONTEXT_XMM0_OFF + 8*(reg - UNW_X86_XMM0_lo);
       break;
     case UNW_X86_XMM0:
     case UNW_X86_XMM1:
@@ -229,7 +264,8 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
     case UNW_X86_XMM6:
     case UNW_X86_XMM7:
       is_fpstate = 1;
-      off = LINUX_FPSTATE_XMM0_OFF + 16*(reg - UNW_X86_XMM0);
+      is_xmmstate = 1;
+      xmm_off = FREEBSD_UC_MCONTEXT_XMM0_OFF + 16*(reg - UNW_X86_XMM0);
       break;
 
     case UNW_X86_FOP:
@@ -242,17 +278,22 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
   if (is_fpstate)
     {
       if ((ret = dwarf_get (&c->dwarf,
-			    DWARF_MEM_LOC (&c->dwarf,
-					   addr + LINUX_SC_FPSTATE_OFF),
-			    &fpstate_addr)) < 0)
+	   DWARF_MEM_LOC (&c->dwarf, addr + FREEBSD_UC_MCONTEXT_FPSTATE_OFF),
+	   &fpstate)) < 0)
 	return DWARF_NULL_LOC;
-
-      if (!fpstate_addr)
+      if (fpstate == FREEBSD_UC_MCONTEXT_FPOWNED_NONE)
 	return DWARF_NULL_LOC;
-
-      return DWARF_MEM_LOC (c, fpstate_addr + off);
+      if ((ret = dwarf_get (&c->dwarf,
+	   DWARF_MEM_LOC (&c->dwarf, addr + FREEBSD_UC_MCONTEXT_FPFORMAT_OFF),
+	   &fpformat)) < 0)
+	return DWARF_NULL_LOC;
+      if (fpformat == FREEBSD_UC_MCONTEXT_FPFMT_NODEV ||
+	  (is_xmmstate && fpformat != FREEBSD_UC_MCONTEXT_FPFMT_XMM))
+	return DWARF_NULL_LOC;
+      if (is_xmmstate)
+	off = xmm_off;
     }
-  else
+
     return DWARF_MEM_LOC (c, addr + off);
 }
 
