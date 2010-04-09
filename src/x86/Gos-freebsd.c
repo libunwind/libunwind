@@ -307,10 +307,10 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
       Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
-      sigreturn((const char *)sc + FREEBSD_UC_MCONTEXT_OFF);
+      sigreturn((ucontext_t *)((const char *)sc + FREEBSD_UC_MCONTEXT_OFF));
   } else {
       Debug (8, "resuming at ip=%x for sigcontext format %d not implemented\n",
-       c->sigcontext_format);
+      c->dwarf.ip, c->sigcontext_format);
       abort();
   }
   return -UNW_EINVAL;
