@@ -71,7 +71,6 @@ int
 _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 		   int write, void *arg)
 {
-  unw_word_t *wp = (unw_word_t *) val;
   struct UPT_info *ui = arg;
   pid_t pid = ui->pid;
   fpregset_t fpreg;
