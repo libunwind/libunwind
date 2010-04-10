@@ -230,7 +230,7 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
       break;
     case UNW_X86_MXCSR:
       is_fpstate = 1;
-      off = FREEBSD_UC_MCONTEXT_MXCSR_OFF;
+      is_xmmstate = 1;
       xmm_off = FREEBSD_UC_MCONTEXT_MXCSR_XMM_OFF;
       break;
 
