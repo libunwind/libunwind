@@ -96,7 +96,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   if (c->sigcontext_format == X86_64_SCF_FREEBSD_SIGFRAME)
    {
     ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
-    c->uc = (ucontext_t *)ucontext;
+    c->sigcontext_addr = c->dwarf.cfa;
     Debug(1, "signal frame, skip over trampoline\n");
 
     struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
@@ -186,7 +186,7 @@ HIDDEN NORETURN void
 x86_64_sigreturn (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->uc;
+  ucontext_t *uc = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
 	     (unsigned long long) c->dwarf.ip, uc);

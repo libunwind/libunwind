@@ -28,6 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/types.h>
 #include <signal.h>
+#include <stddef.h>
 #include <ucontext.h>
 #include <machine/sigframe.h>
 
@@ -108,7 +109,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 
     sf = (struct sigframe *)c->dwarf.cfa;
     uc_addr = (uintptr_t)&(sf->sf_uc);
-    c->uc = (ucontext_t *)uc_addr;
+    c->sigcontext_addr = c->dwarf.cfa;
 
     esp_loc = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ESP_OFF, 0);
     ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
@@ -150,7 +151,7 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
       return DWARF_REG_LOC (&c->dwarf, reg);
 
     case X86_SCF_FREEBSD_SIGFRAME:
-      addr += FREEBSD_UC_MCONTEXT_OFF;
+      addr += offsetof(struct sigframe, sf_uc) + FREEBSD_UC_MCONTEXT_OFF;
       break;
 
     case X86_SCF_FREEBSD_SIGFRAME4:
