@@ -29,7 +29,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/mman.h>
 #include <sys/sysctl.h>
 #include <sys/user.h>
-#include <libutil.h>
 #include <stdio.h>
 
 #include "libunwind_i.h"
