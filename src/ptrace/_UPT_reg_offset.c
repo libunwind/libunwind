@@ -249,6 +249,22 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 
     [UNW_HPPA_IP]	= 0x1a8		/* IAOQ[0] */
 #elif defined(UNW_TARGET_X86)
+#if defined __FreeBSD__
+#define UNW_R_OFF(R, r) \
+    [UNW_X86_##R]	= offsetof(gregset_t, r_##r),
+    UNW_R_OFF(EAX, eax)
+    UNW_R_OFF(EDX, edx)
+    UNW_R_OFF(ECX, ecx)
+    UNW_R_OFF(EBX, ebx)
+    UNW_R_OFF(ESI, esi)
+    UNW_R_OFF(EDI, edi)
+    UNW_R_OFF(EBP, ebp)
+    UNW_R_OFF(ESP, esp)
+    UNW_R_OFF(EIP, eip)
+//  UNW_R_OFF(CS, cs)
+//  UNW_R_OFF(EFLAGS, eflags)
+//  UNW_R_OFF(SS, ss)
+#elif defined __linux__
     [UNW_X86_EAX]	= 0x18,
     [UNW_X86_EBX]	= 0x00,
     [UNW_X86_ECX]	= 0x04,
@@ -266,8 +282,11 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 /*  ORIG_EAX		= 0x2c, */
 /*  EFLAGS		= 0x38, */
 /*  SS			= 0x40 */
+#else
+#error Port me
+#endif
 #elif defined(UNW_TARGET_X86_64)
-#if defined(__FreeBSD__)
+#if defined __FreeBSD__
 #define UNW_R_OFF(R, r) \
     [UNW_X86_64_##R]	= offsetof(gregset_t, r_##r),
     UNW_R_OFF(RAX, rax)
@@ -291,7 +310,7 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 //  UNW_R_OFF(EFLAGS, rflags)
 //  UNW_R_OFF(SS, ss)
 #undef UNW_R_OFF
-#else
+#elif defined __linux__
     [UNW_X86_64_RAX]	= 0x50,
     [UNW_X86_64_RDX]	= 0x60,
     [UNW_X86_64_RCX]	= 0x58,
@@ -313,6 +332,8 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 //  [UNW_X86_64_EFLAGS]	= 0x90,
 //  [UNW_X86_64_RSP]	= 0x98,
 //  [UNW_X86_64_SS]	= 0xa0
+#else
+#error Port me
 #endif
 #elif defined(UNW_TARGET_PPC32)
 #elif defined(UNW_TARGET_PPC64)
