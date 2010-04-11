@@ -96,8 +96,14 @@ unw_step (unw_cursor_t *cursor)
 	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[EIP], &c->dwarf.ip);
 	  if (ret < 0)
 	    {
+	      Debug (13, "dwarf_get([EIP=0x%x]) failed\n", DWARF_GET_LOC (c->dwarf.loc[EIP]));
 	      Debug (2, "returning %d\n", ret);
 	      return ret;
+	    }
+	  else
+	    {
+	      Debug (13, "[EIP=0x%x] = 0x%x\n", DWARF_GET_LOC (c->dwarf.loc[EIP]),
+		c->dwarf.ip);
 	    }
 	}
       else
