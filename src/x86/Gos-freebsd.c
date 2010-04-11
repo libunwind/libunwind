@@ -108,6 +108,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 
     sf = (struct sigframe *)c->dwarf.cfa;
     uc_addr = (uintptr_t)&(sf->sf_uc);
+    c->uc = (ucontext_t *)uc_addr;
 
     esp_loc = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_ESP_OFF, 0);
     ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);

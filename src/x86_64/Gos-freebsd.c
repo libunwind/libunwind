@@ -96,6 +96,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   if (c->sigcontext_format == X86_64_SCF_FREEBSD_SIGFRAME)
    {
     ucontext = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
+    c->uc = (ucontext_t *)ucontext;
     Debug(1, "signal frame, skip over trampoline\n");
 
     struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
