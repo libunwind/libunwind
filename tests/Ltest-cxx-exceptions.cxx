@@ -1,8 +1,6 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-This file is part of libunwind.
+   Copyright (C) 2010 stefan.demharter@gmx.net
+   Copyright (C) 2010 arun.sharma@google.com
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -23,25 +21,58 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "unwind-internal.h"
-#ifdef UNW_TARGET_X86
-#include "dwarf_i.h"
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
 
-PROTECTED void
-_Unwind_SetGR (struct _Unwind_Context *context, int index,
-	       unsigned long new_value)
+#include <unistd.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <libunwind.h>
+
+#define panic(args...)				\
+	{ fprintf (stderr, args); exit (-1); }
+
+struct Test
 {
-#ifdef UNW_TARGET_X86
-  index = dwarf_to_unw_regnum(index);
-#endif
-  unw_set_reg (&context->cursor, index, new_value);
-#ifdef UNW_TARGET_IA64
-  if (index >= UNW_IA64_GR && index <= UNW_IA64_GR + 127)
-    /* Clear the NaT bit. */
-    unw_set_reg (&context->cursor, UNW_IA64_NAT + (index - UNW_IA64_GR), 0);
-#endif
+  public: // --- ctor/dtor ---
+    Test() { ++counter_; }
+    ~Test() { -- counter_; }
+    Test(const Test&) { ++counter_; }
+
+  public: // --- static members ---
+    static int counter_;
+};
+
+int Test::counter_ = 0;
+
+// Called by foo
+extern "C" void bar()
+{
+  Test t;
+  try {
+    Test t;
+    throw 5;
+  } catch (...) {
+    Test t;
+    printf("Throwing an int\n");
+    throw 6;
+  }
 }
 
-void __libunwind_Unwind_SetGR (struct _Unwind_Context *, int, unsigned long)
-     ALIAS (_Unwind_SetGR);
+int main()
+{
+  try {
+    Test t;
+    bar();
+  } catch (int) {
+    // Dtor of all Test-object has to be called.
+    if (Test::counter_ != 0)
+      panic("Counter non-zero\n");
+    return Test::counter_;
+  } catch (...) {
+    // An int was thrown - we should not get here.
+    panic("Int was thrown why are we here?\n");
+  }
+  exit(0);
+}

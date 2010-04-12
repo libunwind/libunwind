@@ -45,6 +45,10 @@ endif #ARCH_IA64
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
 			Gperf-simple Lperf-simple
 
+if SUPPORT_CXX_EXCEPTIONS
+ check_PROGRAMS_cdep += Ltest-cxx-exceptions
+endif
+
 perf: perf-startup Gperf-simple Lperf-simple
 	@echo "########## Basic performance of generic libunwind:"
 	@./Gperf-simple
@@ -81,6 +85,8 @@ ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
 ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
+Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
+
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
