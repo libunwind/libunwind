@@ -230,7 +230,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
 	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c	\
 	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c		\
 	x86/Lget_proc_info.c x86/Lregs.c				\
-	x86/Lresume.c x86/Lstep.c x86/getcontext.S
+	x86/Lresume.c x86/Lstep.c
 
 # The list of files that go into libunwind-x86:
 libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
@@ -351,6 +351,7 @@ if OS_LINUX
  libunwind_la_SOURCES_os	      = $(libunwind_la_SOURCES_os_linux)
  libunwind_la_SOURCES_os_local	      = $(libunwind_la_SOURCES_os_linux_local)
  libunwind_la_SOURCES_x86_os          = x86/Gos-linux.c
+ libunwind_x86_la_SOURCES_os	      = x86/getcontext-linux.S
  libunwind_la_SOURCES_x86_os_local    = x86/Los-linux.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
@@ -365,6 +366,7 @@ if OS_FREEBSD
  libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_freebsd)
  libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_freebsd_local)
  libunwind_la_SOURCES_x86_os          = x86/Gos-freebsd.c
+ libunwind_x86_la_SOURCES_os	      = x86/getcontext-freebsd.S
  libunwind_la_SOURCES_x86_os_local    = x86/Los-freebsd.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-freebsd.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
@@ -424,7 +426,7 @@ endif
 else
 if ARCH_X86
  lib_LTLIBRARIES_arch = libunwind-x86.la
- libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86)
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86) $(libunwind_x86_la_SOURCES_os)
  libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
  libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 if !REMOTE_ONLY

@@ -1,6 +1,4 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2009 Google, Inc
-	Contributed by Paul Pluzhnikov <ppluzhnikov@google.com>
    Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
@@ -26,46 +24,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "offsets.h"
 
-/*  int _Ux86_getcontext (ucontext_t *ucp)
-
-  Saves the machine context in UCP necessary for libunwind.
-  Unlike the libc implementation, we don't save the signal mask
-  and hence avoid the cost of a system call per unwind.
-
-*/
-
 	.global _Ux86_getcontext
 	.type _Ux86_getcontext, @function
 _Ux86_getcontext:
-#if defined __linux__
-	mov	4(%esp),%eax  /* ucontext_t* */
-
-	/* EAX is not preserved. */
-	movl	$0, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EAX_OFF)(%eax)
-
-	movl	%ebx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EBX_OFF)(%eax)
-	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_ECX_OFF)(%eax)
-	movl	%edx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EDX_OFF)(%eax)
-	movl	%edi, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EDI_OFF)(%eax)
-	movl	%esi, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_ESI_OFF)(%eax)
-	movl	%ebp, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EBP_OFF)(%eax)
-
-	movl	(%esp), %ecx
-	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EIP_OFF)(%eax)
-
-	leal	4(%esp), %ecx		/* Exclude the return address.  */
-	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_ESP_OFF)(%eax)
-
-	/* glibc getcontext saves FS, but not GS */
-	xorl	%ecx, %ecx
-	movw	%fs, %cx
-	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FS_OFF)(%eax)
-
-	leal	LINUX_UC_FPREGS_MEM_OFF(%eax), %ecx
-	movl	%ecx, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FPSTATE_OFF)(%eax)
-	fnstenv	(%ecx)
-	fldenv	(%ecx)
-#elif defined __FreeBSD__
 	pushl	%eax
 	mov	8(%esp),%eax  /* ucontext_t* */
 	popl	FREEBSD_UC_MCONTEXT_EAX_OFF(%eax)
@@ -110,9 +71,8 @@ _Ux86_getcontext:
 
 	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL,\
 		FREEBSD_UC_MCONTEXT_MC_LEN_OFF(%eax)
-#endif
 
-	xor	%eax, %eax
+	xorl	%eax, %eax
 	ret
 	.size	_Ux86_getcontext, . - _Ux86_getcontext
 
