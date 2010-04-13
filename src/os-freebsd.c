@@ -72,6 +72,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   buf = get_mem(len1);
   if (buf == NULL)
     return (-1);
+  len = len1;
   error = sysctl(mib, 4, buf, &len, NULL, 0);
   if (error) {
     free_mem(buf, len1);
