@@ -37,9 +37,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _Ux86_getcontext
 	.type _Ux86_getcontext, @function
 _Ux86_getcontext:
+#if defined __linux__
 	mov	4(%esp),%eax  /* ucontext_t* */
 
-#if defined __linux__
 	/* EAX is not preserved. */
 	movl	$0, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_EAX_OFF)(%eax)
 
@@ -66,9 +66,9 @@ _Ux86_getcontext:
 	fnstenv	(%ecx)
 	fldenv	(%ecx)
 #elif defined __FreeBSD__
-	/* EAX is not preserved. */
-	movl	$0, FREEBSD_UC_MCONTEXT_EAX_OFF(%eax)
-
+	pushl	%eax
+	mov	8(%esp),%eax  /* ucontext_t* */
+	popl	FREEBSD_UC_MCONTEXT_EAX_OFF(%eax)
 	movl	%ebx, FREEBSD_UC_MCONTEXT_EBX_OFF(%eax)
 	movl	%ecx, FREEBSD_UC_MCONTEXT_ECX_OFF(%eax)
 	movl	%edx, FREEBSD_UC_MCONTEXT_EDX_OFF(%eax)
