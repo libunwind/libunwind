@@ -168,7 +168,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
-  unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, load_base;
+  unw_word_t addr, eh_frame_start, fde_count, load_base;
   unw_word_t max_load_addr = 0;
   struct dwarf_eh_frame_hdr *hdr;
   unw_proc_info_t pi;
@@ -268,6 +268,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 #if 1
       abort ();
 #else
+      unw_word_t eh_frame_end;
+
       /* If there is no search table or it has an unsupported
 	 encoding, fall back on linear search.  */
       if (hdr->table_enc == DW_EH_PE_omit)
