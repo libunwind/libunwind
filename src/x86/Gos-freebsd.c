@@ -53,7 +53,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 sigcode+4: from amd64 freebsd32 environment
 8d 44 24 20		lea    0x20(%esp),%eax
 50			push   %eax
-b8 a1 01 00 00		mov    $0x1a1,%ea
+b8 a1 01 00 00		mov    $0x1a1,%eax
 50			push   %eax
 cd 80			int    $0x80
 
