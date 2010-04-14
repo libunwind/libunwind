@@ -85,7 +85,7 @@
 
 /* FreeBSD-specific definitions: */
 
-#define FREEBSD_SC_UCONTEXT_OFF		0x14
+#define FREEBSD_SC_UCONTEXT_OFF		0x20
 #define FREEBSD_UC_MCONTEXT_OFF		0x10
 
 #define FREEBSD_UC_MCONTEXT_GS_OFF	0x14
