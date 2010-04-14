@@ -346,11 +346,13 @@ x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   if (c->sigcontext_format == X86_SCF_NONE) {
       Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
       setcontext (uc);
+      abort();
   } else if (c->sigcontext_format == X86_SCF_FREEBSD_SIGFRAME) {
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
       Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
       sigreturn((ucontext_t *)((const char *)sc + FREEBSD_UC_MCONTEXT_OFF));
+      abort();
   } else {
       Debug (8, "resuming at ip=%x for sigcontext format %d not implemented\n",
       c->dwarf.ip, c->sigcontext_format);
