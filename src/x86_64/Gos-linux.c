@@ -146,6 +146,7 @@ x86_64_sigreturn (unw_cursor_t *cursor)
 			"syscall"
 			:: "r"(sc), "i"(SYS_rt_sigreturn)
 			: "memory");
+  abort();
 }
 
 #endif
