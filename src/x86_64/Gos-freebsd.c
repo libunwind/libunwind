@@ -186,7 +186,8 @@ HIDDEN NORETURN void
 x86_64_sigreturn (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->dwarf.cfa + offsetof(struct sigframe, sf_uc);
+  ucontext_t *uc = (ucontext_t *)(c->sigcontext_addr +
+    offsetof(struct sigframe, sf_uc));
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
 	     (unsigned long long) c->dwarf.ip, uc);
