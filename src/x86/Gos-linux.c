@@ -153,6 +153,9 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
     case X86_SCF_LINUX_RT_SIGFRAME:
       addr += LINUX_UC_MCONTEXT_OFF;
       break;
+
+    default:
+      return DWARF_NULL_LOC;
     }
 
   switch (reg)
