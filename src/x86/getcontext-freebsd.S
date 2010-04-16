@@ -61,20 +61,36 @@ _Ux86_getcontext:
 	popl	FREEBSD_UC_MCONTEXT_EFLAGS_OFF(%eax)
 
 	movl	$0, FREEBSD_UC_MCONTEXT_TRAPNO_OFF(%eax)
-#if 0
+
 	movl	$FREEBSD_UC_MCONTEXT_FPOWNED_FPU,\
 		FREEBSD_UC_MCONTEXT_OWNEDFP_OFF(%eax)
 	movl	$FREEBSD_UC_MCONTEXT_FPFMT_XMM,\
 		FREEBSD_UC_MCONTEXT_FPFORMAT_OFF(%eax)
 
-	/* Require CPU with fxsave implemented, and enabled by OS. */
-	fxsave	FREEBSD_UC_MCONTEXT_FPSTATE_OFF(%eax)
-#else
-	movl	$FREEBSD_UC_MCONTEXT_FPOWNED_NONE,\
-		FREEBSD_UC_MCONTEXT_OWNEDFP_OFF(%eax)
-	movl	$FREEBSD_UC_MCONTEXT_FPFMT_NODEV,\
-		FREEBSD_UC_MCONTEXT_FPFORMAT_OFF(%eax)
-#endif
+       /*
+	* Require CPU with fxsave implemented, and enabled by OS.
+	*
+	* If passed ucontext is not aligned to 16-byte boundary,
+	* save fpu context into temporary aligned location on stack
+	* and then copy.
+	*/
+	leal	FREEBSD_UC_MCONTEXT_FPSTATE_OFF(%eax), %edx
+	testl	$0xf, %edx
+	je	1f
+	movl	%edx, %edi
+	movl	%esp, %edx
+	subl	$512, %esp
+	andl	$~0xf, %esp
+	fxsave	(%esp)
+	movl	%esp, %esi
+	movl	$512/4,%ecx
+	rep; movsl
+	movl	%edx, %esp
+	movl	FREEBSD_UC_MCONTEXT_ESI_OFF(%eax), %esi
+	movl	FREEBSD_UC_MCONTEXT_EDI_OFF(%eax), %edi
+	jmp	2f
+1:	fxsave	(%edx)
+2:	
 
 	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL,\
 		FREEBSD_UC_MCONTEXT_MC_LEN_OFF(%eax)
