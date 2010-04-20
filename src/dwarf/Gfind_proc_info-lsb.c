@@ -275,7 +275,7 @@ locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
 
   for (w = as->debug_frames; w; w = w->next)
     {
-      Debug (4, "checking %p: %x-%x\n", w, (int)w->start, (int)w->end);
+      Debug (4, "checking %p: %lx-%lx\n", w, (long)w->start, (long)w->end);
       if (addr >= w->start && addr < w->end)
 	return w;
     }
@@ -316,7 +316,7 @@ locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
 	end = hdrlimit;
     }
 
-  Debug (4, "calculated bounds of %x-%x for '%s'\n", (int)start, (int)end,
+  Debug (4, "calculated bounds of %lx-%lx for '%s'\n", (long)start, (long)end,
 	 name);
   
   err = load_debug_frame (name, &buf, &bufsize, as == unw_local_addr_space);
@@ -667,8 +667,8 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
           						  NULL);
           	  if (err == 0)
           	    {
-          	      Debug (15, "start_ip = %x, end_ip = %x\n",
-          		     (int) this_pi.start_ip, (int) this_pi.end_ip);
+		      Debug (15, "start_ip = %lx, end_ip = %lx\n",
+			     (long) this_pi.start_ip, (long) this_pi.end_ip);
           	      debug_frame_tab_append (tab,
           				      item_start - (unw_word_t) (uintptr_t) buf,
           				      this_pi.start_ip);
@@ -771,7 +771,7 @@ lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
     {
       mid = (lo + hi) / 2;
       e = table + mid;
-      Debug (1, "e->start_ip_offset = %x\n", (int) e->start_ip_offset);
+      Debug (1, "e->start_ip_offset = %lx\n", (long) e->start_ip_offset);
       if (rel_ip < e->start_ip_offset)
 	hi = mid;
       else
@@ -897,8 +897,8 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     }
   if (!e)
     {
-      Debug (1, "IP %x inside range %x-%x, but no explicit unwind info found\n",
-	     (int) ip, (int) di->start_ip, (int) di->end_ip);
+      Debug (1, "IP %lx inside range %lx-%lx, but no explicit unwind info found\n",
+	     (long) ip, (long) di->start_ip, (long) di->end_ip);
       /* IP is inside this table's range, but there is no explicit
 	 unwind info.  */
       return -UNW_ENOINFO;
@@ -909,9 +909,9 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     fde_addr = e->fde_offset + debug_frame_base;
   else
     fde_addr = e->fde_offset + segbase;
-  Debug (1, "e->fde_offset = %x, segbase = %x, debug_frame_base = %x, "
-	    "fde_addr = %x\n", (int) e->fde_offset, (int) segbase,
-	    (int) debug_frame_base, (int) fde_addr);
+  Debug (1, "e->fde_offset = %lx, segbase = %lx, debug_frame_base = %lx, "
+	    "fde_addr = %lx\n", (long) e->fde_offset, (long) segbase,
+	    (long) debug_frame_base, (long) fde_addr);
   if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
 					       need_unwind_info,
 					       debug_frame_base, arg)) < 0)

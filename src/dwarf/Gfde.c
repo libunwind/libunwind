@@ -293,7 +293,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 	cie_addr = (unw_word_t) ((uint64_t) cie_offset_addr - cie_offset);
     }
 
-  Debug (15, "looking for CIE at address %x\n", (int) cie_addr);
+  Debug (15, "looking for CIE at address %lx\n", (long) cie_addr);
 
   if ((ret = parse_cie (as, a, cie_addr, pi, &dci, base, arg)) < 0)
     return ret;
