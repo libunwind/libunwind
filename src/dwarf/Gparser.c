@@ -750,13 +750,20 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	  break;
 	}
     }
-  c->cfa = cfa;
-  ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
-  if (ret < 0)
-    return ret;
-  c->ip = ip;
-  /* XXX: check for ip to be code_aligned */
 
+  c->cfa = cfa;
+  /* DWARF spec says undefined return address location means end of stack. */
+  if (DWARF_IS_NULL_LOC (c->loc[c->ret_addr_column]))
+    c->ip = 0;
+  else
+  {
+    ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
+    if (ret < 0)
+      return ret;
+    c->ip = ip;
+  }
+
+  /* XXX: check for ip to be code_aligned */
   if (c->ip == prev_ip && c->cfa == prev_cfa)
     {
       Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
