@@ -400,6 +400,11 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 
   c->pi_valid = 1;
   c->pi_is_dynamic = dynamic;
+
+  /* Let system/machine-dependent code determine frame-specific attributes. */
+  if (ret >= 0)
+    tdep_fetch_frame (c, ip, need_unwind_info);
+
   return ret;
 }
 
@@ -604,6 +609,8 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   rs->hint = 0;
   rs->ip = c->ip;
   rs->ret_addr_column = c->ret_addr_column;
+  rs->signal_frame = 0;
+  tdep_cache_frame (c, rs);
 
   return rs;
 }
@@ -818,6 +825,8 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
 
   memcpy (&rs_copy, rs, sizeof (rs_copy));
   put_rs_cache (c->as, cache, &saved_mask);
+
+  tdep_reuse_frame (c, &rs_copy);
   if ((ret = apply_reg_state (c, &rs_copy)) < 0)
     return ret;
 

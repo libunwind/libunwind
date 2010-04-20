@@ -30,10 +30,59 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/syscall.h>
 
+HIDDEN void
+tdep_fetch_frame (struct dwarf_cursor *dw, unw_word_t ip, int need_unwind_info)
+{
+  struct cursor *c = (struct cursor *) dw;
+  assert(! need_unwind_info || dw->pi_valid);
+  assert(! need_unwind_info || dw->pi.unwind_info);
+  if (dw->pi_valid
+      && dw->pi.unwind_info
+      && ((struct dwarf_cie_info *) dw->pi.unwind_info)->signal_frame)
+  {
+    c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+    c->sigcontext_addr = dw->cfa;
+  }
+  else
+  {
+    c->sigcontext_format = X86_64_SCF_NONE;
+    c->sigcontext_addr = 0;
+  }
+
+  Debug(15, "fetch frame ip=0x%lx cfa=0x%lx format=%d addr=0x%lx\n",
+        dw->ip, dw->cfa, c->sigcontext_format, c->sigcontext_addr);
+}
+
+HIDDEN void
+tdep_cache_frame (struct dwarf_cursor *dw, struct dwarf_reg_state *rs)
+{
+  struct cursor *c = (struct cursor *) dw;
+  rs->signal_frame = c->sigcontext_format;
+
+  Debug(15, "cache frame ip=0x%lx cfa=0x%lx format=%d addr=0x%lx\n",
+        dw->ip, dw->cfa, c->sigcontext_format, c->sigcontext_addr);
+}
+
+HIDDEN void
+tdep_reuse_frame (struct dwarf_cursor *dw, struct dwarf_reg_state *rs)
+{
+  struct cursor *c = (struct cursor *) dw;
+  c->sigcontext_format = rs->signal_frame;
+  if (c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME)
+    c->sigcontext_addr = dw->cfa;
+  else
+    c->sigcontext_addr = 0;
+
+  Debug(15, "reuse frame ip=0x%lx cfa=0x%lx format=%d addr=0x%lx\n",
+        dw->ip, dw->cfa, c->sigcontext_format, c->sigcontext_addr);
+}
+
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
+  return c->sigcontext_format != X86_64_SCF_NONE;
+#if 0
   unw_word_t w0, w1, ip;
   unw_addr_space_t as;
   unw_accessors_t *a;
@@ -57,20 +106,24 @@ unw_is_signal_frame (unw_cursor_t *cursor)
     return 0;
   w1 &= 0xff;
   return (w0 == 0x0f0000000fc0c748 && w1 == 0x05);
+#endif
 }
 
 PROTECTED int
 unw_handle_signal_frame (unw_cursor_t *cursor)
 {
+  /* Should not get here because we now use kernel-provided dwarf
+     information for the signal trampoline and dwarf_step() works.
+     Hence dwarf_step() should never call this function. Maybe
+     restore old non-dwarf signal handling here, but then the
+     gating on unw_is_signal_frame() needs to be removed. */
   struct cursor *c = (struct cursor *) cursor;
-  int ret;
-  unw_word_t ucontext = c->dwarf.cfa;
-
-  Debug(1, "signal frame, skip over trampoline\n");
-
-  c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
-  c->sigcontext_addr = c->dwarf.cfa;
-
+  Debug(1, "old format signal frame? format=%d addr=0x%lx cfa=0x%lx\n",
+	c->sigcontext_format, c->sigcontext_addr, c->dwarf.cfa);
+  assert(c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME);
+  assert(c->sigcontext_addr == c->dwarf.cfa);
+  assert(0);
+#if 0
   struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
   ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
   if (ret < 0)
@@ -96,8 +149,9 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.loc[R14] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
   c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
   c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
+#endif
 
-  return 0;
+  return 1;
 }
 
 #ifndef UNW_REMOTE_ONLY

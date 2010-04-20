@@ -187,6 +187,9 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
 	break;
 
       case 'S':
+	/* This is a signal frame. */
+	dci->signal_frame = 1;
+
 	/* Temporarily set it to one so dwarf_parse_fde() knows that
 	   it should fetch the actual ABI/TAG pair from the FDE.  */
 	dci->have_abi_marker = 1;

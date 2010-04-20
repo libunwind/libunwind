@@ -38,6 +38,7 @@ unw_step (unw_cursor_t *cursor)
 	 c, (unsigned long long) c->dwarf.ip);
 
   /* Try DWARF-based unwinding... */
+  c->sigcontext_format = X86_64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
   if (ret < 0 && ret != -UNW_ENOINFO)
