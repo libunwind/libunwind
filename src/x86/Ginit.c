@@ -24,6 +24,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 
@@ -83,6 +87,9 @@ static int
 validate_mem (unw_word_t addr)
 {
   int i, victim;
+#ifdef HAVE_MINCORE
+  char mvec[1];
+#endif
 
   addr = PAGE_START(addr);
 
@@ -95,7 +102,11 @@ validate_mem (unw_word_t addr)
 	return 0;
     }
 
+#ifdef HAVE_MINCORE
+  if (mincore ((void *) addr, 1, mvec) == -1)
+#else
   if (msync ((void *) addr, 1, MS_ASYNC) == -1)
+#endif
     return -1;
 
   victim = lga_victim;

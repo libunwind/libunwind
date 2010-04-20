@@ -39,6 +39,7 @@ endif #ARCH_IA64
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-dyn1 Ltest-dyn1				 \
+			Gtest-simple					 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
 			Ltest-nomalloc rs-race
@@ -89,6 +90,7 @@ Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
 
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
+Gtest_simple_SOURCES = Gtest-simple.cxx
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
 test_static_link_LDFLAGS = -static
 forker_LDFLAGS = -static

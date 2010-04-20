@@ -76,7 +76,7 @@ dnl Checks for library functions.
 AC_FUNC_MEMCMP
 AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
-		ttrace)
+		ttrace mincore)
 is_gcc_m64() {
  if test `echo $CFLAGS | grep "\-m64" -c` -eq 1 ; then echo ppc64;
  else
