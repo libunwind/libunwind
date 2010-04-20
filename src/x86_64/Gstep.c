@@ -116,6 +116,11 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
           c->dwarf.cfa += 8;
 	}
+      else if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+        {
+	  for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+	    c->dwarf.loc[i] = DWARF_NULL_LOC;
+	}
       else
 	{
 	  unw_word_t rbp;
@@ -123,7 +128,8 @@ unw_step (unw_cursor_t *cursor)
 	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RBP], &rbp);
 	  if (ret < 0)
 	    {
-	      Debug (2, "returning %d\n", ret);
+	      Debug (2, "returning %d [RBP=0x%lx]\n", ret,
+		     DWARF_GET_LOC (c->dwarf.loc[RBP]));
 	      return ret;
 	    }
 
