@@ -88,7 +88,7 @@ validate_mem (unw_word_t addr)
 {
   int i, victim;
 #ifdef HAVE_MINCORE
-  char mvec[1];
+  char mvec[2]; /* Unaligned access may cross page boundary */
 #endif
 
   addr = PAGE_START(addr);
