@@ -103,9 +103,9 @@ validate_mem (unw_word_t addr)
     }
 
 #ifdef HAVE_MINCORE
-  if (mincore ((void *) addr, 1, mvec) == -1)
+  if (mincore ((void *) addr, sizeof (unw_word_t), mvec) == -1)
 #else
-  if (msync ((void *) addr, 1, MS_ASYNC) == -1)
+  if (msync ((void *) addr, sizeof (unw_word_t), MS_ASYNC) == -1)
 #endif
     return -1;
 
