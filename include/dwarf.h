@@ -295,6 +295,7 @@ typedef struct dwarf_cursor
 
     dwarf_loc_t loc[DWARF_NUM_PRESERVED_REGS];
 
+    unsigned int use_prev_instr :1; /* use previous (= call) or current (= signal) instruction? */
     unsigned int pi_valid :1;	/* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
     unw_proc_info_t pi;		/* info about current procedure */

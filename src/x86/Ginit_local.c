@@ -50,7 +50,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as_arg = c;
   c->uc = uc;
   c->validate = 0;
-  return common_init (c);
+  return common_init (c, 1);
 }
 
 #endif /* !UNW_REMOTE_ONLY */

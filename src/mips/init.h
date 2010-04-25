@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static inline int
-common_init (struct cursor *c)
+common_init (struct cursor *c, unsigned use_prev_instr)
 {
   int ret, i;
 
@@ -47,6 +47,7 @@ common_init (struct cursor *c)
 
   c->dwarf.args_size = 0;
   c->dwarf.ret_addr_column = 0;
+  c->dwarf.use_prev_instr = use_prev_instr;
   c->dwarf.pi_valid = 0;
   c->dwarf.pi_is_dynamic = 0;
   c->dwarf.hint = 0;
