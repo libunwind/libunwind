@@ -28,38 +28,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include <signal.h>
 
-/* Recognise PLT entries such as:
-     3bdf0: ff 25 e2 49 13 00 jmpq   *0x1349e2(%rip)
-     3bdf6: 68 ae 03 00 00    pushq  $0x3ae
-     3bdfb: e9 00 c5 ff ff    jmpq   38300 <_init+0x18> */
-static int
-is_plt_entry (struct dwarf_cursor *c)
-{
-  unw_word_t w0, w1;
-  unw_accessors_t *a;
-  int ret;
-
-  a = unw_get_accessors (c->as);
-  if ((ret = (*a->access_mem) (c->as, c->ip, &w0, 0, c->as_arg)) < 0
-      || (ret = (*a->access_mem) (c->as, c->ip + 8, &w1, 0, c->as_arg)) < 0)
-    return 0;
-
-  ret = (((w0 & 0xffff) == 0x25ff)
-	 && (((w0 >> 48) & 0xff) == 0x68)
-	 && (((w1 >> 24) & 0xff) == 0xe9));
-
-  Debug (14, "ip=0x%lx => 0x%016lx 0x%016lx, ret = %d\n", c->ip, w0, w1, ret);
-  return ret;
-}
-
 PROTECTED int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret, i;
 
-  Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx)\n",
-	 c, c->dwarf.ip, c->dwarf.cfa);
+  Debug (1, "(cursor=%p, ip=0x%016llx)\n",
+	 c, (unsigned long long) c->dwarf.ip);
 
   /* Try DWARF-based unwinding... */
   c->sigcontext_format = X86_64_SCF_NONE;
@@ -109,12 +85,6 @@ unw_step (unw_cursor_t *cursor)
 	      Debug (2, "returning 0\n");
 	      return 0;
 	    }
-	}
-      else if (is_plt_entry (&c->dwarf))
-	{
-	  Debug (2, "found plt entry\n");
-          c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
-          c->dwarf.cfa += 8;
 	}
       else if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
         {
@@ -169,7 +139,7 @@ unw_step (unw_cursor_t *cursor)
 
       c->dwarf.ret_addr_column = RIP;
 
-      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RIP]))
+      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
 	{
 	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
 	  Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
