@@ -36,6 +36,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _Ux86_getcontext
 	.type _Ux86_getcontext, @function
 _Ux86_getcontext:
+	.cfi_startproc
 	mov	4(%esp),%eax  /* ucontext_t* */
 
 	/* EAX is not preserved. */
@@ -66,6 +67,7 @@ _Ux86_getcontext:
 
 	xor	%eax, %eax
 	ret
+	.cfi_endproc
 	.size	_Ux86_getcontext, . - _Ux86_getcontext
 
 	/* We do not need executable stack.  */
