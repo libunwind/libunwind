@@ -87,6 +87,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 PROTECTED int
 unw_handle_signal_frame (unw_cursor_t *cursor)
 {
+#if UNW_DEBUG /* To silence compiler warnings */
   /* Should not get here because we now use kernel-provided dwarf
      information for the signal trampoline and dwarf_step() works.
      Hence dwarf_step() should never call this function. Maybe
@@ -97,6 +98,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   assert(c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME);
   assert(c->sigcontext_addr == c->dwarf.cfa);
   assert(0);
+#endif
   return 1;
 }
 

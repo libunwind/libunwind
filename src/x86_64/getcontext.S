@@ -37,6 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _Ux86_64_getcontext
 	.type _Ux86_64_getcontext, @function
 _Ux86_64_getcontext:
+	.cfi_startproc
 
 	/* Callee saved: RBX, RBP, R12-R15  */
 	movq %r12, UC_MCONTEXT_GREGS_R12(%rdi)
@@ -70,7 +71,9 @@ _Ux86_64_getcontext:
 	/* Save rflags and segment registers, so that sigreturn(2)
 	does not complain. */
 	pushfq
+	.cfi_adjust_cfa_offset 8
 	popq UC_MCONTEXT_RFLAGS(%rdi)
+	.cfi_adjust_cfa_offset -8
 	movl $0, UC_MCONTEXT_FLAGS(%rdi)
 	movw %cs, UC_MCONTEXT_CS(%rdi)
 	movw %ss, UC_MCONTEXT_SS(%rdi)
@@ -95,6 +98,7 @@ _Ux86_64_getcontext:
 
 	xorq	%rax, %rax
 	retq
+	.cfi_endproc
 	.size _Ux86_64_getcontext, . - _Ux86_64_getcontext
 
       /* We do not need executable stack.  */

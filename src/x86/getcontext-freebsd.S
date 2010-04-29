@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _Ux86_getcontext
 	.type _Ux86_getcontext, @function
 _Ux86_getcontext:
+	.cfi_startproc
 	pushl	%eax
 	mov	8(%esp),%eax  /* ucontext_t* */
 	popl	FREEBSD_UC_MCONTEXT_EAX_OFF(%eax)
@@ -81,6 +82,7 @@ _Ux86_getcontext:
 
 	xorl	%eax, %eax
 	ret
+	.cfi_endproc
 	.size	_Ux86_getcontext, . - _Ux86_getcontext
 
 	/* We do not need executable stack.  */
