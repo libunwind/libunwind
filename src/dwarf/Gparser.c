@@ -76,7 +76,10 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
   a = unw_get_accessors (as);
   curr_ip = c->pi.start_ip;
 
-  while (curr_ip < ip && *addr < end_addr)
+  /* Process everything up to and including the current 'ip',
+     including all the DW_CFA_advance_loc instructions.  See
+     'c->use_prev_instr' use in 'fetch_proc_info' for details. */
+  while (curr_ip <= ip && *addr < end_addr)
     {
       if ((ret = dwarf_readu8 (as, a, addr, &op, arg)) < 0)
 	return ret;
@@ -381,7 +384,23 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 {
   int ret, dynamic = 1;
 
-  --ip;
+  /* The 'ip' can point either to the previous or next instruction
+     depending on what type of frame we have: normal call or a place
+     to resume execution (e.g. after signal frame).
+
+     For a normal call frame we need to back up so we point within the
+     call itself; this is important because a) the call might be the
+     very last instruction of the function and the edge of the FDE,
+     and b) so that run_cfi_program() runs locations up to the call
+     but not more.
+
+     For execution resume, we need to do the exact opposite and look
+     up using the current 'ip' value.  That is where execution will
+     continue, and it's important we get this right, as 'ip' could be
+     right at the function entry and hence FDE edge, or at instruction
+     that manipulates CFA (push/pop). */
+  if (c->use_prev_instr)
+    --ip;
 
   if (c->pi_valid && !need_unwind_info)
     return 0;
@@ -400,6 +419,19 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 
   c->pi_valid = 1;
   c->pi_is_dynamic = dynamic;
+
+  /* Let system/machine-dependent code determine frame-specific attributes. */
+  if (ret >= 0)
+    tdep_fetch_frame (c, ip, need_unwind_info);
+
+  /* Update use_prev_instr for the next frame. */
+  if (need_unwind_info)
+  {
+    assert(c->pi.unwind_info);
+    struct dwarf_cie_info *dci = c->pi.unwind_info;
+    c->use_prev_instr = ! dci->signal_frame;
+  }
+
   return ret;
 }
 
@@ -604,6 +636,8 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   rs->hint = 0;
   rs->ip = c->ip;
   rs->ret_addr_column = c->ret_addr_column;
+  rs->signal_frame = 0;
+  tdep_cache_frame (c, rs);
 
   return rs;
 }
@@ -743,13 +777,20 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	  break;
 	}
     }
-  c->cfa = cfa;
-  ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
-  if (ret < 0)
-    return ret;
-  c->ip = ip;
-  /* XXX: check for ip to be code_aligned */
 
+  c->cfa = cfa;
+  /* DWARF spec says undefined return address location means end of stack. */
+  if (DWARF_IS_NULL_LOC (c->loc[c->ret_addr_column]))
+    c->ip = 0;
+  else
+  {
+    ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
+    if (ret < 0)
+      return ret;
+    c->ip = ip;
+  }
+
+  /* XXX: check for ip to be code_aligned */
   if (c->ip == prev_ip && c->cfa == prev_cfa)
     {
       Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
@@ -796,7 +837,10 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   rs = rs_lookup(cache, c);
 
   if (rs)
-    c->ret_addr_column = rs->ret_addr_column;
+    {
+      c->ret_addr_column = rs->ret_addr_column;
+      c->use_prev_instr = ! rs->signal_frame;
+    }
   else
     {
       if ((ret = fetch_proc_info (c, c->ip, 1)) < 0 ||
@@ -818,6 +862,8 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
 
   memcpy (&rs_copy, rs, sizeof (rs_copy));
   put_rs_cache (c->as, cache, &saved_mask);
+
+  tdep_reuse_frame (c, &rs_copy);
   if ((ret = apply_reg_state (c, &rs_copy)) < 0)
     return ret;
 

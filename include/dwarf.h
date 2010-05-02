@@ -247,6 +247,7 @@ typedef struct dwarf_reg_state
     unsigned short lru_chain;	  /* used for least-recently-used chain */
     unsigned short coll_chain;	/* used for hash collisions */
     unsigned short hint;	      /* hint for next rs to try (or -1) */
+    unsigned short signal_frame; /* optional machine-dependent signal info */
   }
 dwarf_reg_state_t;
 
@@ -266,6 +267,7 @@ typedef struct dwarf_cie_info
     uint8_t lsda_encoding;
     unsigned int sized_augmentation : 1;
     unsigned int have_abi_marker : 1;
+    unsigned int signal_frame : 1;
   }
 dwarf_cie_info_t;
 
@@ -293,6 +295,7 @@ typedef struct dwarf_cursor
 
     dwarf_loc_t loc[DWARF_NUM_PRESERVED_REGS];
 
+    unsigned int use_prev_instr :1; /* use previous (= call) or current (= signal) instruction? */
     unsigned int pi_valid :1;	/* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
     unw_proc_info_t pi;		/* info about current procedure */

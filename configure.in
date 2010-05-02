@@ -169,6 +169,12 @@ if test x$enable_block_signals = xyes; then
   AC_DEFINE([CONFIG_BLOCK_SIGNALS], [], [Block signals before mutex operations])
 fi
 
+AC_ARG_ENABLE(conservative_checks,
+[ --enable-conservative-checks Validate all memory addresses before use],
+[enable_conservative_checks=$enableval], [enable_conservative_checks=yes])
+if test x$enable_conservative_checks = xyes; then
+  CPPFLAGS="${CPPFLAGS} -DCONSERVATIVE_CHECKS"
+fi
 
 LIBUNWIND___THREAD
 

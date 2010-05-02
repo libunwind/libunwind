@@ -38,6 +38,7 @@ unw_step (unw_cursor_t *cursor)
 	 c, (unsigned long long) c->dwarf.ip);
 
   /* Try DWARF-based unwinding... */
+  c->sigcontext_format = X86_64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
   if (ret < 0 && ret != -UNW_ENOINFO)
@@ -85,6 +86,11 @@ unw_step (unw_cursor_t *cursor)
 	      return 0;
 	    }
 	}
+      else if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+        {
+	  for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+	    c->dwarf.loc[i] = DWARF_NULL_LOC;
+	}
       else
 	{
 	  unw_word_t rbp;
@@ -92,7 +98,8 @@ unw_step (unw_cursor_t *cursor)
 	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RBP], &rbp);
 	  if (ret < 0)
 	    {
-	      Debug (2, "returning %d\n", ret);
+	      Debug (2, "returning %d [RBP=0x%lx]\n", ret,
+		     DWARF_GET_LOC (c->dwarf.loc[RBP]));
 	      return ret;
 	    }
 
