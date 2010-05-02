@@ -29,8 +29,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 _Ux86_getcontext:
 	.cfi_startproc
 	pushl	%eax
+	.cfi_adjust_cfa_offset 4
 	mov	8(%esp),%eax  /* ucontext_t* */
 	popl	FREEBSD_UC_MCONTEXT_EAX_OFF(%eax)
+	.cfi_adjust_cfa_offset 4
 	movl	%ebx, FREEBSD_UC_MCONTEXT_EBX_OFF(%eax)
 	movl	%ecx, FREEBSD_UC_MCONTEXT_ECX_OFF(%eax)
 	movl	%edx, FREEBSD_UC_MCONTEXT_EDX_OFF(%eax)
@@ -59,7 +61,9 @@ _Ux86_getcontext:
 	movl	%ecx, FREEBSD_UC_MCONTEXT_CS_OFF(%eax)
 
 	pushfl
+	.cfi_adjust_cfa_offset 4
 	popl	FREEBSD_UC_MCONTEXT_EFLAGS_OFF(%eax)
+	.cfi_adjust_cfa_offset -4
 
 	movl	$0, FREEBSD_UC_MCONTEXT_TRAPNO_OFF(%eax)
 
@@ -77,27 +81,30 @@ _Ux86_getcontext:
 	*/
 	leal	FREEBSD_UC_MCONTEXT_FPSTATE_OFF(%eax), %edx
 	testl	$0xf, %edx
-	je	1f
-	movl	%edx, %edi
-	movl	%esp, %edx
-	subl	$512, %esp
-	andl	$~0xf, %esp
-	fxsave	(%esp)
-	movl	%esp, %esi
-	movl	$512/4,%ecx
-	rep; movsl
-	movl	%edx, %esp
-	movl	FREEBSD_UC_MCONTEXT_ESI_OFF(%eax), %esi
-	movl	FREEBSD_UC_MCONTEXT_EDI_OFF(%eax), %edi
-	jmp	2f
-1:	fxsave	(%edx)
-2:	
-
-	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL,\
+	jne	2f
+	fxsave	(%edx)	/* fast path, passed ucontext save area was aligned */
+1:	movl	$FREEBSD_UC_MCONTEXT_MC_LEN_VAL,\
 		FREEBSD_UC_MCONTEXT_MC_LEN_OFF(%eax)
 
 	xorl	%eax, %eax
 	ret
+
+2:	movl	%edx, %edi	/* not aligned, do the dance */
+	subl	$512 + 16, %esp	/* save area and 16 bytes for alignment */
+	.cfi_adjust_cfa_offset 512 + 16
+	movl	%esp, %edx
+	orl	$0xf, %edx	/* align *%edx to 16-byte up */
+	incl	%edx
+	fxsave	(%edx)
+	movl	%edx, %esi	/* copy to the final destination */
+	movl	$512/4,%ecx
+	rep; movsl
+	addl	$512 + 16, %esp	/* restore the stack */
+	.cfi_adjust_cfa_offset -512 - 16
+	movl	FREEBSD_UC_MCONTEXT_ESI_OFF(%eax), %esi
+	movl	FREEBSD_UC_MCONTEXT_EDI_OFF(%eax), %edi
+	jmp	1b
+
 	.cfi_endproc
 	.size	_Ux86_getcontext, . - _Ux86_getcontext
 
