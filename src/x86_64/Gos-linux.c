@@ -93,6 +93,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
      Hence dwarf_step() should never call this function. Maybe
      restore old non-dwarf signal handling here, but then the
      gating on unw_is_signal_frame() needs to be removed. */
+  struct cursor *c = (struct cursor *) cursor;
   Debug(1, "old format signal frame? format=%d addr=0x%lx cfa=0x%lx\n",
 	c->sigcontext_format, c->sigcontext_addr, c->dwarf.cfa);
   assert(c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME);
