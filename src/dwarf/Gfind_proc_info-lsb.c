@@ -154,7 +154,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 	  Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
 		 *bufsize, sec_hdrs[i].sh_offset);
 	}
-      else if (is_local >= 0 && strcmp (secname, ".gnu_debuglink") == 0)
+      else if (strcmp (secname, ".gnu_debuglink") == 0)
 	{
 	  linksize = sec_hdrs[i].sh_size;
 	  linkbuf = malloc (linksize);
@@ -163,7 +163,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 	  fread (linkbuf, 1, linksize, f);
 
 	  Debug (4, "read %zd bytes of .gnu_debuglink from offset %zd\n",
-		 *bufsize, sec_hdrs[i].sh_offset);
+		 linksize, sec_hdrs[i].sh_offset);
 	}
     }
 
@@ -171,6 +171,13 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   free (sec_hdrs);
 
   fclose (f);
+
+  /* Ignore separate debug files which contain a .gnu_debuglink section. */
+  if (linkbuf && is_local == -1)
+    {
+      free (linkbuf);
+      return 1;
+    }
 
   if (*buf == NULL && linkbuf != NULL && memchr (linkbuf, 0, linksize) != NULL)
     {
