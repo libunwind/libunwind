@@ -62,6 +62,7 @@ extern unw_dyn_info_t *_UPTi_find_unwind_table (struct UPT_info *ui,
 						unw_addr_space_t as,
 						char *path,
 						unw_word_t segbase,
-						unw_word_t mapoff);
+						unw_word_t mapoff,
+						unw_word_t ip);
 
 #endif /* _UPT_internal_h */

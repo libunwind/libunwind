@@ -97,7 +97,8 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
 
 HIDDEN unw_dyn_info_t *
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
-			 char *path, unw_word_t segbase, unw_word_t mapoff)
+			 char *path, unw_word_t segbase, unw_word_t mapoff,
+			 unw_word_t ip)
 {
   Elf64_Phdr *phdr, *ptxt = NULL, *punw = NULL, *pdyn = NULL;
   Elf64_Ehdr *ehdr;
@@ -165,7 +166,8 @@ dwarf_read_encoded_pointer (unw_addr_space_t as, unw_accessors_t *a,
 
 HIDDEN unw_dyn_info_t *
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
-			 char *path, unw_word_t segbase, unw_word_t mapoff)
+			 char *path, unw_word_t segbase, unw_word_t mapoff,
+			 unw_word_t ip)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
@@ -348,7 +350,7 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff);
+  di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff, ip);
   if (!di
       /* This can happen in corner cases where dynamically generated
          code falls into the same page that contains the data-segment
