@@ -52,7 +52,7 @@ free_mem(void *ptr, size_t sz)
 
 PROTECTED int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-		    unsigned long *segbase, unsigned long *mapoff)
+		    unsigned long *segbase, unsigned long *mapoff, char *path, size_t pathlen)
 {
   int mib[4], error, ret;
   size_t len, len1;
@@ -87,6 +87,10 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
        break;
      *segbase = kv->kve_start;
      *mapoff = kv->kve_offset;
+     if (path)
+       {
+         strncpy(path, kb->kve_path, pathlen);
+       }
      ret = elf_map_image(ei, kv->kve_path);
      break;
   }

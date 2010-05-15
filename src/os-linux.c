@@ -33,7 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 PROTECTED int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-		    unsigned long *segbase, unsigned long *mapoff)
+		    unsigned long *segbase, unsigned long *mapoff,
+		    char *path, size_t pathlen)
 {
   struct map_iterator mi;
   int found = 0, rc;
@@ -54,7 +55,10 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
       maps_close (&mi);
       return -1;
     }
-
+  if (path)
+    {
+      strncpy(path, mi.path, pathlen);
+    }
   rc = elf_map_image (ei, mi.path);
   maps_close (&mi);
   return rc;

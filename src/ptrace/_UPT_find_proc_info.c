@@ -342,7 +342,8 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
       ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
     }
 
-  if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff) < 0)
+  if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff, path,
+                          sizeof(path)) < 0)
     return NULL;
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment

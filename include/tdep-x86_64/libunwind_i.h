@@ -200,7 +200,8 @@ extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     int need_unwind_info, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-			       unsigned long *segbase, unsigned long *mapoff);
+			       unsigned long *segbase, unsigned long *mapoff,
+			       char *path, size_t pathlen);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
