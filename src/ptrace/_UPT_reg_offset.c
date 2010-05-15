@@ -338,6 +338,22 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 #elif defined(UNW_TARGET_PPC32)
 #elif defined(UNW_TARGET_PPC64)
 #elif defined(UNW_TARGET_ARM)
+    [UNW_ARM_R0]       = 0x00,
+    [UNW_ARM_R1]       = 0x04,
+    [UNW_ARM_R2]       = 0x08,
+    [UNW_ARM_R3]       = 0x0c,
+    [UNW_ARM_R4]       = 0x10,
+    [UNW_ARM_R5]       = 0x14,
+    [UNW_ARM_R6]       = 0x18,
+    [UNW_ARM_R7]       = 0x1c,
+    [UNW_ARM_R8]       = 0x20,
+    [UNW_ARM_R9]       = 0x24,
+    [UNW_ARM_R10]      = 0x28,
+    [UNW_ARM_R11]      = 0x2c,
+    [UNW_ARM_R12]      = 0x30,
+    [UNW_ARM_R13]      = 0x34,
+    [UNW_ARM_R14]      = 0x38,
+    [UNW_ARM_R15]      = 0x3c,
 #elif defined(UNW_TARGET_MIPS)
 #else
 # error Fix me.
