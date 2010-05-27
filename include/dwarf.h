@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 struct dwarf_cursor;	/* forward-declaration */
 
 #include "dwarf-config.h"
+#include <link.h>
 
 /* DWARF expression opcodes.  */
 
@@ -348,6 +349,7 @@ struct unw_debug_frame_list
 /* Convenience macros: */
 #define dwarf_init			UNW_ARCH_OBJ (dwarf_init)
 #define dwarf_find_proc_info		UNW_OBJ (dwarf_find_proc_info)
+#define dwarf_find_debug_frame		UNW_OBJ (dwarf_find_debug_frame)
 #define dwarf_search_unwind_table	UNW_OBJ (dwarf_search_unwind_table)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
@@ -364,6 +366,8 @@ extern int dwarf_init (void);
 extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				 unw_proc_info_t *pi,
 				 int need_unwind_info, void *arg);
+extern int dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
+				 struct dl_phdr_info *info, unw_word_t ip);
 extern int dwarf_search_unwind_table (unw_addr_space_t as,
 				      unw_word_t ip,
 				      unw_dyn_info_t *di,

@@ -217,6 +217,7 @@ AC_SUBST(PKG_MINOR)
 AC_SUBST(PKG_EXTRA)
 AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
+AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
 
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh

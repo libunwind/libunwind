@@ -108,8 +108,8 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   FILE *f;
   Elf_W (Ehdr) ehdr;
   Elf_W (Half) shstrndx;
-  Elf_W (Shdr) *sec_hdrs;
-  char *stringtab;
+  Elf_W (Shdr) *sec_hdrs = NULL;
+  char *stringtab = NULL;
   unsigned int i;
   size_t linksize = 0;
   char *linkbuf = NULL;
@@ -122,7 +122,8 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   if (!f)
     return 1;
   
-  fread (&ehdr, sizeof (Elf_W (Ehdr)), 1, f);
+  if (fread (&ehdr, sizeof (Elf_W (Ehdr)), 1, f) != 1)
+    goto file_error;
   
   shstrndx = ehdr.e_shstrndx;
   
@@ -131,13 +132,15 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 
   fseek (f, ehdr.e_shoff, SEEK_SET);
   sec_hdrs = calloc (ehdr.e_shnum, sizeof (Elf_W (Shdr)));
-  fread (sec_hdrs, sizeof (Elf_W (Shdr)), ehdr.e_shnum, f);
+  if (fread (sec_hdrs, sizeof (Elf_W (Shdr)), ehdr.e_shnum, f) != ehdr.e_shnum)
+    goto file_error;
   
   Debug (4, "loading string table of size %zd\n",
 	   sec_hdrs[shstrndx].sh_size);
   stringtab = malloc (sec_hdrs[shstrndx].sh_size);
   fseek (f, sec_hdrs[shstrndx].sh_offset, SEEK_SET);
-  fread (stringtab, 1, sec_hdrs[shstrndx].sh_size, f);
+  if (fread (stringtab, 1, sec_hdrs[shstrndx].sh_size, f) != sec_hdrs[shstrndx].sh_size)
+    goto file_error;
   
   for (i = 1; i < ehdr.e_shnum && *buf == NULL; i++)
     {
@@ -149,7 +152,8 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 	  *buf = malloc (*bufsize);
 
 	  fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
-	  fread (*buf, 1, *bufsize, f);
+	  if (fread (*buf, 1, *bufsize, f) != *bufsize)
+	    goto file_error;
 
 	  Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
 		 *bufsize, sec_hdrs[i].sh_offset);
@@ -160,7 +164,8 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 	  linkbuf = malloc (linksize);
 
 	  fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
-	  fread (linkbuf, 1, linksize, f);
+	  if (fread (linkbuf, 1, linksize, f) != linksize)
+	    goto file_error;
 
 	  Debug (4, "read %zd bytes of .gnu_debuglink from offset %zd\n",
 		 linksize, sec_hdrs[i].sh_offset);
@@ -227,6 +232,15 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   free (linkbuf);
 
   return 0;
+
+/* An error reading image file. Release resources and return error code */
+file_error:
+  if (stringtab) free(stringtab);
+  if (sec_hdrs) free(sec_hdrs);
+  if (linkbuf) free(linkbuf);
+  fclose(f);
+
+  return 1;
 }
 
 /* Locate the binary which originated the contents of address ADDR. Return
@@ -403,6 +417,152 @@ debug_frame_tab_compare (const void *a, const void *b)
     return -1;
   else
     return 0;
+}
+
+PROTECTED int
+dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
+                       struct dl_phdr_info *info, unw_word_t ip)
+{
+  unw_dyn_info_t *di;
+  struct unw_debug_frame_list *fdesc = 0;
+  unw_accessors_t *a;
+  unw_word_t addr;
+
+  Debug (15, "Trying to find .debug_frame info->dlpi_name=%s\n",
+        info->dlpi_name);
+  di = di_debug;
+
+  fdesc = locate_debug_info (unw_local_addr_space, info, ip, info->dlpi_name);
+
+  if (!fdesc)
+    {
+      Debug (15, "couldn't load .debug_frame\n");
+      return found;
+    }
+  else
+    {
+      char *buf;
+      size_t bufsize;
+      unw_word_t item_start, item_end = 0;
+      uint32_t u32val = 0;
+      uint64_t cie_id = 0;
+      struct debug_frame_tab *tab;
+
+      Debug (15, "loaded .debug_frame\n");
+
+      buf = fdesc->debug_frame;
+      bufsize = fdesc->debug_frame_size;
+
+      if (bufsize == 0)
+       {
+         Debug (15, "zero-length .debug_frame\n");
+         return found;
+       }
+
+      /* Now create a binary-search table, if it does not already exist.  */
+      if (!fdesc->index)
+       {
+         addr = (unw_word_t) (uintptr_t) buf;
+
+         a = unw_get_accessors (unw_local_addr_space);
+
+         /* Find all FDE entries in debug_frame, and make into a sorted
+            index.  */
+
+         tab = debug_frame_tab_new (16);
+
+         while (addr < (unw_word_t) (uintptr_t) (buf + bufsize))
+           {
+             uint64_t id_for_cie;
+             item_start = addr;
+
+             dwarf_readu32 (unw_local_addr_space, a, &addr, &u32val, NULL);
+
+             if (u32val == 0)
+               break;
+             else if (u32val != 0xffffffff)
+               {
+                 uint32_t cie_id32 = 0;
+                 item_end = addr + u32val;
+                 dwarf_readu32 (unw_local_addr_space, a, &addr, &cie_id32,
+                                NULL);
+                 cie_id = cie_id32;
+                 id_for_cie = 0xffffffff;
+               }
+             else
+               {
+                 uint64_t u64val = 0;
+                 /* Extended length.  */
+                 dwarf_readu64 (unw_local_addr_space, a, &addr, &u64val, NULL);
+                 item_end = addr + u64val;
+
+                 dwarf_readu64 (unw_local_addr_space, a, &addr, &cie_id, NULL);
+                 id_for_cie = 0xffffffffffffffffull;
+               }
+
+             /*Debug (1, "CIE/FDE id = %.8x\n", (int) cie_id);*/
+
+             if (cie_id == id_for_cie)
+               ;
+             /*Debug (1, "Found CIE at %.8x.\n", item_start);*/
+             else
+               {
+                 unw_word_t fde_addr = item_start;
+                 unw_proc_info_t this_pi;
+                 int err;
+
+                 /*Debug (1, "Found FDE at %.8x\n", item_start);*/
+
+                 err = dwarf_extract_proc_info_from_fde (unw_local_addr_space,
+                                                         a, &fde_addr,
+                                                         &this_pi, 0,
+                                                         (uintptr_t) buf,
+                                                         NULL);
+                 if (err == 0)
+                   {
+                     Debug (15, "start_ip = %lx, end_ip = %lx\n",
+                            (long) this_pi.start_ip, (long) this_pi.end_ip);
+                     debug_frame_tab_append (tab,
+                                             item_start - (unw_word_t) (uintptr_t) buf,
+                                             this_pi.start_ip);
+                   }
+                 /*else
+                   Debug (1, "FDE parse failed\n");*/
+               }
+
+             addr = item_end;
+           }
+
+         debug_frame_tab_shrink (tab);
+         qsort (tab->tab, tab->length, sizeof (struct table_entry),
+                debug_frame_tab_compare);
+         /* for (i = 0; i < tab->length; i++)
+            {
+            fprintf (stderr, "ip %x, fde offset %x\n",
+            (int) tab->tab[i].start_ip_offset,
+            (int) tab->tab[i].fde_offset);
+            }*/
+         fdesc->index = tab->tab;
+         fdesc->index_size = tab->length;
+         free (tab);
+       }
+
+      di->format = UNW_INFO_FORMAT_TABLE;
+      di->start_ip = fdesc->start;
+      di->end_ip = fdesc->end;
+      di->u.ti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
+      di->u.ti.table_data = (unw_word_t *) fdesc;
+      di->u.ti.table_len = sizeof (*fdesc) / sizeof (unw_word_t);
+      di->u.ti.segbase = (unw_word_t) (uintptr_t) info->dlpi_addr;
+
+      found = 1;
+      Debug (15, "found debug_frame table `%s': segbase=0x%lx, len=%lu, "
+            "gp=0x%lx, table_data=0x%lx\n",
+            (char *) (uintptr_t) di->u.ti.name_ptr,
+            (long) di->u.ti.segbase, (long) di->u.ti.table_len,
+            (long) di->gp, (long) di->u.ti.table_data);
+    }
+  return found;
 }
 
 #endif /* CONFIG_DEBUG_FRAME */
@@ -583,139 +743,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 
 #ifdef CONFIG_DEBUG_FRAME
   {
-    struct unw_debug_frame_list *fdesc = 0;
-    Debug (15, "Trying to find .debug_frame\n");
-    di = &cb_data->di_debug;
-    fdesc = locate_debug_info (unw_local_addr_space, info, ip, info->dlpi_name);
-
-    if (!fdesc)
-      {
-        Debug (15, "couldn't load .debug_frame\n");
-        return found;
-      }
-    else
-      {
-        char *buf;
-        size_t bufsize;
-        unw_word_t item_start, item_end = 0;
-        uint32_t u32val = 0;
-        uint64_t cie_id = 0;
-        struct debug_frame_tab *tab;
-
-        Debug (15, "loaded .debug_frame\n");
-
-        buf = fdesc->debug_frame;
-        bufsize = fdesc->debug_frame_size;
-
-        if (bufsize == 0)
-          {
-            Debug (15, "zero-length .debug_frame\n");
-            return found;
-          }
-
-        /* Now create a binary-search table, if it does not already exist.  */
-        if (!fdesc->index)
-          {
-            addr = (unw_word_t) (uintptr_t) buf;
-
-            a = unw_get_accessors (unw_local_addr_space);
-
-            /* Find all FDE entries in debug_frame, and make into a sorted
-               index.  */
-
-            tab = debug_frame_tab_new (16);
-
-            while (addr < (unw_word_t) (uintptr_t) (buf + bufsize))
-              {
-                uint64_t id_for_cie;
-                item_start = addr;
-
-                dwarf_readu32 (unw_local_addr_space, a, &addr, &u32val, NULL);
-
-                if (u32val == 0)
-          	break;
-                else if (u32val != 0xffffffff)
-          	{
-          	  uint32_t cie_id32 = 0;
-          	  item_end = addr + u32val;
-          	  dwarf_readu32 (unw_local_addr_space, a, &addr, &cie_id32,
-          			 NULL);
-          	  cie_id = cie_id32;
-          	  id_for_cie = 0xffffffff;
-          	}
-                else
-          	{
-          	  uint64_t u64val = 0;
-          	  /* Extended length.  */
-          	  dwarf_readu64 (unw_local_addr_space, a, &addr, &u64val, NULL);
-          	  item_end = addr + u64val;
-
-          	  dwarf_readu64 (unw_local_addr_space, a, &addr, &cie_id, NULL);
-          	  id_for_cie = 0xffffffffffffffffull;
-          	}
-
-                /*Debug (1, "CIE/FDE id = %.8x\n", (int) cie_id);*/
-
-                if (cie_id == id_for_cie)
-          	;
-                /*Debug (1, "Found CIE at %.8x.\n", item_start);*/
-                else
-          	{
-          	  unw_word_t fde_addr = item_start;
-          	  unw_proc_info_t this_pi;
-          	  int err;
-
-          	  /*Debug (1, "Found FDE at %.8x\n", item_start);*/
-
-          	  err = dwarf_extract_proc_info_from_fde (unw_local_addr_space,
-          						  a, &fde_addr,
-          						  &this_pi, 0,
-          						  (uintptr_t) buf,
-          						  NULL);
-          	  if (err == 0)
-          	    {
-		      Debug (15, "start_ip = %lx, end_ip = %lx\n",
-			     (long) this_pi.start_ip, (long) this_pi.end_ip);
-          	      debug_frame_tab_append (tab,
-          				      item_start - (unw_word_t) (uintptr_t) buf,
-          				      this_pi.start_ip);
-          	    }
-          	  /*else
-          	    Debug (1, "FDE parse failed\n");*/
-          	}
-
-                addr = item_end;
-              }
-
-            debug_frame_tab_shrink (tab);
-            qsort (tab->tab, tab->length, sizeof (struct table_entry),
-          	 debug_frame_tab_compare);
-            /* for (i = 0; i < tab->length; i++)
-               {
-               fprintf (stderr, "ip %x, fde offset %x\n",
-               (int) tab->tab[i].start_ip_offset,
-               (int) tab->tab[i].fde_offset);
-               }*/
-            fdesc->index = tab->tab;
-            fdesc->index_size = tab->length;
-            free (tab);
-          }
-
-        di->format = UNW_INFO_FORMAT_TABLE;
-        di->start_ip = fdesc->start;
-        di->end_ip = fdesc->end;
-        di->u.ti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
-        di->u.ti.table_data = (unw_word_t *) fdesc;
-        di->u.ti.table_len = sizeof (*fdesc) / sizeof (unw_word_t);
-        di->u.ti.segbase = (unw_word_t) (uintptr_t) info->dlpi_addr;
-
-        found = 1;
-        Debug (15, "found debug_frame table `%s': segbase=0x%lx, len=%lu, "
-               "gp=0x%lx, table_data=0x%lx\n",
-               (char *) (uintptr_t) di->u.ti.name_ptr,
-               (long) di->u.ti.segbase, (long) di->u.ti.table_len,
-               (long) di->gp, (long) di->u.ti.table_data);
-      }
+      found = dwarf_find_debug_frame (found, &cb_data->di_debug, info, ip);
   }
 #endif  /* CONFIG_DEBUG_FRAME */
 
