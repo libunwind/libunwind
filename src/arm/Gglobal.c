@@ -29,6 +29,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN pthread_mutex_t arm_lock = PTHREAD_MUTEX_INITIALIZER;
 HIDDEN int tdep_needs_initialization = 1;
 
+/* Unwinding methods to use. See UNW_METHOD_ enums */
+HIDDEN int unwi_unwind_method = UNW_ARM_METHOD_ALL;
+
 /* FIXME: I'm pretty sure we don't need this at all for ARM, but "generic"
    code (include/dwarf_i.h) seems to expect it to be here at present.  */
 
@@ -49,6 +52,13 @@ tdep_init (void)
     if (!tdep_needs_initialization)
       /* another thread else beat us to it... */
       goto out;
+
+    /* read ARM unwind method setting */
+    const char* str = getenv ("UNW_ARM_UNWIND_METHOD");
+    if (str)
+      {
+        unwi_unwind_method = atoi (str);
+      }
 
     mi_init ();
 

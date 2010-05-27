@@ -255,4 +255,14 @@ extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
 
+/* unwinding method selection support */
+#define UNW_ARM_METHOD_ALL          0xFF
+#define UNW_ARM_METHOD_DWARF        0x01
+#define UNW_ARM_METHOD_FRAME        0x02
+
+#define unwi_unwind_method   UNWI_ARCH_OBJ(unwind_method)
+extern int unwi_unwind_method;
+
+#define UNW_TRY_METHOD(x)   (unwi_unwind_method & x)
+
 #endif /* ARM_LIBUNWIND_I_H */
