@@ -210,7 +210,31 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	}
     }
   if (!ptxt || !peh_hdr)
-    return NULL;
+    {
+      /* No .eh_frame found, try .debug_frame. */
+      struct dl_phdr_info info;
+
+      info.dlpi_name = path;
+      info.dlpi_phdr = phdr;
+      info.dlpi_phnum = ehdr->e_phnum;
+
+      /* Fixup segbase to match correct base address. */
+      for (i = 0; i < info.dlpi_phnum; i++)
+       {
+         if (info.dlpi_phdr[i].p_type == PT_LOAD &&
+           info.dlpi_phdr[i].p_offset == 0)
+             {
+               segbase -= info.dlpi_phdr[i].p_vaddr;
+               break;
+             }
+       }
+      info.dlpi_addr = segbase;
+
+      if (dwarf_find_debug_frame (0, &ui->di_cache, &info, ip))
+       return &ui->di_cache;
+      else
+       return NULL;
+    }
 
   if (pdyn)
     {

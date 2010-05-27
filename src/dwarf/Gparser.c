@@ -73,6 +73,12 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
   as = c->as;
   arg = c->as_arg;
+  if (c->pi.flags & UNW_PI_FLAG_DEBUG_FRAME)
+    {
+      /* .debug_frame CFI is stored in local address space.  */
+      as = unw_local_addr_space;
+      arg = NULL;
+    }
   a = unw_get_accessors (as);
   curr_ip = c->pi.start_ip;
 

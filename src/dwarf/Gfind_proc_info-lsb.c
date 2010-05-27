@@ -895,13 +895,11 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 #ifndef UNW_REMOTE_ONLY
       struct unw_debug_frame_list *fdesc = (void *) di->u.ti.table_data;
 
-      /* UNW_INFO_FORMAT_TABLE (i.e. .debug_frame) is currently only
-	 supported for the local address space.  Both the index and
-	 the unwind tables live in local memory, but the address space
-	 to check for properties like the address size and endianness
-	 is the target one.  When the ptrace code adds support for
-	 .debug_frame something will have to change.  */
-      assert (as == unw_local_addr_space);
+      /* UNW_INFO_FORMAT_TABLE (i.e. .debug_frame) is read from local address
+         space.  Both the index and the unwind tables live in local memory, but
+         the address space to check for properties like the address size and
+         endianness is the target one.  */
+      as = unw_local_addr_space;
       table = fdesc->index;
       table_len = fdesc->index_size * sizeof (struct table_entry);
       debug_frame_base = (uintptr_t) fdesc->debug_frame;
@@ -958,6 +956,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     {
       pi->start_ip += segbase;
       pi->end_ip += segbase;
+      pi->flags = UNW_PI_FLAG_DEBUG_FRAME;
     }
 
   if (ip < pi->start_ip || ip >= pi->end_ip)
