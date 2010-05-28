@@ -210,6 +210,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	}
     }
   if (!ptxt || !peh_hdr)
+#ifdef CONFIG_DEBUG_FRAME
     {
       /* No .eh_frame found, try .debug_frame. */
       struct dl_phdr_info info;
@@ -235,6 +236,9 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
       else
        return NULL;
     }
+#else
+    return NULL;
+#endif
 
   if (pdyn)
     {
