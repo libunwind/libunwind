@@ -91,8 +91,14 @@ validate_mem (unw_word_t addr)
 {
   int i, victim;
 #ifdef HAVE_MINCORE
-  char mvec[2]; /* Unaligned access may cross page boundary */
+  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
 #endif
+  size_t len;
+
+  if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
+    len = PAGE_SIZE;
+  else
+    len = PAGE_SIZE * 2;
 
   addr = PAGE_START(addr);
 
@@ -106,9 +112,9 @@ validate_mem (unw_word_t addr)
     }
 
 #ifdef HAVE_MINCORE
-  if (mincore ((void *) addr, sizeof (unw_word_t), mvec) == -1)
+  if (mincore ((void *) addr, len, mvec) == -1)
 #else
-  if (msync ((void *) addr, sizeof (unw_word_t), MS_ASYNC) == -1)
+  if (msync ((void *) addr, len, MS_ASYNC) == -1)
 #endif
     return -1;
 
