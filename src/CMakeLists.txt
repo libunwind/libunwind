@@ -70,11 +70,24 @@ set(libunwind_sources_x8664_32
     x86/Lstep.c
    )
 
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
+                   COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS}
+                           -c ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/getcontext.S
+                           -o ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/getcontext.S)
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
+                   COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS}
+                           -c ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/setcontext.S
+                           -o ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
+                   DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/setcontext.S)
+
+
 set(libunwind_sources_x8664_64
     elf64.c
     x86_64/is_fpreg.c
     x86_64/regname.c
-    x86_64/setcontext.S
     x86_64/Lcreate_addr_space.c
     x86_64/Lget_save_loc.c
     x86_64/Lglobal.c
@@ -85,8 +98,9 @@ set(libunwind_sources_x8664_64
     x86_64/Lget_proc_info.c
     x86_64/Lregs.c
     x86_64/Lresume.c
-    x86_64/getcontext.S
     x86_64/Lstep.c
+    ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
+    ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
    )
 
 
