@@ -23,6 +23,26 @@ set(libunwind_sources_common
     mi/Lget_fpreg.c
     mi/Lset_fpreg.c
     mi/Lset_caching_policy.c
+    mi/_ReadULEB.c
+    mi/_ReadSLEB.c
+    unwind/Backtrace.c
+    unwind/DeleteException.c
+    unwind/FindEnclosingFunction.c
+    unwind/ForcedUnwind.c
+    unwind/GetBSP.c
+    unwind/GetCFA.c
+    unwind/GetDataRelBase.c
+    unwind/GetGR.c
+    unwind/GetIP.c
+    unwind/GetLanguageSpecificData.c
+    unwind/GetRegionStart.c
+    unwind/GetTextRelBase.c
+    unwind/RaiseException.c
+    unwind/Resume.c
+    unwind/Resume_or_Rethrow.c
+    unwind/SetGR.c
+    unwind/SetIP.c
+    unwind/GetIPInfo.c
     dwarf/Lexpr.c
     dwarf/Lfde.c
     dwarf/Lparser.c
