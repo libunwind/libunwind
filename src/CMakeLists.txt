@@ -1,5 +1,7 @@
 
 
+include(config.cmake)
+
 set(libunwind_sources_common
     os-linux.c
     mi/init.c
@@ -114,12 +116,6 @@ include_directories(.
                     ../include
                     ${CMAKE_CURRENT_BINARY_DIR}/include
                    )
-
-
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libunwind-common.h.cmake.in
-               ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind-common.h)
 
 
 # TODO: add checks for all platforms
