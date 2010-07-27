@@ -1,0 +1,102 @@
+
+
+set(libunwind_sources_common
+    os-linux.c
+    mi/init.c
+    mi/flush_cache.c
+    mi/mempool.c
+    mi/strerror.c
+    dwarf/global.c
+    mi/backtrace.c
+    mi/dyn-cancel.c
+    mi/dyn-info-list.c
+    mi/dyn-register.c
+    mi/Ldyn-extract.c
+    mi/Lfind_dynamic_proc_info.c
+    mi/Lget_accessors.c
+    mi/Lget_proc_info_by_ip.c
+    mi/Lget_proc_name.c
+    mi/Lput_dynamic_unwind_info.c
+    mi/Ldestroy_addr_space.c
+    mi/Lget_reg.c
+    mi/Lset_reg.c
+    mi/Lget_fpreg.c
+    mi/Lset_fpreg.c
+    mi/Lset_caching_policy.c
+    dwarf/Lexpr.c
+    dwarf/Lfde.c
+    dwarf/Lparser.c
+    dwarf/Lpe.c
+    dwarf/Lstep.c
+    dwarf/Lfind_proc_info-lsb.c
+   )
+
+set(libunwind_sources_x8664_32
+    elf32.c
+    x86/is_fpreg.c
+    x86/regname.c
+    x86/setcontext.c
+    x86/Lcreate_addr_space.c
+    x86/Lget_save_loc.c
+    x86/Lglobal.c
+    x86/Linit.c
+    x86/Linit_local.c
+    x86/Linit_remote.c
+    x86/Lis_signal_frame.c
+    x86/Lget_proc_info.c
+    x86/Lregs.c
+    x86/Lresume.c
+    x86/getcontext.c
+    x86/Lstep.c
+   )
+
+set(libunwind_sources_x8664_64
+    elf64.c
+    x86_64/is_fpreg.c
+    x86_64/regname.c
+    x86_64/setcontext.S
+    x86_64/Lcreate_addr_space.c
+    x86_64/Lget_save_loc.c
+    x86_64/Lglobal.c
+    x86_64/Linit.c
+    x86_64/Linit_local.c
+    x86_64/Linit_remote.c
+    x86_64/Lis_signal_frame.c
+    x86_64/Lget_proc_info.c
+    x86_64/Lregs.c
+    x86_64/Lresume.c
+    x86_64/getcontext.S
+    x86_64/Lstep.c
+   )
+
+
+add_definitions(-DHAVE_CONFIG_H
+                -D_GNU_SOURCE
+                -fPIC
+                -DPIC
+               )
+        
+include_directories(.
+                    ../include
+                    ${CMAKE_CURRENT_BINARY_DIR}/include
+                   )
+
+
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
+configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libunwind-common.h.cmake.in
+               ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind-common.h)
+
+
+# TODO: add checks for all platforms
+if("${CMAKE_C_FLAGS}" MATCHES "-m32")
+    set(target "x8664_32")
+elseif("${CMAKE_C_FLAGS}" MATCHES "-m64")
+    set(target "x8664_64")
+    include_directories(../include/tdep-x86_64)
+else()
+    message(FATAL_ERROR "Unknown target")
+endif()
+
+add_library(unwind STATIC ${libunwind_sources_common} ${libunwind_sources_${target}})
+
