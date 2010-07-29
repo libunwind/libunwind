@@ -31,9 +31,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN int
 dwarf_read_encoded_pointer (unw_addr_space_t as, unw_accessors_t *a,
 			    unw_word_t *addr, unsigned char encoding,
-			    const unw_proc_info_t *pi,
+                unw_word_t gp,
+                unw_word_t start_ip,
 			    unw_word_t *valp, void *arg)
 {
   return dwarf_read_encoded_pointer_inlined (as, a, addr, encoding,
-					     pi, valp, arg);
+					     gp, start_ip, valp, arg);
 }

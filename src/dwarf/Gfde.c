@@ -182,7 +182,7 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
 	if ((ret = dwarf_readu8 (as, a, &addr, &handler_encoding, arg)) < 0)
 	  return ret;
 	if ((ret = dwarf_read_encoded_pointer (as, a, &addr, handler_encoding,
-					       pi, &dci->handler, arg)) < 0)
+					       pi->gp, pi->start_ip, &dci->handler, arg)) < 0)
 	  return ret;
 	break;
 
@@ -303,9 +303,9 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
   ip_range_encoding = dci.fde_encoding & DW_EH_PE_FORMAT_MASK;
 
   if ((ret = dwarf_read_encoded_pointer (as, a, &addr, dci.fde_encoding,
-					 pi, &start_ip, arg)) < 0
+					 pi->gp, pi->start_ip, &start_ip, arg)) < 0
       || (ret = dwarf_read_encoded_pointer (as, a, &addr, ip_range_encoding,
-					    pi, &ip_range, arg)) < 0)
+					    pi->gp, pi->start_ip, &ip_range, arg)) < 0)
     return ret;
   pi->start_ip = start_ip;
   pi->end_ip = start_ip + ip_range;
@@ -319,7 +319,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
     }
 
   if ((ret = dwarf_read_encoded_pointer (as, a, &addr, dci.lsda_encoding,
-					 pi, &pi->lsda, arg)) < 0)
+					 pi->gp, pi->start_ip, &pi->lsda, arg)) < 0)
     return ret;
 
   Debug (15, "FDE covers IP 0x%lx-0x%lx, LSDA=0x%lx\n",
