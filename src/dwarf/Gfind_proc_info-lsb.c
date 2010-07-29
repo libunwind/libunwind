@@ -51,14 +51,11 @@ struct callback_data
   {
     /* in: */
     unw_word_t ip;		/* instruction-pointer we're looking for */
-    unw_proc_info_t *pi;	/* proc-info pointer */
     int need_unwind_info;
     unw_addr_space_t as;    /* address space */
     void *arg;
     /* out: */
-    int single_fde;		/* did we find a single FDE? (vs. a table) */
-    unw_dyn_info_t di;		/* table info (if single_fde is false) */
-    unw_dyn_info_t di_debug;	/* additional table info for .debug_frame */
+    unw_proc_info_t *pi;	/* proc-info pointer */
   };
 
 static int
@@ -409,7 +406,6 @@ static int
 callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
   struct callback_data *cb_data = ptr;
-  unw_dyn_info_t *di = &cb_data->di;
   const Elf_W(Phdr) *phdr, *p_eh_hdr, *p_dynamic, *p_text;
   unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip;
   Elf_W(Addr) load_base, segbase = 0, max_load_addr = 0;
@@ -547,7 +543,6 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 
 	  /* XXX we know how to build a local binary search table for
 	     .debug_frame, so we could do that here too.  */
-	  cb_data->single_fde = 1;
 	  found = linear_search (unw_local_addr_space, ip,
 				 eh_frame_start, eh_frame_end, fde_count,
 				 pi, need_unwind_info, NULL);
@@ -567,22 +562,10 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	     means relative to the start of that section... */
 	  unw_word_t segbase = (unw_word_t) (uintptr_t) hdr;
 
-	  di->format = UNW_INFO_FORMAT_REMOTE_TABLE;
-	  di->start_ip = p_text->p_vaddr + load_base;
-	  di->end_ip = p_text->p_vaddr + load_base + p_text->p_memsz;
-	  di->u.rti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
-	  di->u.rti.table_data = addr;
-	  assert (sizeof (struct table_entry) % sizeof (unw_word_t) == 0);
-	  di->u.rti.table_len = (fde_count * sizeof (struct table_entry)
-				 / sizeof (unw_word_t));
-	  /* For the binary-search table in the eh_frame_hdr, data-relative
-	     means relative to the start of that section... */
-	  di->u.rti.segbase = (unw_word_t) (uintptr_t) hdr;
-
 	  Debug (15, "found table `%s': segbase=0x%lx, len=%lu, gp=0x%lx, "
-		 "table_data=0x%lx\n", (char *) (uintptr_t) di->u.rti.name_ptr,
-		 (long) di->u.rti.segbase, (long) di->u.rti.table_len,
-		 (long) di->gp, (long) di->u.rti.table_data);
+		 "table_data=0x%lx\n", (char *) (uintptr_t) info->dlpi_name,
+		 (long) segbase, (long) table_len,
+		 (long) pi->gp, (long) addr);
 
       err = dwarf_search_unwind_table_ (cb_data->as, cb_data->ip,
                                         segbase, table_len,
@@ -604,7 +587,6 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
     }
 
   Debug (15, "Trying to find .debug_frame\n");
-  di = &cb_data->di_debug;
   fdesc = locate_debug_info (unw_local_addr_space, info, ip, info->dlpi_name);
 
   if (!fdesc)
@@ -722,19 +704,12 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
         free (tab);
       }
 
-    di->format = UNW_INFO_FORMAT_TABLE;
-    di->start_ip = fdesc->start;
-    di->end_ip = fdesc->end;
-    di->u.ti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
-    di->u.ti.table_data = (unw_word_t *) fdesc;
-    di->u.ti.table_len = sizeof (*fdesc) / sizeof (unw_word_t);
-    di->u.ti.segbase = (unw_word_t) (uintptr_t) info->dlpi_addr;
-
     Debug (15, "found debug_frame table `%s': segbase=0x%lx, len=%lu, "
        "gp=0x%lx, table_data=0x%lx\n",
-       (char *) (uintptr_t) di->u.ti.name_ptr,
-       (long) di->u.ti.segbase, (long) di->u.ti.table_len,
-       (long) di->gp, (long) di->u.ti.table_data);
+       (char *) (uintptr_t) info->dlpi_name,
+       (unw_word_t) (uintptr_t) info->dlpi_addr,
+       (long) sizeof (*fdesc) / sizeof (unw_word_t),
+       (long) pi->gp, (long) fdesc);
 
     err = dwarf_search_unwind_table_local (cb_data->as, cb_data->ip, fdesc,
                                            (unw_word_t) (uintptr_t) info->dlpi_addr,
@@ -775,8 +750,6 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.ip = ip;
   cb_data.pi = pi;
   cb_data.need_unwind_info = need_unwind_info;
-  cb_data.di.format = -1;
-  cb_data.di_debug.format = -1;
   cb_data.as = as;
   cb_data.arg = arg;
 
