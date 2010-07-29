@@ -51,7 +51,6 @@ struct callback_data
   {
     /* in: */
     unw_word_t ip;		/* instruction-pointer we're looking for */
-    unw_addr_space_t as;    /* address space */
     void *arg;
     /* out: */
     unw_word_t fde_addr;    /* FDE address */
@@ -745,7 +744,6 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 
   memset (&cb_data, 0, sizeof (cb_data));
   cb_data.ip = ip;
-  cb_data.as = as;
   cb_data.arg = arg;
 
   sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
