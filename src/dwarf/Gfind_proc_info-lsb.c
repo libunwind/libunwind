@@ -753,7 +753,9 @@ find_proc_fde (unw_word_t ip, unw_word_t *fde_addr,
 #else // HAVE_DL_ITERATE_PHDR
 
 static int
-find_proc_fde(unw_word_t ip, unw_word_t *fde_addr, boid *arg) {
+find_proc_fde(unw_word_t ip, unw_word_t *fde_addr,
+              unw_word_t *gp, unw_word_t *fde_base,
+              unw_word_t *ip_offset, void *arg) {
   return -1;
 }
 
