@@ -494,7 +494,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	      {
 		/* Assume that _DYNAMIC is writable and GLIBC has
 		   relocated it (true for x86 at least).  */
-		di->gp = dyn->d_un.d_ptr;
+		pi->gp = dyn->d_un.d_ptr;
 		break;
 	      }
 	}
@@ -502,8 +502,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	/* Otherwise this is a static executable with no _DYNAMIC.  Assume
 	   that data-relative addresses are relative to 0, i.e.,
 	   absolute.  */
-	di->gp = 0;
-      pi->gp = di->gp;
+	pi->gp = 0;
 
       hdr = (struct dwarf_eh_frame_hdr *) (p_eh_hdr->p_vaddr + load_base);
       if (hdr->version != DW_EH_VERSION)
@@ -560,6 +559,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
       else
 	{
       int err;
+      unw_word_t fde_addr;
 
 	  di->format = UNW_INFO_FORMAT_REMOTE_TABLE;
 	  di->start_ip = p_text->p_vaddr + load_base;
@@ -579,11 +579,19 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 		 (long) di->gp, (long) di->u.rti.table_data);
 
       err = dwarf_search_unwind_table_remote (cb_data->as, cb_data->ip,
-                                              di, pi,
+                                              di, &fde_addr,
                                               need_unwind_info, cb_data->arg);
       if(err < 0)
         return err;
 
+      if ((err = dwarf_extract_proc_info_from_fde (cb_data->as, a, &fde_addr, pi,
+    					                           need_unwind_info,
+    					                           0, cb_data->arg)) < 0)
+        return err;
+
+      if (cb_data->ip < pi->start_ip || cb_data->ip >= pi->end_ip)
+        return -UNW_ENOINFO;
+    
       return 1;
 	}
     }
@@ -606,6 +614,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
     uint64_t cie_id = 0;
     struct debug_frame_tab *tab;
     int err;
+    unw_word_t fde_addr;
 
     Debug (15, "loaded .debug_frame\n");
 
@@ -720,10 +729,24 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
        (long) di->u.ti.segbase, (long) di->u.ti.table_len,
        (long) di->gp, (long) di->u.ti.table_data);
 
-    err = dwarf_search_unwind_table_local (cb_data->as, cb_data->ip, di, pi,
+    err = dwarf_search_unwind_table_local (cb_data->as, cb_data->ip, di, &fde_addr,
                                            need_unwind_info, cb_data->arg);
     if(err < 0)
       return err;
+
+    if ((ret = dwarf_extract_proc_info_from_fde (cb_data->as, a, &fde_addr, pi,
+                                                 need_unwind_info,
+                                                 (uintptr_t) fdesc->debug_frame,
+                                                 cb_data->arg)) < 0)
+      return ret;
+
+    /* .debug_frame uses an absolute encoding that does not know about any
+       shared library relocation.  */
+    pi->start_ip += segbase;
+    pi->end_ip += segbase;
+
+    if (cb_data->ip < pi->start_ip || cb_data->ip >= pi->end_ip)
+      return -UNW_ENOINFO;
 
     return 1;
   }
@@ -831,15 +854,14 @@ remote_lookup (unw_addr_space_t as,
 
 int
 dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
-               unw_word_t start_ip, unw_word_t end_ip,
-               unw_word_t segbase, size_t table_len,
-               const struct table_entry *table,
-               unw_word_t debug_frame_base,
-               unw_proc_info_t *pi,
-			   int need_unwind_info, void *arg)
+                            unw_word_t start_ip, unw_word_t end_ip,
+                            unw_word_t segbase, size_t table_len,
+                            const struct table_entry *table,
+                            unw_word_t debug_frame_base,
+                            unw_word_t *fde_addr,
+                            int need_unwind_info, void *arg)
 {
   const struct table_entry *e = NULL;
-  unw_word_t fde_addr;
   unw_accessors_t *a;
 #ifndef UNW_LOCAL_ONLY
   struct table_entry ent;
@@ -876,30 +898,35 @@ dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
 	 unwind info.  */
       return -UNW_ENOINFO;
     }
+
   Debug (15, "ip=0x%lx, start_ip=0x%lx\n",
 	 (long) ip, (long) (e->start_ip_offset));
+
   if (debug_frame_base)
-    fde_addr = e->fde_offset + debug_frame_base;
+    *fde_addr = e->fde_offset + debug_frame_base;
   else
-    fde_addr = e->fde_offset + segbase;
+    *fde_addr = e->fde_offset + segbase;
+
   Debug (1, "e->fde_offset = %x, segbase = %x, debug_frame_base = %x, "
 	    "fde_addr = %x\n", (int) e->fde_offset, (int) segbase,
 	    (int) debug_frame_base, (int) fde_addr);
-  if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
-					       need_unwind_info,
-					       debug_frame_base, arg)) < 0)
-    return ret;
 
   return 0;
+
+//  if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
+//					       need_unwind_info,
+//					       debug_frame_base, arg)) < 0)
+//    return ret;
+//
+//  return 0;
 }
 
 
 PROTECTED int
 dwarf_search_unwind_table_remote (unw_addr_space_t as, unw_word_t ip,
-			   unw_dyn_info_t *di, unw_proc_info_t *pi,
+			   unw_dyn_info_t *di, unw_word_t *fde_addr,
 			   int need_unwind_info, void *arg)
 {
-  int ret;
   const struct table_entry *table =
       (const struct table_entry *) (uintptr_t) di->u.rti.table_data;
   size_t table_len = di->u.rti.table_len * sizeof (unw_word_t);
@@ -907,25 +934,17 @@ dwarf_search_unwind_table_remote (unw_addr_space_t as, unw_word_t ip,
 
   assert (di->format = UNW_INFO_FORMAT_REMOTE_TABLE);
 
-  ret = dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
-                                    segbase, table_len,
-                                    table, 0,
-                                    pi, need_unwind_info, arg);
-  if (ret < 0)
-    return ret;
-
-  if (ip < pi->start_ip || ip >= pi->end_ip)
-    return -UNW_ENOINFO;
-
-  return 0;
+  return dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
+                                     segbase, table_len,
+                                     table, 0,
+                                     fde_addr, need_unwind_info, arg);
 }
 
 PROTECTED int
 dwarf_search_unwind_table_local (unw_addr_space_t as, unw_word_t ip,
-			   unw_dyn_info_t *di, unw_proc_info_t *pi,
+			   unw_dyn_info_t *di, unw_word_t *fde_addr,
 			   int need_unwind_info, void *arg)
 {
-  int ret;
   struct unw_debug_frame_list *fdesc = (void *) di->u.ti.table_data;
  
   /* UNW_INFO_FORMAT_TABLE (i.e. .debug_frame) is currently only
@@ -942,22 +961,10 @@ dwarf_search_unwind_table_local (unw_addr_space_t as, unw_word_t ip,
   assert (as == unw_local_addr_space);
   assert (di->format == UNW_INFO_FORMAT_TABLE);
 
-  ret = dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
-                                    segbase, table_len,
-                                    table, debug_frame_base,
-                                    pi, need_unwind_info, arg);
-  if (ret < 0)
-    return ret;
-
-  /* .debug_frame uses an absolute encoding that does not know about any
-     shared library relocation.  */
-  pi->start_ip += segbase;
-  pi->end_ip += segbase;
-
-  if (ip < pi->start_ip || ip >= pi->end_ip)
-    return -UNW_ENOINFO;
-
-  return 0;
+  return dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
+                                     segbase, table_len,
+                                     table, debug_frame_base,
+                                     fde_addr, need_unwind_info, arg);
 }
 
 PROTECTED int
