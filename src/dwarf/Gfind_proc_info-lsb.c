@@ -748,6 +748,8 @@ find_proc_fde (unw_word_t ip, unw_word_t *fde_addr,
   *gp = cb_data.gp;
   *fde_base = cb_data.fde_base;
   *ip_offset = cb_data.ip_offset;
+
+  return 0;
 }
 
 #else // HAVE_DL_ITERATE_PHDR
