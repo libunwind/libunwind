@@ -7,6 +7,7 @@ include(CheckFunctionExists)
 include(CheckSymbolExists)
 include(CheckStructHasMember)
 include(CheckTypeSize)
+include(TestBigEndian)
 
 
 check_include_file(asm/ptrace_offsets.h HAVE_ASM_PTRACE_OFFSETS_H)
@@ -31,7 +32,7 @@ check_include_file(sys/types.h HAVE_SYS_TYPES_H)
 check_include_file(sys/uc_access.h HAVE_SYS_UC_ACCESS_H)
 check_function_exists(ttrace HAVE_TTRACE)
 check_include_file(unistd.h HAVE_UNISTD_H)
-
+test_big_endian(IS_BIG_ENDIAN)
 
 configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
