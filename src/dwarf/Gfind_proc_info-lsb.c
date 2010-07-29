@@ -744,15 +744,13 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 
   /* search the table: */
   if (cb_data.di.format != -1)
-    ret = dwarf_search_unwind_table (as, ip, &cb_data.di,
-				      pi, need_unwind_info, arg);
+    return dwarf_search_unwind_table (as, ip, &cb_data.di,
+                                      pi, need_unwind_info, arg);
+  else if (cb_data.di_debug.format != -1)
+    return dwarf_search_unwind_table (as, ip, &cb_data.di_debug, pi,
+                                      need_unwind_info, arg);
   else
-    ret = -UNW_ENOINFO;
-
-  if (ret == -UNW_ENOINFO && cb_data.di_debug.format != -1)
-    ret = dwarf_search_unwind_table (as, ip, &cb_data.di_debug, pi,
-				     need_unwind_info, arg);
-  return ret;
+    return -UNW_ENOINFO;
 }
 
 static inline const struct table_entry *
