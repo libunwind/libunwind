@@ -561,6 +561,12 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
       int err;
       unw_word_t fde_addr;
 
+      size_t table_len = (fde_count * sizeof (struct table_entry)
+				          / sizeof (unw_word_t));
+	  /* For the binary-search table in the eh_frame_hdr, data-relative
+	     means relative to the start of that section... */
+	  unw_word_t segbase = (unw_word_t) (uintptr_t) hdr;
+
 	  di->format = UNW_INFO_FORMAT_REMOTE_TABLE;
 	  di->start_ip = p_text->p_vaddr + load_base;
 	  di->end_ip = p_text->p_vaddr + load_base + p_text->p_memsz;
@@ -578,9 +584,10 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 		 (long) di->u.rti.segbase, (long) di->u.rti.table_len,
 		 (long) di->gp, (long) di->u.rti.table_data);
 
-      err = dwarf_search_unwind_table_remote (cb_data->as, cb_data->ip,
-                                              di, &fde_addr,
-                                              need_unwind_info, cb_data->arg);
+      err = dwarf_search_unwind_table_ (cb_data->as, cb_data->ip,
+                                        segbase, table_len,
+                                        addr, 0,
+                                        &fde_addr, need_unwind_info, cb_data->arg);
       if(err < 0)
         return err;
 
@@ -913,24 +920,6 @@ dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
   return 0;
 }
 
-
-PROTECTED int
-dwarf_search_unwind_table_remote (unw_addr_space_t as, unw_word_t ip,
-			   unw_dyn_info_t *di, unw_word_t *fde_addr,
-			   int need_unwind_info, void *arg)
-{
-  const struct table_entry *table =
-      (const struct table_entry *) (uintptr_t) di->u.rti.table_data;
-  size_t table_len = di->u.rti.table_len * sizeof (unw_word_t);
-  unw_word_t segbase = di->u.rti.segbase;
-
-  assert (di->format = UNW_INFO_FORMAT_REMOTE_TABLE);
-
-  return dwarf_search_unwind_table_ (as, ip,
-                                     segbase, table_len,
-                                     table, 0,
-                                     fde_addr, need_unwind_info, arg);
-}
 
 PROTECTED int
 dwarf_search_unwind_table_local (unw_addr_space_t as, unw_word_t ip,
