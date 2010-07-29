@@ -47,6 +47,9 @@ struct table_entry
 #include "os-linux.h"
 #endif
 
+
+#ifdef HAVE_DL_ITERATE_PHDR
+
 struct callback_data
   {
     /* in: */
@@ -82,18 +85,6 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
           *fde_addr = faddr;
           return 0;
 	    }
-
-//  if (!need_unwind_info)
-//    {
-//    }
-//
-//  addr = faddr;
-//  if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, pi,
-//					       need_unwind_info, 0,
-//					       arg))
-//      < 0)
-//    return ret;
-//  return 1;
     }
   return -UNW_ENOINFO;
 }
@@ -731,16 +722,13 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   }
 }
 
-HIDDEN int
-dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
-		      unw_proc_info_t *pi, int need_unwind_info, void *arg)
-{
+static int
+find_proc_fde (unw_word_t ip, unw_word_t *fde_addr,
+               unw_word_t *gp, unw_word_t *fde_base,
+               unw_word_t *ip_offset, void *arg) {
   struct callback_data cb_data;
   intrmask_t saved_mask;
   int ret;
-  unw_accessors_t *a;
-
-  Debug (14, "looking for IP=0x%lx\n", (long) ip);
 
   memset (&cb_data, 0, sizeof (cb_data));
   cb_data.ip = ip;
@@ -750,24 +738,59 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   ret = dl_iterate_phdr (callback, &cb_data);
   sigprocmask (SIG_SETMASK, &saved_mask, NULL);
 
-  if (ret <= 0)
+  if (ret == 0)
     {
-      Debug (14, "IP=0x%lx not found\n", (long) ip);
-      return -UNW_ENOINFO;
+      ret = -UNW_ENOINFO;
+      return ret;
     }
 
-  pi->gp = cb_data.gp;
+  *fde_addr = cb_data.fde_addr;
+  *gp = cb_data.gp;
+  *fde_base = cb_data.fde_base;
+  *ip_offset = cb_data.ip_offset;
+}
+
+#else // HAVE_DL_ITERATE_PHDR
+
+static int
+find_proc_fde(unw_word_t ip, unw_word_t *fde_addr, boid *arg) {
+  return -1;
+}
+
+#endif // HAVE_DL_ITERATE_PHDR
+
+HIDDEN int
+dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+		      unw_proc_info_t *pi, int need_unwind_info, void *arg)
+{
+  int ret;
+  unw_word_t fde_addr;
+  unw_word_t gp;
+  unw_word_t fde_base;
+  unw_word_t ip_offset;
+  unw_accessors_t *a;
+
+  Debug (14, "looking for IP=0x%lx\n", (long) ip);
+
+  ret = find_proc_fde (ip, &fde_addr, &gp, &fde_base, &ip_offset, arg);
+  if (ret < 0)
+    {
+      Debug (14, "IP=0x%lx not found\n", (long) ip);
+      return ret;
+    }
+
+  pi->gp = gp;
 
   a = unw_get_accessors (unw_local_addr_space);
-  ret = dwarf_extract_proc_info_from_fde (as, a, &cb_data.fde_addr, pi,
+  ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
                                           need_unwind_info,
-                                          cb_data.fde_base,
+                                          fde_base,
                                           arg);
   if (ret < 0)
     return ret;
 
-  pi->start_ip += cb_data.ip_offset;
-  pi->end_ip += cb_data.ip_offset;
+  pi->start_ip += ip_offset;
+  pi->end_ip += ip_offset;
 
   if (ip < pi->start_ip || ip >= pi->end_ip)
     return -UNW_ENOINFO;
