@@ -53,6 +53,8 @@ struct callback_data
     unw_word_t ip;		/* instruction-pointer we're looking for */
     unw_proc_info_t *pi;	/* proc-info pointer */
     int need_unwind_info;
+    unw_addr_space_t as;    /* address space */
+    void *arg;
     /* out: */
     int single_fde;		/* did we find a single FDE? (vs. a table) */
     unw_dyn_info_t di;		/* table info (if single_fde is false) */
@@ -550,11 +552,15 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	  found = linear_search (unw_local_addr_space, ip,
 				 eh_frame_start, eh_frame_end, fde_count,
 				 pi, need_unwind_info, NULL);
+
 	  if (found != 1)
-	    found = 0;
+        return 0;
+      return 1;
 	}
       else
 	{
+      int err;
+
 	  di->format = UNW_INFO_FORMAT_REMOTE_TABLE;
 	  di->start_ip = p_text->p_vaddr + load_base;
 	  di->end_ip = p_text->p_vaddr + load_base + p_text->p_memsz;
@@ -567,11 +573,18 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
 	     means relative to the start of that section... */
 	  di->u.rti.segbase = (unw_word_t) (uintptr_t) hdr;
 
-	  found = 1;
 	  Debug (15, "found table `%s': segbase=0x%lx, len=%lu, gp=0x%lx, "
 		 "table_data=0x%lx\n", (char *) (uintptr_t) di->u.rti.name_ptr,
 		 (long) di->u.rti.segbase, (long) di->u.rti.table_len,
 		 (long) di->gp, (long) di->u.rti.table_data);
+
+      err = dwarf_search_unwind_table_remote (cb_data->as, cb_data->ip,
+                                              di, pi,
+                                              need_unwind_info, cb_data->arg);
+      if(err < 0)
+        return err;
+
+      return 1;
 	}
     }
 
@@ -582,133 +595,138 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
   if (!fdesc)
     {
       Debug (15, "couldn't load .debug_frame\n");
-      return found;
-    }
-  else
-    {
-      char *buf;
-      size_t bufsize;
-      unw_word_t item_start, item_end = 0;
-      uint32_t u32val = 0;
-      uint64_t cie_id = 0;
-      struct debug_frame_tab *tab;
-
-      Debug (15, "loaded .debug_frame\n");
-
-      buf = fdesc->debug_frame;
-      bufsize = fdesc->debug_frame_size;
-
-      if (bufsize == 0)
-	{
-	  Debug (15, "zero-length .debug_frame\n");
-	  return found;
-	}
-
-      /* Now create a binary-search table, if it does not already exist.  */
-      if (!fdesc->index)
-	{
-	  addr = (unw_word_t) (uintptr_t) buf;
-
-	  a = unw_get_accessors (unw_local_addr_space);
-
-	  /* Find all FDE entries in debug_frame, and make into a sorted
-	     index.  */
-
-	  tab = debug_frame_tab_new (16);
-
-	  while (addr < (unw_word_t) (uintptr_t) (buf + bufsize))
-	    {
-	      uint64_t id_for_cie;
-	      item_start = addr;
-
-	      dwarf_readu32 (unw_local_addr_space, a, &addr, &u32val, NULL);
-
-	      if (u32val == 0)
-		break;
-	      else if (u32val != 0xffffffff)
-		{
-		  uint32_t cie_id32 = 0;
-		  item_end = addr + u32val;
-		  dwarf_readu32 (unw_local_addr_space, a, &addr, &cie_id32,
-				 NULL);
-		  cie_id = cie_id32;
-		  id_for_cie = 0xffffffff;
-		}
-	      else
-		{
-		  uint64_t u64val = 0;
-		  /* Extended length.  */
-		  dwarf_readu64 (unw_local_addr_space, a, &addr, &u64val, NULL);
-		  item_end = addr + u64val;
-
-		  dwarf_readu64 (unw_local_addr_space, a, &addr, &cie_id, NULL);
-		  id_for_cie = 0xffffffffffffffffull;
-		}
-
-	      /*Debug (1, "CIE/FDE id = %.8x\n", (int) cie_id);*/
-
-	      if (cie_id == id_for_cie)
-		;
-	      /*Debug (1, "Found CIE at %.8x.\n", item_start);*/
-	      else
-		{
-		  unw_word_t fde_addr = item_start;
-		  unw_proc_info_t this_pi;
-		  int err;
-
-		  /*Debug (1, "Found FDE at %.8x\n", item_start);*/
-
-		  err = dwarf_extract_proc_info_from_fde (unw_local_addr_space,
-							  a, &fde_addr,
-							  &this_pi, 0,
-							  (uintptr_t) buf,
-							  NULL);
-		  if (err == 0)
-		    {
-		      Debug (15, "start_ip = %x, end_ip = %x\n",
-			     (int) this_pi.start_ip, (int) this_pi.end_ip);
-		      debug_frame_tab_append (tab,
-					      item_start - (unw_word_t) (uintptr_t) buf,
-					      this_pi.start_ip);
-		    }
-		  /*else
-		    Debug (1, "FDE parse failed\n");*/
-		}
-
-	      addr = item_end;
-	    }
-
-	  debug_frame_tab_shrink (tab);
-	  qsort (tab->tab, tab->length, sizeof (struct table_entry),
-		 debug_frame_tab_compare);
-	  /* for (i = 0; i < tab->length; i++)
-	     {
-	     fprintf (stderr, "ip %x, fde offset %x\n",
-	     (int) tab->tab[i].start_ip_offset,
-	     (int) tab->tab[i].fde_offset);
-	     }*/
-	  fdesc->index = tab->tab;
-	  fdesc->index_size = tab->length;
-	  free (tab);
-	}
-
-      di->format = UNW_INFO_FORMAT_TABLE;
-      di->start_ip = fdesc->start;
-      di->end_ip = fdesc->end;
-      di->u.ti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
-      di->u.ti.table_data = (unw_word_t *) fdesc;
-      di->u.ti.table_len = sizeof (*fdesc) / sizeof (unw_word_t);
-      di->u.ti.segbase = (unw_word_t) (uintptr_t) info->dlpi_addr;
-
-      found = 1;
-      Debug (15, "found debug_frame table `%s': segbase=0x%lx, len=%lu, "
-	     "gp=0x%lx, table_data=0x%lx\n",
-	     (char *) (uintptr_t) di->u.ti.name_ptr,
-	     (long) di->u.ti.segbase, (long) di->u.ti.table_len,
-	     (long) di->gp, (long) di->u.ti.table_data);
+      return 0;
     }
 
-  return found;
+  {
+    char *buf;
+    size_t bufsize;
+    unw_word_t item_start, item_end = 0;
+    uint32_t u32val = 0;
+    uint64_t cie_id = 0;
+    struct debug_frame_tab *tab;
+    int err;
+
+    Debug (15, "loaded .debug_frame\n");
+
+    buf = fdesc->debug_frame;
+    bufsize = fdesc->debug_frame_size;
+
+    if (bufsize == 0)
+      {
+        Debug (15, "zero-length .debug_frame\n");
+        return found;
+      }
+
+    /* Now create a binary-search table, if it does not already exist.  */
+    if (!fdesc->index)
+      {
+        addr = (unw_word_t) (uintptr_t) buf;
+
+        a = unw_get_accessors (unw_local_addr_space);
+
+        /* Find all FDE entries in debug_frame, and make into a sorted
+           index.  */
+
+        tab = debug_frame_tab_new (16);
+
+        while (addr < (unw_word_t) (uintptr_t) (buf + bufsize))
+          {
+            uint64_t id_for_cie;
+            item_start = addr;
+
+            dwarf_readu32 (unw_local_addr_space, a, &addr, &u32val, NULL);
+
+            if (u32val == 0)
+              break;
+            else if (u32val != 0xffffffff)
+              {
+           	    uint32_t cie_id32 = 0;
+           	    item_end = addr + u32val;
+           	    dwarf_readu32 (unw_local_addr_space, a, &addr, &cie_id32,
+           	  		 NULL);
+           	    cie_id = cie_id32;
+           	    id_for_cie = 0xffffffff;
+           	  }
+            else
+      	      {
+      	        uint64_t u64val = 0;
+      	        /* Extended length.  */
+      	        dwarf_readu64 (unw_local_addr_space, a, &addr, &u64val, NULL);
+      	        item_end = addr + u64val;
+
+      	        dwarf_readu64 (unw_local_addr_space, a, &addr, &cie_id, NULL);
+      	        id_for_cie = 0xffffffffffffffffull;
+      	      }
+
+            /*Debug (1, "CIE/FDE id = %.8x\n", (int) cie_id);*/
+
+            if (cie_id == id_for_cie)
+              ;
+            /*Debug (1, "Found CIE at %.8x.\n", item_start);*/
+            else
+      	      {
+      	        unw_word_t fde_addr = item_start;
+      	        unw_proc_info_t this_pi;
+      	        int err;
+
+      	        /*Debug (1, "Found FDE at %.8x\n", item_start);*/
+
+      	        err = dwarf_extract_proc_info_from_fde (unw_local_addr_space,
+      	      					  a, &fde_addr,
+      	      					  &this_pi, 0,
+      	      					  (uintptr_t) buf,
+      	      					  NULL);
+      	        if (err == 0)
+      	          {
+      	            Debug (15, "start_ip = %x, end_ip = %x\n",
+      	      	     (int) this_pi.start_ip, (int) this_pi.end_ip);
+      	            debug_frame_tab_append (tab,
+      	      			      item_start - (unw_word_t) (uintptr_t) buf,
+      	      			      this_pi.start_ip);
+      	          }
+      	        /*else
+      	          Debug (1, "FDE parse failed\n");*/
+      	      }
+
+            addr = item_end;
+          }
+
+        debug_frame_tab_shrink (tab);
+        qsort (tab->tab, tab->length, sizeof (struct table_entry),
+      	 debug_frame_tab_compare);
+        /* for (i = 0; i < tab->length; i++)
+           {
+           fprintf (stderr, "ip %x, fde offset %x\n",
+           (int) tab->tab[i].start_ip_offset,
+           (int) tab->tab[i].fde_offset);
+           }*/
+        fdesc->index = tab->tab;
+        fdesc->index_size = tab->length;
+        free (tab);
+      }
+
+    di->format = UNW_INFO_FORMAT_TABLE;
+    di->start_ip = fdesc->start;
+    di->end_ip = fdesc->end;
+    di->u.ti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
+    di->u.ti.table_data = (unw_word_t *) fdesc;
+    di->u.ti.table_len = sizeof (*fdesc) / sizeof (unw_word_t);
+    di->u.ti.segbase = (unw_word_t) (uintptr_t) info->dlpi_addr;
+
+    Debug (15, "found debug_frame table `%s': segbase=0x%lx, len=%lu, "
+       "gp=0x%lx, table_data=0x%lx\n",
+       (char *) (uintptr_t) di->u.ti.name_ptr,
+       (long) di->u.ti.segbase, (long) di->u.ti.table_len,
+       (long) di->gp, (long) di->u.ti.table_data);
+
+    err = dwarf_search_unwind_table_local (cb_data->as, cb_data->ip, di, pi,
+                                           need_unwind_info, cb_data->arg);
+    if(err < 0)
+      return err;
+
+    return 1;
+  }
 }
 
 HIDDEN int
@@ -727,6 +745,8 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.need_unwind_info = need_unwind_info;
   cb_data.di.format = -1;
   cb_data.di_debug.format = -1;
+  cb_data.as = as;
+  cb_data.arg = arg;
 
   sigprocmask (SIG_SETMASK, &unwi_full_mask, &saved_mask);
   ret = dl_iterate_phdr (callback, &cb_data);
@@ -738,19 +758,7 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
       return -UNW_ENOINFO;
     }
 
-  if (cb_data.single_fde)
-    /* already got the result in *pi */
-    return 0;
-
-  /* search the table: */
-  if (cb_data.di.format != -1)
-    return dwarf_search_unwind_table (as, ip, &cb_data.di,
-                                      pi, need_unwind_info, arg);
-  else if (cb_data.di_debug.format != -1)
-    return dwarf_search_unwind_table (as, ip, &cb_data.di_debug, pi,
-                                      need_unwind_info, arg);
-  else
-    return -UNW_ENOINFO;
+  return 0;
 }
 
 static inline const struct table_entry *
@@ -819,6 +827,138 @@ remote_lookup (unw_addr_space_t as,
 }
 
 #endif /* !UNW_LOCAL_ONLY */
+
+
+int
+dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
+               unw_word_t start_ip, unw_word_t end_ip,
+               unw_word_t segbase, size_t table_len,
+               const struct table_entry *table,
+               unw_word_t debug_frame_base,
+               unw_proc_info_t *pi,
+			   int need_unwind_info, void *arg)
+{
+  const struct table_entry *e = NULL;
+  unw_word_t fde_addr;
+  unw_accessors_t *a;
+#ifndef UNW_LOCAL_ONLY
+  struct table_entry ent;
+#endif
+  int ret;
+
+  assert (ip >= start_ip && ip < end_ip);
+
+  a = unw_get_accessors (as);
+
+#ifndef UNW_REMOTE_ONLY
+  if (as == unw_local_addr_space)
+    {
+      e = lookup (table, table_len, ip - segbase);
+    }
+  else
+#endif
+    {
+#ifndef UNW_LOCAL_ONLY
+      if ((ret = remote_lookup (as, (uintptr_t) table, table_len,
+				ip - segbase, &ent, arg)) < 0)
+	return ret;
+      if (ret)
+	e = &ent;
+      else
+	e = NULL;	/* no info found */
+#endif
+    }
+  if (!e)
+    {
+      Debug (1, "IP %x inside range %x-%x, but no explicit unwind info found\n",
+	     (int) ip, (int) start_ip, (int) end_ip);
+      /* IP is inside this table's range, but there is no explicit
+	 unwind info.  */
+      return -UNW_ENOINFO;
+    }
+  Debug (15, "ip=0x%lx, start_ip=0x%lx\n",
+	 (long) ip, (long) (e->start_ip_offset));
+  if (debug_frame_base)
+    fde_addr = e->fde_offset + debug_frame_base;
+  else
+    fde_addr = e->fde_offset + segbase;
+  Debug (1, "e->fde_offset = %x, segbase = %x, debug_frame_base = %x, "
+	    "fde_addr = %x\n", (int) e->fde_offset, (int) segbase,
+	    (int) debug_frame_base, (int) fde_addr);
+  if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
+					       need_unwind_info,
+					       debug_frame_base, arg)) < 0)
+    return ret;
+
+  return 0;
+}
+
+
+PROTECTED int
+dwarf_search_unwind_table_remote (unw_addr_space_t as, unw_word_t ip,
+			   unw_dyn_info_t *di, unw_proc_info_t *pi,
+			   int need_unwind_info, void *arg)
+{
+  int ret;
+  const struct table_entry *table =
+      (const struct table_entry *) (uintptr_t) di->u.rti.table_data;
+  size_t table_len = di->u.rti.table_len * sizeof (unw_word_t);
+  unw_word_t segbase = di->u.rti.segbase;
+
+  assert (di->format = UNW_INFO_FORMAT_REMOTE_TABLE);
+
+  ret = dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
+                                    segbase, table_len,
+                                    table, 0,
+                                    pi, need_unwind_info, arg);
+  if (ret < 0)
+    return ret;
+
+  if (ip < pi->start_ip || ip >= pi->end_ip)
+    return -UNW_ENOINFO;
+
+  return 0;
+}
+
+PROTECTED int
+dwarf_search_unwind_table_local (unw_addr_space_t as, unw_word_t ip,
+			   unw_dyn_info_t *di, unw_proc_info_t *pi,
+			   int need_unwind_info, void *arg)
+{
+  int ret;
+  struct unw_debug_frame_list *fdesc = (void *) di->u.ti.table_data;
+ 
+  /* UNW_INFO_FORMAT_TABLE (i.e. .debug_frame) is currently only
+  supported for the local address space.  Both the index and
+  the unwind tables live in local memory, but the address space
+  to check for properties like the address size and endianness
+  is the target one.  When the ptrace code adds support for
+  .debug_frame something will have to change.  */
+  const struct table_entry * table = fdesc->index;
+  size_t table_len = fdesc->index_size * sizeof (struct table_entry);
+  unw_word_t debug_frame_base = (uintptr_t) fdesc->debug_frame;
+  unw_word_t segbase = di->u.ti.segbase;
+
+  assert (as == unw_local_addr_space);
+  assert (di->format == UNW_INFO_FORMAT_TABLE);
+
+  ret = dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
+                                    segbase, table_len,
+                                    table, debug_frame_base,
+                                    pi, need_unwind_info, arg);
+  if (ret < 0)
+    return ret;
+
+  /* .debug_frame uses an absolute encoding that does not know about any
+     shared library relocation.  */
+  pi->start_ip += segbase;
+  pi->end_ip += segbase;
+
+  if (ip < pi->start_ip || ip >= pi->end_ip)
+    return -UNW_ENOINFO;
+
+  return 0;
+}
 
 PROTECTED int
 dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
