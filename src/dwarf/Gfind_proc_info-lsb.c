@@ -729,7 +729,9 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
        (long) di->u.ti.segbase, (long) di->u.ti.table_len,
        (long) di->gp, (long) di->u.ti.table_data);
 
-    err = dwarf_search_unwind_table_local (cb_data->as, cb_data->ip, di, &fde_addr,
+    err = dwarf_search_unwind_table_local (cb_data->as, cb_data->ip, fdesc,
+                                           (unw_word_t) (uintptr_t) info->dlpi_addr,
+                                           &fde_addr,
                                            need_unwind_info, cb_data->arg);
     if(err < 0)
       return err;
@@ -854,7 +856,6 @@ remote_lookup (unw_addr_space_t as,
 
 int
 dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
-                            unw_word_t start_ip, unw_word_t end_ip,
                             unw_word_t segbase, size_t table_len,
                             const struct table_entry *table,
                             unw_word_t debug_frame_base,
@@ -867,8 +868,6 @@ dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
   struct table_entry ent;
 #endif
   int ret;
-
-  assert (ip >= start_ip && ip < end_ip);
 
   a = unw_get_accessors (as);
 
@@ -892,8 +891,8 @@ dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
     }
   if (!e)
     {
-      Debug (1, "IP %x inside range %x-%x, but no explicit unwind info found\n",
-	     (int) ip, (int) start_ip, (int) end_ip);
+      Debug (1, "IP %x: no explicit unwind info found\n",
+	     (int) ip);
       /* IP is inside this table's range, but there is no explicit
 	 unwind info.  */
       return -UNW_ENOINFO;
@@ -912,13 +911,6 @@ dwarf_search_unwind_table_ (unw_addr_space_t as, unw_word_t ip,
 	    (int) debug_frame_base, (int) fde_addr);
 
   return 0;
-
-//  if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
-//					       need_unwind_info,
-//					       debug_frame_base, arg)) < 0)
-//    return ret;
-//
-//  return 0;
 }
 
 
@@ -934,7 +926,7 @@ dwarf_search_unwind_table_remote (unw_addr_space_t as, unw_word_t ip,
 
   assert (di->format = UNW_INFO_FORMAT_REMOTE_TABLE);
 
-  return dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
+  return dwarf_search_unwind_table_ (as, ip,
                                      segbase, table_len,
                                      table, 0,
                                      fde_addr, need_unwind_info, arg);
@@ -942,11 +934,10 @@ dwarf_search_unwind_table_remote (unw_addr_space_t as, unw_word_t ip,
 
 PROTECTED int
 dwarf_search_unwind_table_local (unw_addr_space_t as, unw_word_t ip,
-			   unw_dyn_info_t *di, unw_word_t *fde_addr,
-			   int need_unwind_info, void *arg)
+                                 struct unw_debug_frame_list *fdesc,
+                                 unw_word_t segbase, unw_word_t *fde_addr,
+                                 int need_unwind_info, void *arg)
 {
-  struct unw_debug_frame_list *fdesc = (void *) di->u.ti.table_data;
- 
   /* UNW_INFO_FORMAT_TABLE (i.e. .debug_frame) is currently only
   supported for the local address space.  Both the index and
   the unwind tables live in local memory, but the address space
@@ -956,12 +947,10 @@ dwarf_search_unwind_table_local (unw_addr_space_t as, unw_word_t ip,
   const struct table_entry * table = fdesc->index;
   size_t table_len = fdesc->index_size * sizeof (struct table_entry);
   unw_word_t debug_frame_base = (uintptr_t) fdesc->debug_frame;
-  unw_word_t segbase = di->u.ti.segbase;
 
   assert (as == unw_local_addr_space);
-  assert (di->format == UNW_INFO_FORMAT_TABLE);
 
-  return dwarf_search_unwind_table_ (as, ip, di->start_ip, di->end_ip,
+  return dwarf_search_unwind_table_ (as, ip,
                                      segbase, table_len,
                                      table, debug_frame_base,
                                      fde_addr, need_unwind_info, arg);
