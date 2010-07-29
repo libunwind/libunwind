@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/syscall.h>
 
+#ifdef __linux__
+
 /* sigreturn() is a no-op on x86_64 glibc.  */
 
 static NORETURN inline long
@@ -49,7 +51,6 @@ my_rt_sigreturn (void *new_sp)
 HIDDEN inline int
 x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
-#if defined(__linux)
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = c->uc;
 
@@ -73,11 +74,10 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	     (unsigned long long) c->dwarf.ip);
       _Ux86_64_setcontext (uc);
     }
-#else
-# warning Implement me!
-#endif
   return -UNW_EINVAL;
 }
+
+#endif // __linux__
 
 #endif /* !UNW_REMOTE_ONLY */
 
