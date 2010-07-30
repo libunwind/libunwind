@@ -586,7 +586,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
       eh_frame_end = (unw_word_t)max_load_addr;   // Can we do better?
       ret = search_fde_in_eh_frame(ip, (unw_word_t)(p_eh_hdr->p_vaddr + load_base),
                                    cb_data->gp, eh_frame_end, &cb_data->fde_addr,
-                                   cb_data->arg, info->name);
+                                   cb_data->arg, info->dlpi_name);
       if (ret < 0)
         return ret;
 
