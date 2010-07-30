@@ -129,4 +129,5 @@ else()
 endif()
 
 add_library(unwind STATIC ${libunwind_sources_common} ${libunwind_sources_${target}})
+set_property(TARGET unwind PROPERTY COMPILE_DEFINITIONS_DEBUG DEBUG)
 

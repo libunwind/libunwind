@@ -48,20 +48,6 @@ struct table_entry
 #endif
 
 
-#ifdef HAVE_DL_ITERATE_PHDR
-
-struct callback_data
-  {
-    /* in: */
-    unw_word_t ip;		/* instruction-pointer we're looking for */
-    void *arg;
-    /* out: */
-    unw_word_t fde_addr;    /* FDE address */
-    unw_word_t fde_base;    /* FDE base */
-    unw_word_t ip_offset;   /* ip offset */
-    unw_word_t gp;		    /* global-pointer value for this procedure */
-  };
-
 static int
 linear_search (unw_addr_space_t as, unw_word_t ip,
 	       unw_word_t eh_frame_start, unw_word_t eh_frame_end,
@@ -88,6 +74,102 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
     }
   return -UNW_ENOINFO;
 }
+
+
+/* Searches for FDE for specific ip in eh_frame_hdr.
+   Returns 0 if success. */
+static int
+search_fde_in_eh_frame(unw_word_t ip, unw_word_t hdr_addr, unw_word_t gp,
+                       unw_word_t eh_frame_end, unw_word_t *fde_addr, void *arg,
+                       const char * name)
+{
+  unw_accessors_t *a;
+  unw_word_t addr, eh_frame_start, fde_count;
+  int ret;
+  struct dwarf_eh_frame_hdr *hdr = (struct dwarf_eh_frame_hdr *)hdr_addr;
+  
+  if (hdr->version != DW_EH_VERSION)
+	{
+	  Debug (1, "table `%s' has unexpected version %d\n",
+		 name, hdr->version);
+	  return -UNW_ENOINFO;
+	}
+
+  a = unw_get_accessors (unw_local_addr_space);
+  addr = (unw_word_t) (uintptr_t) (hdr + 1);
+
+  /* (Optionally) read eh_frame_ptr: */
+  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+					                     &addr, hdr->eh_frame_ptr_enc, gp, 0,
+                                         &eh_frame_start, NULL)) < 0)
+	return ret;
+
+  /* (Optionally) read fde_count: */
+  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+                                         &addr, hdr->fde_count_enc, gp, 0,
+                                         &fde_count, NULL)) < 0)
+	return ret;
+
+  if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
+	{
+      int err;
+
+	  /* If there is no search table or it has an unsupported
+	     encoding, fall back on linear search.  */
+	  if (hdr->table_enc == DW_EH_PE_omit)
+	    Debug (4, "table `%s' lacks search table; doing linear search\n",
+		   name);
+	  else
+	    Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
+		   name, hdr->table_enc);
+
+	  if (hdr->fde_count_enc == DW_EH_PE_omit)
+	    fde_count = ~0UL;
+	  if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
+	    abort ();
+
+	  /* XXX we know how to build a local binary search table for
+	     .debug_frame, so we could do that here too.  */
+	  return  linear_search (unw_local_addr_space, ip,
+                             eh_frame_start, eh_frame_end, fde_count,
+                             fde_addr, NULL);
+	}
+  else
+	{
+      int err;
+
+      size_t table_len = (fde_count * sizeof (struct table_entry)
+				          / sizeof (unw_word_t));
+	  /* For the binary-search table in the eh_frame_hdr, data-relative
+	     means relative to the start of that section... */
+	  unw_word_t sbase = (unw_word_t) (uintptr_t) hdr;
+
+	  Debug (15, "found table `%s': sbase=0x%lx, len=%lu, gp=0x%lx, "
+		 "table_data=0x%lx\n", (char *) (uintptr_t) name,
+		 (long) sbase, (long) table_len,
+		 (long) gp, (long) addr);
+
+      return dwarf_search_unwind_table_ (unw_local_addr_space, ip,
+                                         sbase, table_len,
+                                         addr, 0,
+                                         fde_addr, arg);
+	}
+}
+
+
+#ifdef HAVE_DL_ITERATE_PHDR
+
+struct callback_data
+  {
+    /* in: */
+    unw_word_t ip;		/* instruction-pointer we're looking for */
+    void *arg;
+    /* out: */
+    unw_word_t fde_addr;    /* FDE address */
+    unw_word_t fde_base;    /* FDE base */
+    unw_word_t ip_offset;   /* ip offset */
+    unw_word_t gp;		    /* global-pointer value for this procedure */
+  };
 
 #ifdef CONFIG_DEBUG_FRAME
 /* Load .debug_frame section from FILE.  Allocates and returns space
@@ -397,86 +479,6 @@ debug_frame_tab_compare (const void *a, const void *b)
     return 0;
 }
 
-/* Searches for FDE for specific ip in eh_frame_hdr.
-   Returns 0 if success. */
-static int
-search_fde_in_eh_frame(unw_word_t ip, unw_word_t hdr_addr, unw_word_t gp,
-                       unw_word_t eh_frame_end, unw_word_t *fde_addr, void *arg)
-{
-  unw_accessors_t *a;
-  unw_word_t addr, eh_frame_start, fde_count;
-  int ret;
-  struct dwarf_eh_frame_hdr *hdr = (struct dwarf_eh_frame_hdr *)hdr_addr;
-  
-  if (hdr->version != DW_EH_VERSION)
-	{
-	  Debug (1, "table `%s' has unexpected version %d\n",
-		 info->dlpi_name, hdr->version);
-	  return -UNW_ENOINFO;
-	}
-
-  a = unw_get_accessors (unw_local_addr_space);
-  addr = (unw_word_t) (uintptr_t) (hdr + 1);
-
-  /* (Optionally) read eh_frame_ptr: */
-  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
-					                     &addr, hdr->eh_frame_ptr_enc, gp, 0,
-                                         &eh_frame_start, NULL)) < 0)
-	return ret;
-
-  /* (Optionally) read fde_count: */
-  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
-                                         &addr, hdr->fde_count_enc, gp, 0,
-                                         &fde_count, NULL)) < 0)
-	return ret;
-
-  if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
-	{
-      int err;
-
-	  /* If there is no search table or it has an unsupported
-	     encoding, fall back on linear search.  */
-	  if (hdr->table_enc == DW_EH_PE_omit)
-	    Debug (4, "table `%s' lacks search table; doing linear search\n",
-		   info->dlpi_name);
-	  else
-	    Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
-		   info->dlpi_name, hdr->table_enc);
-
-	  if (hdr->fde_count_enc == DW_EH_PE_omit)
-	    fde_count = ~0UL;
-	  if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
-	    abort ();
-
-	  /* XXX we know how to build a local binary search table for
-	     .debug_frame, so we could do that here too.  */
-	  return  linear_search (unw_local_addr_space, ip,
-                             eh_frame_start, eh_frame_end, fde_count,
-                             fde_addr, NULL);
-	}
-  else
-	{
-      int err;
-
-      size_t table_len = (fde_count * sizeof (struct table_entry)
-				          / sizeof (unw_word_t));
-	  /* For the binary-search table in the eh_frame_hdr, data-relative
-	     means relative to the start of that section... */
-	  unw_word_t sbase = (unw_word_t) (uintptr_t) hdr;
-
-	  Debug (15, "found table `%s': sbase=0x%lx, len=%lu, gp=0x%lx, "
-		 "table_data=0x%lx\n", (char *) (uintptr_t) info->dlpi_name,
-		 (long) sbase, (long) table_len,
-		 (long) gp, (long) addr);
-
-      return dwarf_search_unwind_table_ (unw_local_addr_space, ip,
-                                         sbase, table_len,
-                                         addr, 0,
-                                         fde_addr, arg);
-	}
-}
-
-
 /* ptr is a pointer to a callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
    for.  */
@@ -584,7 +586,7 @@ callback (struct dl_phdr_info *info, size_t size, void *ptr)
       eh_frame_end = (unw_word_t)max_load_addr;   // Can we do better?
       ret = search_fde_in_eh_frame(ip, (unw_word_t)(p_eh_hdr->p_vaddr + load_base),
                                    cb_data->gp, eh_frame_end, &cb_data->fde_addr,
-                                   cb_data->arg);
+                                   cb_data->arg, info->name);
       if (ret < 0)
         return ret;
 
@@ -770,7 +772,42 @@ static int
 find_proc_fde(unw_word_t ip, unw_word_t *fde_addr,
               unw_word_t *gp, unw_word_t *fde_base,
               unw_word_t *ip_offset, void *arg) {
-  return -1;
+  Dl_amd64_unwindinfo dlef;
+  void* data;
+  void* data_end;
+  int fp_enc, fc_enc, ft_enc;
+  unsigned char *pi, *pj;
+  ptrdiff_t reloc;
+  uintptr_t base;
+  int ret;
+  
+  dlef.dlui_version = 1;
+  
+  /* Locate the appropiate exception_range_entry table first */
+  if (0 == dlamd64getunwind((void*)ip, &dlef)) {
+    return -UNW_ENOINFO;
+  }
+  
+  /*
+   * you now know size and position of block of data needed for
+   * binary search ??REMOTE??
+   */
+  data = dlef.dlui_unwindstart;
+  if (0 == data)
+  	return -UNW_ENOINFO;
+
+  base = (uintptr_t)data;
+  data_end = dlef.dlui_unwindend;
+  reloc = 0;
+  /* ??REMOTE?? */
+
+  *gp = 0;
+  *fde_base = 0;
+  *ip_offset = 0;
+
+  return search_fde_in_eh_frame(ip, (unw_word_t)data, 0,
+                                (unw_word_t)data_end, fde_addr, arg,
+                                dlef.dlui_objname);
 }
 
 #endif // HAVE_DL_ITERATE_PHDR

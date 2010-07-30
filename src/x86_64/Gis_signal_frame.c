@@ -57,7 +57,15 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   return (w0 == 0x0f0000000fc0c748 && w1 == 0x05);
 }
 
-#else /* __linux__ */
+#elif defined(__sun) /* __linux__ */
+
+PROTECTED int
+unw_is_signal_frame (unw_cursor_t *cursor)
+{
+  return 0;
+}
+
+#else /* __sun */
 
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
