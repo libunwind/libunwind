@@ -249,11 +249,7 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.access_mem = access_mem;
   local_addr_space.acc.access_reg = access_reg;
   local_addr_space.acc.access_fpreg = access_fpreg;
-#ifdef __linux__
   local_addr_space.acc.resume = x86_64_local_resume;
-#else // __linux__
-  local_addr_space.acc.resume = 0;  // FIXME
-#endif // __linux__
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
 

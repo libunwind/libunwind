@@ -48,6 +48,8 @@ my_rt_sigreturn (void *new_sp)
   abort ();
 }
 
+#endif // __linux__
+
 HIDDEN inline int
 x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
@@ -62,11 +64,15 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (unlikely (c->sigcontext_format != X86_64_SCF_NONE))
     {
+#ifdef __linux__
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
 
       Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
 	     (unsigned long long) c->dwarf.ip, sc);
       my_rt_sigreturn (sc);
+#else // __linux__
+      assert(0 && "Unimplemented");
+#endif // __linux__
     }
   else
     {
@@ -76,8 +82,6 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
     }
   return -UNW_EINVAL;
 }
-
-#endif // __linux__
 
 #endif /* !UNW_REMOTE_ONLY */
 
