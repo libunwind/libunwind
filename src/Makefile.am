@@ -108,11 +108,11 @@ dwarf_SOURCES_local =							     \
 dwarf_SOURCES_generic =							     \
 	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c
 
-# The list of files that go info libunwind and libunwind-arm:
+# The list of files that go into libunwind and libunwind-arm:
 libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
 	$(dwarf_SOURCES_common)						    \
 	elf32.c elf32.h							    \
-	arm/init.h arm/offsets.h arm/regs.h				    \
+	arm/init.h arm/offsets.h arm/unwind_i.h				    \
 	arm/is_fpreg.c arm/regname.c
 
 # The list of files that go into libunwind:
@@ -193,7 +193,7 @@ libunwind_hppa_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)	\
 libunwind_la_SOURCES_mips_common = $(libunwind_la_SOURCES_common)	    \
 	$(dwarf_SOURCES_common)						    \
 	elfxx.c								    \
-	mips/init.h mips/offsets.h mips/regs.h				    \
+	mips/init.h mips/offsets.h					    \
 	mips/is_fpreg.c mips/regname.c
 
 # The list of files that go into libunwind:
