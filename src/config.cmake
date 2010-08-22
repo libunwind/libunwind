@@ -34,8 +34,8 @@ check_function_exists(ttrace HAVE_TTRACE)
 check_include_file(unistd.h HAVE_UNISTD_H)
 test_big_endian(IS_BIG_ENDIAN)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/config.h.cmake.in
+configure_file(${libunwind_SOURCE_DIR}/src/config.h.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
 
-configure_file(${CMAKE_CURRENT_SOURCE_DIR}/libunwind-common.h.cmake.in
+configure_file(${libunwind_SOURCE_DIR}/src/libunwind-common.h.cmake.in
                ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind-common.h)
