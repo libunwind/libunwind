@@ -68,7 +68,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #endif
 
-#ifdef __GNUC__
+#if defined(__GNUC__) && !defined(__PATHCC__)
 # define UNUSED		__attribute__((unused))
 # define NORETURN	__attribute__((noreturn))
 # define ALIAS(name)	__attribute__((alias (#name)))
