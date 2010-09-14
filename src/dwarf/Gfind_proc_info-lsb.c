@@ -752,6 +752,9 @@ find_proc_fde (unw_word_t ip, unw_word_t *fde_addr,
   ret = dl_iterate_phdr (callback, &cb_data);
   sigprocmask (SIG_SETMASK, &saved_mask, NULL);
 
+  if (ret < 0)
+    return ret;
+
   if (ret == 0)
     {
       ret = -UNW_ENOINFO;
