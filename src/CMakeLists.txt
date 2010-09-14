@@ -131,3 +131,7 @@ endif()
 add_library(unwind STATIC ${libunwind_sources_common} ${libunwind_sources_${target}})
 set_property(TARGET unwind PROPERTY COMPILE_DEFINITIONS_DEBUG DEBUG)
 
+add_library(unwind-shared SHARED ${libunwind_sources_common} ${libunwind_sources_${target}})
+set_property(TARGET unwind-shared PROPERTY COMPILE_DEFINITIONS_DEBUG DEBUG)
+set_property(TARGET unwind-shared PROPERTY OUTPUT_NAME "unwind")
+
