@@ -138,8 +138,7 @@ search_fde_in_eh_frame(unw_word_t ip, unw_word_t hdr_addr, unw_word_t gp,
 	{
       int err;
 
-      size_t table_len = (fde_count * sizeof (struct table_entry)
-				          / sizeof (unw_word_t));
+      size_t table_len = (fde_count * sizeof (struct table_entry));
 	  /* For the binary-search table in the eh_frame_hdr, data-relative
 	     means relative to the start of that section... */
 	  unw_word_t sbase = (unw_word_t) (uintptr_t) hdr;
