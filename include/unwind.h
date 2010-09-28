@@ -26,6 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef _UNWIND_H
 #define _UNWIND_H
 
+/* For uint64_t */
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -62,23 +65,22 @@ typedef void (*_Unwind_Exception_Cleanup_Fn) (_Unwind_Reason_Code,
 					      struct _Unwind_Exception *);
 
 typedef _Unwind_Reason_Code (*_Unwind_Stop_Fn) (int, _Unwind_Action,
-						unsigned long,
+						uint64_t,
 						struct _Unwind_Exception *,
 						struct _Unwind_Context *,
 						void *);
 
 /* The C++ ABI requires exception_class, private_1, and private_2 to
    be of type uint64 and the entire structure to be
-   double-word-aligned, but that seems a bit overly IA-64-specific.
-   Using "unsigned long" instead should give us the desired effect on
-   IA-64, while being more general.  */
+   double-word-aligned. Please note that exception_class stays 64-bit 
+   even on 32-bit machines for gcc compatibility.  */
 struct _Unwind_Exception
   {
-    unsigned long exception_class;
+    uint64_t exception_class;
     _Unwind_Exception_Cleanup_Fn exception_cleanup;
     unsigned long private_1;
     unsigned long private_2;
-  };
+  } __attribute__((__aligned__));
 
 extern _Unwind_Reason_Code _Unwind_RaiseException (struct _Unwind_Exception *);
 extern _Unwind_Reason_Code _Unwind_ForcedUnwind (struct _Unwind_Exception *,

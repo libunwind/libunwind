@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 static inline int
-common_init (struct cursor *c)
+common_init (struct cursor *c, unsigned use_prev_instr)
 {
   int ret;
 
@@ -40,5 +40,7 @@ common_init (struct cursor *c)
   ret = hppa_get (c, HPPA_REG_LOC (c, UNW_HPPA_SP), &c->sp);
   if (ret < 0)
     return ret;
+
+  c->dwarf.use_prev_instr = use_prev_instr;
   return 0;
 }

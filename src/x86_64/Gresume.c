@@ -27,28 +27,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 
+#include "offsets.h"
 #include "unwind_i.h"
 
 #ifndef UNW_REMOTE_ONLY
-
-#include <sys/syscall.h>
-
-#ifdef __linux__
-
-/* sigreturn() is a no-op on x86_64 glibc.  */
-
-static NORETURN inline long
-my_rt_sigreturn (void *new_sp)
-{
-  __asm__ __volatile__ ("mov %0, %%rsp;"
-			"mov %1, %%rax;"
-			"syscall"
-			:: "r"(new_sp), "i"(SYS_rt_sigreturn)
-			: "memory");
-  abort ();
-}
-
-#endif // __linux__
 
 HIDDEN inline int
 x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
@@ -64,21 +46,14 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (unlikely (c->sigcontext_format != X86_64_SCF_NONE))
     {
-#ifdef __linux__
-      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
-
-      Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
-	     (unsigned long long) c->dwarf.ip, sc);
-      my_rt_sigreturn (sc);
-#else // __linux__
-      assert(0 && "Unimplemented");
-#endif // __linux__
+      x86_64_sigreturn(cursor);
+      abort();
     }
   else
     {
       Debug (8, "resuming at ip=%llx via setcontext()\n",
 	     (unsigned long long) c->dwarf.ip);
-      _Ux86_64_setcontext (uc);
+      setcontext (uc);
     }
   return -UNW_EINVAL;
 }

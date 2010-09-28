@@ -97,7 +97,8 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
 
 HIDDEN unw_dyn_info_t *
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
-			 char *path, unw_word_t segbase, unw_word_t mapoff)
+			 char *path, unw_word_t segbase, unw_word_t mapoff,
+			 unw_word_t ip)
 {
   Elf64_Phdr *phdr, *ptxt = NULL, *punw = NULL, *pdyn = NULL;
   Elf64_Ehdr *ehdr;
@@ -165,10 +166,12 @@ dwarf_read_encoded_pointer (unw_addr_space_t as, unw_accessors_t *a,
 
 HIDDEN unw_dyn_info_t *
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
-			 char *path, unw_word_t segbase, unw_word_t mapoff)
+			 char *path, unw_word_t segbase, unw_word_t mapoff,
+			 unw_word_t ip)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
+  unw_word_t max_load_addr = 0;
   struct dwarf_eh_frame_hdr *hdr;
   unw_proc_info_t pi;
   unw_accessors_t *a;
@@ -190,6 +193,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	case PT_LOAD:
 	  if (phdr[i].p_offset == mapoff)
 	    ptxt = phdr + i;
+	  if ((uintptr_t) ui->ei.image + phdr->p_filesz > max_load_addr)
+	    max_load_addr = (uintptr_t) ui->ei.image + phdr->p_filesz;
 	  break;
 
 	case PT_GNU_EH_FRAME:
@@ -205,7 +210,35 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	}
     }
   if (!ptxt || !peh_hdr)
+#ifdef CONFIG_DEBUG_FRAME
+    {
+      /* No .eh_frame found, try .debug_frame. */
+      struct dl_phdr_info info;
+
+      info.dlpi_name = path;
+      info.dlpi_phdr = phdr;
+      info.dlpi_phnum = ehdr->e_phnum;
+
+      /* Fixup segbase to match correct base address. */
+      for (i = 0; i < info.dlpi_phnum; i++)
+       {
+         if (info.dlpi_phdr[i].p_type == PT_LOAD &&
+           info.dlpi_phdr[i].p_offset == 0)
+             {
+               segbase -= info.dlpi_phdr[i].p_vaddr;
+               break;
+             }
+       }
+      info.dlpi_addr = segbase;
+
+      if (dwarf_find_debug_frame (0, &ui->di_cache, &info, ip))
+       return &ui->di_cache;
+      else
+       return NULL;
+    }
+#else
     return NULL;
+#endif
 
   if (pdyn)
     {
@@ -262,16 +295,18 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 
   if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
     {
+#if 1
       abort ();
-#if 0
+#else
+      unw_word_t eh_frame_end;
+
       /* If there is no search table or it has an unsupported
 	 encoding, fall back on linear search.  */
       if (hdr->table_enc == DW_EH_PE_omit)
-	Debug (4, "table `%s' lacks search table; doing linear search\n",
-	       info->dlpi_name);
+        Debug (4, "EH lacks search table; doing linear search\n");
       else
-	Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
-	       info->dlpi_name, hdr->table_enc);
+	Debug (4, "EH table has encoding 0x%x; doing linear search\n",
+	       hdr->table_enc);
 
       eh_frame_end = max_load_addr;	/* XXX can we do better? */
 
@@ -280,7 +315,6 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
       if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
 	abort ();
 
-      cb_data->single_fde = 1;
       return linear_search (unw_local_addr_space, ip,
 			    eh_frame_start, eh_frame_end, fde_count,
 			    pi, need_unwind_info, NULL);
@@ -338,12 +372,13 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
       ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
     }
 
-  if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff) < 0)
+  if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff, path,
+                          sizeof(path)) < 0)
     return NULL;
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff);
+  di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff, ip);
   if (!di
       /* This can happen in corner cases where dynamically generated
          code falls into the same page that contains the data-segment

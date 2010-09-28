@@ -62,7 +62,9 @@ struct cursor
     enum
       {
 	X86_64_SCF_NONE,		/* no signal frame encountered */
-	X86_64_SCF_LINUX_RT_SIGFRAME	/* POSIX ucontext_t */
+	X86_64_SCF_LINUX_RT_SIGFRAME,	/* Linux ucontext_t */
+	X86_64_SCF_FREEBSD_SIGFRAME,	/* FreeBSD signal frame */
+	X86_64_SCF_FREEBSD_SYSCALL,	/* FreeBSD syscall */
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;
@@ -161,6 +163,15 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
 #define tdep_access_reg			UNW_OBJ(access_reg)
 #define tdep_access_fpreg		UNW_OBJ(access_fpreg)
+#if __linux__
+# define tdep_fetch_frame		UNW_OBJ(fetch_frame)
+# define tdep_cache_frame		UNW_OBJ(cache_frame)
+# define tdep_reuse_frame		UNW_OBJ(reuse_frame)
+#else
+# define tdep_fetch_frame(c,ip,n)	do {} while(0)
+# define tdep_cache_frame(c,rs)		do {} while(0)
+# define tdep_reuse_frame(c,rs)		do {} while(0)
+#endif
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
@@ -189,10 +200,20 @@ extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     int need_unwind_info, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-			       unsigned long *segbase, unsigned long *mapoff);
+			       unsigned long *segbase, unsigned long *mapoff,
+			       char *path, size_t pathlen);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
+#if __linux__
+extern void tdep_fetch_frame (struct dwarf_cursor *c, unw_word_t ip,
+			      int need_unwind_info);
+extern void tdep_cache_frame (struct dwarf_cursor *c,
+			      struct dwarf_reg_state *rs);
+extern void tdep_reuse_frame (struct dwarf_cursor *c,
+			      struct dwarf_reg_state *rs);
+#endif
+
 
 #endif /* X86_64_LIBUNWIND_I_H */

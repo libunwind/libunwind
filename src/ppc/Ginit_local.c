@@ -56,9 +56,9 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = uc;
   #ifdef UNW_TARGET_PPC64
-    return common_init_ppc64 (c);
+    return common_init_ppc64 (c, 1);
   #else
-    return common_init_ppc32 (c);
+    return common_init_ppc32 (c, 1);
   #endif
 }
 

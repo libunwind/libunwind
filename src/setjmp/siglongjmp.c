@@ -31,6 +31,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "jmpbuf.h"
 #include "setjmp_i.h"
 
+#if !defined(_NSIG) && defined(_SIG_MAXSIG)
+# define _NSIG (_SIG_MAXSIG - 1)
+#endif
+
 void
 siglongjmp (sigjmp_buf env, int val)
 {
@@ -49,7 +53,11 @@ siglongjmp (sigjmp_buf env, int val)
     {
       if (unw_get_reg (&c, UNW_REG_SP, &sp) < 0)
 	abort ();
+#ifdef __FreeBSD__
+      if (sp != wp[JB_SP] + sizeof(unw_word_t))
+#else
       if (sp != wp[JB_SP])
+#endif
 	continue;
 
       if (!bsp_match (&c, wp))

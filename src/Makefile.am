@@ -97,6 +97,8 @@ libunwind_la_SOURCES_os_linux = os-linux.h os-linux.c
 
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
+libunwind_la_SOURCES_os_freebsd = os-freebsd.c
+
 dwarf_SOURCES_common =				\
 	dwarf/global.c
 
@@ -106,11 +108,11 @@ dwarf_SOURCES_local =							     \
 dwarf_SOURCES_generic =							     \
 	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c
 
-# The list of files that go info libunwind and libunwind-arm:
+# The list of files that go into libunwind and libunwind-arm:
 libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
 	$(dwarf_SOURCES_common)						    \
 	elf32.c elf32.h							    \
-	arm/init.h arm/offsets.h arm/regs.h				    \
+	arm/init.h arm/offsets.h arm/unwind_i.h				    \
 	arm/is_fpreg.c arm/regname.c
 
 # The list of files that go into libunwind:
@@ -191,7 +193,7 @@ libunwind_hppa_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)	\
 libunwind_la_SOURCES_mips_common = $(libunwind_la_SOURCES_common)	    \
 	$(dwarf_SOURCES_common)						    \
 	elfxx.c								    \
-	mips/init.h mips/offsets.h mips/regs.h				    \
+	mips/init.h mips/offsets.h					    \
 	mips/is_fpreg.c mips/regname.c
 
 # The list of files that go into libunwind:
@@ -221,50 +223,54 @@ libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
+        $(libunwind_la_SOURCES_x86_os_local)				\
 	$(libunwind_la_SOURCES_local)					\
 	$(dwarf_SOURCES_local)						\
 	dwarf/Lfind_proc_info-lsb.c					\
 	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c	\
 	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c		\
-	x86/Lis_signal_frame.c x86/Lget_proc_info.c x86/Lregs.c		\
+	x86/Lget_proc_info.c x86/Lregs.c				\
 	x86/Lresume.c x86/Lstep.c
 
 # The list of files that go into libunwind-x86:
 libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
+        $(libunwind_la_SOURCES_x86_os)					\
 	$(libunwind_la_SOURCES_generic)					\
 	$(dwarf_SOURCES_generic)					\
 	dwarf/Gfind_proc_info-lsb.c					\
 	x86/Gcreate_addr_space.c x86/Gget_save_loc.c x86/Gglobal.c	\
 	x86/Ginit.c x86/Ginit_local.c x86/Ginit_remote.c		\
-	x86/Gis_signal_frame.c x86/Gget_proc_info.c x86/Gregs.c		\
+	x86/Gget_proc_info.c x86/Gregs.c				\
 	x86/Gresume.c x86/Gstep.c
 
 # The list of files that go both into libunwind and libunwind-x86_64:
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	$(dwarf_SOURCES_common)						\
-	elf64.c elf64.h							\
+	elf64.c elf64.h	x86_64/offsets.h				\
 	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h		\
 	x86_64/is_fpreg.c x86_64/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
+        $(libunwind_la_SOURCES_x86_64_os_local)			    	    \
 	$(libunwind_la_SOURCES_local)					    \
 	$(dwarf_SOURCES_local)						    \
 	dwarf/Lfind_proc_info-lsb.c					    \
-	x86_64/setcontext.S						\
+	x86_64/setcontext.S						    \
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
 	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
-	x86_64/Lis_signal_frame.c x86_64/Lget_proc_info.c x86_64/Lregs.c    \
+	x86_64/Lget_proc_info.c x86_64/Lregs.c    			    \
 	x86_64/Lresume.c x86_64/Lstep.c x86_64/getcontext.S
 
 # The list of files that go into libunwind-x86_64:
 libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
+        $(libunwind_la_SOURCES_x86_64_os)			    	    \
 	$(libunwind_la_SOURCES_generic)					    \
 	$(dwarf_SOURCES_generic)					    \
 	dwarf/Gfind_proc_info-lsb.c					    \
 	x86_64/Gcreate_addr_space.c x86_64/Gget_save_loc.c x86_64/Gglobal.c \
 	x86_64/Ginit.c x86_64/Ginit_local.c x86_64/Ginit_remote.c	    \
-	x86_64/Gis_signal_frame.c x86_64/Gget_proc_info.c x86_64/Gregs.c    \
+	x86_64/Gget_proc_info.c x86_64/Gregs.c    			    \
 	x86_64/Gresume.c x86_64/Gstep.c
 
 # The list of local files that go to Power 64 and 32:
@@ -342,13 +348,28 @@ install-exec-hook:
 endif
 
 if OS_LINUX
- libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_linux)
- libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_linux_local)
+ libunwind_la_SOURCES_os	      = $(libunwind_la_SOURCES_os_linux)
+ libunwind_la_SOURCES_os_local	      = $(libunwind_la_SOURCES_os_linux_local)
+ libunwind_la_SOURCES_x86_os          = x86/Gos-linux.c
+ libunwind_x86_la_SOURCES_os	      = x86/getcontext-linux.S
+ libunwind_la_SOURCES_x86_os_local    = x86/Los-linux.c
+ libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
+ libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
 endif
 
 if OS_HPUX
  libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_hpux)
  libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_hpux_local)
+endif
+
+if OS_FREEBSD
+ libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_freebsd)
+ libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_freebsd_local)
+ libunwind_la_SOURCES_x86_os          = x86/Gos-freebsd.c
+ libunwind_x86_la_SOURCES_os	      = x86/getcontext-freebsd.S
+ libunwind_la_SOURCES_x86_os_local    = x86/Los-freebsd.c
+ libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-freebsd.c
+ libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
 endif
 
 if ARCH_ARM
@@ -405,7 +426,7 @@ endif
 else
 if ARCH_X86
  lib_LTLIBRARIES_arch = libunwind-x86.la
- libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86)
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86) $(libunwind_x86_la_SOURCES_os)
  libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
  libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
 if !REMOTE_ONLY

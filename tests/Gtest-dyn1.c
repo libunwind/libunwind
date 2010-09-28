@@ -26,7 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* This file tests dynamic code-generation via function-cloning.  */
 
 #include <libunwind.h>
-#include <malloc.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -120,7 +119,7 @@ sighandler (int signal)
       name[0] = '\0';
       off[0] = '\0';
       if (unw_get_proc_name (&cursor, name, sizeof (name), &offset) == 0
-	  && off > 0)
+	  && offset > 0)
 	snprintf (off, sizeof (off), "+0x%lx", (long) offset);
       if (verbose)
 	printf ("ip = %lx <%s%s>\n", (long) ip, name, off);

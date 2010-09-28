@@ -38,7 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define _U_VERSION	1
 
 typedef _Unwind_Reason_Code (*_Unwind_Personality_Fn)
-	(int, _Unwind_Action, unsigned long, struct _Unwind_Exception *,
+	(int, _Unwind_Action, uint64_t, struct _Unwind_Exception *,
 	 struct _Unwind_Context *);
 
 struct _Unwind_Context {
@@ -59,7 +59,7 @@ _Unwind_Phase2 (struct _Unwind_Exception *exception_object,
 		struct _Unwind_Context *context)
 {
   _Unwind_Stop_Fn stop = (_Unwind_Stop_Fn) exception_object->private_1;
-  unsigned long exception_class = exception_object->exception_class;
+  uint64_t exception_class = exception_object->exception_class;
   void *stop_parameter = (void *) exception_object->private_2;
   _Unwind_Personality_Fn personality;
   _Unwind_Reason_Code reason;

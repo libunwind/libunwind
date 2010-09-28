@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
 
@@ -33,6 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "tdep-ia64/rse.h"
 #endif
 
+#if HAVE_DECL_PTRACE_POKEUSER || HAVE_TTRACE
 int
 _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 		 int write, void *arg)
@@ -252,3 +254,40 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   Debug (1, "bad register number %u (error: %s)\n", reg, strerror (errno));
   return -UNW_EBADREG;
 }
+#elif HAVE_DECL_PT_GETREGS
+int
+_UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
+		 int write, void *arg)
+{
+  struct UPT_info *ui = arg;
+  pid_t pid = ui->pid;
+  gregset_t regs;
+  char *r;
+
+#if UNW_DEBUG
+  if (write)
+    Debug (16, "%s <- %lx\n", unw_regname (reg), (long) *val);
+#endif
+  if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
+    {
+      errno = EINVAL;
+      goto badreg;
+    }
+  r = (char *)&regs + _UPT_reg_offset[reg];
+  if (ptrace(PT_GETREGS, pid, (caddr_t)&regs, 0) == -1)
+    goto badreg;
+  if (write) {
+      memcpy(r, val, sizeof(unw_word_t));
+      if (ptrace(PT_SETREGS, pid, (caddr_t)&regs, 0) == -1)
+        goto badreg;
+  } else
+      memcpy(val, r, sizeof(unw_word_t));
+  return 0;
+
+ badreg:
+  Debug (1, "bad register number %u (error: %s)\n", reg, strerror (errno));
+  return -UNW_EBADREG;
+}
+#else
+#error Port me
+#endif

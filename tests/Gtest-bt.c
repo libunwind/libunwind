@@ -38,12 +38,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 #include <libunwind.h>
 
-#if UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_ARM
-# define STACK_SIZE	(128*1024)	/* On x86/-64 and ARM, SIGSTKSZ is too small */
-#else
-# define STACK_SIZE	SIGSTKSZ
-#endif
-
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
@@ -54,14 +48,17 @@ typedef RETSIGTYPE (*sighandler_t) (int);
 int verbose;
 int num_errors;
 
+/* These variables are global because they
+ * cause the signal stack to overflow */
+char buf[512], name[256];
+unw_cursor_t cursor;
+ucontext_t uc;
+
 static void
 do_backtrace (void)
 {
-  char buf[512], name[256];
   unw_word_t ip, sp, off;
-  unw_cursor_t cursor;
   unw_proc_info_t pi;
-  unw_context_t uc;
   int ret;
 
   if (verbose)
@@ -187,7 +184,17 @@ sighandler (int signal, void *siginfo, void *context)
       }
 # endif
 #elif UNW_TARGET_X86
+#if defined __linux__
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_EIP]);
+#elif defined __FreeBSD__
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_eip);
+#endif
+#elif UNW_TARGET_X86_64
+#if defined __linux__
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_RIP]);
+#elif defined __FreeBSD__
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_rip);
+#endif
 #endif
       printf ("\n");
     }
@@ -219,10 +226,10 @@ main (int argc, char **argv)
 
   if (verbose)
     printf ("\nBacktrace across signal handler on alternate stack:\n");
-  stk.ss_sp = malloc (STACK_SIZE);
+  stk.ss_sp = malloc (SIGSTKSZ);
   if (!stk.ss_sp)
     panic ("failed to allocate SIGSTKSZ (%u) bytes\n", SIGSTKSZ);
-  stk.ss_size = STACK_SIZE;
+  stk.ss_size = SIGSTKSZ;
   stk.ss_flags = 0;
   if (sigaltstack (&stk, NULL) < 0)
     panic ("sigaltstack: %s\n", strerror (errno));

@@ -30,6 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern "C" {
 #endif
 
+#include <sys/types.h>
 #include <inttypes.h>
 #include <ucontext.h>
 
@@ -147,7 +148,7 @@ typedef enum
     UNW_TDEP_LAST_REG = UNW_X86_XMM7,
 
     UNW_TDEP_IP = UNW_X86_EIP,
-    UNW_TDEP_SP = UNW_X86_CFA,
+    UNW_TDEP_SP = UNW_X86_ESP,
     UNW_TDEP_EH = UNW_X86_EAX
   }
 x86_regnum_t;
@@ -163,12 +164,6 @@ unw_tdep_save_loc_t;
 /* On x86, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
-/* XXX this is not ideal: an application should not be prevented from
-   using the "getcontext" name just because it's using libunwind.  We
-   can't just use __getcontext() either, because that isn't exported
-   by glibc...  */
-#define unw_tdep_getcontext(uc)		(getcontext (uc), 0)
-
 #include "libunwind-dynamic.h"
 
 typedef struct
@@ -178,6 +173,9 @@ typedef struct
 unw_tdep_proc_info_t;
 
 #include "libunwind-common.h"
+
+#define unw_tdep_getcontext		UNW_ARCH_OBJ(getcontext)
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
 
 #define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);

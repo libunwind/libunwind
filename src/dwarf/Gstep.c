@@ -29,7 +29,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN int
 dwarf_step (struct dwarf_cursor *c)
 {
-  unw_word_t prev_cfa = c->cfa;
   int ret;
 
   if ((ret = dwarf_find_save_locs (c)) >= 0) {

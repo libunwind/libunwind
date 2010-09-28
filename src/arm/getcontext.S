@@ -50,3 +50,7 @@ _Uarm_getcontext:
 	str r1, [r0, #15 * 4]
 	ldmfd sp!, {r0, r1}
 	bx lr
+#ifdef __linux__
+ /* We do not need executable stack.  */
+ .section  .note.GNU-stack,"",%progbits
+#endif

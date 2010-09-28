@@ -54,8 +54,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 
-#ifdef HAVE_ENDIAN_H
+#if defined(HAVE_ENDIAN_H)
 # include <endian.h>
+#elif defined(HAVE_SYS_ENDIAN_H)
+# include <sys/endian.h>
 #else
 # define __LITTLE_ENDIAN	1234
 # define __BIG_ENDIAN		4321
@@ -180,22 +182,37 @@ typedef sigset_t intrmask_t;
 
 extern intrmask_t unwi_full_mask;
 
+/* Silence compiler warnings about variables which are used only if libunwind
+   is configured in a certain way */
+static inline void mark_as_used(void *v) {
+}
+
+#if defined(CONFIG_BLOCK_SIGNALS)
+# define SIGPROCMASK(how, new_mask, old_mask) \
+  sigprocmask((how), (new_mask), (old_mask))
+#else
+# define SIGPROCMASK(how, new_mask, old_mask) mark_as_used(old_mask)
+#endif
+
 #define define_lock(name) \
   pthread_mutex_t name = PTHREAD_MUTEX_INITIALIZER
 #define lock_init(l)		mutex_init (l)
 #define lock_acquire(l,m)				\
 do {							\
-  sigprocmask (SIG_SETMASK, &unwi_full_mask, &(m));	\
+  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &(m));	\
   mutex_lock (l);					\
 } while (0)
 #define lock_release(l,m)			\
 do {						\
   mutex_unlock (l);				\
-  sigprocmask (SIG_SETMASK, &(m), NULL);	\
+  SIGPROCMASK (SIG_SETMASK, &(m), NULL);	\
 } while (0)
 
 #define SOS_MEMORY_SIZE 16384	/* see src/mi/mempool.c */
 
+#ifndef MAP_ANONYMOUS
+# define MAP_ANONYMOUS MAP_ANON
+#endif
 #define GET_MEMORY(mem, size_in_bytes)				    \
 do {									    \
   /* Hopefully, mmap() goes straight through to a system call stub...  */   \
@@ -267,10 +284,10 @@ do {									\
 # define Dprintf(format...)
 #endif
 
-static ALWAYS_INLINE void
+static ALWAYS_INLINE int
 print_error (const char *string)
 {
-  write (2, string, strlen (string));
+  return write (2, string, strlen (string));
 }
 
 #define mi_init		UNWI_ARCH_OBJ(mi_init)

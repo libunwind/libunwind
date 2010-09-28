@@ -24,11 +24,17 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
+#ifdef UNW_TARGET_X86
+#include "dwarf_i.h"
+#endif
 
 PROTECTED void
 _Unwind_SetGR (struct _Unwind_Context *context, int index,
 	       unsigned long new_value)
 {
+#ifdef UNW_TARGET_X86
+  index = dwarf_to_unw_regnum(index);
+#endif
   unw_set_reg (&context->cursor, index, new_value);
 #ifdef UNW_TARGET_IA64
   if (index >= UNW_IA64_GR && index <= UNW_IA64_GR + 127)

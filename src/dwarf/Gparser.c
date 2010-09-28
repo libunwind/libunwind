@@ -73,10 +73,19 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
   as = c->as;
   arg = c->as_arg;
+  if (c->pi.flags & UNW_PI_FLAG_DEBUG_FRAME)
+    {
+      /* .debug_frame CFI is stored in local address space.  */
+      as = unw_local_addr_space;
+      arg = NULL;
+    }
   a = unw_get_accessors (as);
   curr_ip = c->pi.start_ip;
 
-  while (curr_ip < ip && *addr < end_addr)
+  /* Process everything up to and including the current 'ip',
+     including all the DW_CFA_advance_loc instructions.  See
+     'c->use_prev_instr' use in 'fetch_proc_info' for details. */
+  while (curr_ip <= ip && *addr < end_addr)
     {
       if ((ret = dwarf_readu8 (as, a, addr, &op, arg)) < 0)
 	return ret;
@@ -381,7 +390,23 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 {
   int ret, dynamic = 1;
 
-  --ip;
+  /* The 'ip' can point either to the previous or next instruction
+     depending on what type of frame we have: normal call or a place
+     to resume execution (e.g. after signal frame).
+
+     For a normal call frame we need to back up so we point within the
+     call itself; this is important because a) the call might be the
+     very last instruction of the function and the edge of the FDE,
+     and b) so that run_cfi_program() runs locations up to the call
+     but not more.
+
+     For execution resume, we need to do the exact opposite and look
+     up using the current 'ip' value.  That is where execution will
+     continue, and it's important we get this right, as 'ip' could be
+     right at the function entry and hence FDE edge, or at instruction
+     that manipulates CFA (push/pop). */
+  if (c->use_prev_instr)
+    --ip;
 
   if (c->pi_valid && !need_unwind_info)
     return 0;
@@ -400,6 +425,19 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 
   c->pi_valid = 1;
   c->pi_is_dynamic = dynamic;
+
+  /* Let system/machine-dependent code determine frame-specific attributes. */
+  if (ret >= 0)
+    tdep_fetch_frame (c, ip, need_unwind_info);
+
+  /* Update use_prev_instr for the next frame. */
+  if (need_unwind_info)
+  {
+    assert(c->pi.unwind_info);
+    struct dwarf_cie_info *dci = c->pi.unwind_info;
+    c->use_prev_instr = ! dci->signal_frame;
+  }
+
   return ret;
 }
 
@@ -422,7 +460,7 @@ put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
 
   if (c->pi_is_dynamic)
     unwi_put_dynamic_unwind_info (c->as, pi, c->as_arg);
-  else if (pi->unwind_info);
+  else if (pi->unwind_info)
     {
       mempool_free (&dwarf_cie_info_pool, pi->unwind_info);
       pi->unwind_info = NULL;
@@ -481,22 +519,11 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (caching == UNW_CACHE_NONE)
     return NULL;
 
-#ifdef HAVE_ATOMIC_H
-  if (!spin_trylock_irqsave (&cache->busy, *saved_maskp))
-    return NULL;
-#else
-# ifdef HAVE_ATOMIC_OPS_H
-  if (AO_test_and_set (&cache->busy) == AO_TS_SET)
-    return NULL;
-# else
-  sigprocmask (SIG_SETMASK, &unwi_full_mask, saved_maskp);
   if (likely (caching == UNW_CACHE_GLOBAL))
     {
       Debug (16, "%s: acquiring lock\n", __FUNCTION__);
-      mutex_lock (&cache->lock);
+      lock_acquire (&cache->lock, *saved_maskp);
     }
-# endif
-#endif
 
   if (atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
     {
@@ -514,17 +541,8 @@ put_rs_cache (unw_addr_space_t as, struct dwarf_rs_cache *cache,
   assert (as->caching_policy != UNW_CACHE_NONE);
 
   Debug (16, "unmasking signals/interrupts and releasing lock\n");
-#ifdef HAVE_ATOMIC_H
-  spin_unlock_irqrestore (&cache->busy, *saved_maskp);
-#else
-# ifdef HAVE_ATOMIC_OPS_H
-  AO_CLEAR (&cache->busy);
-# else
   if (likely (as->caching_policy == UNW_CACHE_GLOBAL))
-    mutex_unlock (&cache->lock);
-  sigprocmask (SIG_SETMASK, saved_maskp, NULL);
-# endif
-#endif
+    lock_release (&cache->lock, *saved_maskp);
 }
 
 static inline unw_hash_index_t
@@ -624,6 +642,8 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   rs->hint = 0;
   rs->ip = c->ip;
   rs->ret_addr_column = c->ret_addr_column;
+  rs->signal_frame = 0;
+  tdep_cache_frame (c, rs);
 
   return rs;
 }
@@ -711,6 +731,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	 stack-pointer wasn't saved, popping the CFA implicitly pops
 	 the stack-pointer as well.  */
       if ((rs->reg[DWARF_CFA_REG_COLUMN].val == UNW_TDEP_SP)
+          && (UNW_TDEP_SP < ARRAY_SIZE(rs->reg))
 	  && (rs->reg[UNW_TDEP_SP].where == DWARF_WHERE_SAME))
 	  cfa = c->cfa;
       else
@@ -762,13 +783,20 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	  break;
 	}
     }
-  c->cfa = cfa;
-  ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
-  if (ret < 0)
-    return ret;
-  c->ip = ip;
-  /* XXX: check for ip to be code_aligned */
 
+  c->cfa = cfa;
+  /* DWARF spec says undefined return address location means end of stack. */
+  if (DWARF_IS_NULL_LOC (c->loc[c->ret_addr_column]))
+    c->ip = 0;
+  else
+  {
+    ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
+    if (ret < 0)
+      return ret;
+    c->ip = ip;
+  }
+
+  /* XXX: check for ip to be code_aligned */
   if (c->ip == prev_ip && c->cfa == prev_cfa)
     {
       Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
@@ -803,7 +831,7 @@ HIDDEN int
 dwarf_find_save_locs (struct dwarf_cursor *c)
 {
   dwarf_state_record_t sr;
-  dwarf_reg_state_t *rs, *rs1;
+  dwarf_reg_state_t *rs, rs_copy;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
@@ -812,49 +840,37 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
     return uncached_dwarf_find_save_locs (c);
 
   cache = get_rs_cache(c->as, &saved_mask);
-  if (!cache)
-    return -UNW_ENOINFO;	/* cache is busy */
   rs = rs_lookup(cache, c);
 
   if (rs)
     {
       c->ret_addr_column = rs->ret_addr_column;
-      goto apply;
+      c->use_prev_instr = ! rs->signal_frame;
     }
-
-  if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
-    goto out;
-
-  if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
-    goto out;
-
-  rs1 = &sr.rs_current;
-  if (rs1)
+  else
     {
+      if ((ret = fetch_proc_info (c, c->ip, 1)) < 0 ||
+	  (ret = create_state_record_for (c, &sr, c->ip)) < 0)
+	{
+	  put_rs_cache (c->as, cache, &saved_mask);
+	  return ret;
+	}
+
       rs = rs_new (cache, c);
-      memcpy(rs, rs1, offsetof(struct dwarf_reg_state, ip));
-      if (!rs)
-        {
-          Dprintf ("%s: failed to create unwind rs\n", __FUNCTION__);
-          ret = -UNW_EUNSPEC;
-	  goto out;
-        }
+      memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
+      cache->buckets[c->prev_rs].hint = rs - cache->buckets;
+
+      c->hint = rs->hint;
+      c->prev_rs = rs - cache->buckets;
+
+      put_unwind_info (c, &c->pi);
     }
-  cache->buckets[c->prev_rs].hint = rs - cache->buckets;
 
-  c->hint = rs->hint;
-  c->prev_rs = rs - cache->buckets;
-
-  put_unwind_info (c, &c->pi);
-  ret = apply_reg_state (c, rs);
-
-out:
+  memcpy (&rs_copy, rs, sizeof (rs_copy));
   put_rs_cache (c->as, cache, &saved_mask);
-  return ret;
 
-apply:
-  put_rs_cache (c->as, cache, &saved_mask);
-  if ((ret = apply_reg_state (c, rs)) < 0)
+  tdep_reuse_frame (c, &rs_copy);
+  if ((ret = apply_reg_state (c, &rs_copy)) < 0)
     return ret;
 
   return 0;

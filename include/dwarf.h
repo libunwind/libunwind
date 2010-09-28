@@ -39,6 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 struct dwarf_cursor;	/* forward-declaration */
 
 #include "dwarf-config.h"
+#include <link.h>
 
 /* DWARF expression opcodes.  */
 
@@ -247,6 +248,7 @@ typedef struct dwarf_reg_state
     unsigned short lru_chain;	  /* used for least-recently-used chain */
     unsigned short coll_chain;	/* used for hash collisions */
     unsigned short hint;	      /* hint for next rs to try (or -1) */
+    unsigned short signal_frame; /* optional machine-dependent signal info */
   }
 dwarf_reg_state_t;
 
@@ -266,6 +268,7 @@ typedef struct dwarf_cie_info
     uint8_t lsda_encoding;
     unsigned int sized_augmentation : 1;
     unsigned int have_abi_marker : 1;
+    unsigned int signal_frame : 1;
   }
 dwarf_cie_info_t;
 
@@ -293,6 +296,7 @@ typedef struct dwarf_cursor
 
     dwarf_loc_t loc[DWARF_NUM_PRESERVED_REGS];
 
+    unsigned int use_prev_instr :1; /* use previous (= call) or current (= signal) instruction? */
     unsigned int pi_valid :1;	/* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
     unw_proc_info_t pi;		/* info about current procedure */
@@ -312,11 +316,7 @@ typedef unsigned char unw_hash_index_t;
 
 struct dwarf_rs_cache
   {
-#ifdef HAVE_ATOMIC_OPS_H
-    AO_TS_t busy;		/* is the rs-cache busy? */
-#else
     pthread_mutex_t lock;
-#endif
     unsigned short lru_head;	/* index of lead-recently used rs */
     unsigned short lru_tail;	/* index of most-recently used rs */
 
@@ -349,6 +349,7 @@ struct unw_debug_frame_list
 /* Convenience macros: */
 #define dwarf_init			UNW_ARCH_OBJ (dwarf_init)
 #define dwarf_find_proc_info		UNW_OBJ (dwarf_find_proc_info)
+#define dwarf_find_debug_frame		UNW_OBJ (dwarf_find_debug_frame)
 #define dwarf_search_unwind_table	UNW_OBJ (dwarf_search_unwind_table)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
@@ -365,6 +366,8 @@ extern int dwarf_init (void);
 extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				 unw_proc_info_t *pi,
 				 int need_unwind_info, void *arg);
+extern int dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
+				 struct dl_phdr_info *info, unw_word_t ip);
 extern int dwarf_search_unwind_table (unw_addr_space_t as,
 				      unw_word_t ip,
 				      unw_dyn_info_t *di,

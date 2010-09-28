@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
 
@@ -25,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#if HAVE_DECL_PTRACE_POKEDATA || HAVE_TTRACE
 int
 _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
 		 int write, void *arg)
@@ -57,3 +59,27 @@ _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
     }
   return 0;
 }
+#elif HAVE_DECL_PT_IO
+int
+_UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
+		 int write, void *arg)
+{
+  struct UPT_info *ui = arg;
+  pid_t pid = ui->pid;
+  struct ptrace_io_desc iod;
+
+  iod.piod_offs = (void *)addr;
+  iod.piod_addr = val;
+  iod.piod_len = sizeof(*val);
+  iod.piod_op = write ? PIOD_WRITE_D : PIOD_READ_D;
+  if (write)
+    Debug (16, "mem[%lx] <- %lx\n", (long) addr, (long) *val);
+  if (ptrace(PT_IO, pid, (caddr_t)&iod, 0) == -1)
+    return -UNW_EINVAL;
+  if (!write)
+     Debug (16, "mem[%lx] -> %lx\n", (long) addr, (long) *val);
+  return 0;
+}
+#else
+#error Fix me
+#endif

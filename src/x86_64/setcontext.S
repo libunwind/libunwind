@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2007 Google, Inc
 	Contributed by Arun Sharma <arun.sharma@google.com>
+   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
 
@@ -24,7 +25,13 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "ucontext_i.h"
-
+#if defined __linux__
+#include <asm/unistd.h>
+#define	SIG_SETMASK   2
+#define	SIGSET_BYTE_SIZE   (64/8)
+#elif defined __FreeBSD__
+#include <sys/syscall.h>
+#endif
 
 /*  int _Ux86_64_setcontext (const ucontext_t *ucp)
 
@@ -33,8 +40,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
   
 */
 	.global _Ux86_64_setcontext
+	.type _Ux86_64_setcontext, @function
 
 _Ux86_64_setcontext:
+
+#if defined __linux__
+	/* restore signal mask
+           sigprocmask(SIG_SETMASK, ucp->uc_sigmask, NULL, sizeof(sigset_t)) */
+	push %rdi
+	mov $__NR_rt_sigprocmask, %rax
+	lea UC_SIGMASK(%rdi), %rsi
+	mov $SIG_SETMASK, %rdi
+	xor %rdx, %rdx
+	mov $SIGSET_BYTE_SIZE, %r10
+	syscall
+	pop %rdi
 
         /* restore fp state */
     // TODO: why not just use leaq?
@@ -45,6 +65,27 @@ _Ux86_64_setcontext:
 #endif // UC_MCONTEXT_FPREGS_PTR
 	fldenv (%r8)
 	ldmxcsr FPREGS_OFFSET_MXCSR(%r8)
+#elif defined __FreeBSD__
+	/* restore signal mask */
+	pushq	%rdi
+	xorl	%edx,%edx
+	leaq	UC_SIGMASK(%rdi),%rsi
+	movl	$3,%edi/* SIG_SETMASK */
+	movl	$SYS_sigprocmask,%eax
+	movq	%rcx,%r10
+	syscall
+	popq	%rdi
+
+	/* restore fp state */
+	cmpq $UC_MCONTEXT_FPOWNED_FPU,UC_MCONTEXT_OWNEDFP(%rdi)
+	jne 1f
+	cmpq $UC_MCONTEXT_FPFMT_XMM,UC_MCONTEXT_FPFORMAT(%rdi)
+	jne 1f
+	fxrstor UC_MCONTEXT_FPSTATE(%rdi)
+1:
+#else
+#error Port me
+#endif
 
 	/* restore the rest of the state */
 	mov    UC_MCONTEXT_GREGS_R8(%rdi),%r8
@@ -69,7 +110,7 @@ _Ux86_64_setcontext:
 	mov    UC_MCONTEXT_GREGS_RDI(%rdi),%rdi
 	retq
 
-#ifdef __linux__
+	.size _Ux86_64_setcontext, . - _Ux86_64_setcontext
+
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits
-#endif

@@ -25,6 +25,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdio.h>
+#include <sys/param.h>
 
 #include "libunwind_i.h"
 
@@ -147,7 +148,7 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   Elf_W (Phdr) *phdr;
   int i, ret;
 
-  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff);
+  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, NULL, 0);
   if (ret < 0)
     return ret;
 

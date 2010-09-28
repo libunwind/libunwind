@@ -1,7 +1,7 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
-		run-check-namespace check-namespace.sh.in
+		run-check-namespace check-namespace.sh.in Gtest-nomalloc.c
 
 noinst_PROGRAMS_common =
 check_PROGRAMS_common = test-proc-info test-static-link \
@@ -41,9 +41,13 @@ endif #ARCH_IA64
 			Gtest-dyn1 Ltest-dyn1				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
-			Ltest-nomalloc
+			Ltest-nomalloc rs-race
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
 			Gperf-simple Lperf-simple
+
+if SUPPORT_CXX_EXCEPTIONS
+ check_PROGRAMS_cdep += Ltest-cxx-exceptions
+endif
 
 perf: perf-startup Gperf-simple Lperf-simple
 	@echo "########## Basic performance of generic libunwind:"
@@ -81,6 +85,8 @@ ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
 ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
+Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
+
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
@@ -99,7 +105,8 @@ test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
 Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
 test_async_sig_LDADD = $(LIBUNWIND) -lpthread
+rs_race_LDADD = $(LIBUNWIND) -lpthread
 
-LDADD += -ldl
+LDADD += @DLLIB@
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 

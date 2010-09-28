@@ -115,10 +115,12 @@ main (int argc, char **argv)
   if (verbose)
     printf ("Caching: global\n");
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_GLOBAL);
+  doit ();
 
   if (verbose)
     printf ("Caching: per-thread\n");
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
+  doit ();
 
   if (nerrors)
     {

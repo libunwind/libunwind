@@ -26,6 +26,10 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_CONFIG_H
+#include <config.h>
+#endif
+
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -43,43 +47,12 @@ static struct unw_addr_space local_addr_space;
 
 PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
-static inline void *
-uc_addr (ucontext_t *uc, int reg)
-{
-  void *addr;
-
-  switch (reg)
-    {
-    case UNW_X86_64_R8: addr = &uc->uc_mcontext.gregs[REG_R8]; break;
-    case UNW_X86_64_R9: addr = &uc->uc_mcontext.gregs[REG_R9]; break;
-    case UNW_X86_64_R10: addr = &uc->uc_mcontext.gregs[REG_R10]; break;
-    case UNW_X86_64_R11: addr = &uc->uc_mcontext.gregs[REG_R11]; break;
-    case UNW_X86_64_R12: addr = &uc->uc_mcontext.gregs[REG_R12]; break;
-    case UNW_X86_64_R13: addr = &uc->uc_mcontext.gregs[REG_R13]; break;
-    case UNW_X86_64_R14: addr = &uc->uc_mcontext.gregs[REG_R14]; break;
-    case UNW_X86_64_R15: addr = &uc->uc_mcontext.gregs[REG_R15]; break;
-    case UNW_X86_64_RDI: addr = &uc->uc_mcontext.gregs[REG_RDI]; break;
-    case UNW_X86_64_RSI: addr = &uc->uc_mcontext.gregs[REG_RSI]; break;
-    case UNW_X86_64_RBP: addr = &uc->uc_mcontext.gregs[REG_RBP]; break;
-    case UNW_X86_64_RBX: addr = &uc->uc_mcontext.gregs[REG_RBX]; break;
-    case UNW_X86_64_RDX: addr = &uc->uc_mcontext.gregs[REG_RDX]; break;
-    case UNW_X86_64_RAX: addr = &uc->uc_mcontext.gregs[REG_RAX]; break;
-    case UNW_X86_64_RCX: addr = &uc->uc_mcontext.gregs[REG_RCX]; break;
-    case UNW_X86_64_RSP: addr = &uc->uc_mcontext.gregs[REG_RSP]; break;
-    case UNW_X86_64_RIP: addr = &uc->uc_mcontext.gregs[REG_RIP]; break;
-
-    default:
-      addr = NULL;
-    }
-  return addr;
-}
-
 # ifdef UNW_LOCAL_ONLY
 
 HIDDEN void *
 tdep_uc_addr (ucontext_t *uc, int reg)
 {
-  return uc_addr (uc, reg);
+  return x86_64_r_uc_addr (uc, reg);
 }
 
 # endif /* UNW_LOCAL_ONLY */
@@ -117,8 +90,20 @@ static int
 validate_mem (unw_word_t addr)
 {
   int i, victim;
+#ifdef HAVE_MINCORE
+  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
+#endif
+  size_t len;
+
+  if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
+    len = PAGE_SIZE;
+  else
+    len = PAGE_SIZE * 2;
 
   addr = PAGE_START(addr);
+
+  if (addr == 0)
+    return -1;
 
   for (i = 0; i < NLGA; i++)
     {
@@ -126,7 +111,11 @@ validate_mem (unw_word_t addr)
 	return 0;
     }
 
-  if (msync ((void *) addr, 1, MS_SYNC) == -1)
+#ifdef HAVE_MINCORE
+  if (mincore ((void *) addr, len, mvec) == -1)
+#else
+  if (msync ((void *) addr, len, MS_ASYNC) == -1)
+#endif
     return -1;
 
   victim = lga_victim;
@@ -177,7 +166,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (unw_is_fpreg (reg))
     goto badreg;
 
-  if (!(addr = uc_addr (uc, reg)))
+  if (!(addr = x86_64_r_uc_addr (uc, reg)))
     goto badreg;
 
   if (write)
@@ -207,7 +196,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (!unw_is_fpreg (reg))
     goto badreg;
 
-  if (!(addr = uc_addr (uc, reg)))
+  if (!(addr = x86_64_r_uc_addr (uc, reg)))
     goto badreg;
 
   if (write)

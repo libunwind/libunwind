@@ -217,6 +217,9 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
 #define tdep_access_reg			UNW_OBJ(access_reg)
 #define tdep_access_fpreg		UNW_OBJ(access_fpreg)
+#define tdep_fetch_frame(c,ip,n)	do {} while(0)
+#define tdep_cache_frame(c,rs)		do {} while(0)
+#define tdep_reuse_frame(c,rs)		do {} while(0)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
@@ -245,10 +248,21 @@ extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     int need_unwind_info, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-			       unsigned long *segbase, unsigned long *mapoff);
+			       unsigned long *segbase, unsigned long *mapoff,
+			       char *path, size_t pathlen);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
+
+/* unwinding method selection support */
+#define UNW_ARM_METHOD_ALL          0xFF
+#define UNW_ARM_METHOD_DWARF        0x01
+#define UNW_ARM_METHOD_FRAME        0x02
+
+#define unwi_unwind_method   UNWI_ARCH_OBJ(unwind_method)
+extern int unwi_unwind_method;
+
+#define UNW_TRY_METHOD(x)   (unwi_unwind_method & x)
 
 #endif /* ARM_LIBUNWIND_I_H */

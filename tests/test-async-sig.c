@@ -23,6 +23,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* Check whether basic unwinding truly is async-signal safe.  */
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+#endif
+
+#include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -45,6 +50,14 @@ int verbose;
 int nerrors;
 int sigcount;
 
+#ifndef CONFIG_BLOCK_SIGNALS
+/* When libunwind is configured with --enable-block-signals=no, the caller
+   is responsible for preventing recursion via signal handlers.
+   We use a simple global here.  In a multithreaded program, one would use
+   a thread-local variable.  */
+int recurcount;
+#endif
+
 #define panic(args...)					\
 	{ ++nerrors; fprintf (stderr, args); return; }
 
@@ -57,6 +70,12 @@ do_backtrace (int may_print, int get_proc_name)
   unw_context_t uc;
   int ret;
   int depth = 0;
+
+#ifndef CONFIG_BLOCK_SIGNALS
+  if (recurcount > 0)
+    return;
+  recurcount += 1;
+#endif
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -102,6 +121,10 @@ do_backtrace (int may_print, int get_proc_name)
         }
     }
   while (ret > 0);
+
+#ifndef CONFIG_BLOCK_SIGNALS
+  recurcount -= 1;
+#endif
 }
 
 void
@@ -163,4 +186,5 @@ main (int argc, char **argv)
 	  exit (-1);
         }
     }
+  return (0);
 }

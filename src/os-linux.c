@@ -33,26 +33,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 PROTECTED int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-		    unsigned long *segbase, unsigned long *mapoff)
+		    unsigned long *segbase, unsigned long *mapoff,
+		    char *path, size_t pathlen)
 {
   struct map_iterator mi;
-  char path[PATH_MAX];
-  int found = 0;
+  int found = 0, rc;
   unsigned long hi;
 
-  maps_init (&mi, pid);
-  while (maps_next (&mi, segbase, &hi, mapoff, path, sizeof (path)))
+  if (maps_init (&mi, pid) < 0)
+    return -1;
+
+  while (maps_next (&mi, segbase, &hi, mapoff))
     if (ip >= *segbase && ip < hi)
       {
 	found = 1;
 	break;
       }
-  maps_close (&mi);
 
   if (!found)
-    return -1;
-
-  return elf_map_image (ei, path);
+    {
+      maps_close (&mi);
+      return -1;
+    }
+  if (path)
+    {
+      strncpy(path, mi.path, pathlen);
+    }
+  rc = elf_map_image (ei, mi.path);
+  maps_close (&mi);
+  return rc;
 }
 
 #endif /* UNW_REMOTE_ONLY */
