@@ -64,12 +64,12 @@ set(libunwind_sources_x8664_32
     x86/Linit.c
     x86/Linit_local.c
     x86/Linit_remote.c
-    x86/Lis_signal_frame.c
     x86/Lget_proc_info.c
     x86/Lregs.c
     x86/Lresume.c
     x86/getcontext.c
     x86/Lstep.c
+    x86/Los-linux.c
    )
 
 
@@ -96,13 +96,13 @@ set(libunwind_sources_x8664_64
     x86_64/Linit.c
     x86_64/Linit_local.c
     x86_64/Linit_remote.c
-    x86_64/Lis_signal_frame.c
     x86_64/Lget_proc_info.c
     x86_64/Lregs.c
     x86_64/Lresume.c
     x86_64/Lstep.c
     ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
     ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
+    x86_64/Los-linux.c
    )
 
 
@@ -110,6 +110,7 @@ add_definitions(-DHAVE_CONFIG_H
                 -D_GNU_SOURCE
                 -fPIC
                 -DPIC
+		-fexceptions
                )
         
 include_directories(.
