@@ -1500,10 +1500,11 @@ main (int argc, char **argv)
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_GLOBAL);
   doit ();
 
-  if (verbose)
-    printf ("Caching: per-thread\n");
-  unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
-  doit ();
+  // UNW_CACHE_PER_THREAD is not yet implemented 
+//  if (verbose)
+//    printf ("Caching: per-thread\n");
+//  unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
+//  doit ();
 
   if (verbose)
     printf ("SUCCESS\n");
