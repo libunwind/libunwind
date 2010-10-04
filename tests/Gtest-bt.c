@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 
 #include <errno.h>
-#if HAVE_EXECINFO_H
+#ifdef HAVE_EXECINFO_H
 # include <execinfo.h>
 #else
   extern int backtrace (void **, int);
