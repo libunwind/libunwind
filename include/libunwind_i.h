@@ -147,8 +147,8 @@ cmpxchg_ptr (void *addr, void *old, void *new)
 #  endif
 # define HAVE_FETCH_AND_ADD1
 #else
-# ifdef HAVE_IA64INTRIN_H
-#  include <ia64intrin.h>
+//# ifdef HAVE_IA64INTRIN_H
+//#  include <ia64intrin.h>
 static inline int
 cmpxchg_ptr (void *addr, void *old, void *new)
 {
@@ -165,7 +165,7 @@ cmpxchg_ptr (void *addr, void *old, void *new)
 #  define fetch_and_add1(_ptr)		__sync_fetch_and_add(_ptr, 1)
 #  define HAVE_CMPXCHG
 #  define HAVE_FETCH_AND_ADD1
-# endif
+//# endif
 #endif
 #define atomic_read(ptr)	(*(ptr))
 
