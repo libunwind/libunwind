@@ -64,7 +64,6 @@ set(libunwind_sources_x8664_32
     elf32.c
     x86/is_fpreg.c
     x86/regname.c
-    x86/setcontext.c
     x86/Lcreate_addr_space.c
     x86/Lget_save_loc.c
     x86/Lglobal.c
@@ -74,23 +73,40 @@ set(libunwind_sources_x8664_32
     x86/Lget_proc_info.c
     x86/Lregs.c
     x86/Lresume.c
-    x86/getcontext.c
     x86/Lstep.c
-    x86/Los-linux.c
+    ${CMAKE_CURRENT_BINARY_DIR}/getcontext-32.o
    )
+
+if("${CMAKE_SYSTEM_NAME}" MATCHES "Linux")
+    list(APPEND libunwind_sources_x8664_32 x86/Los-linux.c)
+    set(x8664_32_getcontext ${CMAKE_CURRENT_SOURCE_DIR}/x86/getcontext-linux.S)
+elseif("${CMAKE_SYSTEM_NAME}" MATCHES "SunOS")
+    list(APPEND libunwind_sources_x8664_32 x86/Los-solaris.c)
+    set(x8664_32_getcontext ${CMAKE_CURRENT_SOURCE_DIR}/x86/getcontext-solaris.S)
+endif()
+
 
 string(REPLACE " " ";" c_flags "${CMAKE_C_FLAGS}")
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/getcontext-32.o
+                   COMMAND ${CMAKE_C_COMPILER} ${c_flags}
+                           -c ${x8664_32_getcontext}
+                           -o ${CMAKE_CURRENT_BINARY_DIR}/getcontext-32.o
+                   DEPENDS ${x8664_32_getcontext})
+
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/getcontext-64.o
                    COMMAND ${CMAKE_C_COMPILER} ${c_flags}
                            -c ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/getcontext.S
-                           -o ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
+                           -o ${CMAKE_CURRENT_BINARY_DIR}/getcontext-64.o
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/getcontext.S)
 
-add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/setcontext-64.o
                    COMMAND ${CMAKE_C_COMPILER} ${c_flags}
                            -c ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/setcontext.S
-                           -o ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
+                           -o ${CMAKE_CURRENT_BINARY_DIR}/setcontext-64.o
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/setcontext.S)
 
 
@@ -108,8 +124,8 @@ set(libunwind_sources_x8664_64
     x86_64/Lregs.c
     x86_64/Lresume.c
     x86_64/Lstep.c
-    ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
-    ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
+    ${CMAKE_CURRENT_BINARY_DIR}/getcontext-64.o
+    ${CMAKE_CURRENT_BINARY_DIR}/setcontext-64.o
    )
 
 
@@ -136,6 +152,7 @@ include_directories(.
 # TODO: add checks for all platforms
 if("${CMAKE_C_FLAGS}" MATCHES "-m32")
     set(target "x8664_32")
+    include_directories(../include/tdep-x86)
 elseif("${CMAKE_C_FLAGS}" MATCHES "-m64")
     set(target "x8664_64")
     include_directories(../include/tdep-x86_64)
