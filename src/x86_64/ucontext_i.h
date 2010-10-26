@@ -98,6 +98,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define UC_MCONTEXT_GREGS_RIP	0xc8
 #define UC_MCONTEXT_FPREGS_MEM	0x120
 #define FPREGS_OFFSET_MXCSR	0x18
+#define UC_SIGMASK		0x128
 #else
 #error "Define fields offsets in ucontext structure for your platform"
 #endif // __sun

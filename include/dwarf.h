@@ -366,8 +366,10 @@ extern int dwarf_init (void);
 extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				 unw_proc_info_t *pi,
 				 int need_unwind_info, void *arg);
+#ifdef CONFIG_DEBUG_FRAME
 extern int dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
 				 struct dl_phdr_info *info, unw_word_t ip);
+#endif // CONFIG_DEBUG_FRAME
 extern int dwarf_search_unwind_table (unw_addr_space_t as,
 				      unw_word_t ip,
 				      unw_dyn_info_t *di,

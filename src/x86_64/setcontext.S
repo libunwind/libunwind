@@ -28,6 +28,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if defined __linux__
 #include <asm/unistd.h>
 #define	SIG_SETMASK   2
+#elif defined __sun__
+#define SYS_sigprocmask 95
+#define	SIG_SETMASK   3
 #define	SIGSET_BYTE_SIZE   (64/8)
 #elif defined __FreeBSD__
 #include <sys/syscall.h>
@@ -44,15 +47,21 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 _Ux86_64_setcontext:
 
-#if defined __linux__
+#if defined(__linux__) || defined(__sun__)
 	/* restore signal mask
            sigprocmask(SIG_SETMASK, ucp->uc_sigmask, NULL, sizeof(sigset_t)) */
 	push %rdi
+#ifdef __linux__
 	mov $__NR_rt_sigprocmask, %rax
+#elif defined(__sun__)
+    mov $SYS_sigprocmask, %rax
+#else
+#error Port me
+#endif
 	lea UC_SIGMASK(%rdi), %rsi
 	mov $SIG_SETMASK, %rdi
 	xor %rdx, %rdx
-	mov $SIGSET_BYTE_SIZE, %r10
+	mov $8 , %r10
 	syscall
 	pop %rdi
 

@@ -3,7 +3,6 @@
 include(config.cmake)
 
 set(libunwind_sources_common
-    os-linux.c
     mi/init.c
     mi/flush_cache.c
     mi/mempool.c
@@ -53,6 +52,14 @@ set(libunwind_sources_common
     dwarf/Lfind_proc_info-lsb.c
    )
 
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    list(APPEND libunwind_sources_common os-linux.c)
+elseif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
+    list(APPEND libunwind_sources_common os-solaris.c)
+endif()
+
+
 set(libunwind_sources_x8664_32
     elf32.c
     x86/is_fpreg.c
@@ -72,15 +79,16 @@ set(libunwind_sources_x8664_32
     x86/Los-linux.c
    )
 
+string(REPLACE " " ";" c_flags "${CMAKE_C_FLAGS}")
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
-                   COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS}
+                   COMMAND ${CMAKE_C_COMPILER} ${c_flags}
                            -c ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/getcontext.S
                            -o ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/getcontext.S)
 
 add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
-                   COMMAND ${CMAKE_C_COMPILER} ${CMAKE_C_FLAGS}
+                   COMMAND ${CMAKE_C_COMPILER} ${c_flags}
                            -c ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/setcontext.S
                            -o ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
                    DEPENDS ${CMAKE_CURRENT_SOURCE_DIR}/x86_64/setcontext.S)
@@ -102,8 +110,14 @@ set(libunwind_sources_x8664_64
     x86_64/Lstep.c
     ${CMAKE_CURRENT_BINARY_DIR}/getcontext.o
     ${CMAKE_CURRENT_BINARY_DIR}/setcontext.o
-    x86_64/Los-linux.c
    )
+
+
+if(CMAKE_SYSTEM_NAME MATCHES "Linux")
+    list(APPEND libunwind_sources_x8664_64 x86_64/Los-linux.c)
+elseif(CMAKE_SYSTEM_NAME MATCHES "SunOS")
+    list(APPEND libunwind_sources_x8664_64 x86_64/Los-solaris.c)
+endif()
 
 
 add_definitions(-DHAVE_CONFIG_H
