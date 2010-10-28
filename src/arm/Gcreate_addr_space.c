@@ -46,7 +46,10 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
    */
   if (byte_order != 0 && byte_order != __LITTLE_ENDIAN
       && byte_order != __BIG_ENDIAN)
-    return NULL;
+    {
+      free(as);
+      return NULL;
+    }
   
   /* Default to little-endian for ARM.  */
   if (byte_order == 0 || byte_order == __LITTLE_ENDIAN)
