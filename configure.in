@@ -179,7 +179,11 @@ AC_MSG_RESULT([$enable_cxx_exceptions])
 AC_MSG_CHECKING([whether to load .debug_frame sections])
 AC_ARG_ENABLE(debug_frame,
 [  --enable-debug-frame Load the ".debug_frame" section if available],
-[enable_debug_frame=$enableval], [enable_debug_frame=no])
+[enable_debug_frame=$enableval], [
+case "${target_arch}" in
+  (arm) enable_debug_frame=yes;;
+  (*)   enable_debug_frame=no;;
+esac])
 if test x$enable_debug_frame = xyes; then
   AC_DEFINE([CONFIG_DEBUG_FRAME], [], [Enable Debug Frame])
 fi
