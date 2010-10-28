@@ -67,3 +67,5 @@ pdf:
 		page=`basename $$n .man`;				\
 		$(L2P) $(srcdir)/$$page.tex "$$page(3).pdf";		\
 	done
+
+MAINTAINERCLEANFILES = Makefile.in

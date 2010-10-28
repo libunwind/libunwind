@@ -520,6 +520,7 @@ EXTRA_DIST =	elfxx.h elfxx.c unwind/unwind-internal.h	\
 		$(libunwind_setjmp_la_SOURCES_ppc32)		\
 		$(libunwind_setjmp_la_SOURCES_ppc64)
 
+MAINTAINERCLEANFILES = Makefile.in
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets

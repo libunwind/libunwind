@@ -65,3 +65,18 @@ EXTRA_DIST = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
 	include/tdep-ppc64/jmpbuf.h include/tdep-ppc64/libunwind_i.h	\
 	include/libunwind.h include/tdep/libunwind_i.h			\
 	include/tdep/jmpbuf.h include/tdep/dwarf-config.h
+
+MAINTAINERCLEANFILES = \
+	Makefile.in \
+	INSTALL \
+	aclocal.m4 \
+	configure \
+	config/compile \
+	config/config.guess \
+	config/config.sub \
+	config/depcomp \
+	config/install-sh \
+	config/ltmain.sh \
+	config/missing \
+	include/config.h.in \
+	include/config.h.in~

@@ -3,6 +3,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 		run-check-namespace check-namespace.sh.in Gtest-nomalloc.c
 
+MAINTAINERCLEANFILES = Makefile.in
+
 noinst_PROGRAMS_common =
 check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
