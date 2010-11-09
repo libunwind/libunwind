@@ -133,6 +133,15 @@ AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
 
+AC_MSG_CHECKING([whether to include DWARF support])
+if test x$target_arch != xia64; then
+  use_dwarf=yes
+else
+  use_dwarf=no
+fi
+AM_CONDITIONAL(USE_DWARF, [test x$use_dwarf = xyes])
+AC_MSG_RESULT([$use_dwarf])
+
 if test x$target_arch = xppc64; then
         libdir='${exec_prefix}/lib64'
         AC_MSG_NOTICE([PowerPC64 detected, lib will be installed ${libdir}]);
