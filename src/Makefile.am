@@ -30,18 +30,9 @@ libunwind_ptrace_a_SOURCES =						  \
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
 					  -version-info $(SETJMP_SO_VERSION)
 libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la -lc
-libunwind_setjmp_la_SOURCES_common	= setjmp/setjmp_i.h 	\
+libunwind_setjmp_la_SOURCES		= setjmp/setjmp_i.h	\
 					  setjmp/longjmp.c	\
 					  setjmp/siglongjmp.c
-libunwind_setjmp_la_SOURCES_arm		= arm/siglongjmp.S
-libunwind_setjmp_la_SOURCES_ia64	= ia64/setjmp.S  ia64/sigsetjmp.S  \
-					  ia64/longjmp.S ia64/siglongjmp.S
-libunwind_setjmp_la_SOURCES_hppa	= hppa/siglongjmp.S
-libunwind_setjmp_la_SOURCES_mips	= mips/siglongjmp.S
-libunwind_setjmp_la_SOURCES_x86		= x86/longjmp.S x86/siglongjmp.S
-libunwind_setjmp_la_SOURCES_x86_64	= x86_64/longjmp.S x86_64/siglongjmp.S
-libunwind_setjmp_la_SOURCES_ppc64       = ppc/longjmp.S ppc/siglongjmp.S
-libunwind_setjmp_la_SOURCES_ppc32       = ppc/longjmp.S ppc/siglongjmp.S
 
 ### libunwind:
 
@@ -380,8 +371,7 @@ if ARCH_ARM
 if !REMOTE_ONLY
  libunwind_arm_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
-				  $(libunwind_setjmp_la_SOURCES_arm)
+ libunwind_setjmp_la_SOURCES += arm/siglongjmp.S
 else
 if ARCH_IA64
  ia64_mk_Gcursor_i_SOURCES = ia64/mk_Gcursor_i.c
@@ -399,8 +389,8 @@ Lcursor_i.h: ia64/mk_Lcursor_i
 if !REMOTE_ONLY
  libunwind_ia64_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
-				  $(libunwind_setjmp_la_SOURCES_ia64)
+ libunwind_setjmp_la_SOURCES += ia64/setjmp.S  ia64/sigsetjmp.S  \
+				ia64/longjmp.S ia64/siglongjmp.S
 else
 if ARCH_HPPA
  lib_LTLIBRARIES_arch = libunwind-hppa.la
@@ -410,8 +400,7 @@ if ARCH_HPPA
 if !REMOTE_ONLY
  libunwind_hppa_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
-				  $(libunwind_setjmp_la_SOURCES_hppa)
+ libunwind_setjmp_la_SOURCES += hppa/siglongjmp.S
 else
 if ARCH_MIPS
  lib_LTLIBRARIES_arch = libunwind-mips.la
@@ -421,8 +410,7 @@ if ARCH_MIPS
 if !REMOTE_ONLY
  libunwind_mips_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
-				  $(libunwind_setjmp_la_SOURCES_mips)
+ libunwind_setjmp_la_SOURCES += mips/siglongjmp.S
 else
 if ARCH_X86
  lib_LTLIBRARIES_arch = libunwind-x86.la
@@ -432,8 +420,7 @@ if ARCH_X86
 if !REMOTE_ONLY
  libunwind_x86_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
-				  $(libunwind_setjmp_la_SOURCES_x86)
+ libunwind_setjmp_la_SOURCES += x86/longjmp.S x86/siglongjmp.S
 else
 if ARCH_X86_64
  lib_LTLIBRARIES_arch = libunwind-x86_64.la
@@ -443,8 +430,7 @@ if ARCH_X86_64
 if !REMOTE_ONLY
  libunwind_x86_64_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES	= $(libunwind_setjmp_la_SOURCES_common) \
-				  $(libunwind_setjmp_la_SOURCES_x86_64)
+ libunwind_setjmp_la_SOURCES += x86_64/longjmp.S x86_64/siglongjmp.S
 else
 if ARCH_PPC32
  lib_LTLIBRARIES_arch = libunwind-ppc32.la
@@ -454,8 +440,7 @@ if ARCH_PPC32
 if !REMOTE_ONLY
  libunwind_ppc32_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES    = $(libunwind_setjmp_la_SOURCES_common) \
-                                  $(libunwind_setjmp_la_SOURCES_ppc32)
+ libunwind_setjmp_la_SOURCES += ppc/longjmp.S ppc/siglongjmp.S
 else
 if ARCH_PPC64
  lib_LTLIBRARIES_arch = libunwind-ppc64.la
@@ -465,8 +450,7 @@ if ARCH_PPC64
 if !REMOTE_ONLY
  libunwind_ppc64_la_LIBADD = libunwind.la -lc
 endif
- libunwind_setjmp_la_SOURCES    = $(libunwind_setjmp_la_SOURCES_common) \
-                                  $(libunwind_setjmp_la_SOURCES_ppc64)
+ libunwind_setjmp_la_SOURCES += ppc/longjmp.S ppc/siglongjmp.S
 
 endif # ARCH_PPC64
 endif # ARCH_PPC32
@@ -508,17 +492,7 @@ EXTRA_DIST =	elfxx.h elfxx.c unwind/unwind-internal.h	\
 		$(libunwind_ia64_la_SOURCES_ia64)		\
 		$(libunwind_mips_la_SOURCES_mips)		\
 		$(libunwind_x86_la_SOURCES_x86)			\
-		$(libunwind_x86_64_la_SOURCES_x86_64)		\
-		$(libunwind_ptrace_a_SOURCES)			\
-		$(libunwind_setjmp_la_SOURCES_common)		\
-		$(libunwind_setjmp_la_SOURCES_arm)		\
-		$(libunwind_setjmp_la_SOURCES_hppa)		\
-		$(libunwind_setjmp_la_SOURCES_ia64)		\
-		$(libunwind_setjmp_la_SOURCES_mips)		\
-		$(libunwind_setjmp_la_SOURCES_x86)		\
-		$(libunwind_setjmp_la_SOURCES_x86_64)		\
-		$(libunwind_setjmp_la_SOURCES_ppc32)		\
-		$(libunwind_setjmp_la_SOURCES_ppc64)
+		$(libunwind_x86_64_la_SOURCES_x86_64)
 
 MAINTAINERCLEANFILES = Makefile.in
 
