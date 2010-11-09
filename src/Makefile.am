@@ -5,14 +5,11 @@ SETJMP_SO_VERSION=0:0:0
 #
 COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 
-if REMOTE_ONLY
-LIBRARIES_cdep			=
-lib_LTLIBRARIES_cdep		=
-lib_LTLIBRARIES_cdep_setjmp	=
-else
-LIBRARIES_cdep			= libunwind-ptrace.a
-lib_LTLIBRARIES_cdep		= libunwind.la
-lib_LTLIBRARIES_cdep_setjmp	= libunwind-setjmp.la
+lib_LIBRARIES =
+lib_LTLIBRARIES =
+if !REMOTE_ONLY
+lib_LIBRARIES += libunwind-ptrace.a
+lib_LTLIBRARIES += libunwind.la libunwind-setjmp.la
 endif
 
 ### libunwind-ptrace:
@@ -364,7 +361,7 @@ if OS_FREEBSD
 endif
 
 if ARCH_ARM
- lib_LTLIBRARIES_arch = libunwind-arm.la
+ lib_LTLIBRARIES += libunwind-arm.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_arm)
  libunwind_arm_la_SOURCES = $(libunwind_arm_la_SOURCES_arm)
  libunwind_arm_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -382,7 +379,8 @@ Gcursor_i.h: ia64/mk_Gcursor_i
 	ia64/mk_Gcursor_i > $@
 Lcursor_i.h: ia64/mk_Lcursor_i
 	ia64/mk_Lcursor_i > $@
- lib_LTLIBRARIES_arch = libunwind-ia64.la
+
+ lib_LTLIBRARIES += libunwind-ia64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -393,7 +391,7 @@ endif
 				ia64/longjmp.S ia64/siglongjmp.S
 else
 if ARCH_HPPA
- lib_LTLIBRARIES_arch = libunwind-hppa.la
+ lib_LTLIBRARIES += libunwind-hppa.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_hppa)
  libunwind_hppa_la_SOURCES = $(libunwind_hppa_la_SOURCES_hppa)
  libunwind_hppa_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -403,7 +401,7 @@ endif
  libunwind_setjmp_la_SOURCES += hppa/siglongjmp.S
 else
 if ARCH_MIPS
- lib_LTLIBRARIES_arch = libunwind-mips.la
+ lib_LTLIBRARIES += libunwind-mips.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_mips)
  libunwind_mips_la_SOURCES = $(libunwind_mips_la_SOURCES_mips)
  libunwind_mips_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -413,7 +411,7 @@ endif
  libunwind_setjmp_la_SOURCES += mips/siglongjmp.S
 else
 if ARCH_X86
- lib_LTLIBRARIES_arch = libunwind-x86.la
+ lib_LTLIBRARIES += libunwind-x86.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86) $(libunwind_x86_la_SOURCES_os)
  libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
  libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -423,7 +421,7 @@ endif
  libunwind_setjmp_la_SOURCES += x86/longjmp.S x86/siglongjmp.S
 else
 if ARCH_X86_64
- lib_LTLIBRARIES_arch = libunwind-x86_64.la
+ lib_LTLIBRARIES += libunwind-x86_64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86_64)
  libunwind_x86_64_la_SOURCES = $(libunwind_x86_64_la_SOURCES_x86_64)
  libunwind_x86_64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -433,7 +431,7 @@ endif
  libunwind_setjmp_la_SOURCES += x86_64/longjmp.S x86_64/siglongjmp.S
 else
 if ARCH_PPC32
- lib_LTLIBRARIES_arch = libunwind-ppc32.la
+ lib_LTLIBRARIES += libunwind-ppc32.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ppc32)
  libunwind_ppc32_la_SOURCES = $(libunwind_ppc32_la_SOURCES_ppc32)
  libunwind_ppc32_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -443,7 +441,7 @@ endif
  libunwind_setjmp_la_SOURCES += ppc/longjmp.S ppc/siglongjmp.S
 else
 if ARCH_PPC64
- lib_LTLIBRARIES_arch = libunwind-ppc64.la
+ lib_LTLIBRARIES += libunwind-ppc64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ppc64)
  libunwind_ppc64_la_SOURCES = $(libunwind_ppc64_la_SOURCES_ppc64)
  libunwind_ppc64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
@@ -468,10 +466,6 @@ endif # ARCH_ARM
 libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -XCClinker -nostdlib \
 			$(LDFLAGS_STATIC_LIBCXA) -version-info $(SOVERSION)
 libunwind_la_LIBADD  = -lc $(LIBCRTS)
-
-lib_LIBRARIES = $(LIBRARIES_cdep)
-lib_LTLIBRARIES = $(lib_LTLIBRARIES_cdep) $(lib_LTLIBRARIES_arch) \
-		  $(lib_LTLIBRARIES_cdep_setjmp)
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
