@@ -209,16 +209,6 @@ AC_MSG_RESULT([$enable_conservative_checks])
 
 LIBUNWIND___THREAD
 
-AC_MSG_CHECKING([if linker supports -static-libcxa])
-save_LDFLAGS="$LDFLAGS"
-LDFLAGS="$LDFLAGS -static-libcxa"
-AC_TRY_LINK([], [], [have_static_libcxa=yes], [have_static_libcxa=no])
-LDFLAGS="$save_LDFLAGS"
-if test "x$have_static_libcxa" = xyes; then
-  LDFLAGS_STATIC_LIBCXA="-XCClinker -static-libcxa"
-fi
-AC_MSG_RESULT([$have_static_libcxa])
-
 AC_MSG_CHECKING([for Intel compiler])
 AC_TRY_COMPILE([], [#ifndef __INTEL_COMPILER
 #error choke me
@@ -229,6 +219,18 @@ if test x$GCC = xyes -a x$intel_compiler != xyes; then
   LIBCRTS="-lgcc"
 fi
 AC_MSG_RESULT([$intel_compiler])
+
+if test x$intel_compiler = xyes; then
+  AC_MSG_CHECKING([if linker supports -static-libcxa])
+  save_LDFLAGS="$LDFLAGS"
+  LDFLAGS="$LDFLAGS -static-libcxa"
+  AC_TRY_LINK([], [], [have_static_libcxa=yes], [have_static_libcxa=no])
+  LDFLAGS="$save_LDFLAGS"
+  if test "x$have_static_libcxa" = xyes; then
+    LDFLAGS_STATIC_LIBCXA="-XCClinker -static-libcxa"
+  fi
+  AC_MSG_RESULT([$have_static_libcxa])
+fi
 
 CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 
