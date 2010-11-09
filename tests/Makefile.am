@@ -18,7 +18,7 @@ if REMOTE_ONLY
 perf:
 
 else
- LIBUNWIND_local = ../src/libunwind.la
+ LIBUNWIND_local = $(top_builddir)/src/libunwind.la
 if ARCH_IA64
  noinst_PROGRAMS_arch = ia64-test-dyn1
  check_SCRIPTS_arch =	run-ia64-test-dyn1
@@ -97,18 +97,38 @@ forker_LDFLAGS = -static
 Gtest_bt_SOURCES = Gtest-bt.c ident.c
 Ltest_bt_SOURCES = Ltest-bt.c ident.c
 test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
-
-LIBUNWIND = ../src/libunwind-$(arch).la $(LIBUNWIND_local)
-LDADD = $(LIBUNWIND)
-
-test_setjmp_LDADD = ../src/libunwind-setjmp.la $(LIBUNWIND_local)
-ia64_test_setjmp_LDADD = ../src/libunwind-setjmp.la $(LIBUNWIND_local)
-test_ptrace_LDADD = ../src/libunwind-ptrace.a $(LIBUNWIND)
-Ltest_concurrent_LDADD = $(LIBUNWIND) -lpthread
-Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
-test_async_sig_LDADD = $(LIBUNWIND) -lpthread
-rs_race_LDADD = $(LIBUNWIND) -lpthread
-
-LDADD += @DLLIB@
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 
+LIBUNWIND_generic = $(top_builddir)/src/libunwind-$(arch).la
+LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
+LIBUNWIND_setjmp = $(top_builddir)/src/libunwind-setjmp.la
+
+test_async_sig_LDADD = $(LIBUNWIND_generic) -lpthread
+test_flush_cache_LDADD = $(LIBUNWIND_generic)
+test_init_remote_LDADD = $(LIBUNWIND_generic)
+test_mem_LDADD = $(LIBUNWIND_generic)
+test_ptrace_LDADD = $(LIBUNWIND_ptrace) $(LIBUNWIND_generic)
+test_proc_info_LDADD = $(LIBUNWIND_generic)
+test_static_link_LDADD = $(LIBUNWIND_generic)
+test_strerror_LDADD = $(LIBUNWIND_generic)
+rs_race_LDADD = $(LIBUNWIND_generic) -lpthread
+
+Gtest_bt_LDADD = $(LIBUNWIND_generic)
+Gtest_concurrent_LDADD = $(LIBUNWIND_generic) -lpthread
+Gtest_dyn1_LDADD = $(LIBUNWIND_generic)
+Gtest_exc_LDADD = $(LIBUNWIND_generic)
+Gtest_init_LDADD = $(LIBUNWIND_generic)
+Gtest_resume_sig_LDADD = $(LIBUNWIND_generic)
+Gperf_simple_LDADD = $(LIBUNWIND_generic)
+
+Ltest_bt_LDADD = $(LIBUNWIND_local)
+Ltest_concurrent_LDADD = $(LIBUNWIND_local) -lpthread
+Ltest_dyn1_LDADD = $(LIBUNWIND_local)
+Ltest_exc_LDADD = $(LIBUNWIND_local)
+Ltest_init_LDADD = $(LIBUNWIND_local)
+Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
+Ltest_resume_sig_LDADD = $(LIBUNWIND_generic)
+Lperf_simple_LDADD = $(LIBUNWIND_local)
+
+test_setjmp_LDADD = $(LIBUNWIND_setjmp) $(LIBUNWIND_local)
+ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp) $(LIBUNWIND_local)
