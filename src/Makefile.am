@@ -114,10 +114,27 @@ endif
 
 noinst_HEADERS += elf32.h elf64.h elfxx.h
 
+libunwind_elf32_la_SOURCES = elf32.c
+libunwind_elf64_la_SOURCES = elf64.c
+libunwind_elfxx_la_SOURCES = elfxx.c
+
+if USE_ELF32
+noinst_LTLIBRARIES += libunwind-elf32.la
+libunwind_la_LIBADD += libunwind-elf32.la
+endif
+if USE_ELF64
+noinst_LTLIBRARIES += libunwind-elf64.la
+libunwind_la_LIBADD += libunwind-elf64.la
+endif
+if USE_ELFXX
+noinst_LTLIBRARIES += libunwind-elfxx.la
+libunwind_la_LIBADD += libunwind-elfxx.la
+endif
+
 # The list of files that go into libunwind and libunwind-arm:
 noinst_HEADERS += arm/init.h arm/offsets.h arm/unwind_i.h
 libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
-	elf32.c arm/is_fpreg.c arm/regname.c
+	arm/is_fpreg.c arm/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \
@@ -137,7 +154,7 @@ libunwind_arm_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)	    \
 noinst_HEADERS += ia64/init.h ia64/offsets.h ia64/regs.h		    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
-	elf64.c ia64/regname.c
+	ia64/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
@@ -163,7 +180,7 @@ libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
 # The list of files that go both into libunwind and libunwind-hppa:
 noinst_HEADERS += hppa/init.h hppa/offsets.h hppa/unwind_i.h
 libunwind_la_SOURCES_hppa_common = $(libunwind_la_SOURCES_common)	\
-	elf32.c hppa/regname.c
+	hppa/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)		\
@@ -185,7 +202,7 @@ libunwind_hppa_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)	\
 # The list of files that go info libunwind and libunwind-mips:
 noinst_HEADERS += mips/init.h mips/offsets.h
 libunwind_la_SOURCES_mips_common = $(libunwind_la_SOURCES_common)	    \
-	elfxx.c mips/is_fpreg.c mips/regname.c
+	mips/is_fpreg.c mips/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)		    \
@@ -204,7 +221,7 @@ libunwind_mips_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)	    \
 # The list of files that go both into libunwind and libunwind-x86:
 noinst_HEADERS += x86/init.h x86/offsets.h x86/unwind_i.h
 libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
-	elf32.c x86/is_fpreg.c x86/regname.c
+	x86/is_fpreg.c x86/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
@@ -228,7 +245,7 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 noinst_HEADERS += x86_64/offsets.h					\
 	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
-	elf64.c x86_64/is_fpreg.c x86_64/regname.c
+	x86_64/is_fpreg.c x86_64/regname.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
@@ -262,7 +279,7 @@ libunwind_ppc_la_SOURCES_ppc_generic = ppc/Gcreate_addr_space.c		\
 # The list of files that go both into libunwind and libunwind-ppc32:
 noinst_HEADERS += ppc32/init.h ppc32/unwind_i.h ppc32/ucontext_i.h
 libunwind_la_SOURCES_ppc32_common = $(libunwind_la_SOURCES_common)      \
-	elf32.c ppc32/is_fpreg.c ppc32/regname.c ppc32/get_func_addr.c
+	ppc32/is_fpreg.c ppc32/regname.c ppc32/get_func_addr.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common)       \
@@ -281,7 +298,7 @@ libunwind_ppc32_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common) \
 # The list of files that go both into libunwind and libunwind-ppc64:
 noinst_HEADERS += ppc64/init.h ppc64/unwind_i.h ppc64/ucontext_i.h
 libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
-        elf64.c ppc64/is_fpreg.c ppc64/regname.c ppc64/get_func_addr.c
+        ppc64/is_fpreg.c ppc64/regname.c ppc64/get_func_addr.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
@@ -342,6 +359,7 @@ if ARCH_ARM
  libunwind_arm_la_SOURCES = $(libunwind_arm_la_SOURCES_arm)
  libunwind_arm_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_arm_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_arm_la_LIBADD += libunwind-elf32.la
 if !REMOTE_ONLY
  libunwind_arm_la_LIBADD += libunwind.la -lc
 endif
@@ -361,8 +379,9 @@ Lcursor_i.h: ia64/mk_Lcursor_i
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
  libunwind_ia64_la_SOURCES = $(libunwind_ia64_la_SOURCES_ia64)
  libunwind_ia64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+ libunwind_ia64_la_LIBADD = libunwind-elf64.la
 if !REMOTE_ONLY
- libunwind_ia64_la_LIBADD = libunwind.la -lc
+ libunwind_ia64_la_LIBADD += libunwind.la -lc
 endif
  libunwind_setjmp_la_SOURCES += ia64/setjmp.S  ia64/sigsetjmp.S  \
 				ia64/longjmp.S ia64/siglongjmp.S
@@ -373,6 +392,7 @@ if ARCH_HPPA
  libunwind_hppa_la_SOURCES = $(libunwind_hppa_la_SOURCES_hppa)
  libunwind_hppa_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_hppa_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_hppa_la_LIBADD += libunwind-elf32.la
 if !REMOTE_ONLY
  libunwind_hppa_la_LIBADD += libunwind.la -lc
 endif
@@ -384,6 +404,7 @@ if ARCH_MIPS
  libunwind_mips_la_SOURCES = $(libunwind_mips_la_SOURCES_mips)
  libunwind_mips_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_mips_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_mips_la_LIBADD += libunwind-elfxx.la
 if !REMOTE_ONLY
  libunwind_mips_la_LIBADD += libunwind.la -lc
 endif
@@ -395,6 +416,7 @@ if ARCH_X86
  libunwind_x86_la_SOURCES = $(libunwind_x86_la_SOURCES_x86)
  libunwind_x86_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_x86_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_x86_la_LIBADD += libunwind-elf32.la
 if !REMOTE_ONLY
  libunwind_x86_la_LIBADD += libunwind.la -lc
 endif
@@ -406,6 +428,7 @@ if ARCH_X86_64
  libunwind_x86_64_la_SOURCES = $(libunwind_x86_64_la_SOURCES_x86_64)
  libunwind_x86_64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_x86_64_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_x86_64_la_LIBADD += libunwind-elf64.la
 if !REMOTE_ONLY
  libunwind_x86_64_la_LIBADD += libunwind.la -lc
 endif
@@ -417,6 +440,7 @@ if ARCH_PPC32
  libunwind_ppc32_la_SOURCES = $(libunwind_ppc32_la_SOURCES_ppc32)
  libunwind_ppc32_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_ppc32_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_ppc32_la_LIBADD += libunwind-elf32.la
 if !REMOTE_ONLY
  libunwind_ppc32_la_LIBADD += libunwind.la -lc
 endif
@@ -428,6 +452,7 @@ if ARCH_PPC64
  libunwind_ppc64_la_SOURCES = $(libunwind_ppc64_la_SOURCES_ppc64)
  libunwind_ppc64_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
  libunwind_ppc64_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_ppc64_la_LIBADD += libunwind-elf64.la
 if !REMOTE_ONLY
  libunwind_ppc64_la_LIBADD += libunwind.la -lc
 endif

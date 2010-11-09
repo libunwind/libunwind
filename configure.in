@@ -133,6 +133,17 @@ AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
 
+AC_MSG_CHECKING([for ELF helper width])
+case "${target_arch}" in
+(arm|hppa|ppc32|x86)   use_elf32=yes; AC_MSG_RESULT([32]);;
+(ia64|ppc64|x86_64)    use_elf64=yes; AC_MSG_RESULT([64]);;
+(mips)                 use_elfxx=yes; AC_MSG_RESULT([xx]);;
+*)                     AC_MSG_ERROR([Unknown ELF target: ${target_arch}])
+esac
+AM_CONDITIONAL(USE_ELF32, [test x$use_elf32 = xyes])
+AM_CONDITIONAL(USE_ELF64, [test x$use_elf64 = xyes])
+AM_CONDITIONAL(USE_ELFXX, [test x$use_elfxx = xyes])
+
 AC_MSG_CHECKING([whether to include DWARF support])
 if test x$target_arch != xia64; then
   use_dwarf=yes
