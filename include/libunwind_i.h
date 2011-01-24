@@ -211,7 +211,7 @@ do {						\
 #ifndef MAP_ANONYMOUS
 # define MAP_ANONYMOUS MAP_ANON
 #endif
-#define GET_MEMORY(mem, size_in_bytes)				    \
+#define GET_MEMORY(mem, size)				    		    \
 do {									    \
   /* Hopefully, mmap() goes straight through to a system call stub...  */   \
   mem = mmap (0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, \
