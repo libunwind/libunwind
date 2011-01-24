@@ -43,6 +43,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define elf_w(x)	_Uelf64_##x
 #endif
 
+extern int elf_w (valid_object) (struct elf_image *ei);
+extern int elf_w (get_proc_name) (unw_addr_space_t as,
+				  pid_t pid, unw_word_t ip,
+				  char *buf, size_t len,
+				  unw_word_t *offp);
+
 static inline int
 elf_map_image (struct elf_image *ei, const char *path)
 {
@@ -65,11 +71,11 @@ elf_map_image (struct elf_image *ei, const char *path)
   if (ei->image == MAP_FAILED)
     return -1;
 
+  if (!elf_w (valid_object) (ei))
+  {
+    munmap(ei->image, ei->size);
+    return -1;
+  }
+
   return 0;
 }
-
-extern int elf_w (valid_object) (struct elf_image *ei);
-extern int elf_w (get_proc_name) (unw_addr_space_t as,
-				  pid_t pid, unw_word_t ip,
-				  char *buf, size_t len,
-				  unw_word_t *offp);
