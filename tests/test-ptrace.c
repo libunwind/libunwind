@@ -202,6 +202,8 @@ main (int argc, char **argv)
 	else if (strcmp (argv[optind], "-n") == 0)
 	  /* Don't look-up and print symbol names.  */
 	  ++optind, print_names = 0;
+	else
+	  fprintf(stderr, "unrecognized option: %s\n", argv[optind++]);
       }
 
   target_pid = fork ();
