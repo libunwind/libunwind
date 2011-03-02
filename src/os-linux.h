@@ -80,7 +80,11 @@ maps_init (struct map_iterator *mi, pid_t pid)
       cp = mmap (0, mi->buf_size, PROT_READ | PROT_WRITE,
 		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       if (cp == MAP_FAILED)
-	return -1;
+	{
+	  close(mi->fd);
+	  mi->fd = -1;
+	  return -1;
+	}
       else
 	{
 	  mi->offset = 0;
