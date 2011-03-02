@@ -29,7 +29,20 @@ noinst_HEADERS += ptrace/_UPT_internal.h
 ### libunwind-setjmp:
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
 					  -version-info $(SETJMP_SO_VERSION)
-libunwind_setjmp_la_LIBADD		= libunwind-$(arch).la -lc
+
+if USE_ELF32
+LIBUNWIND_ELF = libunwind-elf32.la
+endif
+if USE_ELF64
+LIBUNWIND_ELF = libunwind-elf64.la
+endif
+if USE_ELFXX
+LIBUNWIND_ELF = libunwind-elfxx.la
+endif
+
+libunwind_setjmp_la_LIBADD		= $(LIBUNWIND_ELF)	\
+					  libunwind-$(arch).la	\
+					  libunwind.la -lc
 libunwind_setjmp_la_SOURCES		= setjmp/longjmp.c	\
 					  setjmp/siglongjmp.c
 noinst_HEADERS				+= setjmp/setjmp_i.h
@@ -118,18 +131,8 @@ libunwind_elf32_la_SOURCES = elf32.c
 libunwind_elf64_la_SOURCES = elf64.c
 libunwind_elfxx_la_SOURCES = elfxx.c
 
-if USE_ELF32
-noinst_LTLIBRARIES += libunwind-elf32.la
-libunwind_la_LIBADD += libunwind-elf32.la
-endif
-if USE_ELF64
-noinst_LTLIBRARIES += libunwind-elf64.la
-libunwind_la_LIBADD += libunwind-elf64.la
-endif
-if USE_ELFXX
-noinst_LTLIBRARIES += libunwind-elfxx.la
-libunwind_la_LIBADD += libunwind-elfxx.la
-endif
+noinst_LTLIBRARIES += $(LIBUNWIND_ELF)
+libunwind_la_LIBADD += $(LIBUNWIND_ELF)
 
 # The list of files that go into libunwind and libunwind-arm:
 noinst_HEADERS += arm/init.h arm/offsets.h arm/unwind_i.h
