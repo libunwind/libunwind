@@ -1,5 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
+   Copyright 2011 Linaro Limited
 
 This file is part of libunwind.
 
@@ -24,6 +25,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 #include "offsets.h"
+#include "ex_tables.h"
+
+static inline int
+arm_exidx_step (struct cursor *c)
+{
+  struct arm_exidx_table *table = arm_exidx_table_find (c->frame.pc);
+  if (NULL == table)
+    return -UNW_ENOINFO;
+
+  struct arm_exidx_entry *entry = arm_exidx_table_lookup (table, c->frame.pc);
+  if (NULL == entry)
+    return -UNW_ENOINFO;
+
+  struct arm_exidx_vrs s;
+  arm_exidx_frame_to_vrs (&c->frame, &s);
+
+  uint8_t buf[32];
+  int ret = arm_exidx_extract (entry, buf);
+  if (ret < 0)
+    return ret;
+
+  ret = arm_exidx_decode (buf, ret, &arm_exidx_vrs_callback, &s);
+  if (ret < 0)
+    return -ret;
+
+  return arm_exidx_vrs_to_frame (&s, &c->frame);
+}
 
 PROTECTED int
 unw_step (unw_cursor_t *cursor)
@@ -33,8 +61,16 @@ unw_step (unw_cursor_t *cursor)
 
   Debug (1, "(cursor=%p)\n", c);
 
-  /* Try DWARF-based unwinding...  this is the only method likely to work for
-     ARM.  */
+  if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
+    {
+      ret = arm_exidx_step (c);
+      if (ret >= 0)
+        return ret;
+      if (ret < 0 && ret != -UNW_ENOINFO)
+	return ret;
+    }
+
+  /* Next, try DWARF-based unwinding. */
   if (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF))
     {
       ret = dwarf_step (&c->dwarf);
