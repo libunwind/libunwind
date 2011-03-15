@@ -137,7 +137,8 @@ libunwind_la_LIBADD += $(LIBUNWIND_ELF)
 # The list of files that go into libunwind and libunwind-arm:
 noinst_HEADERS += arm/init.h arm/offsets.h arm/unwind_i.h
 libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
-	arm/is_fpreg.c arm/regname.c
+	arm/is_fpreg.c arm/regname.c					    \
+	arm/ex_tables.c arm/ex_tables.h
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \

@@ -34,6 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "elf32.h"
 #include "mempool.h"
 #include "dwarf.h"
+#include "ex_tables.h"
 
 struct unw_addr_space
   {
@@ -54,6 +55,7 @@ struct unw_addr_space
 struct cursor
   {
     struct dwarf_cursor dwarf;		/* must be first */
+    struct arm_stackframe frame;
     unw_word_t sigcontext_addr;
   };
 
