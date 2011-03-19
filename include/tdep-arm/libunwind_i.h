@@ -221,6 +221,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_fetch_frame(c,ip,n)	do {} while(0)
 #define tdep_cache_frame(c,rs)		do {} while(0)
 #define tdep_reuse_frame(c,rs)		do {} while(0)
+#define tdep_stash_frame(c,rs)		do {} while(0)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\

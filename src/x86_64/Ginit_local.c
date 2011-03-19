@@ -51,11 +51,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = c;
   c->uc = uc;
-#if CONSERVATIVE_CHECKS
-  c->validate = 1;
-#else
   c->validate = 0;
-#endif
   return common_init (c, 1);
 }
 

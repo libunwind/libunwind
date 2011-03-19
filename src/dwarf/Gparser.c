@@ -803,6 +803,10 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	       __FUNCTION__, (long) c->ip);
       return -UNW_EBADFRAME;
     }
+
+  if (c->stash_frames)
+    tdep_stash_frame (c, rs);
+
   return 0;
 }
 

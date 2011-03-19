@@ -47,6 +47,7 @@ common_init (struct cursor *c, unsigned use_prev_instr)
 
   c->dwarf.args_size = 0;
   c->dwarf.ret_addr_column = 0;
+  c->dwarf.stash_frames = 0;
   c->dwarf.use_prev_instr = use_prev_instr;
   c->dwarf.pi_valid = 0;
   c->dwarf.pi_is_dynamic = 0;

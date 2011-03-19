@@ -223,6 +223,7 @@ struct ia64_global_unwind_state
 #define tdep_fetch_frame(c,ip,n)	do {} while(0)
 #define tdep_cache_frame(c,rs)		do {} while(0)
 #define tdep_reuse_frame(c,rs)		do {} while(0)
+#define tdep_stash_frame(c,rs)		do {} while(0)
 #define tdep_get_as(c)			((c)->as)
 #define tdep_get_as_arg(c)		((c)->as_arg)
 #define tdep_get_ip(c)			((c)->ip)

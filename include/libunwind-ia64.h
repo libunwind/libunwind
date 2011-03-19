@@ -150,6 +150,12 @@ unw_tdep_save_loc_t;
 /* On IA-64, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
+typedef struct
+  {
+    /* no ia64-specific fast trace */
+  }
+unw_tdep_frame_t;
+
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_IA64_FR) < 128)
 
 #include "libunwind-dynamic.h"
@@ -186,6 +192,10 @@ extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t, unw_dyn_info_t *,
 /* This is a helper routine to obtain the kernel-unwind info.  It is
    signal-safe.  */
 extern int _Uia64_get_kernel_table (unw_dyn_info_t *);
+
+#define unw_tdep_make_frame_cache(n)	(0)
+#define unw_tdep_free_frame_cache(p)	do {} while(0)
+#define unw_tdep_trace(cur,addr,n,c)	(-UNW_ENOINFO)
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

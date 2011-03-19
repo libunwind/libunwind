@@ -104,14 +104,43 @@ typedef struct
   }
 unw_tdep_proc_info_t;
 
+typedef enum
+  {
+    UNW_X86_64_FRAME_STANDARD = -2,     /* regular rbp, rsp +/- offset */
+    UNW_X86_64_FRAME_SIGRETURN = -1,    /* special sigreturn frame */
+    UNW_X86_64_FRAME_OTHER = 0,         /* not cacheable (special or unrecognised) */
+    UNW_X86_64_FRAME_GUESSED = 1        /* guessed it was regular, but not known */
+  }
+unw_tdep_frame_type_t;
+
+typedef struct
+  {
+    uint64_t virtual_address;
+    int64_t frame_type     : 2;  /* unw_tdep_frame_type_t classification */
+    int64_t last_frame     : 1;  /* non-zero if last frame in chain */
+    int64_t cfa_reg_rsp    : 1;  /* cfa dwarf base register is rsp vs. rbp */
+    int64_t cfa_reg_offset : 30; /* cfa is at this offset from base register value */
+    int64_t rbp_cfa_offset : 15; /* rbp saved at this offset from cfa (-1 = not saved) */
+    int64_t rsp_cfa_offset : 15; /* rsp saved at this offset from cfa (-1 = not saved) */
+  }
+unw_tdep_frame_t;
+
 #include "libunwind-dynamic.h"
 #include "libunwind-common.h"
 
 #define unw_tdep_getcontext		UNW_ARCH_OBJ(getcontext)
-extern int unw_tdep_getcontext (unw_tdep_context_t *);
-
 #define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
+#define unw_tdep_make_frame_cache	UNW_OBJ(make_frame_cache)
+#define unw_tdep_free_frame_cache	UNW_OBJ(free_frame_cache)
+#define unw_tdep_trace			UNW_OBJ(trace)
+
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
 extern int unw_tdep_is_fpreg (int);
+
+extern unw_tdep_frame_t *unw_tdep_make_frame_cache (size_t n);
+extern int unw_tdep_free_frame_cache (unw_tdep_frame_t *p);
+extern int unw_tdep_trace (unw_cursor_t *cursor, void **addresses,
+			   int *n, unw_tdep_frame_t *cache);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

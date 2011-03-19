@@ -57,6 +57,8 @@ struct cursor
   {
     struct dwarf_cursor dwarf;		/* must be first */
 
+    unw_tdep_frame_t frame_info;	/* quick tracing assist info */
+
     /* Format of sigcontext structure and address at which it is
        stored: */
     enum
@@ -173,6 +175,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 # define tdep_cache_frame(c,rs)		do {} while(0)
 # define tdep_reuse_frame(c,rs)		do {} while(0)
 #endif
+#define tdep_stash_frame		UNW_OBJ(stash_frame)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
@@ -215,7 +218,8 @@ extern void tdep_cache_frame (struct dwarf_cursor *c,
 			      struct dwarf_reg_state *rs);
 extern void tdep_reuse_frame (struct dwarf_cursor *c,
 			      struct dwarf_reg_state *rs);
+extern void tdep_stash_frame (struct dwarf_cursor *c,
+			      struct dwarf_reg_state *rs);
 #endif
-
 
 #endif /* X86_64_LIBUNWIND_I_H */

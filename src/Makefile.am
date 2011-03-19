@@ -258,8 +258,8 @@ libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
 	x86_64/setcontext.S						    \
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
 	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
-	x86_64/Lget_proc_info.c x86_64/Lregs.c    			    \
-	x86_64/Lresume.c x86_64/Lstep.c x86_64/getcontext.S
+	x86_64/Lget_proc_info.c x86_64/Lregs.c x86_64/Lresume.c		    \
+	x86_64/Lstash_frame.c x86_64/Lstep.c x86_64/Ltrace.c x86_64/getcontext.S
 
 # The list of files that go into libunwind-x86_64:
 libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
@@ -267,8 +267,8 @@ libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
 	$(libunwind_la_SOURCES_generic)					    \
 	x86_64/Gcreate_addr_space.c x86_64/Gget_save_loc.c x86_64/Gglobal.c \
 	x86_64/Ginit.c x86_64/Ginit_local.c x86_64/Ginit_remote.c	    \
-	x86_64/Gget_proc_info.c x86_64/Gregs.c    			    \
-	x86_64/Gresume.c x86_64/Gstep.c
+	x86_64/Gget_proc_info.c x86_64/Gregs.c x86_64/Gresume.c		    \
+	x86_64/Gstash_frame.c x86_64/Gstep.c x86_64/Gtrace.c
 
 # The list of local files that go to Power 64 and 32:
 libunwind_la_SOURCES_ppc = ppc/Lcreate_addr_space.c 			\

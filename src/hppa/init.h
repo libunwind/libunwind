@@ -41,6 +41,7 @@ common_init (struct cursor *c, unsigned use_prev_instr)
   if (ret < 0)
     return ret;
 
+  c->dwarf.stash_frames = 0;
   c->dwarf.use_prev_instr = use_prev_instr;
   return 0;
 }

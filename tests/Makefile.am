@@ -41,6 +41,7 @@ endif #ARCH_IA64
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-dyn1 Ltest-dyn1				 \
+			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
 			Ltest-nomalloc rs-race
@@ -98,6 +99,8 @@ Gtest_bt_SOURCES = Gtest-bt.c ident.c
 Ltest_bt_SOURCES = Ltest-bt.c ident.c
 test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
+Gtest_trace_SOURCES = Gtest-trace.c ident.c
+Ltest_trace_SOURCES = Ltest-trace.c ident.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la $(LIBUNWIND_local)
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a

@@ -58,12 +58,21 @@ unw_step (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int ret, i;
 
+#if CONSERVATIVE_CHECKS
+  int val = c->validate;
+  c->validate = 1;
+#endif
+
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx)\n",
 	 c, c->dwarf.ip, c->dwarf.cfa);
 
   /* Try DWARF-based unwinding... */
   c->sigcontext_format = X86_64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
+
+#if CONSERVATIVE_CHECKS
+  c->validate = val;
+#endif
 
   if (ret < 0 && ret != -UNW_ENOINFO)
     {
@@ -112,7 +121,11 @@ unw_step (unw_cursor_t *cursor)
 	}
       else if (is_plt_entry (&c->dwarf))
 	{
+          /* Like regular frame, CFA = RSP+8, RA = [CFA-8], no regs saved. */
 	  Debug (2, "found plt entry\n");
+          c->frame_info.cfa_reg_offset = 8;
+          c->frame_info.cfa_reg_rsp = -1;
+          c->frame_info.frame_type = UNW_X86_64_FRAME_STANDARD;
           c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
           c->dwarf.cfa += 8;
 	}
@@ -142,19 +155,32 @@ unw_step (unw_cursor_t *cursor)
 	    }
 	  else
 	    {
-	      unw_word_t rbp1;
-	      Debug (1, "[RBP=0x%Lx] = 0x%Lx (cfa = 0x%Lx)\n",
-		     (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RBP]),
-		     (unsigned long long) rbp,
-		     (unsigned long long) c->dwarf.cfa);
-
+	      unw_word_t rbp1 = 0;
 	      rbp_loc = DWARF_LOC(rbp, 0);
 	      rsp_loc = DWARF_NULL_LOC;
 	      rip_loc = DWARF_LOC (rbp + 8, 0);
-              /* Heuristic to recognize a bogus frame pointer */
 	      ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
-              if (ret || ((rbp1 - rbp) > 0x4000))
-                rbp_loc = DWARF_NULL_LOC;
+	      Debug (1, "[RBP=0x%lx] = 0x%lx (cfa = 0x%lx) -> 0x%lx\n",
+		     (unsigned long) DWARF_GET_LOC (c->dwarf.loc[RBP]),
+		     rbp, c->dwarf.cfa, rbp1);
+
+	      /* Heuristic to determine incorrect guess.  For RBP to be a
+	         valid frame it needs to be above current CFA, but don't
+		 let it go more than a little.  Note that we can't deduce
+		 anything about new RBP (rbp1) since it may not be a frame
+		 pointer in the frame above.  Just check we get the value. */
+              if (ret < 0
+		  || rbp <= c->dwarf.cfa
+		  || (rbp - c->dwarf.cfa) > 0x4000)
+	        {
+                  rip_loc = DWARF_NULL_LOC;
+                  rbp_loc = DWARF_NULL_LOC;
+		}
+
+              c->frame_info.frame_type = UNW_X86_64_FRAME_GUESSED;
+              c->frame_info.cfa_reg_rsp = 0;
+              c->frame_info.cfa_reg_offset = 16;
+              c->frame_info.rbp_cfa_offset = -16;
 	      c->dwarf.cfa += 16;
 	    }
 
