@@ -27,30 +27,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#include <string.h>
 
 /* See glibc manual for a description of this function.  */
 
 int
-backtrace (void **buffer, int size)
+unw_backtrace (void **buffer, int size)
 {
   unw_cursor_t cursor;
-  unw_context_t uc;
-  unw_word_t ip;
-  int n = 0;
+  unw_context_t uc, ucsave;
+  int n = size;
 
   unw_getcontext (&uc);
+  memcpy (&ucsave, &uc, sizeof(uc));
+
   if (unw_init_local (&cursor, &uc) < 0)
     return 0;
 
-  while (unw_step (&cursor) > 0)
+  if (unw_tdep_trace (&cursor, buffer, &n) < 0)
     {
-      if (n >= size)
-	return n;
-
-      if (unw_get_reg (&cursor, UNW_REG_IP, &ip) < 0)
-	return n;
-      buffer[n++] = (void *) (uintptr_t) ip;
+      n = 0;
+      unw_init_local (&cursor, &ucsave);
+      while (n < size)
+        {
+          unw_word_t ip;
+          if (unw_get_reg (&cursor, UNW_REG_IP, &ip) < 0)
+	    return n;
+          buffer[n++] = (void *) (uintptr_t) ip;
+	  if (unw_step (&cursor) <= 0)
+	    break;
+        }
     }
+
   return n;
 }
 

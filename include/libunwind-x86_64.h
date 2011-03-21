@@ -130,17 +130,12 @@ unw_tdep_frame_t;
 
 #define unw_tdep_getcontext		UNW_ARCH_OBJ(getcontext)
 #define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
-#define unw_tdep_make_frame_cache	UNW_OBJ(make_frame_cache)
-#define unw_tdep_free_frame_cache	UNW_OBJ(free_frame_cache)
 #define unw_tdep_trace			UNW_OBJ(trace)
 
 extern int unw_tdep_getcontext (unw_tdep_context_t *);
 extern int unw_tdep_is_fpreg (int);
 
-extern unw_tdep_frame_t *unw_tdep_make_frame_cache (size_t n);
-extern int unw_tdep_free_frame_cache (unw_tdep_frame_t *p);
-extern int unw_tdep_trace (unw_cursor_t *cursor, void **addresses,
-			   int *n, unw_tdep_frame_t *cache);
+extern int unw_tdep_trace (unw_cursor_t *cursor, void **addresses, int *n);
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

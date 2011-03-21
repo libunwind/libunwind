@@ -124,8 +124,6 @@ unw_tdep_proc_info_t;
 #define unw_tdep_getcontext		UNW_ARCH_OBJ (getcontext)
 extern int unw_tdep_getcontext (unw_tdep_context_t *);
 
-#define unw_tdep_make_frame_cache(n)	(0)
-#define unw_tdep_free_frame_cache(p)	do {} while(0)
 #define unw_tdep_trace(cur,addr,n,c)	(-UNW_ENOINFO)
 
 #if defined(__cplusplus) || defined(c_plusplus)
