@@ -81,6 +81,42 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 #define PAGE_SIZE 4096
 #define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
 
+static int (*mem_validate_func) (void *addr, size_t len);
+static int msync_validate (void *addr, size_t len)
+{
+  return msync (addr, len, MS_ASYNC);
+}
+
+#ifdef HAVE_MINCORE
+static int mincore_validate (void *addr, size_t len)
+{
+  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
+  return mincore (addr, len, mvec);
+}
+#endif
+
+/* Initialise memory validation method. On linux kernels <2.6.21,
+   mincore() returns incorrect value for MAP_PRIVATE mappings,
+   such as stacks. If mincore() was available at compile time,
+   check if we can actually use it. If not, use msync() instead. */
+HIDDEN void
+tdep_init_mem_validate (void)
+{
+#ifdef HAVE_MINCORE
+  unsigned char present = 1;
+  if (mincore (&present, 1, &present) == 0)
+    {
+      Debug(1, "using mincore to validate memory\n");
+      mem_validate_func = mincore_validate;
+    }
+  else
+#endif
+    {
+      Debug(1, "using msync to validate memory\n");
+      mem_validate_func = msync_validate;
+    }
+}
+
 /* Cache of already validated addresses */
 #define NLGA 4
 static unw_word_t last_good_addr[NLGA];
@@ -90,9 +126,6 @@ static int
 validate_mem (unw_word_t addr)
 {
   int i, victim;
-#ifdef HAVE_MINCORE
-  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
-#endif
   size_t len;
 
   if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
@@ -111,11 +144,7 @@ validate_mem (unw_word_t addr)
 	return 0;
     }
 
-#ifdef HAVE_MINCORE
-  if (mincore ((void *) addr, len, mvec) == -1)
-#else
-  if (msync ((void *) addr, len, MS_ASYNC) == -1)
-#endif
+  if (mem_validate_func ((void *) addr, len) == -1)
     return -1;
 
   victim = lga_victim;

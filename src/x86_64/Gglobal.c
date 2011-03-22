@@ -71,6 +71,8 @@ tdep_init (void)
 
     dwarf_init ();
 
+    tdep_init_mem_validate ();
+
 #ifndef UNW_REMOTE_ONLY
     x86_64_local_addr_space_init ();
 #endif

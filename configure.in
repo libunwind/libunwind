@@ -223,7 +223,8 @@ AC_ARG_ENABLE(conservative_checks,
 [ --enable-conservative-checks Validate all memory addresses before use],
 [enable_conservative_checks=$enableval], [enable_conservative_checks=yes])
 if test x$enable_conservative_checks = xyes; then
-  CPPFLAGS="${CPPFLAGS} -DCONSERVATIVE_CHECKS"
+  AC_DEFINE(CONSERVATIVE_CHECKS, 1,
+	[Define to 1 if you want every memory access validated])
 fi
 AC_MSG_RESULT([$enable_conservative_checks])
 
