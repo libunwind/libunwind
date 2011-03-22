@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
-   Copyright 2011 Linaro Limited 
+   Copyright 2011 Linaro Limited
 
 This file is part of libunwind.
 

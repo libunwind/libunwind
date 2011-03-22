@@ -29,10 +29,10 @@ if ARCH_IA64
 			ia64-test-setjmp ia64-test-sig
 else
 if ARCH_PPC64
-if USE_ALTIVEC 
+if USE_ALTIVEC
  noinst_PROGRAMS_arch_altivec = ppc64-test-altivec ppc64-test-wchar
 endif #USE_ALTIVEC
- noinst_PROGRAMS_arch = $(noinst_PROGRAMS_arch_altivec) ppc64-test-wchar 
+ noinst_PROGRAMS_arch = $(noinst_PROGRAMS_arch_altivec) ppc64-test-wchar
 endif #ARCH_PPC64
 endif #ARCH_IA64
  check_SCRIPTS_cdep =	run-ptrace-mapper run-ptrace-misc
@@ -108,7 +108,7 @@ Ltest_bt_SOURCES = Ltest-bt.c ident.c
 test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 
-LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la $(LIBUNWIND_local) 
+LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la $(LIBUNWIND_local)
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
 
 if USE_ELF32
