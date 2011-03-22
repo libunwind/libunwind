@@ -488,6 +488,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_arm)			\
 		$(libunwind_la_SOURCES_ia64)			\
 		$(libunwind_la_SOURCES_mips)			\
 		$(libunwind_la_SOURCES_x86)			\
+		$(libunwind_la_SOURCES_os_freebsd)		\
 		$(libunwind_la_SOURCES_os_linux)		\
 		$(libunwind_la_SOURCES_os_hpux)			\
 		$(libunwind_la_SOURCES_common)			\

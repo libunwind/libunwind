@@ -133,6 +133,7 @@ test_proc_info_LDADD = $(LIBUNWIND)
 test_static_link_LDADD = $(LIBUNWIND)
 test_strerror_LDADD = $(LIBUNWIND)
 rs_race_LDADD = $(LIBUNWIND) -lpthread
+test_varargs_LDADD = @BACKTRACELIB@
 
 Gtest_bt_LDADD = $(LIBUNWIND)
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
