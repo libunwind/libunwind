@@ -110,8 +110,19 @@ Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la $(LIBUNWIND_local) 
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
+
+if USE_ELF32
+LIBUNWIND_ELF = $(top_builddir)/src/libunwind-elf32.la
+endif
+if USE_ELF64
+LIBUNWIND_ELF = $(top_builddir)/src/libunwind-elf64.la
+endif
+if USE_ELFXX
+LIBUNWIND_ELF = $(top_builddir)/src/libunwind-elfxx.la
+endif
+
 LIBUNWIND_setjmp = $(top_builddir)/src/libunwind-setjmp.la	\
-		   $(top_builddir)/src/libunwind-elf32.la $(LIBUNWIND)
+		   $(LIBUNWIND_ELF) $(LIBUNWIND)
 
 test_async_sig_LDADD = $(LIBUNWIND) -lpthread
 test_flush_cache_LDADD = $(LIBUNWIND)
@@ -143,4 +154,4 @@ Lperf_simple_LDADD = $(LIBUNWIND_local)
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 
-arm_extbl_test_LDADD = $(top_builddir)/src/libunwind-elf32.la $(LIBUNWIND)
+arm_extbl_test_LDADD = $(LIBUNWIND_ELF) $(LIBUNWIND)
