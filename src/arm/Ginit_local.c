@@ -50,7 +50,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as_arg = uc;
 
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
-    arm_exidx_init_local ("libunwind");
+    arm_exidx_init_local ();
 
   return common_init (c, 1);
 }

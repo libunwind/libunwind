@@ -61,7 +61,7 @@ struct arm_exbuf_data
 };
 
 
-int arm_exidx_init_local (const char *appname);
+int arm_exidx_init_local (void);
 int arm_exidx_table_add (const char *name, struct arm_exidx_entry *start,
 			 struct arm_exidx_entry *end);
 struct arm_exidx_table *arm_exidx_table_find (void *pc);

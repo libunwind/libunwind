@@ -45,7 +45,6 @@ static struct arm_exidx_table *arm_exidx_table_list;
 static struct arm_exidx_table arm_exidx_tables[ARM_EXIDX_TABLE_LIMIT];
 static unsigned arm_exidx_table_count = 0;
 #endif
-static const char *arm_exidx_appname;
 
 static inline uint32_t
 prel31_read (uint32_t prel31)
@@ -436,14 +435,10 @@ arm_exidx_init_local_cb (struct dl_phdr_info *info, size_t size, void *data)
       if (phdr->p_type != PT_ARM_EXIDX)
 	continue;
 
-      const char *name = info->dlpi_name;
-      if (NULL == name || 0 == name[0])
-	name = arm_exidx_appname;
-
       ElfW (Addr) addr = info->dlpi_addr + phdr->p_vaddr;
       ElfW (Word) size = phdr->p_filesz;
 
-      arm_exidx_table_add (name,
+      arm_exidx_table_add (info->dlpi_name,
 	  (struct arm_exidx_entry *)addr,
 	  (struct arm_exidx_entry *)(addr + size));
       break;
@@ -456,9 +451,8 @@ arm_exidx_init_local_cb (struct dl_phdr_info *info, size_t size, void *data)
  * shared objects to collect the unwind tables.
  */
 HIDDEN int
-arm_exidx_init_local (const char *appname)
+arm_exidx_init_local (void)
 {
-  arm_exidx_appname = appname;
   arm_exidx_table_reset_all();
   return dl_iterate_phdr (&arm_exidx_init_local_cb, NULL);
 }
