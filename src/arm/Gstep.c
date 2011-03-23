@@ -76,16 +76,7 @@ unw_step (unw_cursor_t *cursor)
 
   Debug (1, "(cursor=%p)\n", c);
 
-  if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
-    {
-      ret = arm_exidx_step (c);
-      if (ret >= 0)
-	return 1;
-      if (ret == -UNW_ESTOPUNWIND)
-	return 0;
-    }
-
-  /* Next, try DWARF-based unwinding. */
+  /* First, try DWARF-based unwinding. */
   if (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF))
     {
       ret = dwarf_step (&c->dwarf);
@@ -101,6 +92,18 @@ unw_step (unw_cursor_t *cursor)
       }
     }
 
+  /* Next, try extbl-based unwinding. */
+  if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
+    {
+      ret = arm_exidx_step (c);
+      if (ret >= 0)
+	return 1;
+      if (ret == -UNW_ESTOPUNWIND)
+	return 0;
+    }
+
+  /* Fall back on APCS frame parsing.
+     Note: This won't work in case the ARM EABI is used. */
   if (unlikely (ret < 0))
     {
       if (UNW_TRY_METHOD(UNW_ARM_METHOD_FRAME))
