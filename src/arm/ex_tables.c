@@ -33,18 +33,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define ARM_EXTBL_OP_FINISH	0xb0
 
+#define ARM_EXIDX_TABLE_LIMIT	32
+
 enum arm_exbuf_cmd_flags {
   ARM_EXIDX_VFP_SHIFT_16 = 1 << 16,
   ARM_EXIDX_VFP_DOUBLE = 1 << 17,
 };
 
-#ifdef ARM_EXIDX_TABLE_MALLOC
-static struct arm_exidx_table *arm_exidx_table_list;
-#else
-#define ARM_EXIDX_TABLE_LIMIT 32
 static struct arm_exidx_table arm_exidx_tables[ARM_EXIDX_TABLE_LIMIT];
 static unsigned arm_exidx_table_count = 0;
-#endif
 
 static inline uint32_t
 prel31_read (uint32_t prel31)
@@ -62,33 +59,16 @@ prel31_to_addr (void *addr)
 static void
 arm_exidx_table_reset_all (void)
 {
-#ifdef ARM_EXIDX_TABLE_MALLOC
-  while (NULL != arm_exidx_table_list)
-    {
-      struct arm_exidx_table *next = arm_exidx_table_list->next;
-      free (arm_exidx_table_list);
-      arm_exidx_table_list = next;
-    }
-#else
   arm_exidx_table_count = 0;
-#endif
 }
 
 HIDDEN int
 arm_exidx_table_add (const char *name,
     struct arm_exidx_entry *start, struct arm_exidx_entry *end)
 {
-#ifdef ARM_EXIDX_TABLE_MALLOC
-  struct arm_exidx_table *table = malloc (sizeof (*table));
-  if (NULL == table)
-    return -1;
-  table->next = arm_exidx_table_list;
-  arm_exidx_table_list = table;
-#else
   if (arm_exidx_table_count >= ARM_EXIDX_TABLE_LIMIT)
     return -1;
   struct arm_exidx_table *table = &arm_exidx_tables[arm_exidx_table_count++];
-#endif
   table->name = name;
   table->start = start;
   table->end = end;
@@ -106,15 +86,10 @@ HIDDEN struct arm_exidx_table *
 arm_exidx_table_find (void *pc)
 {
   struct arm_exidx_table *table;
-#ifdef ARM_EXIDX_TABLE_MALLOC
-  for (table = arm_exidx_table_list; table != NULL; table = table->next)
-  {
-#else
   unsigned i;
   for (i = 0; i < arm_exidx_table_count; i++)
   {
     table = &arm_exidx_tables[i];
-#endif
     if (pc >= table->start_addr && pc < table->end_addr)
       return table;
   }

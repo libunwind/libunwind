@@ -36,9 +36,6 @@ struct arm_exidx_table {
   struct arm_exidx_entry *end;
   void *start_addr;
   void *end_addr;
-#ifdef ARM_EXIDX_TABLE_MALLOC
-  struct arm_exidx_table *next;
-#endif
 };
 
 typedef enum arm_exbuf_cmd {
