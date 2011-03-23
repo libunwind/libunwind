@@ -50,4 +50,3 @@ tests/test-strerror
 tests/test-proc-info
 tests/test-ptrace-misc
 tests/test-varargs
-tests/arm-extbl-test

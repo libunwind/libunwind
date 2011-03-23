@@ -46,9 +46,6 @@ endif #ARCH_IA64
 			Ltest-nomalloc rs-race
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
 			Gperf-simple Lperf-simple
-if ARCH_ARM
- check_PROGRAMS_arch =	arm-extbl-test
-endif #ARCH_ARM
 
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
@@ -75,11 +72,6 @@ TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 
-arm_extbl_test_CPPFLAGS = -I$(top_srcdir)/src \
-				-I$(top_srcdir)/include/tdep-$(arch) \
-				-funwind-tables
-arm_extbl_test_LDFLAGS = -static
-
 Lia64_test_readonly_SOURCES = Lia64-test-readonly.c ia64-test-readonly-asm.S
 Gia64_test_readonly_SOURCES = Gia64-test-readonly.c ia64-test-readonly-asm.S
 Lia64_test_stack_SOURCES = Lia64-test-stack.c ia64-test-stack-asm.S \
@@ -93,7 +85,6 @@ Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
 ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
 ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
-arm_extbl_test_SOURCES = arm-extbl-test.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
