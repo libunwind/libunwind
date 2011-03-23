@@ -30,27 +30,42 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 arm_exidx_step (struct cursor *c)
 {
-  struct arm_exidx_table *table = arm_exidx_table_find (c->frame.pc);
+  unw_word_t old_ip, old_cfa;
+  struct arm_exidx_table *table;
+  struct arm_exidx_entry *entry;
+  uint8_t buf[32];
+  int ret;
+
+  old_ip = c->dwarf.ip;
+  old_cfa = c->dwarf.cfa;
+
+  /* mark PC unsaved */
+  c->dwarf.loc[UNW_ARM_R15] = DWARF_NULL_LOC;
+
+  table = arm_exidx_table_find ((void *)c->dwarf.ip);
   if (NULL == table)
     return -UNW_ENOINFO;
 
-  struct arm_exidx_entry *entry = arm_exidx_table_lookup (table, c->frame.pc);
+  entry = arm_exidx_table_lookup (table, (void *)c->dwarf.ip);
   if (NULL == entry)
     return -UNW_ENOINFO;
 
-  struct arm_exidx_vrs s;
-  arm_exidx_frame_to_vrs (&c->frame, &s);
-
-  uint8_t buf[32];
-  int ret = arm_exidx_extract (entry, buf);
+  ret = arm_exidx_extract (entry, buf);
   if (ret < 0)
     return ret;
 
-  ret = arm_exidx_decode (buf, ret, &arm_exidx_vrs_callback, &s);
+  ret = arm_exidx_decode (buf, ret, &c->dwarf);
   if (ret < 0)
-    return -ret;
+    return ret;
 
-  return arm_exidx_vrs_to_frame (&s, &c->frame);
+  if (c->dwarf.ip == old_ip && c->dwarf.cfa == old_cfa)
+    {
+      Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
+	       __FUNCTION__, (long) c->dwarf.ip);
+      return -UNW_EBADFRAME;
+    }
+
+  return (c->dwarf.ip == 0) ? 0 : 1;
 }
 
 PROTECTED int
@@ -65,9 +80,9 @@ unw_step (unw_cursor_t *cursor)
     {
       ret = arm_exidx_step (c);
       if (ret >= 0)
-        return ret;
-      if (ret < 0 && ret != -UNW_ENOINFO)
-	return ret;
+	return 1;
+      if (ret == -UNW_ESTOPUNWIND)
+	return 0;
     }
 
   /* Next, try DWARF-based unwinding. */

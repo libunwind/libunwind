@@ -120,164 +120,146 @@ arm_exidx_table_lookup (struct arm_exidx_table *table, void *pc)
   return first;
 }
 
-static inline int
-arm_exidx_frame_reg(void *pc)
-{
-  return ((unsigned)pc & 1) ? FP_thumb : FP_arm;
-}
-
-HIDDEN void
-arm_exidx_frame_to_vrs(struct arm_stackframe *f, struct arm_exidx_vrs *s)
-{
-  int fp_reg = arm_exidx_frame_reg(f->pc);
-  s->vrs[fp_reg] = (uint32_t)f->fp;
-  s->vrs[SP] = (uint32_t)f->sp;
-  s->vrs[LR] = (uint32_t)f->lr;
-  s->vrs[PC] = 0;
-}
-
+/**
+ * Applies the given command onto the new state to the given dwarf_cursor.
+ */
 HIDDEN int
-arm_exidx_vrs_to_frame(struct arm_exidx_vrs *s, struct arm_stackframe *f)
+arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c)
 {
-  if (s->vrs[PC] == 0)
-    s->vrs[PC] = s->vrs[LR];
+  int ret = 0;
+  unsigned i;
 
-  if (f->pc == (void *)s->vrs[PC])
-    return -1;
-
-  int fp_reg = arm_exidx_frame_reg(f->pc);
-  f->fp = (void *)s->vrs[fp_reg];
-  f->sp = (void *)s->vrs[SP];
-  f->lr = (void *)s->vrs[LR];
-  f->pc = (void *)s->vrs[PC];
-
-  return 0;
-}
-
-HIDDEN int
-arm_exidx_vrs_callback (struct arm_exbuf_callback_data *aecd)
-{
-  struct arm_exidx_vrs *s = aecd->cb_data;
-  int ret = 0, i;
-  switch (aecd->cmd)
+  switch (edata->cmd)
     {
-      case ARM_EXIDX_CMD_FINISH:
-	break;
-      case ARM_EXIDX_CMD_DATA_PUSH:
-	Debug (2, "vsp = vsp - %d\n", aecd->data);
-	s->vrs[SP] -= aecd->data;
-	break;
-      case ARM_EXIDX_CMD_DATA_POP:
-	Debug (2, "vsp = vsp + %d\n", aecd->data);
-	s->vrs[SP] += aecd->data;
-	break;
-      case ARM_EXIDX_CMD_REG_POP:
-	for (i = 0; i < 16; i++)
-	  if (aecd->data & (1 << i))
-	    {
-	      s->vrs[i] = *(uint32_t*)s->vrs[SP];
-	      s->vrs[SP] += 4;
-	      Debug (2, "pop {r%d}\n", i);
-	    }
-	break;
-      case ARM_EXIDX_CMD_REG_TO_SP:
-	assert (aecd->data < 16);
-	Debug (2, "vsp = r%d\n", aecd->data);
-	s->vrs[SP] = s->vrs[aecd->data];
-	break;
-      case ARM_EXIDX_CMD_VFP_POP:
-	/* Skip VFP registers, but be sure to adjust stack */
-	for (i = ARM_EXBUF_START (aecd->data); i < ARM_EXBUF_END (aecd->data); i++)
-	  s->vrs[SP] += 8;
-	if (!(aecd->data & ARM_EXIDX_VFP_DOUBLE))
-	  s->vrs[SP] += 4;
-	break;
-      case ARM_EXIDX_CMD_WREG_POP:
-	for (i = ARM_EXBUF_START (aecd->data); i < ARM_EXBUF_END (aecd->data); i++)
-	  s->vrs[SP] += 8;
-	break;
-      case ARM_EXIDX_CMD_WCGR_POP:
-	for (i = 0; i < 4; i++)
-	  if (aecd->data & (1 << i))
-	    s->vrs[SP] += 4;
-	break;
-      case ARM_EXIDX_CMD_REFUSED:
-      case ARM_EXIDX_CMD_RESERVED:
-	ret = -1;
-	break;
+    case ARM_EXIDX_CMD_FINISH:
+      /* Set LR to PC if not set already.  */
+      if (DWARF_IS_NULL_LOC (c->loc[UNW_ARM_R15]))
+	c->loc[UNW_ARM_R15] = c->loc[UNW_ARM_R14];
+      /* Set IP.  */
+      dwarf_get (c, c->loc[UNW_ARM_R15], &c->ip);
+      break;
+    case ARM_EXIDX_CMD_DATA_PUSH:
+      Debug (2, "vsp = vsp - %d\n", edata->data);
+      c->cfa -= edata->data;
+      break;
+    case ARM_EXIDX_CMD_DATA_POP:
+      Debug (2, "vsp = vsp + %d\n", edata->data);
+      c->cfa += edata->data;
+      break;
+    case ARM_EXIDX_CMD_REG_POP:
+      for (i = 0; i < 16; i++)
+	if (edata->data & (1 << i))
+	  {
+	    Debug (2, "pop {r%d}\n", i);
+	    c->loc[UNW_ARM_R0 + i] = DWARF_LOC (c->cfa, 0);
+	    c->cfa += 4;
+	  }
+      /* Set cfa in case the SP got popped. */
+      if (edata->data & (1 << 13))
+	dwarf_get (c, c->loc[UNW_ARM_R13], &c->cfa);
+      break;
+    case ARM_EXIDX_CMD_REG_TO_SP:
+      assert (edata->data < 16);
+      Debug (2, "vsp = r%d\n", edata->data);
+      c->loc[UNW_ARM_R13] = c->loc[UNW_ARM_R0 + edata->data];
+      dwarf_get (c, c->loc[UNW_ARM_R13], &c->cfa);
+      break;
+    case ARM_EXIDX_CMD_VFP_POP:
+      /* Skip VFP registers, but be sure to adjust stack */
+      for (i = ARM_EXBUF_START (edata->data); i < ARM_EXBUF_END (edata->data);
+	   i++)
+	c->cfa += 8;
+      if (!(edata->data & ARM_EXIDX_VFP_DOUBLE))
+	c->cfa += 4;
+      break;
+    case ARM_EXIDX_CMD_WREG_POP:
+      for (i = ARM_EXBUF_START (edata->data); i < ARM_EXBUF_END (edata->data);
+	   i++)
+	c->cfa += 8;
+      break;
+    case ARM_EXIDX_CMD_WCGR_POP:
+      for (i = 0; i < 4; i++)
+	if (edata->data & (1 << i))
+	  c->cfa += 4;
+      break;
+    case ARM_EXIDX_CMD_REFUSED:
+    case ARM_EXIDX_CMD_RESERVED:
+      ret = -1;
+      break;
     }
   return ret;
 }
 
+
 HIDDEN int
-arm_exidx_decode (const uint8_t *buf, uint8_t len,
-		arm_exbuf_callback_t cb, void *cb_data)
+arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c)
 {
-#define READ_OP() aecb.ops[aecb.n_ops++] = *buf++
+#define READ_OP() *buf++
   const uint8_t *end = buf + len;
   int ret;
+  struct arm_exbuf_data edata;
 
   assert(buf != NULL);
-  assert(cb != NULL);
+  assert(len > 0);
+
   while (buf < end)
     {
-      struct arm_exbuf_callback_data aecb = { .cb_data = cb_data };
       uint8_t op = READ_OP ();
       if ((op & 0xc0) == 0x00)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_DATA_POP;
-	  aecb.data = (((int)op & 0x3f) << 2) + 4;
+	  edata.cmd = ARM_EXIDX_CMD_DATA_POP;
+	  edata.data = (((int)op & 0x3f) << 2) + 4;
 	}
       else if ((op & 0xc0) == 0x40)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_DATA_PUSH;
-	  aecb.data = (((int)op & 0x3f) << 2) + 4;
+	  edata.cmd = ARM_EXIDX_CMD_DATA_PUSH;
+	  edata.data = (((int)op & 0x3f) << 2) + 4;
 	}
       else if ((op & 0xf0) == 0x80)
 	{
 	  uint8_t op2 = READ_OP ();
 	  if (op == 0x80 && op2 == 0x00)
-	    aecb.cmd = ARM_EXIDX_CMD_REFUSED;
+	    edata.cmd = ARM_EXIDX_CMD_REFUSED;
 	  else
 	    {
-	      aecb.cmd = ARM_EXIDX_CMD_REG_POP;
-	      aecb.data = ((op & 0xf) << 8) | op2;
-	      aecb.data = aecb.data << 4;
+	      edata.cmd = ARM_EXIDX_CMD_REG_POP;
+	      edata.data = ((op & 0xf) << 8) | op2;
+	      edata.data = edata.data << 4;
 	    }
 	}
       else if ((op & 0xf0) == 0x90)
 	{
 	  if (op == 0x9d || op == 0x9f)
-	    aecb.cmd = ARM_EXIDX_CMD_RESERVED;
+	    edata.cmd = ARM_EXIDX_CMD_RESERVED;
 	  else
 	    {
-	      aecb.cmd = ARM_EXIDX_CMD_REG_TO_SP;
-	      aecb.data = op & 0x0f;
+	      edata.cmd = ARM_EXIDX_CMD_REG_TO_SP;
+	      edata.data = op & 0x0f;
 	    }
 	}
       else if ((op & 0xf0) == 0xa0)
 	{
 	  unsigned end = (op & 0x07);
-	  aecb.data = (1 << (end + 1)) - 1;
-	  aecb.data = aecb.data << 4;
+	  edata.data = (1 << (end + 1)) - 1;
+	  edata.data = edata.data << 4;
 	  if (op & 0x08)
-	    aecb.data |= 1 << 14;
-	  aecb.cmd = ARM_EXIDX_CMD_REG_POP;
+	    edata.data |= 1 << 14;
+	  edata.cmd = ARM_EXIDX_CMD_REG_POP;
 	}
       else if (op == ARM_EXTBL_OP_FINISH)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_FINISH;
+	  edata.cmd = ARM_EXIDX_CMD_FINISH;
 	  buf = end;
 	}
       else if (op == 0xb1)
 	{
 	  uint8_t op2 = READ_OP ();
 	  if (op2 == 0 || (op2 & 0xf0))
-	    aecb.cmd = ARM_EXIDX_CMD_RESERVED;
+	    edata.cmd = ARM_EXIDX_CMD_RESERVED;
 	  else
 	    {
-	      aecb.cmd = ARM_EXIDX_CMD_REG_POP;
-	      aecb.data = op2 & 0x0f;
+	      edata.cmd = ARM_EXIDX_CMD_REG_POP;
+	      edata.data = op2 & 0x0f;
 	    }
 	}
       else if (op == 0xb2)
@@ -291,50 +273,50 @@ arm_exidx_decode (const uint8_t *buf, uint8_t len,
 	      shift += 7;
 	    }
 	  while (byte & 0x80);
-	  aecb.data = offset * 4 + 0x204;
-	  aecb.cmd = ARM_EXIDX_CMD_DATA_POP;
+	  edata.data = offset * 4 + 0x204;
+	  edata.cmd = ARM_EXIDX_CMD_DATA_POP;
 	}
       else if (op == 0xb3 || op == 0xc8 || op == 0xc9)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_VFP_POP;
-	  aecb.data = READ_OP ();
+	  edata.cmd = ARM_EXIDX_CMD_VFP_POP;
+	  edata.data = READ_OP ();
 	  if (op == 0xc8)
-	    aecb.data |= ARM_EXIDX_VFP_SHIFT_16;
+	    edata.data |= ARM_EXIDX_VFP_SHIFT_16;
 	  if (op != 0xb3)
-	    aecb.data |= ARM_EXIDX_VFP_DOUBLE;
+	    edata.data |= ARM_EXIDX_VFP_DOUBLE;
 	}
       else if ((op & 0xf8) == 0xb8 || (op & 0xf8) == 0xd0)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_VFP_POP;
-	  aecb.data = 0x80 | (op & 0x07);
+	  edata.cmd = ARM_EXIDX_CMD_VFP_POP;
+	  edata.data = 0x80 | (op & 0x07);
 	  if ((op & 0xf8) == 0xd0)
-	    aecb.data |= ARM_EXIDX_VFP_DOUBLE;
+	    edata.data |= ARM_EXIDX_VFP_DOUBLE;
 	}
       else if (op >= 0xc0 && op <= 0xc5)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_WREG_POP;
-	  aecb.data = 0xa0 | (op & 0x07);
+	  edata.cmd = ARM_EXIDX_CMD_WREG_POP;
+	  edata.data = 0xa0 | (op & 0x07);
 	}
       else if (op == 0xc6)
 	{
-	  aecb.cmd = ARM_EXIDX_CMD_WREG_POP;
-	  aecb.data = READ_OP ();
+	  edata.cmd = ARM_EXIDX_CMD_WREG_POP;
+	  edata.data = READ_OP ();
 	}
       else if (op == 0xc7)
 	{
 	  uint8_t op2 = READ_OP ();
 	  if (op2 == 0 || (op2 & 0xf0))
-	    aecb.cmd = ARM_EXIDX_CMD_RESERVED;
+	    edata.cmd = ARM_EXIDX_CMD_RESERVED;
 	  else
 	    {
-	      aecb.cmd = ARM_EXIDX_CMD_WCGR_POP;
-	      aecb.data = op2 & 0x0f;
+	      edata.cmd = ARM_EXIDX_CMD_WCGR_POP;
+	      edata.data = op2 & 0x0f;
 	    }
 	}
       else
-	aecb.cmd = ARM_EXIDX_CMD_RESERVED;
+	edata.cmd = ARM_EXIDX_CMD_RESERVED;
 
-      ret = (*cb) (&aecb);
+      ret = arm_exidx_apply_cmd (&edata, c);
       if (ret < 0)
 	return ret;
     }

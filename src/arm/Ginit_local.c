@@ -39,7 +39,6 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 PROTECTED int
 unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 {
-  register void *current_sp asm ("sp");
   struct cursor *c = (struct cursor *) cursor;
 
   if (tdep_needs_initialization)
@@ -51,18 +50,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as_arg = uc;
 
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
-    {
-      int arm_exidx_init_done = 0;
-      if (!arm_exidx_init_done)
-	{
-	  arm_exidx_init_done = 1;
-	  arm_exidx_init_local ("libunwind");
-	}
-      c->frame.fp = __builtin_frame_address (0);
-      c->frame.sp = current_sp;
-      c->frame.lr = __builtin_return_address (0);
-      c->frame.pc = &unw_init_local;
-    }
+    arm_exidx_init_local ("libunwind");
 
   return common_init (c, 1);
 }

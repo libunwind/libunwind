@@ -64,15 +64,11 @@ enum arm_exbuf_cmd_flags {
 #define ARM_EXBUF_COUNT(x)	((x) & 0x0f)
 #define ARM_EXBUF_END(x)	(ARM_EXBUF_START(x) + ARM_EXBUF_COUNT(x))
 
-struct arm_exbuf_callback_data {
-  uint8_t ops[11];
-  uint8_t n_ops;
+struct arm_exbuf_data
+{
   arm_exbuf_cmd_t cmd;
   uint32_t data;
-  void *cb_data;
 };
-
-typedef int (*arm_exbuf_callback_t)(struct arm_exbuf_callback_data *aecb);
 
 static inline void *
 prel31_to_addr (void *addr)
@@ -99,30 +95,7 @@ int arm_exidx_entry_extract (struct elf_image *ei,
 int arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf);
 
 int arm_exidx_decode (const uint8_t *buf, uint8_t len,
-		arm_exbuf_callback_t cb, void *cb_data);
-
-struct arm_stackframe {
-  void *fp;
-  void *sp;
-  void *lr;
-  void *pc;
-};
-
-struct arm_exidx_vrs {
-  uint32_t vrs[16];
-};
-
-enum arm_exidx_vrs_regs {
-  FP_thumb = 7,
-  FP_arm = 11,
-  SP = 13,
-  LR = 14,
-  PC = 15,
-};
-
-void arm_exidx_frame_to_vrs(struct arm_stackframe *f, struct arm_exidx_vrs *s);
-int arm_exidx_vrs_to_frame(struct arm_exidx_vrs *s, struct arm_stackframe *f);
-
-int arm_exidx_vrs_callback (struct arm_exbuf_callback_data *aecd);
+		      struct dwarf_cursor *c);
+int arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c);
 
 #endif // ARM_EX_TABLES_H

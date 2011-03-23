@@ -55,7 +55,6 @@ struct unw_addr_space
 struct cursor
   {
     struct dwarf_cursor dwarf;		/* must be first */
-    struct arm_stackframe frame;
     unw_word_t sigcontext_addr;
   };
 
