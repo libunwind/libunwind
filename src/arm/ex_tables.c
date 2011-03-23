@@ -24,10 +24,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+#define ARM_EXBUF_START(x)	(((x) >> 4) & 0x0f)
+#define ARM_EXBUF_COUNT(x)	((x) & 0x0f)
+#define ARM_EXBUF_END(x)	(ARM_EXBUF_START(x) + ARM_EXBUF_COUNT(x))
+
 #define ARM_EXIDX_CANT_UNWIND	0x00000001
 #define ARM_EXIDX_COMPACT	0x80000000
 
 #define ARM_EXTBL_OP_FINISH	0xb0
+
+enum arm_exbuf_cmd_flags {
+  ARM_EXIDX_VFP_SHIFT_16 = 1 << 16,
+  ARM_EXIDX_VFP_DOUBLE = 1 << 17,
+};
 
 #ifdef ARM_EXIDX_TABLE_MALLOC
 static struct arm_exidx_table *arm_exidx_table_list;
@@ -37,6 +46,19 @@ static struct arm_exidx_table arm_exidx_tables[ARM_EXIDX_TABLE_LIMIT];
 static unsigned arm_exidx_table_count = 0;
 #endif
 static const char *arm_exidx_appname;
+
+static inline uint32_t
+prel31_read (uint32_t prel31)
+{
+  return ((int32_t)prel31 << 1) >> 1;
+}
+
+static inline void *
+prel31_to_addr (void *addr)
+{
+  uint32_t offset = ((long)*(uint32_t *)addr << 1) >> 1;
+  return (char *)addr + offset;
+}
 
 static void
 arm_exidx_table_reset_all (void)
@@ -79,7 +101,7 @@ arm_exidx_table_add (const char *name,
 }
 
 /**
- * Located the appropriate unwind table
+ * Locate the appropriate unwind table from the given PC.
  */
 HIDDEN struct arm_exidx_table *
 arm_exidx_table_find (void *pc)
@@ -100,7 +122,9 @@ arm_exidx_table_find (void *pc)
   return NULL;
 }
 
-/* Based on Linux arm/arm/kernel/unwind.c:search_index() */
+/**
+ * Finds the corresponding arm_exidx_entry from a given index table and PC.
+ */
 HIDDEN struct arm_exidx_entry *
 arm_exidx_table_lookup (struct arm_exidx_table *table, void *pc)
 {
@@ -190,7 +214,10 @@ arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c)
   return ret;
 }
 
-
+/**
+ * Decodes the given unwind instructions into arm_exbuf_data and calls
+ * arm_exidx_apply_cmd that applies the command onto the dwarf_cursor.
+ */
 HIDDEN int
 arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c)
 {
@@ -323,59 +350,11 @@ arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c)
   return 0;
 }
 
-static inline uint32_t
-prel31_read (uint32_t prel31)
-{
-  return ((int32_t)prel31 << 1) >> 1;
-}
-
 /**
- * Finds the index of the table entry for the given address
- * using a binary search.
- * @returns The table index (or -1 if not found).
+ * Reads the given entry and extracts the unwind instructions into buf.
+ * Returns the number of the extracted unwind insns or -UNW_ESTOPUNWIND
+ * if the special bit pattern ARM_EXIDX_CANT_UNWIND (0x1) was found.
  */
-HIDDEN int
-arm_exidx_lookup (uint32_t *exidx_data, uint32_t exidx_size, uint32_t ip)
-{
-  unsigned lo = 0, hi = exidx_size / 8;
-  while (lo < hi)
-    {
-      unsigned mid = (lo + hi) / 2;
-      uint32_t base = (uint32_t)(exidx_data + mid * 2);
-      uint32_t addr = base + prel31_read (exidx_data[mid * 2]);
-      if (ip < addr)
-	hi = mid;
-      else
-	lo = mid + 1;
-    }
-  return hi - 1;
-}
-
-HIDDEN int
-arm_exidx_entry_lookup (struct elf_image *ei,
-		Elf_W (Shdr) *exidx, uint32_t ip)
-{
-#if 1
-  return arm_exidx_lookup (ei->image + exidx->sh_offset, exidx->sh_size, ip);
-#else
-  unsigned n_entries = exidx->sh_size / 8;
-  uint32_t *exidx_data = ei->image + exidx->sh_offset;
-  unsigned lo = 0, hi = n_entries;
-
-  while (lo < hi)
-    {
-      unsigned mid = (lo + hi) / 2;
-      uint32_t base = exidx->sh_addr + mid * 8;
-      uint32_t addr = base + prel31_read (exidx_data[mid * 2]);
-      if (ip < addr)
-	hi = mid;
-      else
-	lo = mid + 1;
-    }
-  return hi - 1;
-#endif
-}
-
 HIDDEN int
 arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
 {
@@ -417,7 +396,7 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
       else
 	{
 	  void *pers = prel31_to_addr (extbl_data);
-	  Debug (2, "%p Personality routine: %8.8x\n", addr, pers);
+	  Debug (2, "%p Personality routine: %8p\n", addr, pers);
 	  n_table_words = extbl_data[1] >> 24;
 	  buf[nbuf++] = extbl_data[1] >> 16;
 	  buf[nbuf++] = extbl_data[1] >> 8;
@@ -442,105 +421,8 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
   return nbuf;
 }
 
-HIDDEN int
-arm_exidx_entry_extract (struct elf_image *ei,
-		Elf_W (Shdr) *exidx, Elf_W (Shdr) *extbl,
-		unsigned i, uint8_t *buf)
-{
-  int nbuf = 0;
-  uint32_t *exidx_data = ei->image + exidx->sh_offset;
-  uint32_t base = exidx->sh_addr + i * 8;
-  uint32_t one = base + prel31_read (exidx_data[i * 2]);
-
-  uint32_t two = exidx_data[i * 2 + 1];
-  if (two == ARM_EXIDX_CANT_UNWIND)
-    printf ("0x1 [can't unwind]\n");
-  else if (two & ARM_EXIDX_COMPACT)
-    {
-      printf ("compact model %d [%8.8x]\n", (two >> 24) & 0x7f, two);
-      buf[nbuf++] = two >> 16;
-      buf[nbuf++] = two >> 8;
-      buf[nbuf++] = two;
-    }
-  else
-    {
-      assert (NULL != extbl);
-      two = base + prel31_read (two) + 4;
-      uint32_t *extbl_data = ei->image + extbl->sh_offset
-	      + (two - extbl->sh_addr);
-      two = extbl_data[0];
-      unsigned int n_table_words = 0;
-      if (two & ARM_EXIDX_COMPACT)
-	{
-	  int pers = (two >> 24) & 0x0f;
-	  printf ("compact model %d [%8.8x]\n", pers, two);
-	  if (pers == 1 || pers == 2)
-	    {
-	      n_table_words = (two >> 16) & 0xff;
-	      extbl_data += 1;
-	    }
-	  else
-	    buf[nbuf++] = two >> 16;
-	  buf[nbuf++] = two >> 8;
-	  buf[nbuf++] = two;
-	}
-      else
-	{
-	  uint32_t pers = prel31_read (extbl_data[0]);
-	  pers += extbl->sh_addr + i * 8 + 4;
-	  printf ("Personality routine: %8.8x\n", pers);
-	  n_table_words = extbl_data[1] >> 24;
-	  buf[nbuf++] = extbl_data[1] >> 16;
-	  buf[nbuf++] = extbl_data[1] >> 8;
-	  buf[nbuf++] = extbl_data[1];
-	  extbl_data += 2;
-	}
-      assert (n_table_words <= 5);
-      unsigned j;
-      for (j = 0; j < n_table_words; j++)
-	{
-	  two = *extbl_data++;
-	  buf[nbuf++] = two >> 24;
-	  buf[nbuf++] = two >> 16;
-	  buf[nbuf++] = two >> 8;
-	  buf[nbuf++] = two >> 0;
-	}
-    }
-
-  if (nbuf > 0 && buf[nbuf - 1] != ARM_EXTBL_OP_FINISH)
-    buf[nbuf++] = ARM_EXTBL_OP_FINISH;
-
-  return nbuf;
-}
-
-HIDDEN void
-arm_exidx_section_find (struct elf_image *ei,
-		Elf_W (Shdr) **exidx, Elf_W (Shdr) **extbl)
-{
-  Elf_W (Ehdr) *ehdr = ei->image;
-  Elf_W (Shdr) *shdr;
-  shdr = (Elf_W (Shdr) *)((char *)ei->image + ehdr->e_shoff);
-  char *names = (char *)ei->image + shdr[ehdr->e_shstrndx].sh_offset;
-  int i = 0;
-  for (i = 0; i < ehdr->e_shnum; i++)
-    {
-      char *name = names + shdr[i].sh_name;
-      switch (shdr[i].sh_type)
-	{
-	  case SHT_ARM_EXIDX:
-	    *exidx = shdr + i;
-	    break;
-	  case SHT_PROGBITS:
-	    if (strcmp (name, ".ARM.extab") != 0)
-	      break;
-	    *extbl = shdr + i;
-	    break;
-	}
-    }
-}
-
 /**
- * Callback to dl_iterate_phr to find each library's unwind table.
+ * Callback to dl_iterate_phdr to find the unwind tables.
  * If found, calls arm_exidx_table_add to remember it for later lookups.
  */
 static int
@@ -570,13 +452,13 @@ arm_exidx_init_local_cb (struct dl_phdr_info *info, size_t size, void *data)
 }
 
 /**
- * Must be called for local process lookups.
+ * Traverse the program headers of the executable and its loaded
+ * shared objects to collect the unwind tables.
  */
 HIDDEN int
 arm_exidx_init_local (const char *appname)
 {
   arm_exidx_appname = appname;
-  // traverse all libraries and find unwind tables
   arm_exidx_table_reset_all();
   return dl_iterate_phdr (&arm_exidx_init_local_cb, NULL);
 }

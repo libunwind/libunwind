@@ -41,7 +41,6 @@ struct arm_exidx_table {
 #endif
 };
 
-
 typedef enum arm_exbuf_cmd {
   ARM_EXIDX_CMD_FINISH,
   ARM_EXIDX_CMD_DATA_PUSH,
@@ -55,47 +54,21 @@ typedef enum arm_exbuf_cmd {
   ARM_EXIDX_CMD_REFUSED,
 } arm_exbuf_cmd_t;
 
-enum arm_exbuf_cmd_flags {
-  ARM_EXIDX_VFP_SHIFT_16 = 1 << 16,
-  ARM_EXIDX_VFP_DOUBLE = 1 << 17,
-};
-
-#define ARM_EXBUF_START(x)	(((x) >> 4) & 0x0f)
-#define ARM_EXBUF_COUNT(x)	((x) & 0x0f)
-#define ARM_EXBUF_END(x)	(ARM_EXBUF_START(x) + ARM_EXBUF_COUNT(x))
-
 struct arm_exbuf_data
 {
   arm_exbuf_cmd_t cmd;
   uint32_t data;
 };
 
-static inline void *
-prel31_to_addr (void *addr)
-{
-  uint32_t offset = ((long)*(uint32_t *)addr << 1) >> 1;
-  return (char *)addr + offset;
-}
 
 int arm_exidx_init_local (const char *appname);
-
-int arm_exidx_table_add (const char *name,
-    struct arm_exidx_entry *start, struct arm_exidx_entry *end);
+int arm_exidx_table_add (const char *name, struct arm_exidx_entry *start,
+			 struct arm_exidx_entry *end);
 struct arm_exidx_table *arm_exidx_table_find (void *pc);
-struct arm_exidx_entry *arm_exidx_table_lookup (
-		struct arm_exidx_table *table, void *pc);
-
-void arm_exidx_section_find (struct elf_image *ei,
-		Elf_W (Shdr) **exidx, Elf_W (Shdr) **extbl);
-int arm_exidx_entry_lookup (struct elf_image *ei,
-		Elf_W (Shdr) *exidx, uint32_t ip);
-int arm_exidx_entry_extract (struct elf_image *ei,
-		Elf_W (Shdr) *exidx, Elf_W (Shdr) *extbl,
-		unsigned i, uint8_t *buf);
+struct arm_exidx_entry *arm_exidx_table_lookup (struct arm_exidx_table *table,
+						void *pc);
 int arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf);
-
-int arm_exidx_decode (const uint8_t *buf, uint8_t len,
-		      struct dwarf_cursor *c);
+int arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c);
 int arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c);
 
 #endif // ARM_EX_TABLES_H
