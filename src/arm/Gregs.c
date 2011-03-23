@@ -45,12 +45,12 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_ARM_R10:
     case UNW_ARM_R11:
     case UNW_ARM_R12:
-    case UNW_ARM_R13:
     case UNW_ARM_R14:
     case UNW_ARM_R15:
       loc = c->dwarf.loc[reg - UNW_ARM_R0];
       break;
 
+    case UNW_ARM_R13:
     case UNW_ARM_CFA:
       if (write)
         return -UNW_EREADONLYREG;
