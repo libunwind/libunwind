@@ -186,7 +186,7 @@ extern int unw_tdep_getcontext (unw_tdep_context_t *);
 #define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);
 
-#define unw_tdep_trace(cur,addr,n,c)	(-UNW_ENOINFO)
+#define unw_tdep_trace(cur,addr,n)	(-UNW_ENOINFO)
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

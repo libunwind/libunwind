@@ -136,6 +136,7 @@ Gtest_exc_LDADD = $(LIBUNWIND)
 Gtest_init_LDADD = $(LIBUNWIND)
 Gtest_resume_sig_LDADD = $(LIBUNWIND)
 Gperf_simple_LDADD = $(LIBUNWIND)
+Gtest_trace_LDADD=$(LIBUNWIND)
 
 Ltest_bt_LDADD = $(LIBUNWIND_local)
 Ltest_concurrent_LDADD = $(LIBUNWIND_local) -lpthread
@@ -145,6 +146,8 @@ Ltest_init_LDADD = $(LIBUNWIND_local)
 Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
 Ltest_resume_sig_LDADD = $(LIBUNWIND)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
+Ltest_trace_LDADD = $(LIBUNWIND_local)
 
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
+

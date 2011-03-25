@@ -193,7 +193,7 @@ extern unw_word_t _Uia64_find_dyn_list (unw_addr_space_t, unw_dyn_info_t *,
    signal-safe.  */
 extern int _Uia64_get_kernel_table (unw_dyn_info_t *);
 
-#define unw_tdep_trace(cur,addr,n,c)	(-UNW_ENOINFO)
+#define unw_tdep_trace(cur,addr,n)	(-UNW_ENOINFO)
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

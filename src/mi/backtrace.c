@@ -31,32 +31,51 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* See glibc manual for a description of this function.  */
 
-int
-unw_backtrace (void **buffer, int size)
+static inline int
+slow_backtrace (void **buffer, int size)
 {
   unw_cursor_t cursor;
-  unw_context_t uc, ucsave;
-  int n = size;
+  unw_context_t uc;
+  unw_word_t ip;
+  int n = 0;
 
   unw_getcontext (&uc);
-  memcpy (&ucsave, &uc, sizeof(uc));
+  if (unw_init_local (&cursor, &uc) < 0)
+    return 0;
+
+  while (unw_step (&cursor) > 0)
+    {
+      if (n >= size)
+	return n;
+
+      if (unw_get_reg (&cursor, UNW_REG_IP, &ip) < 0)
+	return n;
+      buffer[n++] = (void *) (uintptr_t) ip;
+    }
+  return n;
+}
+
+int
+backtrace (void **buffer, int size)
+{
+  unw_cursor_t cursor;
+  unw_context_t uc;
+  int n = size;
+  int ret;
+
+  unw_getcontext (&uc);
 
   if (unw_init_local (&cursor, &uc) < 0)
     return 0;
 
+  /* We don't need backtrace() to show up in buffer */
+  ret = unw_step (&cursor);
+  if (ret < 0)
+    return ret;
+
   if (unw_tdep_trace (&cursor, buffer, &n) < 0)
     {
-      n = 0;
-      unw_init_local (&cursor, &ucsave);
-      while (n < size)
-        {
-          unw_word_t ip;
-          if (unw_get_reg (&cursor, UNW_REG_IP, &ip) < 0)
-	    return n;
-          buffer[n++] = (void *) (uintptr_t) ip;
-	  if (unw_step (&cursor) <= 0)
-	    break;
-        }
+      return slow_backtrace(buffer, size);
     }
 
   return n;

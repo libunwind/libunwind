@@ -53,9 +53,6 @@ char buf[512], name[256];
 void *addresses[2][128];
 unw_cursor_t cursor;
 ucontext_t uc;
-#if UNW_TARGET_X86_64
-unw_tdep_frame_t *cache;
-#endif
 
 static void
 do_backtrace (void)
@@ -73,7 +70,7 @@ do_backtrace (void)
     panic ("unw_init_local failed!\n");
 
 #if UNW_TARGET_X86_64
-  if ((ret = unw_tdep_trace (&cursor, addresses[0], &depth, cache)) < 0)
+  if ((ret = unw_tdep_trace (&cursor, addresses[0], &depth)) < 0)
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
       printf ("FAILURE: unw_tdep_trace() returned %d for ip=%lx\n", ret, (long) ip);
@@ -211,10 +208,6 @@ main (int argc, char **argv)
   struct sigaction act;
   stack_t stk;
 
-#if UNW_TARGET_X86_64
-  cache = unw_tdep_make_frame_cache (0);
-#endif
-
   verbose = (argc > 1);
 
   if (verbose)
@@ -254,10 +247,6 @@ main (int argc, char **argv)
       fprintf (stderr, "FAILURE: detected %d errors\n", num_errors);
       exit (-1);
     }
-
-#if UNW_TARGET_X86_64
-  unw_tdep_free_frame_cache (cache);
-#endif
 
   if (verbose)
     printf ("SUCCESS.\n");

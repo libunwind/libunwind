@@ -123,8 +123,6 @@ check_local_unw_abi () {
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
 	    match _U${plat}_setcontext
-            match _UL${plat}_free_frame_cache
-            match _UL${plat}_make_frame_cache
             match _UL${plat}_trace
 	    ;;
 	*)
@@ -189,8 +187,6 @@ check_generic_unw_abi () {
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _U${plat}_dwarf_search_unwind_table
-            match _U${plat}_free_frame_cache
-            match _U${plat}_make_frame_cache
             match _U${plat}_trace
 	    ;;
 	*)
