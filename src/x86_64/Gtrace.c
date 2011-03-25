@@ -157,6 +157,7 @@ trace_cache_expand (unw_trace_cache_t *cache)
   Debug(5, "expanded cache from 2^%lu to 2^%lu hash bucket sets\n",
 	cache->log_frame_vecs, new_size);
   cache->log_frame_vecs = new_size;
+  cache->used = 0;
   return 0;
 }
 
