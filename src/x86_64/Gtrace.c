@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2010 by Lassi Tuura <lat@iki.fi>
+   Copyright (C) 2010, 2011 by FERMI NATIONAL ACCELERATOR LABORATORY
 
 This file is part of libunwind.
 

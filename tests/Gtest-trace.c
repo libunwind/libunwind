@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2010 by Lassi Tuura <lat@iki.fi>
+   Copyright (C) 2010, 2011 by FERMI NATIONAL ACCELERATOR LABORATORY
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
