@@ -46,17 +46,20 @@ endif #ARCH_IA64
 			test-mem test-setjmp test-ptrace		 \
 			Ltest-nomalloc rs-race
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
-			Gperf-simple Lperf-simple
+			Gperf-simple Lperf-simple			\
+			Gperf-trace Lperf-trace
 
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
 endif
 
-perf: perf-startup Gperf-simple Lperf-simple
+perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
 	@echo "########## Basic performance of generic libunwind:"
 	@./Gperf-simple
 	@echo "########## Basic performance of local-only libunwind:"
 	@./Lperf-simple
+	@echo "########## Performance of fast unwind:"
+	@./Lperf-trace
 	@echo "########## Startup overhead:"
 	@$(srcdir)/perf-startup @arch@
 
@@ -137,6 +140,7 @@ Gtest_init_LDADD = $(LIBUNWIND)
 Gtest_resume_sig_LDADD = $(LIBUNWIND)
 Gperf_simple_LDADD = $(LIBUNWIND)
 Gtest_trace_LDADD=$(LIBUNWIND)
+Gperf_trace_LDADD = $(LIBUNWIND)
 
 Ltest_bt_LDADD = $(LIBUNWIND_local)
 Ltest_concurrent_LDADD = $(LIBUNWIND_local) -lpthread
@@ -147,6 +151,7 @@ Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
 Ltest_resume_sig_LDADD = $(LIBUNWIND)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
+Lperf_trace_LDADD = $(LIBUNWIND_local)
 
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
