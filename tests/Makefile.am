@@ -145,5 +145,3 @@ Lperf_simple_LDADD = $(LIBUNWIND_local)
 
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
-
-arm_extbl_test_LDADD = $(LIBUNWIND_ELF) $(LIBUNWIND)
