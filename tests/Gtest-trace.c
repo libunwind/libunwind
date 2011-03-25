@@ -86,7 +86,7 @@ do_backtrace (void)
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
 	  addresses[0][i] = (void *) ip;
         }
-      while ((ret = unw_step (&cursor)) >= 0 && ++i < 128);
+      while ((ret = unw_step (&cursor)) > 0 && ++i < 128);
 
       if (ret < 0)
         {
@@ -94,6 +94,7 @@ do_backtrace (void)
           printf ("FAILURE: unw_step() returned %d for ip=%lx\n", ret, (long) ip);
           ++num_errors;
 	}
+      depth = i;
     }
 
   if (verbose)
