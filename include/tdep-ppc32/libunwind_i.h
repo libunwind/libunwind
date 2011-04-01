@@ -42,6 +42,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "mempool.h"
 #include "dwarf.h"
 
+typedef struct
+  {
+    /* no ppc32-specific fast trace */
+  }
+unw_tdep_frame_t;
+
 struct unw_addr_space
 {
   struct unw_accessors acc;
@@ -258,6 +264,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_cache_frame(c,rs)		do {} while(0)
 #define tdep_reuse_frame(c,rs)		do {} while(0)
 #define tdep_stash_frame(c,rs)		do {} while(0)
+#define tdep_trace(cur,addr,n)		(-UNW_ENOINFO)
 #define tdep_get_func_addr		UNW_OBJ(get_func_addr)
 
 #ifdef UNW_LOCAL_ONLY

@@ -103,12 +103,6 @@ unw_tdep_save_loc_t;
 /* On PA-RISC, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
-typedef struct
-  {
-    /* no hppa-specific fast trace */
-  }
-unw_tdep_frame_t;
-
 #define unw_tdep_is_fpreg(r)		((unsigned) ((r) - UNW_HPPA_FR) < 32)
 
 #include "libunwind-dynamic.h"
@@ -123,8 +117,6 @@ unw_tdep_proc_info_t;
 
 #define unw_tdep_getcontext		UNW_ARCH_OBJ (getcontext)
 extern int unw_tdep_getcontext (unw_tdep_context_t *);
-
-#define unw_tdep_trace(cur,addr,n)	(-UNW_ENOINFO)
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

@@ -33,15 +33,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* See glibc manual for a description of this function.  */
 
 static ALWAYS_INLINE int
-slow_backtrace (void **buffer, int size)
+slow_backtrace (void **buffer, int size, unw_context_t *uc)
 {
   unw_cursor_t cursor;
-  unw_context_t uc;
   unw_word_t ip;
   int n = 0;
 
-  unw_getcontext (&uc);
-  if (unw_init_local (&cursor, &uc) < 0)
+  if (unw_init_local (&cursor, uc) < 0)
     return 0;
 
   while (unw_step (&cursor) > 0)
@@ -62,21 +60,16 @@ unw_backtrace (void **buffer, int size)
   unw_cursor_t cursor;
   unw_context_t uc;
   int n = size;
-  int ret;
 
   unw_getcontext (&uc);
 
   if (unw_init_local (&cursor, &uc) < 0)
     return 0;
 
-  /* We don't need backtrace() to show up in buffer */
-  ret = unw_step (&cursor);
-  if (ret < 0)
-    return ret;
-
-  if (unw_tdep_trace (&cursor, buffer, &n) < 0)
+  if (tdep_trace (&cursor, buffer, &n) < 0)
     {
-      return slow_backtrace(buffer, size);
+      unw_getcontext (&uc);
+      return slow_backtrace (buffer, size, &uc);
     }
 
   return n;

@@ -50,7 +50,7 @@ int num_errors;
 /* These variables are global because they
  * cause the signal stack to overflow */
 char buf[512], name[256];
-void *addresses[2][128];
+void *addresses[3][128];
 unw_cursor_t cursor;
 ucontext_t uc;
 
@@ -59,42 +59,28 @@ do_backtrace (void)
 {
   unw_word_t ip;
   int ret = -UNW_ENOINFO;
-  int depth = 128;
-  int i, n;
+  int depth = 0;
+  int i, n, m;
 
   if (verbose)
-    printf ("\tfast backtrace:\n");
+    printf ("\tnormal trace:\n");
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
     panic ("unw_init_local failed!\n");
 
-#if UNW_TARGET_X86_64
-  if ((ret = unw_tdep_trace (&cursor, addresses[0], &depth)) < 0)
+  do
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
-      printf ("FAILURE: unw_tdep_trace() returned %d for ip=%lx\n", ret, (long) ip);
-      ++num_errors;
+      addresses[0][depth] = (void *) ip;
     }
-#endif
+  while ((ret = unw_step (&cursor)) > 0 && ++depth < 128);
 
   if (ret < 0)
     {
-      i = 0;
-      do
-        {
-	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
-	  addresses[0][i] = (void *) ip;
-        }
-      while ((ret = unw_step (&cursor)) > 0 && ++i < 128);
-
-      if (ret < 0)
-        {
-	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
-          printf ("FAILURE: unw_step() returned %d for ip=%lx\n", ret, (long) ip);
-          ++num_errors;
-	}
-      depth = i;
+      unw_get_reg (&cursor, UNW_REG_IP, &ip);
+      printf ("FAILURE: unw_step() returned %d for ip=%lx\n", ret, (long) ip);
+      ++num_errors;
     }
 
   if (verbose)
@@ -110,17 +96,43 @@ do_backtrace (void)
     for (i = 0; i < n; ++i)
 	printf ("\t #%-3d ip=%p\n", i, addresses[1][i]);
 
-  if (n != depth)
+  if (verbose)
+    printf ("\n\tvia unw_backtrace():\n");
+
+  m = unw_backtrace (addresses[2], 128);
+
+  if (verbose)
+    for (i = 0; i < m; ++i)
+	printf ("\t #%-3d ip=%p\n", i, addresses[2][i]);
+
+  if (m != depth+1)
     {
-      printf ("FAILURE: unw_tdep_trace() and backtrace() depths differ: %d vs. %d\n", depth, n);
+      printf ("FAILURE: unw_step() loop and unw_backtrace() depths differ: %d vs. %d\n", depth, m);
       ++num_errors;
     }
-  else
+
+  if (n != depth+1)
+    {
+      printf ("FAILURE: unw_step() loop and backtrace() depths differ: %d vs. %d\n", depth, n);
+      ++num_errors;
+    }
+
+  if (n == m)
+    for (i = 1; i < n; ++i)
+      /* Allow one in difference in comparison, trace returns adjusted addresses. */
+      if (labs((unw_word_t) addresses[1][i] - (unw_word_t) addresses[2][i]) > 1)
+	{
+          printf ("FAILURE: backtrace() and unw_backtrace() addresses differ at %d: %p vs. %p\n",
+		  i, addresses[1][n], addresses[2][n]);
+          ++num_errors;
+	}
+
+  if (n == depth+1)
     for (i = 1; i < depth; ++i)
       /* Allow one in difference in comparison, trace returns adjusted addresses. */
       if (labs((unw_word_t) addresses[0][i] - (unw_word_t) addresses[1][i]) > 1)
 	{
-          printf ("FAILURE: unw_tdep_trace() and backtrace() addresses differ at %d: %p vs. %p\n",
+          printf ("FAILURE: unw_step() loop and backtrace() addresses differ at %d: %p vs. %p\n",
 		  i, addresses[0][n], addresses[1][n]);
           ++num_errors;
 	}

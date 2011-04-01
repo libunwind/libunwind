@@ -38,6 +38,27 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "mempool.h"
 #include "dwarf.h"
 
+typedef enum
+  {
+    UNW_X86_64_FRAME_STANDARD = -2,     /* regular rbp, rsp +/- offset */
+    UNW_X86_64_FRAME_SIGRETURN = -1,    /* special sigreturn frame */
+    UNW_X86_64_FRAME_OTHER = 0,         /* not cacheable (special or unrecognised) */
+    UNW_X86_64_FRAME_GUESSED = 1        /* guessed it was regular, but not known */
+  }
+unw_tdep_frame_type_t;
+
+typedef struct
+  {
+    uint64_t virtual_address;
+    int64_t frame_type     : 2;  /* unw_tdep_frame_type_t classification */
+    int64_t last_frame     : 1;  /* non-zero if last frame in chain */
+    int64_t cfa_reg_rsp    : 1;  /* cfa dwarf base register is rsp vs. rbp */
+    int64_t cfa_reg_offset : 30; /* cfa is at this offset from base register value */
+    int64_t rbp_cfa_offset : 15; /* rbp saved at this offset from cfa (-1 = not saved) */
+    int64_t rsp_cfa_offset : 15; /* rsp saved at this offset from cfa (-1 = not saved) */
+  }
+unw_tdep_frame_t;
+
 struct unw_addr_space
   {
     struct unw_accessors acc;
@@ -176,6 +197,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 # define tdep_reuse_frame(c,rs)		do {} while(0)
 #endif
 #define tdep_stash_frame		UNW_OBJ(stash_frame)
+#define tdep_trace			UNW_OBJ(tdep_trace)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
@@ -221,5 +243,7 @@ extern void tdep_reuse_frame (struct dwarf_cursor *c,
 extern void tdep_stash_frame (struct dwarf_cursor *c,
 			      struct dwarf_reg_state *rs);
 #endif
+
+extern int tdep_trace (unw_cursor_t *cursor, void **addresses, int *n);
 
 #endif /* X86_64_LIBUNWIND_I_H */

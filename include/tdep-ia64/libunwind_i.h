@@ -32,6 +32,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "elf64.h"
 #include "mempool.h"
 
+typedef struct
+  {
+    /* no ia64-specific fast trace */
+  }
+unw_tdep_frame_t;
+
 enum ia64_pregnum
   {
     /* primary unat: */
@@ -224,6 +230,7 @@ struct ia64_global_unwind_state
 #define tdep_cache_frame(c,rs)		do {} while(0)
 #define tdep_reuse_frame(c,rs)		do {} while(0)
 #define tdep_stash_frame(c,rs)		do {} while(0)
+#define tdep_trace(cur,addr,n)		(-UNW_ENOINFO)
 #define tdep_get_as(c)			((c)->as)
 #define tdep_get_as_arg(c)		((c)->as_arg)
 #define tdep_get_ip(c)			((c)->ip)

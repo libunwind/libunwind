@@ -328,13 +328,13 @@ trace_lookup (unw_cursor_t *cursor,
 
 /* Fast stack backtrace for x86-64.
 
-   Intended for use when the application makes frequent queries to the
-   current call stack without any desire to unwind.  Somewhat like the
-   GLIBC backtrace() function: fills BUFFER with the call tree from
-   CURSOR upwards, and SIZE with the number of stack levels so found.
-   When called, SIZE should tell the maximum number of entries that
-   can be stored in BUFFER.  An internal thread-specific cache is used
-   to accelerate the stack queries.
+   This is used by backtrace() implementation to accelerate frequent
+   queries for current stack, without any desire to unwind. It fills
+   BUFFER with the call tree from CURSOR upwards for at most SIZE
+   stack levels. The first frame, backtrace itself, is omitted. When
+   called, SIZE should give the maximum number of entries that can be
+   stored into BUFFER. Uses an internal thread-specific cache to
+   accelerate queries.
 
    The caller should fall back to a unw_step() loop if this function
    fails by returning -UNW_ESTOPUNWIND, meaning the routine hit a
@@ -351,7 +351,7 @@ trace_lookup (unw_cursor_t *cursor,
    they are at the outermost (final) frame or can conservatively be
    assumed to be frame-pointer based.
 
-   Any other stack layout will cause the routine to give up.  There
+   Any other stack layout will cause the routine to give up. There
    are only a handful of relatively rarely used functions which do
    not have a stack in the standard form: vfork, longjmp, setcontext
    and _dl_runtime_profile on common linux systems for example.
@@ -369,31 +369,28 @@ trace_lookup (unw_cursor_t *cursor,
    Callers of this function would normally look like this:
 
      unw_cursor_t     cur;
-     unw_context_t    ctx, saved;
+     unw_context_t    ctx;
      void             addrs[128];
      int              depth = 128;
      int              ret;
 
      unw_getcontext(&ctx);
-     memcpy(&saved, &ctx, sizeof(ctx));
-
      unw_init_local(&cur, &ctx);
      if ((ret = unw_tdep_trace(&cur, addrs, &depth)) < 0)
      {
        depth = 0;
-       unw_init_local(&cur, &saved);
-       while (depth < 128)
+       unw_getcontext(&ctx);
+       unw_init_local(&cur, &ctx);
+       while ((ret = unw_step(&cur)) > 0 && depth < 128)
        {
          unw_word_t ip;
          unw_get_reg(&cur, UNW_REG_IP, &ip);
          addresses[depth++] = (void *) ip;
-         if ((ret = unw_step(&cur)) <= 0)
-           break;
        }
      }
 */
-int
-unw_tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
+HIDDEN int
+tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
 {
   struct cursor *c = (struct cursor *) cursor;
   struct dwarf_cursor *d = &c->dwarf;
@@ -448,9 +445,6 @@ unw_tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
        cache negative results too to prevent unnecessary dwarf parsing
        for common failures. */
     unw_tdep_frame_t *f = trace_lookup (cursor, cache, cfa, rip, rbp, rsp);
-
-    /* Record this address in stack trace. */
-    buffer[depth++] = (void *) rip;
 
     /* If we don't have information for this frame, give up. */
     if (! f)
@@ -530,6 +524,9 @@ unw_tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     /* If we failed on ended up somewhere bogus, stop. */
     if (ret < 0 || rip < 0x4000)
       break;
+
+    /* Record this address in stack trace. We skipped the first address. */
+    buffer[depth++] = (void *) (rip - d->use_prev_instr);
   }
 
 #if UNW_DEBUG
