@@ -27,11 +27,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#include <libunwind_i.h>
 #include <string.h>
 
 /* See glibc manual for a description of this function.  */
 
-static inline int
+static ALWAYS_INLINE int
 slow_backtrace (void **buffer, int size)
 {
   unw_cursor_t cursor;

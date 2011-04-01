@@ -105,7 +105,7 @@ Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 
-LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la $(LIBUNWIND_local)
+LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
 
 if USE_ELF32
