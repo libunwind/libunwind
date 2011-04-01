@@ -53,3 +53,4 @@ tests/test-ptrace-misc
 tests/test-varargs
 tests/test-static-link
 tests/[GL]test-trace
+tests/[GL]perf-trace
