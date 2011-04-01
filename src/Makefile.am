@@ -138,7 +138,7 @@ libunwind_la_LIBADD += $(LIBUNWIND_ELF)
 noinst_HEADERS += arm/init.h arm/offsets.h arm/unwind_i.h
 libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
 	arm/is_fpreg.c arm/regname.c					    \
-	arm/ex_tables.c arm/ex_tables.h
+	arm/ex_tables.h
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \
@@ -146,13 +146,15 @@ libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \
 	arm/getcontext.S						    \
 	arm/Lcreate_addr_space.c arm/Lget_proc_info.c arm/Lget_save_loc.c   \
 	arm/Lglobal.c arm/Linit.c arm/Linit_local.c arm/Linit_remote.c	    \
-	arm/Lis_signal_frame.c arm/Lregs.c arm/Lresume.c arm/Lstep.c
+	arm/Lis_signal_frame.c arm/Lregs.c arm/Lresume.c arm/Lstep.c	    \
+	arm/Lex_tables.c
 
 libunwind_arm_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)	    \
 	$(libunwind_la_SOURCES_generic)					    \
 	arm/Gcreate_addr_space.c arm/Gget_proc_info.c arm/Gget_save_loc.c   \
 	arm/Gglobal.c arm/Ginit.c arm/Ginit_local.c arm/Ginit_remote.c	    \
-	arm/Gis_signal_frame.c arm/Gregs.c arm/Gresume.c arm/Gstep.c
+	arm/Gis_signal_frame.c arm/Gregs.c arm/Gresume.c arm/Gstep.c	    \
+	arm/Gex_tables.c
 
 # The list of files that go both into libunwind and libunwind-ia64:
 noinst_HEADERS += ia64/init.h ia64/offsets.h ia64/regs.h		    \

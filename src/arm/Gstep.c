@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "offsets.h"
 #include "ex_tables.h"
 
+#define arm_exidx_step	UNW_OBJ(arm_exidx_step)
+
 static inline int
 arm_exidx_step (struct cursor *c)
 {

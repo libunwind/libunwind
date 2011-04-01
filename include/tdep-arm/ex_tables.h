@@ -57,6 +57,13 @@ struct arm_exbuf_data
   uint32_t data;
 };
 
+#define arm_exidx_init_local	UNW_OBJ(arm_exidx_init_local)
+#define arm_exidx_table_add	UNW_OBJ(arm_exidx_table_add)
+#define arm_exidx_table_find	UNW_OBJ(arm_exidx_table_find)
+#define arm_exidx_table_lookup	UNW_OBJ(arm_exidx_table_lookup)
+#define arm_exidx_extract	UNW_OBJ(arm_exidx_extract)
+#define arm_exidx_decode	UNW_OBJ(arm_exidx_decode)
+#define arm_exidx_apply_cmd	UNW_OBJ(arm_exidx_apply_cmd)
 
 int arm_exidx_init_local (void);
 int arm_exidx_table_add (const char *name, struct arm_exidx_entry *start,

@@ -35,6 +35,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define ARM_EXIDX_TABLE_LIMIT	32
 
+#define arm_exidx_tables		UNW_OBJ(arm_exidx_tables)
+#define arm_exidx_table_count		UNW_OBJ(arm_exidx_table_count)
+#define arm_exidx_table_find		UNW_OBJ(arm_exidx_table_find)
+#define arm_exidx_table_reset_all	UNW_OBJ(arm_exidx_table_reset_all)
+#define arm_exidx_init_local_cb		UNW_OBJ(arm_exidx_init_local_cb)
+
 enum arm_exbuf_cmd_flags {
   ARM_EXIDX_VFP_SHIFT_16 = 1 << 16,
   ARM_EXIDX_VFP_DOUBLE = 1 << 17,
