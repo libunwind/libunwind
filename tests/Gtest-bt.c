@@ -45,6 +45,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 typedef RETSIGTYPE (*sighandler_t) (int);
 #endif
 
+#define SIG_STACK_SIZE 0x100000
+
 int verbose;
 int num_errors;
 
@@ -226,10 +228,10 @@ main (int argc, char **argv)
 
   if (verbose)
     printf ("\nBacktrace across signal handler on alternate stack:\n");
-  stk.ss_sp = malloc (SIGSTKSZ);
+  stk.ss_sp = malloc (SIG_STACK_SIZE);
   if (!stk.ss_sp)
-    panic ("failed to allocate SIGSTKSZ (%u) bytes\n", SIGSTKSZ);
-  stk.ss_size = SIGSTKSZ;
+    panic ("failed to allocate %u bytes\n", SIG_STACK_SIZE);
+  stk.ss_size = SIG_STACK_SIZE;
   stk.ss_flags = 0;
   if (sigaltstack (&stk, NULL) < 0)
     panic ("sigaltstack: %s\n", strerror (errno));
