@@ -57,7 +57,7 @@ slow_backtrace (void **buffer, int size)
 }
 
 int
-backtrace (void **buffer, int size)
+unw_backtrace (void **buffer, int size)
 {
   unw_cursor_t cursor;
   unw_context_t uc;
@@ -81,5 +81,8 @@ backtrace (void **buffer, int size)
 
   return n;
 }
+
+extern int backtrace (void **buffer, int size)
+  __attribute__((weak, alias("unw_backtrace")));
 
 #endif /* !UNW_REMOTE_ONLY */

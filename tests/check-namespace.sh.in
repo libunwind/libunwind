@@ -101,6 +101,7 @@ check_local_unw_abi () {
     match _U_dyn_info_list_addr
     match _U_dyn_register
 
+    match unw_backtrace
     match backtrace
 
     case ${plat} in

@@ -252,5 +252,6 @@ extern int unw_is_signal_frame (unw_cursor_t *);
 extern int unw_handle_signal_frame (unw_cursor_t *);
 extern int unw_get_proc_name (unw_cursor_t *, char *, size_t, unw_word_t *);
 extern const char *unw_strerror (int);
+extern int unw_backtrace (void **, int);
 
 extern unw_addr_space_t unw_local_addr_space;
