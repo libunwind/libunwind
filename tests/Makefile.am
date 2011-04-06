@@ -1,7 +1,8 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
-		run-check-namespace check-namespace.sh.in Gtest-nomalloc.c
+		run-check-namespace check-namespace.sh.in Gtest-nomalloc.c \
+		Gtest-nocalloc.c
 
 MAINTAINERCLEANFILES = Makefile.in
 
@@ -44,7 +45,7 @@ endif #ARCH_IA64
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
-			Ltest-nomalloc rs-race
+			Ltest-nomalloc Ltest-nocalloc rs-race
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
 			Gperf-simple Lperf-simple			\
 			Gperf-trace Lperf-trace
@@ -102,6 +103,7 @@ Gtest_bt_SOURCES = Gtest-bt.c ident.c
 Ltest_bt_SOURCES = Ltest-bt.c ident.c
 test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
+Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 
@@ -148,6 +150,7 @@ Ltest_dyn1_LDADD = $(LIBUNWIND_local)
 Ltest_exc_LDADD = $(LIBUNWIND_local)
 Ltest_init_LDADD = $(LIBUNWIND_local)
 Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
+Ltest_nocalloc_LDADD = $(LIBUNWIND_local) @DLLIB@ -lpthread
 Ltest_resume_sig_LDADD = $(LIBUNWIND)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)

@@ -35,6 +35,7 @@ tests/[GL]test-init
 tests/[GL]test-resume-sig
 tests/[GL]perf-simple
 tests/Ltest-nomalloc
+tests/Ltest-nocalloc
 tests/Lperf-simple
 tests/check-namespace.sh
 tests/forker
