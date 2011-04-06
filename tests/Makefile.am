@@ -107,7 +107,7 @@ Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 
-LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la $(LIBUNWIND_local)
+LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
 
 if USE_ELF32
@@ -123,8 +123,8 @@ endif
 LIBUNWIND_setjmp = $(top_builddir)/src/libunwind-setjmp.la	\
 		   $(LIBUNWIND_ELF) $(LIBUNWIND)
 
-test_async_sig_LDADD = $(LIBUNWIND) -lpthread
-test_flush_cache_LDADD = $(LIBUNWIND)
+test_async_sig_LDADD = $(LIBUNWIND_local) -lpthread
+test_flush_cache_LDADD = $(LIBUNWIND_local)
 test_init_remote_LDADD = $(LIBUNWIND)
 test_mem_LDADD = $(LIBUNWIND)
 test_ptrace_LDADD = $(LIBUNWIND_ptrace) $(LIBUNWIND)
@@ -136,12 +136,12 @@ test_varargs_LDADD = @BACKTRACELIB@
 
 Gtest_bt_LDADD = $(LIBUNWIND)
 Gtest_concurrent_LDADD = $(LIBUNWIND) -lpthread
-Gtest_dyn1_LDADD = $(LIBUNWIND)
+Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND)
 Gtest_init_LDADD = $(LIBUNWIND)
 Gtest_resume_sig_LDADD = $(LIBUNWIND)
 Gperf_simple_LDADD = $(LIBUNWIND)
-Gtest_trace_LDADD=$(LIBUNWIND)
+Gtest_trace_LDADD=$(LIBUNWIND) $(LIBUNWIND_local)
 Gperf_trace_LDADD = $(LIBUNWIND)
 
 Ltest_bt_LDADD = $(LIBUNWIND_local)
@@ -151,7 +151,7 @@ Ltest_exc_LDADD = $(LIBUNWIND_local)
 Ltest_init_LDADD = $(LIBUNWIND_local)
 Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
 Ltest_nocalloc_LDADD = $(LIBUNWIND_local) @DLLIB@ -lpthread
-Ltest_resume_sig_LDADD = $(LIBUNWIND)
+Ltest_resume_sig_LDADD = $(LIBUNWIND_local)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
 Lperf_trace_LDADD = $(LIBUNWIND_local)
