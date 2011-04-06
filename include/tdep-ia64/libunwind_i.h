@@ -216,6 +216,7 @@ struct ia64_global_unwind_state
 # endif
   };
 
+#define tdep_getcontext_trace           unw_getcontext
 #define tdep_needs_initialization	unw.needs_initialization
 #define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define

@@ -61,7 +61,7 @@ unw_backtrace (void **buffer, int size)
   unw_context_t uc;
   int n = size;
 
-  unw_getcontext (&uc);
+  tdep_getcontext_trace (&uc);
 
   if (unw_init_local (&cursor, &uc) < 0)
     return 0;

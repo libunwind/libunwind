@@ -251,6 +251,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 				     1, c->as_arg);
 }
 
+#define tdep_getcontext_trace           unw_getcontext
 #define tdep_needs_initialization	UNW_OBJ(needs_initialization)
 #define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define

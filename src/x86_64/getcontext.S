@@ -101,5 +101,34 @@ _Ux86_64_getcontext:
 	.cfi_endproc
 	.size _Ux86_64_getcontext, . - _Ux86_64_getcontext
 
+/*  int _Ux86_64_getcontext_trace (ucontext_t *ucp)
+
+  Saves limited machine context in UCP necessary for libunwind.
+  Unlike _Ux86_64_getcontext, saves only the parts needed for
+  fast trace. If fast trace fails, caller will have to get the
+  full context.
+*/
+
+	.global _Ux86_64_getcontext_trace
+	.hidden _Ux86_64_getcontext_trace
+	.type _Ux86_64_getcontext_trace, @function
+_Ux86_64_getcontext_trace:
+	.cfi_startproc
+
+	/* Save only RBP, RBX, RSP, RIP - exclude this call. */
+	movq %rbp, UC_MCONTEXT_GREGS_RBP(%rdi)
+	movq %rbx, UC_MCONTEXT_GREGS_RBX(%rdi)
+
+	leaq 8(%rsp), %rax
+	movq %rax, UC_MCONTEXT_GREGS_RSP(%rdi)
+
+	movq 0(%rsp), %rax
+	movq %rax, UC_MCONTEXT_GREGS_RIP(%rdi)
+
+	xorq	%rax, %rax
+	retq
+	.cfi_endproc
+	.size _Ux86_64_getcontext_trace, . - _Ux86_64_getcontext_trace
+
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits

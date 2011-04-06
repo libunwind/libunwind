@@ -177,6 +177,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 				     1, c->as_arg);
 }
 
+#define tdep_getcontext_trace	        UNW_ARCH_OBJ(getcontext_trace)
 #define tdep_needs_initialization	UNW_OBJ(needs_initialization)
 #define tdep_init_mem_validate		UNW_OBJ(init_mem_validate)
 #define tdep_init			UNW_OBJ(init)
@@ -244,6 +245,7 @@ extern void tdep_stash_frame (struct dwarf_cursor *c,
 			      struct dwarf_reg_state *rs);
 #endif
 
+extern int tdep_getcontext_trace (unw_tdep_context_t *);
 extern int tdep_trace (unw_cursor_t *cursor, void **addresses, int *n);
 
 #endif /* X86_64_LIBUNWIND_I_H */
