@@ -161,6 +161,8 @@ trace_cache_expand (unw_trace_cache_t *cache)
   return 0;
 }
 
+static __thread  unw_trace_cache_t *tls_cache;
+
 /* Get the frame cache for the current thread. Create it if there is none. */
 static unw_trace_cache_t *
 trace_cache_get (void)
@@ -169,10 +171,11 @@ trace_cache_get (void)
   if (pthread_once)
   {
     pthread_once(&trace_cache_once, &trace_cache_init_once);
-    if (! (cache = pthread_getspecific(trace_cache_key)))
+    if (! (cache = tls_cache))
     {
       cache = trace_cache_create();
       pthread_setspecific(trace_cache_key, cache);
+      tls_cache = cache;
     }
     Debug(5, "using cache %p\n", cache);
     return cache;
