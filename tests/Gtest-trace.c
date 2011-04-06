@@ -211,6 +211,8 @@ sighandler (int signal, void *siginfo, void *context)
 #elif defined __FreeBSD__
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_rip);
 #endif
+#elif defined UNW_TARGET_ARM
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.arm_ip);
 #endif
       printf ("\n");
     }
