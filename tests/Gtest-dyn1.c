@@ -68,8 +68,12 @@ struct fdesc
     long code;
     long is_thumb;
   };
-# define get_fdesc(fdesc,func)  ({(fdesc).code = (long) &(func) & ~0x1; \
-				  (fdesc).is_thumb = (long) &(func) & 0x1;})
+/* Workaround GCC bug: https://bugs.launchpad.net/gcc-linaro/+bug/721531 */
+# define get_fdesc(fdesc,func)  ({long tmp = (long) &(func); \
+                                  (fdesc).code = (long) &(func) & ~0x1; \
+                                  (fdesc).is_thumb = tmp & 0x1;})
+/*# define get_fdesc(fdesc,func)  ({(fdesc).code = (long) &(func) & ~0x1; \
+                                  (fdesc).is_thumb = (long) &(func) & 0x1;})*/
 # define get_funcp(fdesc)       ((template_t) ((fdesc).code | (fdesc).is_thumb))
 # define get_gp(fdesc)          (0)
 #else
