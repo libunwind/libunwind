@@ -47,16 +47,6 @@ static struct unw_addr_space local_addr_space;
 
 PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
-# ifdef UNW_LOCAL_ONLY
-
-HIDDEN void *
-tdep_uc_addr (ucontext_t *uc, int reg)
-{
-  return x86_64_r_uc_addr (uc, reg);
-}
-
-# endif /* UNW_LOCAL_ONLY */
-
 HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
 
 /* XXX fix me: there is currently no way to locate the dyn-info list
@@ -168,7 +158,7 @@ static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 	    void *arg)
 {
-  if (write)
+  if (unlikely (write))
     {
       Debug (16, "mem[%016lx] <- %lx\n", addr, *val);
       *(unw_word_t *) addr = *val;
@@ -177,7 +167,8 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     {
       /* validate address */
       const struct cursor *c = (const struct cursor *)arg;
-      if (c && c->validate && validate_mem(addr))
+      if (likely (c != 0) && unlikely (c->validate)
+          && unlikely (validate_mem (addr)))
         return -1;
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%016lx] -> %lx\n", addr, *val);

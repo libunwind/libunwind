@@ -92,7 +92,7 @@ trace_cache_buckets (void)
   unw_tdep_frame_t *frames = mempool_alloc(&trace_frame_pool);
   size_t i;
 
-  if (likely (frames != 0))
+  if (likely(frames != 0))
     for (i = 0; i < (1u << HASH_LOW_BITS); ++i)
       frames[i] = empty_frame;
 
@@ -142,7 +142,7 @@ trace_cache_expand (unw_trace_cache_t *cache)
   old_size = (1u << cache->log_frame_vecs);
   new_size = cache->log_frame_vecs + 2;
   for (i = old_size; i < (1u << new_size); ++i)
-    if (unlikely (! (cache->frames[i] = trace_cache_buckets())))
+    if (unlikely(! (cache->frames[i] = trace_cache_buckets())))
     {
       Debug(5, "failed to expand cache to 2^%lu hash bucket sets\n", new_size);
       for (j = old_size; j < i; ++j)
@@ -237,10 +237,10 @@ trace_init_addr (unw_tdep_frame_t *f,
   d->loc[UNW_X86_64_RSP] = DWARF_REG_LOC (d, UNW_X86_64_RSP);
   c->frame_info = *f;
 
-  if (dwarf_put (d, d->loc[UNW_X86_64_RIP], rip) >= 0
-      && dwarf_put (d, d->loc[UNW_X86_64_RBP], rbp) >= 0
-      && dwarf_put (d, d->loc[UNW_X86_64_RSP], rsp) >= 0
-      && (ret = unw_step (cursor)) >= 0)
+  if (likely(dwarf_put (d, d->loc[UNW_X86_64_RIP], rip) >= 0)
+      && likely(dwarf_put (d, d->loc[UNW_X86_64_RBP], rbp) >= 0)
+      && likely(dwarf_put (d, d->loc[UNW_X86_64_RSP], rsp) >= 0)
+      && likely((ret = unw_step (cursor)) >= 0))
     *f = c->frame_info;
 
   /* If unw_step() stopped voluntarily, remember that, even if it
@@ -290,14 +290,14 @@ trace_lookup (unw_cursor_t *cursor,
     addr = frame->virtual_address;
 
     /* Return if we found the address. */
-    if (addr == rip)
+    if (likely(addr == rip))
     {
       Debug (4, "found address after %ld steps\n", i);
       return frame;
     }
 
     /* If slot is empty, reuse it. */
-    if (! addr)
+    if (likely(! addr))
       break;
 
     /* Linear probe to next slot candidate, step = 1. */
@@ -310,9 +310,9 @@ trace_lookup (unw_cursor_t *cursor,
      it's free or collides. Note that hash expansion drops previous
      contents; further lookups will refill the hash. */
   Debug (4, "updating slot %lu after %ld steps, replacing 0x%lx\n", slot, i, addr);
-  if (unlikely (addr || cache->used >= cache_size / 2))
+  if (unlikely(addr || cache->used >= cache_size / 2))
   {
-    if (unlikely (trace_cache_expand (cache) < 0))
+    if (unlikely(trace_cache_expand (cache) < 0))
       return 0;
 
     cache_size = 1u << (HASH_LOW_BITS + cache->log_frame_vecs);
@@ -404,7 +404,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   int ret;
 
   /* Check input parametres. */
-  if (! cursor || ! buffer || ! size || (maxdepth = *size) <= 0)
+  if (unlikely(! cursor || ! buffer || ! size || (maxdepth = *size) <= 0))
     return -UNW_EINVAL;
 
   Debug (1, "begin ip 0x%lx cfa 0x%lx\n", d->ip, d->cfa);
@@ -415,7 +415,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   /* Determine initial register values. */
   rip = d->ip;
   rsp = cfa = d->cfa;
-  if ((ret = dwarf_get (d, d->loc[UNW_X86_64_RBP], &rbp)) < 0)
+  if (unlikely((ret = dwarf_get (d, d->loc[UNW_X86_64_RBP], &rbp)) < 0))
   {
     Debug (1, "returning %d, rbp value not found\n", ret);
     *size = 0;
@@ -424,7 +424,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   }
 
   /* Get frame cache. */
-  if (! (cache = trace_cache_get()))
+  if (unlikely(! (cache = trace_cache_get())))
   {
     Debug (1, "returning %d, cannot get trace cache\n", -UNW_ENOMEM);
     *size = 0;
@@ -450,7 +450,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     unw_tdep_frame_t *f = trace_lookup (cursor, cache, cfa, rip, rbp, rsp);
 
     /* If we don't have information for this frame, give up. */
-    if (! f)
+    if (unlikely(! f))
     {
       ret = -UNW_ENOINFO;
       break;
@@ -481,9 +481,9 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     case UNW_X86_64_FRAME_STANDARD:
       /* Advance standard traceable frame. */
       cfa = (f->cfa_reg_rsp ? rsp : rbp) + f->cfa_reg_offset;
-      ret = dwarf_get (d, DWARF_MEM_LOC (d, cfa - 8), &rip);
-      if (ret >= 0 && f->rbp_cfa_offset != -1)
-	ret = dwarf_get (d, DWARF_MEM_LOC (d, cfa + f->rbp_cfa_offset), &rbp);
+      ACCESS_MEM_FAST(ret, c->validate, d, cfa - 8, rip);
+      if (likely(ret >= 0) && likely(f->rbp_cfa_offset != -1))
+	ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rbp_cfa_offset, rbp);
 
       /* Don't bother reading RSP from DWARF, CFA becomes new RSP. */
       rsp = cfa;
@@ -497,13 +497,12 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
          registers (ucontext) among other things.  We know the info
 	 is stored at some unknown constant offset off inner frame's
 	 CFA.  We determine the actual offset from DWARF unwind info. */
-      d->use_prev_instr = 0;
       cfa = cfa + f->cfa_reg_offset;
-      ret = dwarf_get (d, DWARF_MEM_LOC (d, cfa + f->rbp_cfa_offset + dRIP), &rip);
-      if (ret >= 0)
-	ret = dwarf_get (d, DWARF_MEM_LOC (d, cfa + f->rbp_cfa_offset), &rbp);
-      if (ret >= 0)
-	ret = dwarf_get (d, DWARF_MEM_LOC (d, cfa + f->rsp_cfa_offset), &rsp);
+      ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rbp_cfa_offset + dRIP, rip);
+      if (likely(ret >= 0))
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rbp_cfa_offset, rbp);
+      if (likely(ret >= 0))
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rsp_cfa_offset, rsp);
 
       /* Resume stack at signal restoration point. The stack is not
          necessarily continuous here, especially with sigaltstack(). */
@@ -524,8 +523,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     Debug (4, "new cfa 0x%lx rip 0x%lx rsp 0x%lx rbp 0x%lx\n",
 	   cfa, rip, rsp, rbp);
 
-    /* If we failed on ended up somewhere bogus, stop. */
-    if (ret < 0 || rip < 0x4000)
+    /* If we failed or ended up somewhere bogus, stop. */
+    if (unlikely(ret < 0 || rip < 0x4000))
       break;
 
     /* Record this address in stack trace. We skipped the first address. */

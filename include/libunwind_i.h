@@ -301,6 +301,14 @@ struct elf_image
     size_t size;		/* (file-) size of the image */
   };
 
+/* Provide a place holder for architecture to override for fast access
+   to memory when known not to need to validate and know the access
+   will be local to the process. A suitable override will improve
+   unw_tdep_trace() performance in particular. */
+#define ACCESS_MEM_FAST(ret,validate,cur,addr,to) \
+  do { (ret) = dwarf_get ((cur), DWARF_MEM_LOC ((cur), (addr)), &(to)); } \
+  while (0)
+
 #include "tdep/libunwind_i.h"
 
 #ifndef tdep_get_func_addr

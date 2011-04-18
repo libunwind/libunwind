@@ -39,7 +39,7 @@ slow_backtrace (void **buffer, int size, unw_context_t *uc)
   unw_word_t ip;
   int n = 0;
 
-  if (unw_init_local (&cursor, uc) < 0)
+  if (unlikely (unw_init_local (&cursor, uc) < 0))
     return 0;
 
   while (unw_step (&cursor) > 0)
@@ -63,10 +63,10 @@ unw_backtrace (void **buffer, int size)
 
   tdep_getcontext_trace (&uc);
 
-  if (unw_init_local (&cursor, &uc) < 0)
+  if (unlikely (unw_init_local (&cursor, &uc) < 0))
     return 0;
 
-  if (tdep_trace (&cursor, buffer, &n) < 0)
+  if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
     {
       unw_getcontext (&uc);
       return slow_backtrace (buffer, size, &uc);

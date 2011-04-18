@@ -110,10 +110,10 @@ dwarf_get_uc(const struct dwarf_cursor *cursor)
 # define DWARF_LOC(r, t)	((dwarf_loc_t) { .val = (r) })
 # define DWARF_IS_REG_LOC(l)	0
 # define DWARF_REG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
-				 tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
+				 x86_64_r_uc_addr(dwarf_get_uc(c), (r)), 0))
 # define DWARF_MEM_LOC(c,m)	DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)	(DWARF_LOC((unw_word_t)			     \
-				 tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
+				 x86_64_r_uc_addr(dwarf_get_uc(c), (r)), 0))
 #else /* !UNW_LOCAL_ONLY */
 
 # define DWARF_LOC_TYPE_FP	(1 << 0)
@@ -184,7 +184,6 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
 #define tdep_search_unwind_table	dwarf_search_unwind_table
-#define tdep_uc_addr			UNW_ARCH_OBJ(uc_addr)
 #define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
 #define tdep_access_reg			UNW_OBJ(access_reg)
 #define tdep_access_fpreg		UNW_OBJ(access_fpreg)
@@ -199,6 +198,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #endif
 #define tdep_stash_frame		UNW_OBJ(stash_frame)
 #define tdep_trace			UNW_OBJ(tdep_trace)
+#define x86_64_r_uc_addr                UNW_OBJ(r_uc_addr)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
@@ -226,7 +226,7 @@ extern void tdep_init_mem_validate (void);
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);
-extern void *tdep_uc_addr (ucontext_t *uc, int reg);
+extern void *x86_64_r_uc_addr (ucontext_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff,
 			       char *path, size_t pathlen);

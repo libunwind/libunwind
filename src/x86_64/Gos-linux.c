@@ -106,6 +106,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 HIDDEN void *
 x86_64_r_uc_addr (ucontext_t *uc, int reg)
 {
+  /* NOTE: common_init() in init.h inlines these for fast path access. */
   void *addr;
 
   switch (reg)
