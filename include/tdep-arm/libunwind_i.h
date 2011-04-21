@@ -61,7 +61,18 @@ struct unw_addr_space
 struct cursor
   {
     struct dwarf_cursor dwarf;		/* must be first */
+    enum
+      {
+        ARM_SCF_NONE,                   /* no signal frame */
+        ARM_SCF_LINUX_SIGFRAME,         /* non-RT signal frame, kernel >=2.6.18 */
+        ARM_SCF_LINUX_RT_SIGFRAME,      /* RT signal frame, kernel >=2.6.18 */
+        ARM_SCF_LINUX_OLD_SIGFRAME,     /* non-RT signal frame, kernel < 2.6.18 */
+        ARM_SCF_LINUX_OLD_RT_SIGFRAME   /* RT signal frame, kernel < 2.6.18 */
+      }
+    sigcontext_format;
     unw_word_t sigcontext_addr;
+    unw_word_t sigcontext_sp;
+    unw_word_t sigcontext_pc;
   };
 
 #define DWARF_GET_LOC(l)	((l).val)

@@ -58,6 +58,11 @@ common_init (struct cursor *c, unsigned use_prev_instr)
   if (ret < 0)
     return ret;
 
+  c->sigcontext_format = ARM_SCF_NONE;
+  c->sigcontext_addr = 0;
+  c->sigcontext_sp = 0;
+  c->sigcontext_pc = 0;
+
   /* FIXME: Initialisation for other registers.  */
 
   c->dwarf.args_size = 0;
