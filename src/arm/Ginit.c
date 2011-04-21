@@ -199,7 +199,7 @@ arm_local_addr_space_init (void)
   local_addr_space.acc.access_mem = access_mem;
   local_addr_space.acc.access_reg = access_reg;
   local_addr_space.acc.access_fpreg = access_fpreg;
-  local_addr_space.acc.resume = 0;  /* arm_local_resume?  FIXME!  */
+  local_addr_space.acc.resume = arm_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
 }

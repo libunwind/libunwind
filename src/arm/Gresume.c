@@ -1,5 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
+   Copyright 2011 Linaro Limited
 
 This file is part of libunwind.
 
@@ -22,10 +23,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/* FIXME for ARM.  */
-
-#include <stdlib.h>
-
 #include "unwind_i.h"
 
 #ifndef UNW_REMOTE_ONLY
@@ -33,13 +30,82 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN inline int
 arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
+#ifdef __linux__
+  struct cursor *c = (struct cursor *) cursor;
+  ucontext_t *uc = c->dwarf.as_arg;
+  unsigned long regs[10];
+
+  /* Copy the register contents to be restored.  */
+  regs[0] = uc->uc_mcontext.arm_r4;
+  regs[1] = uc->uc_mcontext.arm_r5;
+  regs[2] = uc->uc_mcontext.arm_r6;
+  regs[3] = uc->uc_mcontext.arm_r7;
+  regs[4] = uc->uc_mcontext.arm_r8;
+  regs[5] = uc->uc_mcontext.arm_r9;
+  regs[6] = uc->uc_mcontext.arm_r10;
+  regs[7] = uc->uc_mcontext.arm_fp;
+  regs[8] = uc->uc_mcontext.arm_sp;
+  regs[9] = uc->uc_mcontext.arm_lr;
+
+  /* Restore the registers.  */
+  asm __volatile__ (
+    "ldmia %0, {r4-r12, lr}\n"
+    "mov sp, r12\n"
+    "bx lr\n"
+    : : "r" (regs) :
+  );
+#else
+  printf ("%s: implement me\n", __FUNCTION__);
+#endif
   return -UNW_EINVAL;
 }
 
 #endif /* !UNW_REMOTE_ONLY */
 
+static inline void
+establish_machine_state (struct cursor *c)
+{
+  unw_addr_space_t as = c->dwarf.as;
+  void *arg = c->dwarf.as_arg;
+  unw_fpreg_t fpval;
+  unw_word_t val;
+  int reg;
+
+  Debug (8, "copying out cursor state\n");
+
+  for (reg = 0; reg <= UNW_REG_LAST; ++reg)
+    {
+      Debug (16, "copying %s %d\n", unw_regname (reg), reg);
+      if (unw_is_fpreg (reg))
+	{
+	  if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
+	    as->acc.access_fpreg (as, reg, &fpval, 1, arg);
+	}
+      else
+	{
+	  if (tdep_access_reg (c, reg, &val, 0) >= 0)
+	    as->acc.access_reg (as, reg, &val, 1, arg);
+	}
+    }
+}
+
 PROTECTED int
 unw_resume (unw_cursor_t *cursor)
 {
-  return -UNW_EINVAL;
+  struct cursor *c = (struct cursor *) cursor;
+
+  Debug (1, "(cursor=%p)\n", c);
+
+  if (!c->dwarf.ip)
+    {
+      /* This can happen easily when the frame-chain gets truncated
+	 due to bad or missing unwind-info.  */
+      Debug (1, "refusing to resume execution at address 0\n");
+      return -UNW_EINVAL;
+    }
+
+  establish_machine_state (c);
+
+  return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
+				     c->dwarf.as_arg);
 }
