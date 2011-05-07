@@ -31,10 +31,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #pragma weak pthread_getspecific
 #pragma weak pthread_setspecific
 
-/* Total maxium hash table size is 16M addresses. HASH_TOP_BITS must
-   be a power of four, as the hash expands by four each time. */
-#define HASH_LOW_BITS 14
-#define HASH_TOP_BITS 10
+/* Initial hash table size. Table expands by 2 bits (times four). */
+#define HASH_MIN_BITS 14
 
 /* There's not enough space to store RIP's location in a signal
    frame, but we can calculate it relative to RBP's (or RSP's)
@@ -44,8 +42,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 typedef struct
 {
-  unw_tdep_frame_t *frames[1u << HASH_TOP_BITS];
-  size_t log_frame_vecs;
+  unw_tdep_frame_t *frames;
+  size_t log_size;
   size_t used;
 } unw_trace_cache_t;
 
@@ -54,26 +52,13 @@ static pthread_mutex_t trace_init_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_once_t trace_cache_once = PTHREAD_ONCE_INIT;
 static pthread_key_t trace_cache_key;
 static struct mempool trace_cache_pool;
-static struct mempool trace_frame_pool;
-
-/* Initialise memory pools for frame tracing. */
-static void
-trace_pools_init (void)
-{
-  mempool_init (&trace_cache_pool, sizeof (unw_trace_cache_t), 0);
-  mempool_init (&trace_frame_pool, (1u << HASH_LOW_BITS) * sizeof (unw_tdep_frame_t), 0);
-}
 
 /* Free memory for a thread's trace cache. */
 static void
 trace_cache_free (void *arg)
 {
   unw_trace_cache_t *cache = arg;
-  size_t i;
-
-  for (i = 0; i < (1u << cache->log_frame_vecs); ++i)
-    mempool_free (&trace_frame_pool, cache->frames[i]);
-
+  munmap (cache->frames, (1u << cache->log_size) * sizeof(unw_tdep_frame_t));
   mempool_free (&trace_cache_pool, cache);
   Debug(5, "freed cache %p\n", cache);
 }
@@ -83,17 +68,18 @@ static void
 trace_cache_init_once (void)
 {
   pthread_key_create (&trace_cache_key, &trace_cache_free);
-  trace_pools_init ();
+  mempool_init (&trace_cache_pool, sizeof (unw_trace_cache_t), 0);
 }
 
 static unw_tdep_frame_t *
-trace_cache_buckets (void)
+trace_cache_buckets (size_t n)
 {
-  unw_tdep_frame_t *frames = mempool_alloc(&trace_frame_pool);
+  unw_tdep_frame_t *frames;
   size_t i;
 
+  GET_MEMORY(frames, n * sizeof (unw_tdep_frame_t));
   if (likely(frames != 0))
-    for (i = 0; i < (1u << HASH_LOW_BITS); ++i)
+    for (i = 0; i < n; ++i)
       frames[i] = empty_frame;
 
   return frames;
@@ -113,15 +99,14 @@ trace_cache_create (void)
     return 0;
   }
 
-  memset(cache, 0, sizeof (*cache));
-  if (! (cache->frames[0] = trace_cache_buckets()))
+  if (! (cache->frames = trace_cache_buckets(1u << HASH_MIN_BITS)))
   {
     Debug(5, "failed to allocate buckets\n");
     mempool_free(&trace_cache_pool, cache);
     return 0;
   }
 
-  cache->log_frame_vecs = 0;
+  cache->log_size = HASH_MIN_BITS;
   cache->used = 0;
   Debug(5, "allocated cache %p\n", cache);
   return cache;
@@ -132,31 +117,20 @@ trace_cache_create (void)
 static int
 trace_cache_expand (unw_trace_cache_t *cache)
 {
-  size_t i, j, new_size, old_size;
-  if (cache->log_frame_vecs == HASH_TOP_BITS)
+  size_t old_size = (1u << cache->log_size);
+  size_t new_log_size = cache->log_size + 2;
+  unw_tdep_frame_t *new_frames = trace_cache_buckets (1u << new_log_size);
+
+  if (unlikely(! new_frames))
   {
-    Debug(5, "cache already at maximum size, cannot expand\n");
+    Debug(5, "failed to expand cache to 2^%lu buckets\n", new_log_size);
     return -UNW_ENOMEM;
   }
 
-  old_size = (1u << cache->log_frame_vecs);
-  new_size = cache->log_frame_vecs + 2;
-  for (i = old_size; i < (1u << new_size); ++i)
-    if (unlikely(! (cache->frames[i] = trace_cache_buckets())))
-    {
-      Debug(5, "failed to expand cache to 2^%lu hash bucket sets\n", new_size);
-      for (j = old_size; j < i; ++j)
-	mempool_free(&trace_frame_pool, cache->frames[j]);
-      return -UNW_ENOMEM;
-    }
-
-  for (i = 0; i < old_size; ++i)
-    for (j = 0; j < (1u << HASH_LOW_BITS); ++j)
-      cache->frames[i][j] = empty_frame;
-
-  Debug(5, "expanded cache from 2^%lu to 2^%lu hash bucket sets\n",
-	cache->log_frame_vecs, new_size);
-  cache->log_frame_vecs = new_size;
+  Debug(5, "expanded cache from 2^%lu to 2^%lu buckets\n", cache->log_size, new_log_size);
+  munmap(cache->frames, old_size * sizeof(unw_tdep_frame_t));
+  cache->frames = new_frames;
+  cache->log_size = new_log_size;
   cache->used = 0;
   return 0;
 }
@@ -168,7 +142,7 @@ static unw_trace_cache_t *
 trace_cache_get (void)
 {
   unw_trace_cache_t *cache;
-  if (pthread_once)
+  if (likely (pthread_once != 0))
   {
     pthread_once(&trace_cache_once, &trace_cache_init_once);
     if (! (cache = tls_cache))
@@ -187,8 +161,8 @@ trace_cache_get (void)
     lock_acquire (&trace_init_lock, saved_mask);
     if (! global_cache)
     {
-      trace_pools_init();
-      global_cache = trace_cache_create();
+      mempool_init (&trace_cache_pool, sizeof (unw_trace_cache_t), 0);
+      global_cache = trace_cache_create ();
     }
     cache = global_cache;
     lock_release (&trace_init_lock, saved_mask);
@@ -277,16 +251,14 @@ trace_lookup (unw_cursor_t *cursor,
      lookups should be completed within few steps, but it is very
      important the hash table does not fill up, or performance falls
      off the cliff. */
-  uint64_t i, hi, lo, addr;
-  uint64_t cache_size = 1u << (HASH_LOW_BITS + cache->log_frame_vecs);
+  uint64_t i, addr;
+  uint64_t cache_size = 1u << cache->log_size;
   uint64_t slot = ((rip * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
   unw_tdep_frame_t *frame;
 
   for (i = 0; i < 16; ++i)
   {
-    lo = slot & ((1u << HASH_LOW_BITS) - 1);
-    hi = slot >> HASH_LOW_BITS;
-    frame = &cache->frames[hi][lo];
+    frame = &cache->frames[slot];
     addr = frame->virtual_address;
 
     /* Return if we found the address. */
@@ -315,11 +287,9 @@ trace_lookup (unw_cursor_t *cursor,
     if (unlikely(trace_cache_expand (cache) < 0))
       return 0;
 
-    cache_size = 1u << (HASH_LOW_BITS + cache->log_frame_vecs);
+    cache_size = 1u << cache->log_size;
     slot = ((rip * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
-    lo = slot & ((1u << HASH_LOW_BITS) - 1);
-    hi = slot >> HASH_LOW_BITS;
-    frame = &cache->frames[hi][lo];
+    frame = &cache->frames[slot];
     addr = frame->virtual_address;
   }
 
