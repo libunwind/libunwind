@@ -412,16 +412,12 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   /* Tell core dwarf routines to call back to us. */
   d->stash_frames = 1;
 
-  /* Determine initial register values. */
+  /* Determine initial register values. These are direct access safe
+     because we know they come from the initial machine context. */
   rip = d->ip;
   rsp = cfa = d->cfa;
-  if (unlikely((ret = dwarf_get (d, d->loc[UNW_X86_64_RBP], &rbp)) < 0))
-  {
-    Debug (1, "returning %d, rbp value not found\n", ret);
-    *size = 0;
-    d->stash_frames = 0;
-    return ret;
-  }
+  ACCESS_MEM_FAST(ret, 0, d, DWARF_GET_LOC(d->loc[UNW_X86_64_RBP]), rbp);
+  assert(ret == 0);
 
   /* Get frame cache. */
   if (unlikely(! (cache = trace_cache_get())))
