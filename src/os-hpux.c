@@ -36,7 +36,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 		    unsigned long *segbase, unsigned long *mapoff,
-		    char *path, size_t pathlen);
+		    char *path, size_t pathlen)
 {
   struct load_module_desc lmd;
   const char *path2;
