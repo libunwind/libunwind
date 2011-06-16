@@ -33,7 +33,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
+#ifdef HAVE_SYS_PTRACE_H
 #include <sys/ptrace.h>
+#endif
 #ifdef HAVE_SYS_PROCFS_H
 #include <sys/procfs.h>
 #endif
