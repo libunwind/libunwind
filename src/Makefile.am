@@ -326,12 +326,16 @@ install-exec-hook:
 else
 #
 # This is not ideal, but I know of no other way to install an
-# alias for a library.
+# alias for a library.  For the shared version, we have to do
+# a file check before creating the link, because it isn't going
+# to be there if the user configured with --disable-shared.
 #
 install-exec-hook:
 	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind-generic.a
-	$(LN_S) -f libunwind-$(arch).so \
-		$(DESTDIR)$(libdir)/libunwind-generic.so
+	if test -f $(DESTDIR)$(libdir)/libunwind-generic.so; then \
+	    $(LN_S) -f libunwind-$(arch).so \
+		$(DESTDIR)$(libdir)/libunwind-generic.so; \
+	fi
 endif
 
 if OS_LINUX
