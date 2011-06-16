@@ -42,7 +42,7 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
   int count = 0;
 
   maps_init (&mi, ui->pid);
-  while (maps_next (&mi, &lo, &hi, &off, path, sizeof (path)))
+  while (maps_next (&mi, &lo, &hi, &off))
     {
       if (off)
 	continue;
