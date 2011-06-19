@@ -32,9 +32,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define dwarf_config_h
 
 /* XXX need to verify if this value is correct */
+#ifdef CONFIG_MSABI_SUPPORT
+#define DWARF_NUM_PRESERVED_REGS	33
+#else
 #define DWARF_NUM_PRESERVED_REGS	17
+#endif 
 
-#define DWARF_REGNUM_MAP_LENGTH		17
+#define DWARF_REGNUM_MAP_LENGTH		DWARF_NUM_PRESERVED_REGS
 
 /* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
 #define dwarf_is_big_endian(addr_space)	0
