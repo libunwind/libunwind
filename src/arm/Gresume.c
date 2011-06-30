@@ -55,7 +55,7 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	"ldmia %0, {r4-r12, lr}\n"
 	"mov sp, r12\n"
 	"bx lr\n"
-	: : "r" (regs) :
+	: : "r" (regs)
       );
     }
   else
@@ -87,7 +87,7 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       asm __volatile__ (
 	"mov sp, %0\n"
 	"bx %1\n"
-	: : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc) :
+	: : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc)
       );
    }
 #else
