@@ -280,6 +280,19 @@ typedef ucontext_t unw_tdep_context_t;
 
 #include "libunwind-dynamic.h"
 
+struct arm_exidx_entry {
+  uint32_t addr;
+  uint32_t data;
+};
+
+struct arm_exidx_table {
+  const char *name;
+  struct arm_exidx_entry *start;
+  struct arm_exidx_entry *end;
+  void *start_addr;
+  void *end_addr;
+};
+
 typedef struct
   {
     /* no arm-specific auxiliary proc-info */

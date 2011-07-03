@@ -25,19 +25,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef ARM_EX_TABLES_H
 #define ARM_EX_TABLES_H
 
-struct arm_exidx_entry {
-  uint32_t addr;
-  uint32_t data;
-};
-
-struct arm_exidx_table {
-  const char *name;
-  struct arm_exidx_entry *start;
-  struct arm_exidx_entry *end;
-  void *start_addr;
-  void *end_addr;
-};
-
 typedef enum arm_exbuf_cmd {
   ARM_EXIDX_CMD_FINISH,
   ARM_EXIDX_CMD_DATA_PUSH,
