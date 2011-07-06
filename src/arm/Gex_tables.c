@@ -55,11 +55,11 @@ prel31_read (uint32_t prel31)
   return ((int32_t)prel31 << 1) >> 1;
 }
 
-static inline void *
-prel31_to_addr (void *addr)
+static inline uint32_t
+prel31_to_addr (uint32_t *addr)
 {
-  uint32_t offset = ((long)*(uint32_t *)addr << 1) >> 1;
-  return (char *)addr + offset;
+  uint32_t offset = ((long)*addr << 1) >> 1;
+  return (uint32_t)addr + offset;
 }
 
 static void
@@ -81,7 +81,7 @@ arm_exidx_table_add (const char *name,
   table->start_addr = prel31_to_addr (&start->addr);
   table->end_addr = prel31_to_addr (&(end - 1)->addr);
   Debug (2, "name=%s, range=%p-%p, addr=%p-%p\n",
-      name, start, end, table->start_addr, table->end_addr);
+      name, start, end, (void *)table->start_addr, (void *)table->end_addr);
   return 0;
 }
 
@@ -89,7 +89,7 @@ arm_exidx_table_add (const char *name,
  * Locate the appropriate unwind table from the given PC.
  */
 HIDDEN struct arm_exidx_table *
-arm_exidx_table_find (void *pc)
+arm_exidx_table_find (unw_word_t pc)
 {
   struct arm_exidx_table *table;
   unsigned i;
@@ -106,7 +106,7 @@ arm_exidx_table_find (void *pc)
  * Finds the corresponding arm_exidx_entry from a given index table and PC.
  */
 HIDDEN struct arm_exidx_entry *
-arm_exidx_table_lookup (struct arm_exidx_table *table, void *pc)
+arm_exidx_table_lookup (struct arm_exidx_table *table, unw_word_t pc)
 {
   struct arm_exidx_entry *first = table->start, *last = table->end - 1;
   if (pc < prel31_to_addr (&first->addr))
@@ -339,7 +339,7 @@ HIDDEN int
 arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
 {
   int nbuf = 0;
-  uint32_t *addr = prel31_to_addr (&entry->addr);
+  unw_word_t addr = prel31_to_addr (&entry->addr);
 
   uint32_t data = entry->data;
   if (data == ARM_EXIDX_CANT_UNWIND)
@@ -349,20 +349,20 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
     }
   else if (data & ARM_EXIDX_COMPACT)
     {
-      Debug (2, "%p compact model %d [%8.8x]\n", addr, (data >> 24) & 0x7f, data);
+      Debug (2, "%p compact model %d [%8.8x]\n", (void *)addr, (data >> 24) & 0x7f, data);
       buf[nbuf++] = data >> 16;
       buf[nbuf++] = data >> 8;
       buf[nbuf++] = data;
     }
   else
     {
-      uint32_t *extbl_data = prel31_to_addr (&entry->data);
-      data = extbl_data[0];
+      uint32_t *extbl_data = (uint32_t *)prel31_to_addr (&entry->data);
+      data = (unw_word_t)extbl_data[0];
       unsigned int n_table_words = 0;
       if (data & ARM_EXIDX_COMPACT)
 	{
 	  int pers = (data >> 24) & 0x0f;
-	  Debug (2, "%p compact model %d [%8.8x]\n", addr, pers, data);
+	  Debug (2, "%p compact model %d [%8.8x]\n", (void *)addr, pers, data);
 	  if (pers == 1 || pers == 2)
 	    {
 	      n_table_words = (data >> 16) & 0xff;
@@ -375,8 +375,8 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
 	}
       else
 	{
-	  void *pers = prel31_to_addr (extbl_data);
-	  Debug (2, "%p Personality routine: %8p\n", addr, pers);
+	  unw_word_t pers = prel31_to_addr (extbl_data);
+	  Debug (2, "%p Personality routine: %8p\n", (void *)addr, (void *)pers);
 	  n_table_words = extbl_data[1] >> 24;
 	  buf[nbuf++] = extbl_data[1] >> 16;
 	  buf[nbuf++] = extbl_data[1] >> 8;

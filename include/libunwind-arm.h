@@ -289,8 +289,8 @@ struct arm_exidx_table {
   const char *name;
   struct arm_exidx_entry *start;
   struct arm_exidx_entry *end;
-  void *start_addr;
-  void *end_addr;
+  unw_word_t start_addr;
+  unw_word_t end_addr;
 };
 
 typedef struct

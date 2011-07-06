@@ -46,11 +46,11 @@ arm_exidx_step (struct cursor *c)
   /* mark PC unsaved */
   c->dwarf.loc[UNW_ARM_R15] = DWARF_NULL_LOC;
 
-  table = arm_exidx_table_find ((void *)c->dwarf.ip);
+  table = arm_exidx_table_find (c->dwarf.ip);
   if (NULL == table)
     return -UNW_ENOINFO;
 
-  entry = arm_exidx_table_lookup (table, (void *)c->dwarf.ip);
+  entry = arm_exidx_table_lookup (table, c->dwarf.ip);
   if (NULL == entry)
     return -UNW_ENOINFO;
 

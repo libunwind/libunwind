@@ -55,9 +55,9 @@ struct arm_exbuf_data
 int arm_exidx_init_local (void);
 int arm_exidx_table_add (const char *name, struct arm_exidx_entry *start,
 			 struct arm_exidx_entry *end);
-struct arm_exidx_table *arm_exidx_table_find (void *pc);
+struct arm_exidx_table *arm_exidx_table_find (unw_word_t pc);
 struct arm_exidx_entry *arm_exidx_table_lookup (struct arm_exidx_table *table,
-						void *pc);
+						unw_word_t pc);
 int arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf);
 int arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c);
 int arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c);
