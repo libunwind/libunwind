@@ -229,9 +229,11 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_getcontext_trace           unw_getcontext
 #define tdep_needs_initialization	UNW_OBJ(needs_initialization)
 #define tdep_init			UNW_OBJ(init)
+#define arm_find_proc_info		UNW_OBJ(find_proc_info)
+#define arm_put_unwind_info		UNW_OBJ(put_unwind_info)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
-#define tdep_search_unwind_table	dwarf_search_unwind_table
+#define tdep_search_unwind_table	UNW_OBJ(search_unwind_table)
 #define tdep_uc_addr			UNW_ARCH_OBJ(uc_addr)
 #define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
 #define tdep_access_reg			UNW_OBJ(access_reg)
@@ -244,10 +246,10 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)				\
-	dwarf_find_proc_info((c)->as, (ip), &(c)->pi, (n),	\
+	arm_find_proc_info((c)->as, (ip), &(c)->pi, (n),	\
 				       (c)->as_arg)
 # define tdep_put_unwind_info(as,pi,arg)		\
-	dwarf_put_unwind_info((as), (pi), (arg))
+	arm_put_unwind_info((as), (pi), (arg))
 #else
 # define tdep_find_proc_info(c,ip,n)					\
 	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (n),	\
@@ -264,6 +266,11 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 extern int tdep_needs_initialization;
 
 extern void tdep_init (void);
+extern int arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+			       unw_proc_info_t *pi, int need_unwind_info,
+			       void *arg);
+extern void arm_put_unwind_info (unw_addr_space_t as,
+				  unw_proc_info_t *pi, void *arg);
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);

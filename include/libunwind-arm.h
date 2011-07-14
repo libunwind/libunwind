@@ -285,14 +285,6 @@ struct arm_exidx_entry {
   uint32_t data;
 };
 
-struct arm_exidx_table {
-  const char *name;
-  struct arm_exidx_entry *start;
-  struct arm_exidx_entry *end;
-  unw_word_t start_addr;
-  unw_word_t end_addr;
-};
-
 typedef struct
   {
     /* no arm-specific auxiliary proc-info */

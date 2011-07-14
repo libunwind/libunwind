@@ -35,7 +35,6 @@ static inline int
 arm_exidx_step (struct cursor *c)
 {
   unw_word_t old_ip, old_cfa;
-  struct arm_exidx_table *table;
   struct arm_exidx_entry *entry;
   uint8_t buf[32];
   int ret;
@@ -46,14 +45,13 @@ arm_exidx_step (struct cursor *c)
   /* mark PC unsaved */
   c->dwarf.loc[UNW_ARM_R15] = DWARF_NULL_LOC;
 
-  table = arm_exidx_table_find (c->dwarf.ip);
-  if (NULL == table)
+  if ((ret = tdep_find_proc_info (&c->dwarf, c->dwarf.ip, 1)) < 0)
+     return -UNW_ENOINFO;
+
+  if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
 
-  entry = arm_exidx_table_lookup (table, c->dwarf.ip);
-  if (NULL == entry)
-    return -UNW_ENOINFO;
-
+  entry = (struct arm_exidx_entry *)c->dwarf.pi.unwind_info;
   ret = arm_exidx_extract (entry, buf);
   if (ret < 0)
     return ret;

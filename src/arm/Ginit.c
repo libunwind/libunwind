@@ -85,12 +85,6 @@ HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
        unwind-table entry.  Perhaps something similar can be done with
        DWARF2 unwind info.  */
 
-static void
-put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
-{
-  /* it's a no-op */
-}
-
 static int
 get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 			void *arg)
@@ -193,8 +187,8 @@ arm_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
   local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
-  local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
-  local_addr_space.acc.put_unwind_info = put_unwind_info;
+  local_addr_space.acc.find_proc_info = arm_find_proc_info;
+  local_addr_space.acc.put_unwind_info = arm_put_unwind_info;
   local_addr_space.acc.get_dyn_info_list_addr = get_dyn_info_list_addr;
   local_addr_space.acc.access_mem = access_mem;
   local_addr_space.acc.access_reg = access_reg;

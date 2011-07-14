@@ -33,21 +33,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define ARM_EXTBL_OP_FINISH	0xb0
 
-#define ARM_EXIDX_TABLE_LIMIT	32
-
-#define arm_exidx_tables		UNW_OBJ(arm_exidx_tables)
-#define arm_exidx_table_count		UNW_OBJ(arm_exidx_table_count)
-#define arm_exidx_table_find		UNW_OBJ(arm_exidx_table_find)
-#define arm_exidx_table_reset_all	UNW_OBJ(arm_exidx_table_reset_all)
-#define arm_exidx_init_local_cb		UNW_OBJ(arm_exidx_init_local_cb)
-
 enum arm_exbuf_cmd_flags {
   ARM_EXIDX_VFP_SHIFT_16 = 1 << 16,
   ARM_EXIDX_VFP_DOUBLE = 1 << 17,
 };
 
-static struct arm_exidx_table arm_exidx_tables[ARM_EXIDX_TABLE_LIMIT];
-static unsigned arm_exidx_table_count = 0;
+struct arm_cb_data
+  {
+    /* in: */
+    unw_word_t ip;             /* instruction-pointer we're looking for */
+    unw_proc_info_t *pi;       /* proc-info pointer */
+    /* out: */
+    unw_dyn_info_t di;         /* info about the ARM exidx segment */
+  };
 
 static inline uint32_t
 prel31_read (uint32_t prel31)
@@ -60,68 +58,6 @@ prel31_to_addr (uint32_t *addr)
 {
   uint32_t offset = ((long)*addr << 1) >> 1;
   return (uint32_t)addr + offset;
-}
-
-static void
-arm_exidx_table_reset_all (void)
-{
-  arm_exidx_table_count = 0;
-}
-
-HIDDEN int
-arm_exidx_table_add (const char *name,
-    struct arm_exidx_entry *start, struct arm_exidx_entry *end)
-{
-  if (arm_exidx_table_count >= ARM_EXIDX_TABLE_LIMIT)
-    return -1;
-  struct arm_exidx_table *table = &arm_exidx_tables[arm_exidx_table_count++];
-  table->name = name;
-  table->start = start;
-  table->end = end;
-  table->start_addr = prel31_to_addr (&start->addr);
-  table->end_addr = prel31_to_addr (&(end - 1)->addr);
-  Debug (2, "name=%s, range=%p-%p, addr=%p-%p\n",
-      name, start, end, (void *)table->start_addr, (void *)table->end_addr);
-  return 0;
-}
-
-/**
- * Locate the appropriate unwind table from the given PC.
- */
-HIDDEN struct arm_exidx_table *
-arm_exidx_table_find (unw_word_t pc)
-{
-  struct arm_exidx_table *table;
-  unsigned i;
-  for (i = 0; i < arm_exidx_table_count; i++)
-  {
-    table = &arm_exidx_tables[i];
-    if (pc >= table->start_addr && pc < table->end_addr)
-      return table;
-  }
-  return NULL;
-}
-
-/**
- * Finds the corresponding arm_exidx_entry from a given index table and PC.
- */
-HIDDEN struct arm_exidx_entry *
-arm_exidx_table_lookup (struct arm_exidx_table *table, unw_word_t pc)
-{
-  struct arm_exidx_entry *first = table->start, *last = table->end - 1;
-  if (pc < prel31_to_addr (&first->addr))
-    return NULL;
-  else if (pc >= prel31_to_addr (&last->addr))
-    return last;
-  while (first < last - 1)
-    {
-      struct arm_exidx_entry *mid = first + ((last - first + 1) >> 1);
-      if (pc < prel31_to_addr (&mid->addr))
-	last = mid;
-      else
-	first = mid;
-    }
-  return first;
 }
 
 /**
@@ -401,39 +337,169 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
   return nbuf;
 }
 
+PROTECTED int
+tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
+			     unw_dyn_info_t *di, unw_proc_info_t *pi,
+			     int need_unwind_info, void *arg)
+{
+  if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX)
+      && di->format == UNW_INFO_FORMAT_ARM_EXIDX)
+    {
+      struct arm_exidx_entry *first =
+	(struct arm_exidx_entry *) di->u.rti.table_data;
+      struct arm_exidx_entry *last =
+	((struct arm_exidx_entry *) (di->u.rti.table_data +
+				     di->u.rti.table_len)) - 1;
+      struct arm_exidx_entry *entry;
+
+      if (ip < prel31_to_addr (&first->addr))
+	return -UNW_ENOINFO;
+      else if (ip >= prel31_to_addr (&last->addr))
+	{
+	   entry = last;
+	   pi->start_ip = prel31_to_addr (&last->addr);
+	   pi->end_ip = di->end_ip - 1;
+	}
+      else
+	{
+	  while (first < last - 1)
+	    {
+	      entry = first + ((last - first + 1) >> 1);
+	      if (ip < prel31_to_addr (&entry->addr))
+		last = entry;
+	      else
+		first = entry;
+	    }
+
+	  entry = first;
+	  pi->start_ip = prel31_to_addr (&entry->addr);
+	  pi->end_ip = prel31_to_addr (&(entry + 1)->addr) - 1;
+	}
+
+      if (need_unwind_info)
+	{
+	  pi->unwind_info_size = 8;
+	  pi->unwind_info = entry;
+	  pi->format = UNW_INFO_FORMAT_ARM_EXIDX;
+	}
+      return 0;
+    }
+  else if (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF)
+	   && di->format != UNW_INFO_FORMAT_ARM_EXIDX)
+    return dwarf_search_unwind_table (as, ip, di, pi, need_unwind_info, arg);
+
+  return -UNW_ENOINFO; 
+}
+
 /**
- * Callback to dl_iterate_phdr to find the unwind tables.
- * If found, calls arm_exidx_table_add to remember it for later lookups.
+ * Callback to dl_iterate_phdr to find infos about the ARM exidx segment.
  */
 static int
-arm_exidx_init_local_cb (struct dl_phdr_info *info, size_t size, void *data)
+arm_phdr_cb (struct dl_phdr_info *info, size_t size, void *data)
 {
-  unsigned i;
+  struct arm_cb_data *cb_data = data;
+  const Elf_W(Phdr) *p_text = NULL;
+  const Elf_W(Phdr) *p_arm_exidx = NULL;
+  const Elf_W(Phdr) *phdr = info->dlpi_phdr;
+  long n;
 
-  for (i = 0; i < info->dlpi_phnum; i++)
+  for (n = info->dlpi_phnum; --n >= 0; phdr++)
     {
-      const ElfW (Phdr) *phdr = info->dlpi_phdr + i;
-      if (phdr->p_type != PT_ARM_EXIDX)
-	continue;
+      switch (phdr->p_type)
+	{
+	case PT_LOAD:
+	  if (cb_data->ip >= phdr->p_vaddr + info->dlpi_addr &&
+	      cb_data->ip < phdr->p_vaddr + info->dlpi_addr + phdr->p_memsz)
+	    p_text = phdr;
+	  break;
 
-      ElfW (Addr) addr = info->dlpi_addr + phdr->p_vaddr;
-      ElfW (Word) size = phdr->p_filesz;
+	case PT_ARM_EXIDX:
+	  p_arm_exidx = phdr;
+	  break;
 
-      arm_exidx_table_add (info->dlpi_name,
-	  (struct arm_exidx_entry *)addr,
-	  (struct arm_exidx_entry *)(addr + size));
-      break;
+	default:
+	  break;
+	}
     }
+
+  if (p_text && p_arm_exidx)
+    {
+      cb_data->di.format = UNW_INFO_FORMAT_ARM_EXIDX;
+      cb_data->di.start_ip = p_text->p_vaddr + info->dlpi_addr;
+      cb_data->di.end_ip = cb_data->di.start_ip + p_text->p_memsz;
+      cb_data->di.u.rti.name_ptr = (unw_word_t) info->dlpi_name;
+      cb_data->di.u.rti.table_data = p_arm_exidx->p_vaddr + info->dlpi_addr;
+      cb_data->di.u.rti.table_len = p_arm_exidx->p_memsz;
+      return 1;
+    }
+
   return 0;
 }
 
-/**
- * Traverse the program headers of the executable and its loaded
- * shared objects to collect the unwind tables.
- */
 HIDDEN int
-arm_exidx_init_local (void)
+arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
+		    unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
-  arm_exidx_table_reset_all();
-  return dl_iterate_phdr (&arm_exidx_init_local_cb, NULL);
+  int ret = 0;
+  intrmask_t saved_mask;
+
+  Debug (14, "looking for IP=0x%lx\n", (long) ip);
+
+  if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
+    {
+      struct arm_cb_data cb_data;
+
+      memset (&cb_data, 0, sizeof (cb_data));
+      cb_data.ip = ip;
+      cb_data.pi = pi;
+      cb_data.di.format = -1;
+
+      SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
+      ret = dl_iterate_phdr (arm_phdr_cb, &cb_data);
+      SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
+
+      if (cb_data.di.format != -1)
+	ret = tdep_search_unwind_table (as, ip, &cb_data.di, pi,
+					need_unwind_info, arg);
+      else
+	ret = -UNW_ENOINFO;
+    }
+
+  if (ret < 0 && UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF))
+    {
+      struct dwarf_callback_data cb_data;
+
+      memset (&cb_data, 0, sizeof (cb_data));
+      cb_data.ip = ip;
+      cb_data.pi = pi;
+      cb_data.need_unwind_info = need_unwind_info;
+      cb_data.di.format = -1;
+      cb_data.di_debug.format = -1;
+
+      SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
+      ret = dl_iterate_phdr (dwarf_callback, &cb_data);
+      SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
+
+      if (cb_data.single_fde)
+	/* already got the result in *pi */
+	return 0;
+
+      if (cb_data.di_debug.format != -1)
+	ret = tdep_search_unwind_table (as, ip, &cb_data.di_debug, pi,
+					need_unwind_info, arg);
+      else
+	ret = -UNW_ENOINFO;
+    }
+
+  if (ret < 0)
+    Debug (14, "IP=0x%lx not found\n", (long) ip);
+
+  return ret;
 }
+
+HIDDEN void
+arm_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
+{
+  /* it's a no-op */
+}
+

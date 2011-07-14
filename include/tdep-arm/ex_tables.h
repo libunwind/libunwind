@@ -44,20 +44,10 @@ struct arm_exbuf_data
   uint32_t data;
 };
 
-#define arm_exidx_init_local	UNW_OBJ(arm_exidx_init_local)
-#define arm_exidx_table_add	UNW_OBJ(arm_exidx_table_add)
-#define arm_exidx_table_find	UNW_OBJ(arm_exidx_table_find)
-#define arm_exidx_table_lookup	UNW_OBJ(arm_exidx_table_lookup)
 #define arm_exidx_extract	UNW_OBJ(arm_exidx_extract)
 #define arm_exidx_decode	UNW_OBJ(arm_exidx_decode)
 #define arm_exidx_apply_cmd	UNW_OBJ(arm_exidx_apply_cmd)
 
-int arm_exidx_init_local (void);
-int arm_exidx_table_add (const char *name, struct arm_exidx_entry *start,
-			 struct arm_exidx_entry *end);
-struct arm_exidx_table *arm_exidx_table_find (unw_word_t pc);
-struct arm_exidx_entry *arm_exidx_table_lookup (struct arm_exidx_table *table,
-						unw_word_t pc);
 int arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf);
 int arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c);
 int arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c);

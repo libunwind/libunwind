@@ -423,6 +423,11 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 	return ret;
     }
 
+  if (c->pi.format != UNW_INFO_FORMAT_DYNAMIC
+      && c->pi.format != UNW_INFO_FORMAT_TABLE
+      && c->pi.format != UNW_INFO_FORMAT_REMOTE_TABLE)
+    return -UNW_ENOINFO;
+
   c->pi_valid = 1;
   c->pi_is_dynamic = dynamic;
 
