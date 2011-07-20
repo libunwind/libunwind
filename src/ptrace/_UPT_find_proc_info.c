@@ -176,6 +176,9 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   unw_proc_info_t pi;
   unw_accessors_t *a;
   Elf_W(Ehdr) *ehdr;
+#if UNW_TARGET_ARM
+  const Elf_W(Phdr) *parm_exidx = NULL;
+#endif
   int i, ret, found = 0;
 
   /* XXX: Much of this code is Linux/LSB-specific.  */
@@ -204,6 +207,12 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	case PT_DYNAMIC:
 	  pdyn = phdr + i;
 	  break;
+
+#if UNW_TARGET_ARM
+	case PT_ARM_EXIDX:
+	  parm_exidx = phdr + i;
+	  break;
+#endif
 
 	default:
 	  break;
@@ -316,6 +325,20 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
       found = 1;
     }
 
+#if UNW_TARGET_ARM
+  if (parm_exidx)
+    {
+      ui->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
+      ui->di_arm.start_ip = segbase;
+      ui->di_arm.end_ip = ui->di_arm.start_ip + ptxt->p_memsz;
+      ui->di_arm.u.rti.name_ptr = (unw_word_t) path;
+      ui->di_arm.u.rti.table_data = parm_exidx->p_vaddr + segbase -
+				    ptxt->p_vaddr;
+      ui->di_arm.u.rti.table_len = parm_exidx->p_memsz;
+      found = 1;
+    }
+#endif
+
 #ifdef CONFIG_DEBUG_FRAME
   {
       /* Try .debug_frame. */
@@ -362,6 +385,10 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
 
   if ((ui->di_cache.format != -1
        && ip >= ui->di_cache.start_ip && ip < ui->di_cache.end_ip)
+#if UNW_TARGET_ARM
+      || (ui->di_debug.format != -1
+       && ip >= ui->di_arm.start_ip && ip < ui->di_arm.end_ip)
+#endif
       || (ui->di_debug.format != -1
        && ip >= ui->di_debug.start_ip && ip < ui->di_debug.end_ip))
     return 0;
@@ -377,6 +404,10 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
       ui->di_debug.start_ip = ui->di_debug.end_ip = 0;
       ui->di_cache.format = -1;
       ui->di_debug.format = -1;
+#if UNW_TARGET_ARM
+      ui->di_arm.start_ip = ui->di_arm.end_ip = 0;
+      ui->di_arm.format = -1;
+#endif
     }
 
   if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff, path,
@@ -400,7 +431,11 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
       && (ip < ui->di_debug.start_ip || ip >= ui->di_debug.end_ip))
      ui->di_debug.format = -1;
 
-  if (ui->di_cache.format == -1 && ui->di_debug.format == -1)
+  if (ui->di_cache.format == -1
+#if UNW_TARGET_ARM
+      && ui->di_arm.format == -1
+#endif
+      && ui->di_debug.format == -1)
     return -UNW_ENOINFO;
 
   return 0;
@@ -444,9 +479,15 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
     }
 #endif
 
-  if (ret == -UNW_ENOINFO && ui->di_cache.format == -1)
+  if (ret == -UNW_ENOINFO && ui->di_cache.format != -1)
     ret = tdep_search_unwind_table (as, ip, &ui->di_cache,
 				    pi, need_unwind_info, arg);
+
+#if UNW_TARGET_ARM
+  if (ret == -UNW_ENOINFO && ui->di_arm.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->di_arm, pi,
+                                    need_unwind_info, arg);
+#endif
 
   if (ret == -UNW_ENOINFO && ui->di_debug.format != -1)
     ret = tdep_search_unwind_table (as, ip, &ui->di_debug, pi,

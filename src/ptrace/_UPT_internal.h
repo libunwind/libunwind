@@ -57,6 +57,9 @@ struct UPT_info
 #if UNW_TARGET_IA64
     unw_dyn_info_t ktab;
 #endif
+#if UNW_TARGET_ARM
+    unw_dyn_info_t di_arm;	/* additional table info for .ARM.exidx */
+#endif
   };
 
 extern int _UPT_reg_offset[UNW_REG_LAST + 1];

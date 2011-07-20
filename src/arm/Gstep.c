@@ -35,7 +35,6 @@ static inline int
 arm_exidx_step (struct cursor *c)
 {
   unw_word_t old_ip, old_cfa;
-  struct arm_exidx_entry *entry;
   uint8_t buf[32];
   int ret;
 
@@ -51,8 +50,7 @@ arm_exidx_step (struct cursor *c)
   if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
 
-  entry = (struct arm_exidx_entry *)c->dwarf.pi.unwind_info;
-  ret = arm_exidx_extract (entry, buf);
+  ret = arm_exidx_extract (&c->dwarf, buf);
   if (ret < 0)
     return ret;
 

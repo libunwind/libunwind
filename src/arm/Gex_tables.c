@@ -22,6 +22,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+/* This file contains functionality for parsing and interpreting the ARM
+specific unwind information.  Documentation about the exception handling
+ABI for the ARM architecture can be found at:
+http://infocenter.arm.com/help/topic/com.arm.doc.ihi0038a/IHI0038A_ehabi.pdf
+*/ 
+
 #include "libunwind_i.h"
 
 #define ARM_EXBUF_START(x)	(((x) >> 4) & 0x0f)
@@ -53,11 +59,19 @@ prel31_read (uint32_t prel31)
   return ((int32_t)prel31 << 1) >> 1;
 }
 
-static inline uint32_t
-prel31_to_addr (uint32_t *addr)
+static inline int
+prel31_to_addr (unw_addr_space_t as, void *arg, unw_word_t prel31,
+		unw_word_t *val)
 {
-  uint32_t offset = ((long)*addr << 1) >> 1;
-  return (uint32_t)addr + offset;
+  unw_word_t offset;
+
+  if ((*as->acc.access_mem)(as, prel31, &offset, 0, arg) < 0)
+    return -UNW_EINVAL;
+
+  offset = ((long)offset << 1) >> 1;
+  *val = prel31 + offset;
+
+  return 0;
 }
 
 /**
@@ -267,17 +281,31 @@ arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c)
 }
 
 /**
- * Reads the given entry and extracts the unwind instructions into buf.
- * Returns the number of the extracted unwind insns or -UNW_ESTOPUNWIND
- * if the special bit pattern ARM_EXIDX_CANT_UNWIND (0x1) was found.
+ * Reads the entry from the given cursor and extracts the unwind instructions
+ * into buf.  Returns the number of the extracted unwind insns or 
+ * -UNW_ESTOPUNWIND if the special bit pattern ARM_EXIDX_CANT_UNWIND (0x1) was
+ * found.
  */
 HIDDEN int
-arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
+arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
 {
   int nbuf = 0;
-  unw_word_t addr = prel31_to_addr (&entry->addr);
+  unw_word_t entry = (unw_word_t) c->pi.unwind_info;
+  unw_word_t addr;
+  uint32_t data;
 
-  uint32_t data = entry->data;
+  /* An ARM unwind entry consists of a prel31 offset to the start of a
+     function followed by 31bits of data: 
+       * if set to 0x1: the function cannot be unwound (EXIDX_CANTUNWIND)
+       * if bit 31 is one: this is a table entry itself (ARM_EXIDX_COMPACT)
+       * if bit 31 is zero: this is a prel31 offset of the start of the
+	 table entry for this function  */
+  if (prel31_to_addr(c->as, c->as_arg, entry, &addr) < 0)
+    return -UNW_EINVAL;
+
+  if ((*c->as->acc.access_mem)(c->as, entry + 4, &data, 0, c->as_arg) < 0)
+    return -UNW_EINVAL;
+
   if (data == ARM_EXIDX_CANT_UNWIND)
     {
       Debug (2, "0x1 [can't unwind]\n");
@@ -285,16 +313,23 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
     }
   else if (data & ARM_EXIDX_COMPACT)
     {
-      Debug (2, "%p compact model %d [%8.8x]\n", (void *)addr, (data >> 24) & 0x7f, data);
+      Debug (2, "%p compact model %d [%8.8x]\n", (void *)addr,
+	     (data >> 24) & 0x7f, data);
       buf[nbuf++] = data >> 16;
       buf[nbuf++] = data >> 8;
       buf[nbuf++] = data;
     }
   else
     {
-      uint32_t *extbl_data = (uint32_t *)prel31_to_addr (&entry->data);
-      data = (unw_word_t)extbl_data[0];
+      unw_word_t extbl_data;
       unsigned int n_table_words = 0;
+
+      if (prel31_to_addr(c->as, c->as_arg, entry + 4, &extbl_data) < 0)
+        return -UNW_EINVAL;
+
+      if ((*c->as->acc.access_mem)(c->as, extbl_data, &data, 0, c->as_arg) < 0)
+	return -UNW_EINVAL;
+
       if (data & ARM_EXIDX_COMPACT)
 	{
 	  int pers = (data >> 24) & 0x0f;
@@ -302,7 +337,7 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
 	  if (pers == 1 || pers == 2)
 	    {
 	      n_table_words = (data >> 16) & 0xff;
-	      extbl_data += 1;
+	      extbl_data += 4;
 	    }
 	  else
 	    buf[nbuf++] = data >> 16;
@@ -311,19 +346,28 @@ arm_exidx_extract (struct arm_exidx_entry *entry, uint8_t *buf)
 	}
       else
 	{
-	  unw_word_t pers = prel31_to_addr (extbl_data);
-	  Debug (2, "%p Personality routine: %8p\n", (void *)addr, (void *)pers);
-	  n_table_words = extbl_data[1] >> 24;
-	  buf[nbuf++] = extbl_data[1] >> 16;
-	  buf[nbuf++] = extbl_data[1] >> 8;
-	  buf[nbuf++] = extbl_data[1];
-	  extbl_data += 2;
+	  unw_word_t pers;
+ 	  if (prel31_to_addr (c->as, c->as_arg, extbl_data, &pers) < 0)
+	    return -UNW_EINVAL;
+	  Debug (2, "%p Personality routine: %8p\n", (void *)addr,
+		 (void *)pers);
+	  if ((*c->as->acc.access_mem)(c->as, extbl_data + 4, &data, 0,
+				       c->as_arg) < 0)
+	    return -UNW_EINVAL;
+	  n_table_words = data >> 24;
+	  buf[nbuf++] = data >> 16;
+	  buf[nbuf++] = data >> 8;
+	  buf[nbuf++] = data;
+	  extbl_data += 8;
 	}
       assert (n_table_words <= 5);
       unsigned j;
       for (j = 0; j < n_table_words; j++)
 	{
-	  data = *extbl_data++;
+	  if ((*c->as->acc.access_mem)(c->as, extbl_data, &data, 0,
+				       c->as_arg) < 0)
+	    return -UNW_EINVAL;
+	  extbl_data += 4;
 	  buf[nbuf++] = data >> 24;
 	  buf[nbuf++] = data >> 16;
 	  buf[nbuf++] = data >> 8;
@@ -345,41 +389,59 @@ tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX)
       && di->format == UNW_INFO_FORMAT_ARM_EXIDX)
     {
-      struct arm_exidx_entry *first =
-	(struct arm_exidx_entry *) di->u.rti.table_data;
-      struct arm_exidx_entry *last =
-	((struct arm_exidx_entry *) (di->u.rti.table_data +
-				     di->u.rti.table_len)) - 1;
-      struct arm_exidx_entry *entry;
+      /* The .ARM.exidx section contains a sorted list of key-value pairs -
+	 the unwind entries.  The 'key' is a prel31 offset to the start of a
+	 function.  We binary search this section in order to find the
+	 appropriate unwind entry.  */
+      unw_word_t first = di->u.rti.table_data;
+      unw_word_t last = di->u.rti.table_data + di->u.rti.table_len - 8;
+      unw_word_t entry, val;
 
-      if (ip < prel31_to_addr (&first->addr))
+      if (prel31_to_addr (as, arg, first, &val) < 0 && ip < val)
 	return -UNW_ENOINFO;
-      else if (ip >= prel31_to_addr (&last->addr))
+
+      if (prel31_to_addr (as, arg, last, &val) < 0)
+	return -UNW_EINVAL;
+
+      if (ip >= val)
 	{
-	   entry = last;
-	   pi->start_ip = prel31_to_addr (&last->addr);
-	   pi->end_ip = di->end_ip - 1;
+	  entry = last;
+
+	  if (prel31_to_addr (as, arg, last, &pi->start_ip) < 0)
+	    return -UNW_EINVAL;
+
+	  pi->end_ip = di->end_ip -1;
 	}
       else
 	{
-	  while (first < last - 1)
+	  while (first < last - 8)
 	    {
-	      entry = first + ((last - first + 1) >> 1);
-	      if (ip < prel31_to_addr (&entry->addr))
+	      entry = first + (((last - first) / 8 + 1) >> 1) * 8;
+
+	      if (prel31_to_addr (as, arg, entry, &val) < 0)
+		return -UNW_EINVAL;
+
+	      if (ip < val)
 		last = entry;
 	      else
 		first = entry;
 	    }
 
 	  entry = first;
-	  pi->start_ip = prel31_to_addr (&entry->addr);
-	  pi->end_ip = prel31_to_addr (&(entry + 1)->addr) - 1;
+
+	  if (prel31_to_addr (as, arg, entry, &pi->start_ip) < 0)
+	    return -UNW_EINVAL;
+
+	  if (prel31_to_addr (as, arg, entry + 8, &pi->end_ip) < 0)
+	    return -UNW_EINVAL;
+
+	  pi->end_ip--;
 	}
 
       if (need_unwind_info)
 	{
 	  pi->unwind_info_size = 8;
-	  pi->unwind_info = entry;
+	  pi->unwind_info = (void *) entry;
 	  pi->format = UNW_INFO_FORMAT_ARM_EXIDX;
 	}
       return 0;
