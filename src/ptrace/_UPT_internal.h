@@ -53,6 +53,7 @@ struct UPT_info
     pid_t pid;		/* the process-id of the child we're unwinding */
     struct elf_image ei;
     unw_dyn_info_t di_cache;
+    unw_dyn_info_t di_debug;	/* additional table info for .debug_frame */
 #if UNW_TARGET_IA64
     unw_dyn_info_t ktab;
 #endif
@@ -60,11 +61,11 @@ struct UPT_info
 
 extern int _UPT_reg_offset[UNW_REG_LAST + 1];
 
-extern unw_dyn_info_t *_UPTi_find_unwind_table (struct UPT_info *ui,
-						unw_addr_space_t as,
-						char *path,
-						unw_word_t segbase,
-						unw_word_t mapoff,
-						unw_word_t ip);
+extern int _UPTi_find_unwind_table (struct UPT_info *ui,
+				    unw_addr_space_t as,
+				    char *path,
+				    unw_word_t segbase,
+				    unw_word_t mapoff,
+				    unw_word_t ip);
 
 #endif /* _UPT_internal_h */

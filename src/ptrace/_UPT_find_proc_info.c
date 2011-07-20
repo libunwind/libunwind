@@ -164,7 +164,7 @@ dwarf_read_encoded_pointer (unw_addr_space_t as, unw_accessors_t *a,
 					     pi, valp, arg);
 }
 
-HIDDEN unw_dyn_info_t *
+HIDDEN int
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff,
 			 unw_word_t ip)
@@ -176,12 +176,12 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   unw_proc_info_t pi;
   unw_accessors_t *a;
   Elf_W(Ehdr) *ehdr;
-  int i, ret;
+  int i, ret, found = 0;
 
   /* XXX: Much of this code is Linux/LSB-specific.  */
 
   if (!elf_w(valid_object) (&ui->ei))
-    return NULL;
+    return -UNW_ENOINFO;
 
   ehdr = ui->ei.image;
   phdr = (Elf_W(Phdr) *) ((char *) ui->ei.image + ehdr->e_phoff);
@@ -209,10 +209,116 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	  break;
 	}
     }
-  if (!ptxt || !peh_hdr)
-#ifdef CONFIG_DEBUG_FRAME
+
+  if (!ptxt)
+    return 0;
+
+  if (peh_hdr)
     {
-      /* No .eh_frame found, try .debug_frame. */
+      if (pdyn)
+	{
+	  /* For dynamicly linked executables and shared libraries,
+	     DT_PLTGOT is the value that data-relative addresses are
+	     relative to for that object.  We call this the "gp".  */
+		Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
+						 + (char *) ui->ei.image);
+	  for (; dyn->d_tag != DT_NULL; ++dyn)
+	    if (dyn->d_tag == DT_PLTGOT)
+	      {
+		/* Assume that _DYNAMIC is writable and GLIBC has
+		   relocated it (true for x86 at least).  */
+		ui->di_cache.gp = dyn->d_un.d_ptr;
+		break;
+	      }
+	}
+      else
+	/* Otherwise this is a static executable with no _DYNAMIC.  Assume
+	   that data-relative addresses are relative to 0, i.e.,
+	   absolute.  */
+	ui->di_cache.gp = 0;
+
+      hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
+					   + (char *) ui->ei.image);
+      if (hdr->version != DW_EH_VERSION)
+	{
+	  Debug (1, "table `%s' has unexpected version %d\n",
+		 path, hdr->version);
+	  return -UNW_ENOINFO;
+	}
+
+      a = unw_get_accessors (unw_local_addr_space);
+      addr = (unw_word_t) (hdr + 1);
+
+      /* Fill in a dummy proc_info structure.  We just need to fill in
+	 enough to ensure that dwarf_read_encoded_pointer() can do it's
+	 job.  Since we don't have a procedure-context at this point, all
+	 we have to do is fill in the global-pointer.  */
+      memset (&pi, 0, sizeof (pi));
+      pi.gp = ui->di_cache.gp;
+
+      /* (Optionally) read eh_frame_ptr: */
+      if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+					     &addr, hdr->eh_frame_ptr_enc, &pi,
+					     &eh_frame_start, NULL)) < 0)
+	return -UNW_ENOINFO;
+
+      /* (Optionally) read fde_count: */
+      if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
+					     &addr, hdr->fde_count_enc, &pi,
+					     &fde_count, NULL)) < 0)
+	return -UNW_ENOINFO;
+
+      if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
+	{
+    #if 1
+	  abort ();
+    #else
+	  unw_word_t eh_frame_end;
+
+	  /* If there is no search table or it has an unsupported
+	     encoding, fall back on linear search.  */
+	  if (hdr->table_enc == DW_EH_PE_omit)
+	    Debug (4, "EH lacks search table; doing linear search\n");
+	  else
+	    Debug (4, "EH table has encoding 0x%x; doing linear search\n",
+		   hdr->table_enc);
+
+	  eh_frame_end = max_load_addr;	/* XXX can we do better? */
+
+	  if (hdr->fde_count_enc == DW_EH_PE_omit)
+	    fde_count = ~0UL;
+	  if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
+	    abort ();
+
+	  return linear_search (unw_local_addr_space, ip,
+				eh_frame_start, eh_frame_end, fde_count,
+				pi, need_unwind_info, NULL);
+    #endif
+	}
+
+      load_base = segbase - ptxt->p_vaddr;
+
+      ui->di_cache.start_ip = segbase;
+      ui->di_cache.end_ip = ui->di_cache.start_ip + ptxt->p_memsz;
+      ui->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
+      ui->di_cache.u.rti.name_ptr = 0;
+      /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
+      ui->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
+      ui->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
+				       + (addr - (unw_word_t) ui->ei.image
+					  - peh_hdr->p_offset));
+
+      /* For the binary-search table in the eh_frame_hdr, data-relative
+	 means relative to the start of that section... */
+      ui->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
+				    + ((unw_word_t) hdr - (unw_word_t) ui->ei.image
+				       - peh_hdr->p_offset));
+      found = 1;
+    }
+
+#ifdef CONFIG_DEBUG_FRAME
+  {
+      /* Try .debug_frame. */
       struct dl_phdr_info info;
 
       info.dlpi_name = path;
@@ -231,136 +337,34 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
        }
       info.dlpi_addr = segbase;
 
-      if (dwarf_find_debug_frame (0, &ui->di_cache, &info, ip))
-       return &ui->di_cache;
-      else
-       return NULL;
-    }
-#else
-    return NULL;
+      found = dwarf_find_debug_frame (found, &ui->di_debug, &info, ip);
+  }
 #endif
 
-  if (pdyn)
-    {
-      /* For dynamicly linked executables and shared libraries,
-	 DT_PLTGOT is the value that data-relative addresses are
-	 relative to for that object.  We call this the "gp".  */
-	    Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
-					     + (char *) ui->ei.image);
-      for (; dyn->d_tag != DT_NULL; ++dyn)
-	if (dyn->d_tag == DT_PLTGOT)
-	  {
-	    /* Assume that _DYNAMIC is writable and GLIBC has
-	       relocated it (true for x86 at least).  */
-	    ui->di_cache.gp = dyn->d_un.d_ptr;
-	    break;
-	  }
-    }
-  else
-    /* Otherwise this is a static executable with no _DYNAMIC.  Assume
-       that data-relative addresses are relative to 0, i.e.,
-       absolute.  */
-    ui->di_cache.gp = 0;
-
-  hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
-				       + (char *) ui->ei.image);
-  if (hdr->version != DW_EH_VERSION)
-    {
-      Debug (1, "table `%s' has unexpected version %d\n",
-	     path, hdr->version);
-      return 0;
-    }
-
-  a = unw_get_accessors (unw_local_addr_space);
-  addr = (unw_word_t) (hdr + 1);
-
-  /* Fill in a dummy proc_info structure.  We just need to fill in
-     enough to ensure that dwarf_read_encoded_pointer() can do it's
-     job.  Since we don't have a procedure-context at this point, all
-     we have to do is fill in the global-pointer.  */
-  memset (&pi, 0, sizeof (pi));
-  pi.gp = ui->di_cache.gp;
-
-  /* (Optionally) read eh_frame_ptr: */
-  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
-					 &addr, hdr->eh_frame_ptr_enc, &pi,
-					 &eh_frame_start, NULL)) < 0)
-    return NULL;
-
-  /* (Optionally) read fde_count: */
-  if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
-					 &addr, hdr->fde_count_enc, &pi,
-					 &fde_count, NULL)) < 0)
-    return NULL;
-
-  if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
-    {
-#if 1
-      abort ();
-#else
-      unw_word_t eh_frame_end;
-
-      /* If there is no search table or it has an unsupported
-	 encoding, fall back on linear search.  */
-      if (hdr->table_enc == DW_EH_PE_omit)
-        Debug (4, "EH lacks search table; doing linear search\n");
-      else
-	Debug (4, "EH table has encoding 0x%x; doing linear search\n",
-	       hdr->table_enc);
-
-      eh_frame_end = max_load_addr;	/* XXX can we do better? */
-
-      if (hdr->fde_count_enc == DW_EH_PE_omit)
-	fde_count = ~0UL;
-      if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
-	abort ();
-
-      return linear_search (unw_local_addr_space, ip,
-			    eh_frame_start, eh_frame_end, fde_count,
-			    pi, need_unwind_info, NULL);
-#endif
-    }
-
-  load_base = segbase - ptxt->p_vaddr;
-
-  ui->di_cache.start_ip = segbase;
-  ui->di_cache.end_ip = ui->di_cache.start_ip + ptxt->p_memsz;
-  ui->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
-  ui->di_cache.u.rti.name_ptr = 0;
-  /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
-  ui->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
-  ui->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
-				   + (addr - (unw_word_t) ui->ei.image
-				      - peh_hdr->p_offset));
-
-  /* For the binary-search table in the eh_frame_hdr, data-relative
-     means relative to the start of that section... */
-  ui->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
-				+ ((unw_word_t) hdr - (unw_word_t) ui->ei.image
-				   - peh_hdr->p_offset));
-
-  return &ui->di_cache;
+  return found;
 }
 
 #endif /* UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_HPPA*/
 
-static unw_dyn_info_t *
+static int
 get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
 {
   unsigned long segbase, mapoff;
   char path[PATH_MAX];
-  unw_dyn_info_t *di;
 
 #if UNW_TARGET_IA64 && defined(__linux)
   if (!ui->ktab.start_ip && _Uia64_get_kernel_table (&ui->ktab) < 0)
-    return NULL;
+    return -UNW_ENOINFO;
 
-  if (ip >= ui->ktab.start_ip && ip < ui->ktab.end_ip)
-    return &ui->ktab;
+  if (ui->ktab.format != -1 && ip >= ui->ktab.start_ip && ip < ui->ktab.end_ip)
+    return 0;
 #endif
 
-  if (ip >= ui->di_cache.start_ip && ip < ui->di_cache.end_ip)
-    return &ui->di_cache;
+  if ((ui->di_cache.format != -1
+       && ip >= ui->di_cache.start_ip && ip < ui->di_cache.end_ip)
+      || (ui->di_debug.format != -1
+       && ip >= ui->di_debug.start_ip && ip < ui->di_debug.end_ip))
+    return 0;
 
   if (ui->ei.image)
     {
@@ -370,24 +374,36 @@ get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
 
       /* invalidate the cache: */
       ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
+      ui->di_debug.start_ip = ui->di_debug.end_ip = 0;
+      ui->di_cache.format = -1;
+      ui->di_debug.format = -1;
     }
 
   if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff, path,
                           sizeof(path)) < 0)
-    return NULL;
+    return -UNW_ENOINFO;
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  di = _UPTi_find_unwind_table (ui, as, path, segbase, mapoff, ip);
-  if (!di
-      /* This can happen in corner cases where dynamically generated
-         code falls into the same page that contains the data-segment
-         and the page-offset of the code is within the first page of
-         the executable.  */
-      || ip < di->start_ip || ip >= di->end_ip)
-    return NULL;
+  if (_UPTi_find_unwind_table (ui, as, path, segbase, mapoff, ip) < 0)
+    return -UNW_ENOINFO;
 
-  return di;
+  /* This can happen in corner cases where dynamically generated
+     code falls into the same page that contains the data-segment
+     and the page-offset of the code is within the first page of
+     the executable.  */
+  if (ui->di_cache.format != -1
+      && (ip < ui->di_cache.start_ip || ip >= ui->di_cache.end_ip))
+     ui->di_cache.format = -1;
+
+  if (ui->di_debug.format != -1
+      && (ip < ui->di_debug.start_ip || ip >= ui->di_debug.end_ip))
+     ui->di_debug.format = -1;
+
+  if (ui->di_cache.format == -1 && ui->di_debug.format == -1)
+    return -UNW_ENOINFO;
+
+  return 0;
 }
 
 int
@@ -395,14 +411,13 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 		     int need_unwind_info, void *arg)
 {
   struct UPT_info *ui = arg;
-  unw_dyn_info_t *di;
+  int ret = -UNW_ENOINFO;
 
-  di = get_unwind_info (ui, as, ip);
-  if (!di)
+  if (get_unwind_info (ui, as, ip) < 0)
     return -UNW_ENOINFO;
 
 #if UNW_TARGET_IA64
-  if (di == &ui->ktab)
+  if (ui->ktab.format != -1)
     {
       /* The kernel unwind table resides in local memory, so we have
 	 to use the local address space to search it.  Since
@@ -410,8 +425,8 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 	 case, we simply make a copy of the unwind-info, so
 	 _UPT_put_unwind_info() can always free() the unwind-info
 	 without ill effects.  */
-      int ret = tdep_search_unwind_table (unw_local_addr_space, ip, di, pi,
-					  need_unwind_info, arg);
+      ret = tdep_search_unwind_table (unw_local_addr_space, ip, &ui->ktab, pi,
+				      need_unwind_info, arg);
       if (ret >= 0)
 	{
 	  if (!need_unwind_info)
@@ -426,9 +441,16 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 	      pi->unwind_info = mem;
 	    }
 	}
-      return ret;
     }
-  else
 #endif
-  return tdep_search_unwind_table (as, ip, di, pi, need_unwind_info, arg);
+
+  if (ret == -UNW_ENOINFO && ui->di_cache.format == -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->di_cache,
+				    pi, need_unwind_info, arg);
+
+  if (ret == -UNW_ENOINFO && ui->di_debug.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->di_debug, pi,
+				    need_unwind_info, arg);
+
+  return ret;
 }
