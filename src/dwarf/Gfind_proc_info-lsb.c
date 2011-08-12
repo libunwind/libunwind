@@ -47,18 +47,6 @@ struct table_entry
 #include "os-linux.h"
 #endif
 
-struct callback_data
-  {
-    /* in: */
-    unw_word_t ip;		/* instruction-pointer we're looking for */
-    unw_proc_info_t *pi;	/* proc-info pointer */
-    int need_unwind_info;
-    /* out: */
-    int single_fde;		/* did we find a single FDE? (vs. a table) */
-    unw_dyn_info_t di;		/* table info (if single_fde is false) */
-    unw_dyn_info_t di_debug;	/* additional table info for .debug_frame */
-  };
-
 static int
 linear_search (unw_addr_space_t as, unw_word_t ip,
 	       unw_word_t eh_frame_start, unw_word_t eh_frame_end,
@@ -567,13 +555,13 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
 
 #endif /* CONFIG_DEBUG_FRAME */
 
-/* ptr is a pointer to a callback_data structure and, on entry,
+/* ptr is a pointer to a dwarf_callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
    for.  */
-static int
-callback (struct dl_phdr_info *info, size_t size, void *ptr)
+HIDDEN int
+dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 {
-  struct callback_data *cb_data = ptr;
+  struct dwarf_callback_data *cb_data = ptr;
   unw_dyn_info_t *di = &cb_data->di;
   const Elf_W(Phdr) *phdr, *p_eh_hdr, *p_dynamic, *p_text;
   unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip;
@@ -754,7 +742,7 @@ HIDDEN int
 dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 		      unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
-  struct callback_data cb_data;
+  struct dwarf_callback_data cb_data;
   intrmask_t saved_mask;
   int ret;
 
@@ -768,7 +756,7 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.di_debug.format = -1;
 
   SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-  ret = dl_iterate_phdr (callback, &cb_data);
+  ret = dl_iterate_phdr (dwarf_callback, &cb_data);
   SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 
   if (ret <= 0)
