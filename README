@@ -1,11 +1,12 @@
 -*- mode: Outline -*-
 
-This is version 0.99 of the unwind library.  This library supports
+This is version 1.0 of the unwind library.  This library supports
 several architecture/operating-system combinations:
 
- Linux/IA-64:	Fully tested and supported.
  Linux/x86-64:	Works well.
- Linux/x86:	Works well, but C library is missing some unwind-info.
+ Linux/x86:	Works well.
+ Linux/ARM:	Works well.
+ Linux/IA-64:	Fully tested and supported.
  Linux/PARISC:	Works well, but C library missing unwind-info.
  HP-UX/IA-64:	Mostly works but known to have some serious limitations.
  Linux/PPC64:	Newly added.
