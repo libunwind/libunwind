@@ -45,13 +45,15 @@ arm_exidx_step (struct cursor *c)
   c->dwarf.loc[UNW_ARM_R15] = DWARF_NULL_LOC;
 
   if ((ret = tdep_find_proc_info (&c->dwarf, c->dwarf.ip, 1)) < 0)
-     return -UNW_ENOINFO;
+     return ret;
 
   if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
 
   ret = arm_exidx_extract (&c->dwarf, buf);
-  if (ret < 0)
+  if (ret == -UNW_ESTOPUNWIND)
+    return 0;
+  else if (ret < 0)
     return ret;
 
   ret = arm_exidx_decode (buf, ret, &c->dwarf);
@@ -189,10 +191,10 @@ unw_step (unw_cursor_t *cursor)
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
     {
       ret = arm_exidx_step (c);
-      if (ret >= 0)
+      if (ret > 0)
 	return 1;
-      if (ret == -UNW_ESTOPUNWIND)
-	return 0;
+      if (ret == -UNW_ESTOPUNWIND || ret == 0)
+	return ret;
     }
 
   /* Fall back on APCS frame parsing.
