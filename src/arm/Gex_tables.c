@@ -502,7 +502,7 @@ HIDDEN int
 arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 		    unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
-  int ret = 0;
+  int ret = -1;
   intrmask_t saved_mask;
 
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
