@@ -46,9 +46,12 @@ endif #ARCH_IA64
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
 			Ltest-nomalloc Ltest-nocalloc rs-race
- noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc test-varargs	\
-			Gperf-simple Lperf-simple			\
-			Gperf-trace Lperf-trace
+ noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc			 \
+			Gperf-simple Lperf-simple
+
+if HAVE_BACKTRACE
+ noinst_PROGRAMS_cdep += Gperf-trace Lperf-trace test-varargs
+endif
 
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
