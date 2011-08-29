@@ -177,8 +177,10 @@ unw_step (unw_cursor_t *cursor)
       ret = dwarf_step (&c->dwarf);
       Debug(1, "dwarf_step()=%d\n", ret);
 
-      if (unlikely (ret == -UNW_ESTOPUNWIND))
-        return ret;
+      if (likely (ret > 0))
+	return 1;
+      else if (unlikely (ret == -UNW_ESTOPUNWIND))
+	return ret;
 
     if (ret < 0 && ret != -UNW_ENOINFO)
       {
