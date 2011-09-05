@@ -9,7 +9,7 @@ lib_LIBRARIES =
 lib_LTLIBRARIES =
 if !REMOTE_ONLY
 lib_LIBRARIES += libunwind-ptrace.a
-lib_LTLIBRARIES += libunwind.la libunwind-setjmp.la
+lib_LTLIBRARIES += libunwind.la
 endif
 
 noinst_HEADERS =
@@ -476,6 +476,12 @@ endif # ARCH_MIPS
 endif # ARCH_HPPA
 endif # ARCH_IA64
 endif # ARCH_ARM
+
+# libunwind-setjmp depends on libunwind-$(arch). Therefore must be added
+# at the end.
+if !REMOTE_ONLY
+lib_LTLIBRARIES += libunwind-setjmp.la
+endif
 
 #
 # Don't link with standard libraries, because those may mention
