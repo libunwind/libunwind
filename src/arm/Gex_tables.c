@@ -453,6 +453,7 @@ tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   return -UNW_ENOINFO; 
 }
 
+#ifndef UNW_REMOTE_ONLY
 /**
  * Callback to dl_iterate_phdr to find infos about the ARM exidx segment.
  */
@@ -564,4 +565,5 @@ arm_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
 {
   /* it's a no-op */
 }
+#endif /* !UNW_REMOTE_ONLY */
 
