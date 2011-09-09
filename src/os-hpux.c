@@ -23,8 +23,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef UNW_REMOTE_ONLY
-
 #include <dlfcn.h>
 #include <string.h>
 #include <unistd.h>
@@ -67,5 +65,3 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 
   return elf_map_image (ei, path);
 }
-
-#endif /* UNW_REMOTE_ONLY */
