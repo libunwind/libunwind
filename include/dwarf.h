@@ -40,6 +40,7 @@ struct dwarf_cursor;	/* forward-declaration */
 
 #include "dwarf-config.h"
 #include <link.h>
+#include <pthread.h>
 
 /* DWARF expression opcodes.  */
 
