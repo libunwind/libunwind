@@ -143,9 +143,9 @@ Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND)
 Gtest_init_LDADD = $(LIBUNWIND)
 Gtest_resume_sig_LDADD = $(LIBUNWIND)
-Gperf_simple_LDADD = $(LIBUNWIND)
+Gperf_simple_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_trace_LDADD=$(LIBUNWIND) $(LIBUNWIND_local)
-Gperf_trace_LDADD = $(LIBUNWIND)
+Gperf_trace_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Ltest_bt_LDADD = $(LIBUNWIND_local)
 Ltest_concurrent_LDADD = $(LIBUNWIND_local) -lpthread
