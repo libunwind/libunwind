@@ -1,4 +1,4 @@
-SOVERSION=7:0:0		# See comments at end of file.
+SOVERSION=8:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 #
 # Don't link with start-files since we don't use any constructors/destructors:
