@@ -142,7 +142,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
       break;
     }
 
-  memset (sloc, 0, sizeof (sloc));
+  memset (sloc, 0, sizeof (*sloc));
 
   if (IA64_IS_NULL_LOC (loc))
     {

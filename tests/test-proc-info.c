@@ -72,7 +72,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t regnum, unw_fpreg_t *valp,
 	      int write, void *arg)
 {
   if (!write)
-    memset (valp, 0, sizeof (valp));
+    memset (valp, 0, sizeof (*valp));
   return 0;
 }
 
