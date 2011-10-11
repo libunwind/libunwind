@@ -37,7 +37,6 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
   struct UPT_info *ui = arg;
   struct map_iterator mi;
   char path[PATH_MAX];
-  unw_dyn_info_t *di;
   unw_word_t res;
   int count = 0;
 
@@ -62,10 +61,9 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
 
       Debug (16, "checking object %s\n", path);
 
-      di = _UPTi_find_unwind_table (ui, as, path, lo, off, 0);
-      if (di)
+      if (_UPTi_find_unwind_table (ui, as, path, lo, off, 0) > 0)
 	{
-	  res = _Uia64_find_dyn_list (as, di, arg);
+	  res = _Uia64_find_dyn_list (as, &ui->di_cache, arg);
 	  if (res && count++ == 0)
 	    {
 	      Debug (12, "dyn_info_list_addr = 0x%lx\n", (long) res);

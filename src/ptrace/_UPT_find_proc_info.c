@@ -95,7 +95,7 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
   return gp;
 }
 
-HIDDEN unw_dyn_info_t *
+HIDDEN int
 _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff,
 			 unw_word_t ip)
@@ -105,7 +105,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   int i;
 
   if (!_Uelf64_valid_object (&ui->ei))
-    return NULL;
+    return -UNW_ENOINFO;
 
   ehdr = ui->ei.image;
   phdr = (Elf64_Phdr *) ((char *) ui->ei.image + ehdr->e_phoff);
@@ -132,7 +132,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	}
     }
   if (!ptxt || !punw)
-    return NULL;
+    return 0;
 
   ui->di_cache.start_ip = segbase;
   ui->di_cache.end_ip = ui->di_cache.start_ip + ptxt->p_memsz;
@@ -143,7 +143,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   ui->di_cache.u.ti.table_len = punw->p_memsz / sizeof (unw_word_t);
   ui->di_cache.u.ti.table_data = (unw_word_t *)
     ((char *) ui->ei.image + (punw->p_vaddr - ptxt->p_vaddr));
-  return &ui->di_cache;
+  return 1;
 }
 
 #elif UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_HPPA \
