@@ -25,6 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 
+#undef _FORTIFY_SOURCE
 #include <assert.h>
 #include <libunwind.h>
 #include <setjmp.h>
