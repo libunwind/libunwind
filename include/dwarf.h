@@ -39,7 +39,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 struct dwarf_cursor;	/* forward-declaration */
 
 #include "dwarf-config.h"
+#ifndef UNW_REMOTE_ONLY
 #include <link.h>
+#endif
 #include <pthread.h>
 
 /* DWARF expression opcodes.  */
@@ -378,10 +380,12 @@ struct dwarf_callback_data
 #define dwarf_step			UNW_OBJ (dwarf_step)
 
 extern int dwarf_init (void);
+#ifndef UNW_REMOTE_ONLY
 extern int dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr);
 extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				 unw_proc_info_t *pi,
 				 int need_unwind_info, void *arg);
+#endif /* !UNW_REMOTE_ONLY */
 extern int dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
 				 struct dl_phdr_info *info, unw_word_t ip);
 extern int dwarf_search_unwind_table (unw_addr_space_t as,

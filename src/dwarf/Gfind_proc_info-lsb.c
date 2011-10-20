@@ -79,6 +79,7 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
     }
   return -UNW_ENOINFO;
 }
+#endif /* !UNW_REMOTE_ONLY */
 
 #ifdef CONFIG_DEBUG_FRAME
 /* Load .debug_frame section from FILE.  Allocates and returns space
@@ -554,6 +555,8 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
 }
 
 #endif /* CONFIG_DEBUG_FRAME */
+
+#ifndef UNW_REMOTE_ONLY
 
 /* ptr is a pointer to a dwarf_callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
