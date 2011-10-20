@@ -26,7 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Locate an FDE via the ELF data-structures defined by LSB v1.3
    (http://www.linuxbase.org/spec/).  */
 
+#ifndef UNW_REMOTE_ONLY
 #include <link.h>
+#endif /* !UNW_REMOTE_ONLY */
 #include <stddef.h>
 #include <stdio.h>
 #include <limits.h>
@@ -269,17 +271,15 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
    pointer to debug frame descriptor, or zero if not found.  */
 
 static struct unw_debug_frame_list *
-locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
-		   unw_word_t addr, const char *dlname)
+locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
+		   unw_word_t start, unw_word_t end)
 {
   struct unw_debug_frame_list *w, *fdesc = 0;
   char path[PATH_MAX];
   char *name = path;
   int err;
-  uint64_t start = 0, end = 0;
   char *buf;
   size_t bufsize;
-  unsigned int i;
 
   /* First, see if we loaded this frame already.  */
 
@@ -306,29 +306,6 @@ locate_debug_info (unw_addr_space_t as, struct dl_phdr_info *info,
   else
     name = (char*) dlname;
 
-  /* Find the start/end of the described region by parsing the
-     dl_phdr_info structure.  */
-
-  start = info->dlpi_addr + info->dlpi_phdr[0].p_vaddr;
-  end = start;
-
-  for (i = 0; i < info->dlpi_phnum; i++)
-    {
-      Elf_W (Addr) hdrbase = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
-      Elf_W (Addr) hdrlimit = hdrbase + info->dlpi_phdr[i].p_memsz;
-
-      if (info->dlpi_phdr[i].p_type != PT_LOAD)
-	continue;
-
-      if (hdrbase < start)
-	start = hdrbase;
-      if (hdrlimit > end)
-	end = hdrlimit;
-    }
-
-  Debug (4, "calculated bounds of %lx-%lx for '%s'\n", (long)start, (long)end,
-	 name);
-  
   err = load_debug_frame (name, &buf, &bufsize, as == unw_local_addr_space);
   
   if (!err)
@@ -409,19 +386,19 @@ debug_frame_tab_compare (const void *a, const void *b)
 }
 
 PROTECTED int
-dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
-                       struct dl_phdr_info *info, unw_word_t ip)
+dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
+			unw_word_t segbase, const char* obj_name,
+			unw_word_t start, unw_word_t end)
 {
   unw_dyn_info_t *di;
   struct unw_debug_frame_list *fdesc = 0;
   unw_accessors_t *a;
   unw_word_t addr;
 
-  Debug (15, "Trying to find .debug_frame info->dlpi_name=%s\n",
-        info->dlpi_name);
+  Debug (15, "Trying to find .debug_frame for %s\n", obj_name);
   di = di_debug;
 
-  fdesc = locate_debug_info (unw_local_addr_space, info, ip, info->dlpi_name);
+  fdesc = locate_debug_info (unw_local_addr_space, ip, obj_name, start, end);
 
   if (!fdesc)
     {
@@ -539,10 +516,10 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
       di->format = UNW_INFO_FORMAT_TABLE;
       di->start_ip = fdesc->start;
       di->end_ip = fdesc->end;
-      di->u.ti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
+      di->u.ti.name_ptr = (unw_word_t) (uintptr_t) obj_name;
       di->u.ti.table_data = (unw_word_t *) fdesc;
       di->u.ti.table_len = sizeof (*fdesc) / sizeof (unw_word_t);
-      di->u.ti.segbase = (unw_word_t) (uintptr_t) info->dlpi_addr;
+      di->u.ti.segbase = segbase;
 
       found = 1;
       Debug (15, "found debug_frame table `%s': segbase=0x%lx, len=%lu, "
@@ -567,7 +544,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   struct dwarf_callback_data *cb_data = ptr;
   unw_dyn_info_t *di = &cb_data->di;
   const Elf_W(Phdr) *phdr, *p_eh_hdr, *p_dynamic, *p_text;
-  unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip;
+  unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip, start, end;
   Elf_W(Addr) load_base, segbase = 0, max_load_addr = 0;
   int ret, need_unwind_info = cb_data->need_unwind_info;
   unw_proc_info_t *pi = cb_data->pi;
@@ -733,9 +710,29 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
     }
 
 #ifdef CONFIG_DEBUG_FRAME
-  {
-      found = dwarf_find_debug_frame (found, &cb_data->di_debug, info, ip);
-  }
+  /* Find the start/end of the described region by parsing the phdr_info
+     structure.  */
+  start = (unw_word_t) -1;
+  end = 0;
+
+  for (n = 0; n < info->dlpi_phnum; n++)
+    {
+      if (info->dlpi_phdr[n].p_type == PT_LOAD)
+        {
+	  unw_word_t seg_start = info->dlpi_addr + info->dlpi_phdr[n].p_vaddr;
+          unw_word_t seg_end = seg_start + info->dlpi_phdr[n].p_memsz;
+
+	  if (seg_start < start)
+	    start = seg_start;
+
+	  if (seg_end > end)
+	    end = seg_end;
+	}
+    }
+
+  found = dwarf_find_debug_frame (found, &cb_data->di_debug, ip,
+				  info->dlpi_addr, info->dlpi_name, start,
+				  end);
 #endif  /* CONFIG_DEBUG_FRAME */
 
   return found;

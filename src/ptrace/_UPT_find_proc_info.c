@@ -172,6 +172,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
   unw_word_t max_load_addr = 0;
+  unw_word_t start_ip = (unw_word_t) -1;
+  unw_word_t end_ip = 0;
   struct dwarf_eh_frame_hdr *hdr;
   unw_proc_info_t pi;
   unw_accessors_t *a;
@@ -194,6 +196,12 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
       switch (phdr[i].p_type)
 	{
 	case PT_LOAD:
+	  if (phdr[i].p_vaddr < start_ip)
+	    start_ip = phdr[i].p_vaddr;
+
+	  if (phdr[i].p_vaddr + phdr[i].p_memsz > end_ip)
+	    end_ip = phdr[i].p_vaddr + phdr[i].p_memsz;
+
 	  if (phdr[i].p_offset == mapoff)
 	    ptxt = phdr + i;
 	  if ((uintptr_t) ui->ei.image + phdr->p_filesz > max_load_addr)
@@ -221,6 +229,10 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 
   if (!ptxt)
     return 0;
+
+  load_base = segbase - ptxt->p_vaddr;
+  start_ip += load_base;
+  end_ip += load_base;
 
   if (peh_hdr)
     {
@@ -305,10 +317,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
     #endif
 	}
 
-      load_base = segbase - ptxt->p_vaddr;
-
-      ui->di_cache.start_ip = segbase;
-      ui->di_cache.end_ip = ui->di_cache.start_ip + ptxt->p_memsz;
+      ui->di_cache.start_ip = start_ip;
+      ui->di_cache.end_ip = end_ip;
       ui->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
       ui->di_cache.u.rti.name_ptr = 0;
       /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
@@ -329,39 +339,19 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   if (parm_exidx)
     {
       ui->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
-      ui->di_arm.start_ip = segbase;
-      ui->di_arm.end_ip = ui->di_arm.start_ip + ptxt->p_memsz;
+      ui->di_arm.start_ip = start_ip;
+      ui->di_arm.end_ip = end_ip;
       ui->di_arm.u.rti.name_ptr = (unw_word_t) path;
-      ui->di_arm.u.rti.table_data = parm_exidx->p_vaddr + segbase -
-				    ptxt->p_vaddr;
+      ui->di_arm.u.rti.table_data = load_base + parm_exidx->p_vaddr;
       ui->di_arm.u.rti.table_len = parm_exidx->p_memsz;
       found = 1;
     }
 #endif
 
 #ifdef CONFIG_DEBUG_FRAME
-  {
-      /* Try .debug_frame. */
-      struct dl_phdr_info info;
-
-      info.dlpi_name = path;
-      info.dlpi_phdr = phdr;
-      info.dlpi_phnum = ehdr->e_phnum;
-
-      /* Fixup segbase to match correct base address. */
-      for (i = 0; i < info.dlpi_phnum; i++)
-       {
-         if (info.dlpi_phdr[i].p_type == PT_LOAD &&
-           info.dlpi_phdr[i].p_offset == 0)
-             {
-               segbase -= info.dlpi_phdr[i].p_vaddr;
-               break;
-             }
-       }
-      info.dlpi_addr = segbase;
-
-      found = dwarf_find_debug_frame (found, &ui->di_debug, &info, ip);
-  }
+  /* Try .debug_frame. */
+  found = dwarf_find_debug_frame (found, &ui->di_debug, ip, segbase, path,
+				  start_ip, end_ip);
 #endif
 
   return found;

@@ -387,7 +387,9 @@ extern int dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				 int need_unwind_info, void *arg);
 #endif /* !UNW_REMOTE_ONLY */
 extern int dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug,
-				 struct dl_phdr_info *info, unw_word_t ip);
+				   unw_word_t ip, unw_word_t segbase,
+				   const char* obj_name, unw_word_t start,
+				   unw_word_t end);
 extern int dwarf_search_unwind_table (unw_addr_space_t as,
 				      unw_word_t ip,
 				      unw_dyn_info_t *di,
