@@ -54,6 +54,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
+#include <elf.h>
 
 #if defined(HAVE_ENDIAN_H)
 # include <endian.h>
@@ -309,6 +310,15 @@ struct elf_image
 #define ACCESS_MEM_FAST(ret,validate,cur,addr,to) \
   do { (ret) = dwarf_get ((cur), DWARF_MEM_LOC ((cur), (addr)), &(to)); } \
   while (0)
+
+/* Define GNU and processor specific values for the Phdr p_type field in case
+   they aren't defined by <elf.h>.  */
+#ifndef PT_GNU_EH_FRAME
+# define PT_GNU_EH_FRAME	0x6474e550
+#endif /* !PT_GNU_EH_FRAME */
+#ifndef PT_ARM_EXIDX
+# define PT_ARM_EXIDX		0x70000001	/* ARM unwind segment */
+#endif /* !PT_ARM_EXIDX */
 
 #include "tdep/libunwind_i.h"
 
