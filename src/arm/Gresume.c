@@ -33,23 +33,23 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
 #ifdef __linux__
   struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->dwarf.as_arg;
+  unw_tdep_context_t *uc = c->dwarf.as_arg;
 
   if (c->sigcontext_format == ARM_SCF_NONE)
     {
       /* Since there are no signals involved here we restore the non scratch
 	 registers only.  */
       unsigned long regs[10];
-      regs[0] = uc->uc_mcontext.arm_r4;
-      regs[1] = uc->uc_mcontext.arm_r5;
-      regs[2] = uc->uc_mcontext.arm_r6;
-      regs[3] = uc->uc_mcontext.arm_r7;
-      regs[4] = uc->uc_mcontext.arm_r8;
-      regs[5] = uc->uc_mcontext.arm_r9;
-      regs[6] = uc->uc_mcontext.arm_r10;
-      regs[7] = uc->uc_mcontext.arm_fp;
-      regs[8] = uc->uc_mcontext.arm_sp;
-      regs[9] = uc->uc_mcontext.arm_lr;
+      regs[0] = uc->regs[4];
+      regs[1] = uc->regs[5];
+      regs[2] = uc->regs[6];
+      regs[3] = uc->regs[7];
+      regs[4] = uc->regs[8];
+      regs[5] = uc->regs[9];
+      regs[6] = uc->regs[10];
+      regs[7] = uc->regs[11]; /* FP */
+      regs[8] = uc->regs[13]; /* SP */
+      regs[9] = uc->regs[14]; /* LR */
 
       asm __volatile__ (
 	"ldmia %0, {r4-r12, lr}\n"
@@ -63,22 +63,22 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       /* In case a signal frame is involved, we're using its trampoline which
 	 calls sigreturn.  */
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
-      sc->arm_r0 = uc->uc_mcontext.arm_r0;
-      sc->arm_r1 = uc->uc_mcontext.arm_r1;
-      sc->arm_r2 = uc->uc_mcontext.arm_r2;
-      sc->arm_r3 = uc->uc_mcontext.arm_r3;
-      sc->arm_r4 = uc->uc_mcontext.arm_r4;
-      sc->arm_r5 = uc->uc_mcontext.arm_r5;
-      sc->arm_r6 = uc->uc_mcontext.arm_r6;
-      sc->arm_r7 = uc->uc_mcontext.arm_r7;
-      sc->arm_r8 = uc->uc_mcontext.arm_r8;
-      sc->arm_r9 = uc->uc_mcontext.arm_r9;
-      sc->arm_r10 = uc->uc_mcontext.arm_r10;
-      sc->arm_fp = uc->uc_mcontext.arm_fp;
-      sc->arm_ip = uc->uc_mcontext.arm_ip;
-      sc->arm_sp = uc->uc_mcontext.arm_sp;
-      sc->arm_lr = uc->uc_mcontext.arm_lr;
-      sc->arm_pc = uc->uc_mcontext.arm_pc;
+      sc->arm_r0 = uc->regs[0];
+      sc->arm_r1 = uc->regs[1];
+      sc->arm_r2 = uc->regs[2];
+      sc->arm_r3 = uc->regs[3];
+      sc->arm_r4 = uc->regs[4];
+      sc->arm_r5 = uc->regs[5];
+      sc->arm_r6 = uc->regs[6];
+      sc->arm_r7 = uc->regs[7];
+      sc->arm_r8 = uc->regs[8];
+      sc->arm_r9 = uc->regs[9];
+      sc->arm_r10 = uc->regs[10];
+      sc->arm_fp = uc->regs[11]; /* FP */
+      sc->arm_ip = uc->regs[12]; /* IP */
+      sc->arm_sp = uc->regs[13]; /* SP */
+      sc->arm_lr = uc->regs[14]; /* LR */
+      sc->arm_pc = uc->regs[15]; /* PC */
       /* clear the ITSTATE bits.  */
       sc->arm_cpsr &= 0xf9ff03ffUL;
 

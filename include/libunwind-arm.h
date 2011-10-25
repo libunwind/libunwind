@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
-#include <ucontext.h>
+#include <stddef.h>
 
 #define UNW_TARGET	arm
 #define UNW_TARGET_ARM	1
@@ -250,8 +250,14 @@ typedef struct unw_tdep_save_loc
   }
 unw_tdep_save_loc_t;
 
-/* On ARM, we can directly use ucontext_t as the unwind context.  */
-typedef ucontext_t unw_tdep_context_t;
+/* On ARM, we define our own unw_tdep_context instead of using ucontext_t.
+   This allows us to support systems that don't support getcontext and
+   therefore do not define ucontext_t.  */
+typedef struct unw_tdep_context
+  {
+    unsigned long regs[16];
+  }
+unw_tdep_context_t;
 
 /* There is no getcontext() on ARM.  Use a stub version which only saves GP
    registers.  FIXME: Not ideal, may not be sufficient for all libunwind
@@ -259,8 +265,7 @@ typedef ucontext_t unw_tdep_context_t;
 #ifndef __thumb__
 #define unw_tdep_getcontext(uc) (({					\
   unw_tdep_context_t *unw_ctx = (uc);					\
-  register int unw_base asm ("r0")					\
-    = (int) (&unw_ctx->uc_mcontext.arm_r0);				\
+  register unsigned long *unw_base asm ("r0") = unw_ctx->regs;		\
   __asm__ __volatile__ (						\
     "stmia %[base], {r0-r15}"						\
     : : [base] "r" (unw_base) : "memory");				\
@@ -268,8 +273,7 @@ typedef ucontext_t unw_tdep_context_t;
 #else /* __thumb__ */
 #define unw_tdep_getcontext(uc) (({					\
   unw_tdep_context_t *unw_ctx = (uc);					\
-  register int unw_base asm ("r0")					\
-    = (int) (&unw_ctx->uc_mcontext.arm_r0);				\
+  register unsigned long *unw_base asm ("r0") = unw_ctx->regs;		\
   __asm__ __volatile__ (						\
     ".align 2\nbx pc\nnop\n.code 32\n"					\
     "stmia %[base], {r0-r15}\n"						\

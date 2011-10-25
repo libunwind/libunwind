@@ -274,7 +274,7 @@ extern void arm_put_unwind_info (unw_addr_space_t as,
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 				     unw_dyn_info_t *di, unw_proc_info_t *pi,
 				     int need_unwind_info, void *arg);
-extern void *tdep_uc_addr (ucontext_t *uc, int reg);
+extern void *tdep_uc_addr (unw_tdep_context_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 			       unsigned long *segbase, unsigned long *mapoff,
 			       char *path, size_t pathlen);

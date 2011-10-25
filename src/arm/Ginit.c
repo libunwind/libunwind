@@ -39,39 +39,18 @@ static struct unw_addr_space local_addr_space;
 PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 static inline void *
-uc_addr (ucontext_t *uc, int reg)
+uc_addr (unw_tdep_context_t *uc, int reg)
 {
-  void *addr;
-
-  switch (reg)
-    {
-    case UNW_ARM_R0:  addr = &uc->uc_mcontext.arm_r0; break;
-    case UNW_ARM_R1:  addr = &uc->uc_mcontext.arm_r1; break;
-    case UNW_ARM_R2:  addr = &uc->uc_mcontext.arm_r2; break;
-    case UNW_ARM_R3:  addr = &uc->uc_mcontext.arm_r3; break;
-    case UNW_ARM_R4:  addr = &uc->uc_mcontext.arm_r4; break;
-    case UNW_ARM_R5:  addr = &uc->uc_mcontext.arm_r5; break;
-    case UNW_ARM_R6:  addr = &uc->uc_mcontext.arm_r6; break;
-    case UNW_ARM_R7:  addr = &uc->uc_mcontext.arm_r7; break;
-    case UNW_ARM_R8:  addr = &uc->uc_mcontext.arm_r8; break;
-    case UNW_ARM_R9:  addr = &uc->uc_mcontext.arm_r9; break;
-    case UNW_ARM_R10: addr = &uc->uc_mcontext.arm_r10; break;
-    case UNW_ARM_R11: addr = &uc->uc_mcontext.arm_fp; break;
-    case UNW_ARM_R12: addr = &uc->uc_mcontext.arm_ip; break;
-    case UNW_ARM_R13: addr = &uc->uc_mcontext.arm_sp; break;
-    case UNW_ARM_R14: addr = &uc->uc_mcontext.arm_lr; break;
-    case UNW_ARM_R15: addr = &uc->uc_mcontext.arm_pc; break;
-
-    default:
-      addr = NULL;
-    }
-  return addr;
+  if (reg >= UNW_ARM_R0 && reg < UNW_ARM_R0 + 16)
+    return &uc->regs[reg - UNW_ARM_R0];
+  else
+    return NULL;
 }
 
 # ifdef UNW_LOCAL_ONLY
 
 HIDDEN void *
-tdep_uc_addr (ucontext_t *uc, int reg)
+tdep_uc_addr (unw_tdep_context_t *uc, int reg)
 {
   return uc_addr (uc, reg);
 }
@@ -115,7 +94,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 	    void *arg)
 {
   unw_word_t *addr;
-  ucontext_t *uc = arg;
+  unw_tdep_context_t *uc = arg;
 
   if (unw_is_fpreg (reg))
     goto badreg;
@@ -145,7 +124,7 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 	      int write, void *arg)
 {
-  ucontext_t *uc = arg;
+  unw_tdep_context_t *uc = arg;
   unw_fpreg_t *addr;
 
   if (!unw_is_fpreg (reg))
