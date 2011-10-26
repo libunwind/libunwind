@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
-
+#include <signal.h>
 #include <sys/mman.h>
 
 #if UNW_TARGET_ARM
