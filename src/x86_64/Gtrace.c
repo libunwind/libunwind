@@ -50,6 +50,7 @@ typedef struct
 static const unw_tdep_frame_t empty_frame = { 0, UNW_X86_64_FRAME_OTHER, -1, -1, 0, -1, -1 };
 static pthread_mutex_t trace_init_lock = PTHREAD_MUTEX_INITIALIZER;
 static pthread_once_t trace_cache_once = PTHREAD_ONCE_INIT;
+static sig_atomic_t trace_cache_once_happen;
 static pthread_key_t trace_cache_key;
 static struct mempool trace_cache_pool;
 
@@ -69,6 +70,7 @@ trace_cache_init_once (void)
 {
   pthread_key_create (&trace_cache_key, &trace_cache_free);
   mempool_init (&trace_cache_pool, sizeof (unw_trace_cache_t), 0);
+  trace_cache_once_happen = 1;
 }
 
 static unw_tdep_frame_t *
@@ -137,6 +139,24 @@ trace_cache_expand (unw_trace_cache_t *cache)
 
 static __thread  unw_trace_cache_t *tls_cache;
 
+static unw_trace_cache_t *
+trace_cache_get_unthreaded (void)
+{
+  unw_trace_cache_t *cache;
+  intrmask_t saved_mask;
+  static unw_trace_cache_t *global_cache = 0;
+  lock_acquire (&trace_init_lock, saved_mask);
+  if (! global_cache)
+  {
+    mempool_init (&trace_cache_pool, sizeof (unw_trace_cache_t), 0);
+    global_cache = trace_cache_create ();
+  }
+  cache = global_cache;
+  lock_release (&trace_init_lock, saved_mask);
+  Debug(5, "using cache %p\n", cache);
+  return cache;
+}
+
 /* Get the frame cache for the current thread. Create it if there is none. */
 static unw_trace_cache_t *
 trace_cache_get (void)
@@ -145,6 +165,10 @@ trace_cache_get (void)
   if (likely (pthread_once != 0))
   {
     pthread_once(&trace_cache_once, &trace_cache_init_once);
+    if (!trace_cache_once_happen)
+    {
+      return trace_cache_get_unthreaded();
+    }
     if (! (cache = tls_cache))
     {
       cache = trace_cache_create();
@@ -156,18 +180,7 @@ trace_cache_get (void)
   }
   else
   {
-    intrmask_t saved_mask;
-    static unw_trace_cache_t *global_cache = 0;
-    lock_acquire (&trace_init_lock, saved_mask);
-    if (! global_cache)
-    {
-      mempool_init (&trace_cache_pool, sizeof (unw_trace_cache_t), 0);
-      global_cache = trace_cache_create ();
-    }
-    cache = global_cache;
-    lock_release (&trace_init_lock, saved_mask);
-    Debug(5, "using cache %p\n", cache);
-    return cache;
+    return trace_cache_get_unthreaded();
   }
 }
 
