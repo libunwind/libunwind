@@ -25,6 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "ucontext_i.h"
 #include <signal.h>
+#include <limits.h>
 
 #pragma weak pthread_once
 #pragma weak pthread_key_create
@@ -45,6 +46,8 @@ typedef struct
   unw_tdep_frame_t *frames;
   size_t log_size;
   size_t used;
+  size_t dtor_count;  /* Counts how many times our destructor has already
+			 been called. */
 } unw_trace_cache_t;
 
 static const unw_tdep_frame_t empty_frame = { 0, UNW_X86_64_FRAME_OTHER, -1, -1, 0, -1, -1 };
@@ -53,14 +56,26 @@ static pthread_once_t trace_cache_once = PTHREAD_ONCE_INIT;
 static sig_atomic_t trace_cache_once_happen;
 static pthread_key_t trace_cache_key;
 static struct mempool trace_cache_pool;
+static __thread  unw_trace_cache_t *tls_cache;
+static __thread  int tls_cache_destroyed;
 
 /* Free memory for a thread's trace cache. */
 static void
 trace_cache_free (void *arg)
 {
   unw_trace_cache_t *cache = arg;
+  if (++cache->dtor_count < PTHREAD_DESTRUCTOR_ITERATIONS)
+  {
+    /* Not yet our turn to get destroyed. Re-install ourselves into the key. */
+    pthread_setspecific(trace_cache_key, cache);
+    Debug(5, "delayed freeing cache %p (%zx to go)\n", cache,
+	  PTHREAD_DESTRUCTOR_ITERATIONS - cache->dtor_count);
+    return;
+  }
   munmap (cache->frames, (1u << cache->log_size) * sizeof(unw_tdep_frame_t));
   mempool_free (&trace_cache_pool, cache);
+  tls_cache = NULL;
+  tls_cache_destroyed = 1;
   Debug(5, "freed cache %p\n", cache);
 }
 
@@ -95,21 +110,32 @@ trace_cache_create (void)
 {
   unw_trace_cache_t *cache;
 
+  if (tls_cache_destroyed)
+  {
+    /* The current thread is in the process of exiting. Don't recreate
+       cache, as we wouldn't have another chance to free it. */
+    Debug(5, "refusing to reallocate cache: "
+	     "thread-locals are being deallocated\n");
+    return NULL;
+  }
+
   if (! (cache = mempool_alloc(&trace_cache_pool)))
   {
     Debug(5, "failed to allocate cache\n");
-    return 0;
+    return NULL;
   }
 
   if (! (cache->frames = trace_cache_buckets(1u << HASH_MIN_BITS)))
   {
     Debug(5, "failed to allocate buckets\n");
     mempool_free(&trace_cache_pool, cache);
-    return 0;
+    return NULL;
   }
 
   cache->log_size = HASH_MIN_BITS;
   cache->used = 0;
+  cache->dtor_count = 0;
+  tls_cache_destroyed = 0;  /* Paranoia: should already be 0. */
   Debug(5, "allocated cache %p\n", cache);
   return cache;
 }
@@ -136,8 +162,6 @@ trace_cache_expand (unw_trace_cache_t *cache)
   cache->used = 0;
   return 0;
 }
-
-static __thread  unw_trace_cache_t *tls_cache;
 
 static unw_trace_cache_t *
 trace_cache_get_unthreaded (void)
@@ -298,7 +322,7 @@ trace_lookup (unw_cursor_t *cursor,
   if (unlikely(addr || cache->used >= cache_size / 2))
   {
     if (unlikely(trace_cache_expand (cache) < 0))
-      return 0;
+      return NULL;
 
     cache_size = 1u << cache->log_size;
     slot = ((rip * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
