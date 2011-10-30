@@ -203,7 +203,7 @@ static inline int
 maps_next (struct map_iterator *mi,
 	   unsigned long *low, unsigned long *high, unsigned long *offset)
 {
-  char perm[16], dash, colon, *cp;
+  char perm[16], dash = 0, colon = 0, *cp;
   unsigned long major, minor, inum;
   ssize_t i, nread;
 
