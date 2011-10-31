@@ -544,7 +544,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   struct dwarf_callback_data *cb_data = ptr;
   unw_dyn_info_t *di = &cb_data->di;
   const Elf_W(Phdr) *phdr, *p_eh_hdr, *p_dynamic, *p_text;
-  unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip, start, end;
+  unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip;
   Elf_W(Addr) load_base, segbase = 0, max_load_addr = 0;
   int ret, need_unwind_info = cb_data->need_unwind_info;
   unw_proc_info_t *pi = cb_data->pi;
@@ -552,6 +552,9 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   unw_accessors_t *a;
   long n;
   int found = 0;
+#ifdef CONFIG_DEBUG_FRAME
+  unw_word_t start, end;
+#endif /* CONFIG_DEBUG_FRAME*/
 
   ip = cb_data->ip;
 
