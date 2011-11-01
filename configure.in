@@ -296,5 +296,6 @@ AC_SUBST(DLLIB)
 AC_SUBST(BACKTRACELIB)
 
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
-		doc/Makefile doc/common.tex include/libunwind-common.h)
+		doc/Makefile doc/common.tex include/libunwind-common.h
+                include/libunwind.h include/tdep/libunwind_i.h)
 AC_OUTPUT
