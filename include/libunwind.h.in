@@ -1,6 +1,8 @@
 /* Provide a real file - not a symlink - as it would cause multiarch conflicts
    when multiple different arch releases are installed simultaneously.  */
 
+#ifndef UNW_REMOTE_ONLY
+
 #if defined __arm__
 # include "libunwind-arm.h"
 #elif defined __hppa__
@@ -20,3 +22,9 @@
 #else
 # error "Unsupported arch"
 #endif
+
+#else /* UNW_REMOTE_ONLY */
+
+# include "libunwind-@arch@.h"
+
+#endif /* UNW_REMOTE_ONLY */
