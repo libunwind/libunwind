@@ -27,20 +27,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 #ifdef __linux__
-#include <sys/syscall.h>
+#define ARM_NR_sigreturn 119
+#define ARM_NR_rt_sigreturn 173
+#define ARM_NR_OABI_SYSCALL_BASE 0x900000
 
 /* ARM EABI sigreturn (the syscall number is loaded into r7) */
-#define MOV_R7_SIGRETURN (0xe3a07000UL | __NR_sigreturn)
-#define MOV_R7_RT_SIGRETURN (0xe3a07000UL | __NR_rt_sigreturn)
+#define MOV_R7_SIGRETURN (0xe3a07000UL | ARM_NR_sigreturn)
+#define MOV_R7_RT_SIGRETURN (0xe3a07000UL | ARM_NR_rt_sigreturn)
 
 /* ARM OABI sigreturn (using SWI) */
-#define ARM_SIGRETURN (0xef000000UL |(__NR_sigreturn)|(__NR_OABI_SYSCALL_BASE))
-#define ARM_RT_SIGRETURN (0xef000000UL |(__NR_rt_sigreturn)|(__NR_OABI_SYSCALL_BASE))
+#define ARM_SIGRETURN \
+  (0xef000000UL | ARM_NR_sigreturn | ARM_NR_OABI_SYSCALL_BASE)
+#define ARM_RT_SIGRETURN \
+  (0xef000000UL | ARM_NR_rt_sigreturn | ARM_NR_OABI_SYSCALL_BASE)
 
 /* Thumb sigreturn (two insns, syscall number is loaded into r7) */
-#define THUMB_SIGRETURN (0xdf00UL  << 16 | 0x2700 | __NR_sigreturn)
-#define THUMB_RT_SIGRETURN (0xdf00UL  << 16 | 0x2700 | __NR_rt_sigreturn)
-#endif
+#define THUMB_SIGRETURN (0xdf00UL << 16 | 0x2700 | ARM_NR_sigreturn)
+#define THUMB_RT_SIGRETURN (0xdf00UL << 16 | 0x2700 | ARM_NR_rt_sigreturn)
+#endif /* __linux__ */
 
 /* Returns 1 in case of a non-RT signal frame and 2 in case of a RT signal
    frame. */
