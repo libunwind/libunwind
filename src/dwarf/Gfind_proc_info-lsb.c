@@ -545,7 +545,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   unw_dyn_info_t *di = &cb_data->di;
   const Elf_W(Phdr) *phdr, *p_eh_hdr, *p_dynamic, *p_text;
   unw_word_t addr, eh_frame_start, eh_frame_end, fde_count, ip;
-  Elf_W(Addr) load_base, segbase = 0, max_load_addr = 0;
+  Elf_W(Addr) load_base, max_load_addr = 0;
   int ret, need_unwind_info = cb_data->need_unwind_info;
   unw_proc_info_t *pi = cb_data->pi;
   struct dwarf_eh_frame_hdr *hdr;
@@ -597,27 +597,6 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   if (p_eh_hdr)
     {
-      if (likely (p_eh_hdr->p_vaddr >= p_text->p_vaddr
-		  && p_eh_hdr->p_vaddr < p_text->p_vaddr + p_text->p_memsz))
-	/* normal case: eh-hdr is inside text segment */
-	segbase = p_text->p_vaddr + load_base;
-      else
-	{
-	  /* Special case: eh-hdr is in some other segment; this may
-	     happen, e.g., for the Linux kernel's gate DSO, for
-	     example.  */
-	  phdr = info->dlpi_phdr;
-	  for (n = info->dlpi_phnum; --n >= 0; phdr++)
-	    {
-	      if (phdr->p_type == PT_LOAD && p_eh_hdr->p_vaddr >= phdr->p_vaddr
-		  && p_eh_hdr->p_vaddr < phdr->p_vaddr + phdr->p_memsz)
-		{
-		  segbase = phdr->p_vaddr + load_base;
-		  break;
-		}
-	    }
-	}
-
       if (p_dynamic)
 	{
 	  /* For dynamicly linked executables and shared libraries,
