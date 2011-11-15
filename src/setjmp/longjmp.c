@@ -35,6 +35,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "jmpbuf.h"
 #include "setjmp_i.h"
 
+#if defined(__GLIBC__) && __GLIBC_PREREQ(2, 4)
+
+/* Starting with glibc-2.4, {sig,}setjmp in GLIBC obfuscates the
+   register values in jmp_buf by XORing them with a "random"
+   canary value.
+
+   This makes it impossible to implement longjmp, as we
+   can never match wp[JB_SP], unless we decode the canary first.
+
+   Doing so is possible, but doesn't appear to be worth the trouble,
+   so we simply defer to glibc longjmp here.  */
+
+#else
+
 void
 _longjmp (jmp_buf env, int val)
 {
@@ -75,7 +89,7 @@ _longjmp (jmp_buf env, int val)
 
       abort ();
     }
-  while (unw_step (&c) >= 0);
+  while (unw_step (&c) > 0);
 
   abort ();
 }
@@ -89,5 +103,7 @@ longjmp (jmp_buf env, int val)
 {
   _longjmp (env, val);
 }
+
+#endif  /* __GLIBC__  */
 
 #endif

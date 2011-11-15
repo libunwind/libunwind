@@ -35,6 +35,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define _NSIG (_SIG_MAXSIG - 1)
 #endif
 
+#if defined(__GLIBC__) && __GLIBC_PREREQ(2, 4)
+
+/* Starting with glibc-2.4, {sig,}setjmp in GLIBC obfuscates the
+   register values in jmp_buf by XORing them with a "random"
+   canary value.
+
+   This makes it impossible to implement longjmp, as we
+   can never match wp[JB_SP], unless we decode the canary first.
+
+   Doing so is possible, but doesn't appear to be worth the trouble,
+   so we simply defer to glibc siglongjmp here.  */
+
+#else
+
 void
 siglongjmp (sigjmp_buf env, int val)
 {
@@ -96,7 +110,9 @@ siglongjmp (sigjmp_buf env, int val)
 
       abort ();
     }
-  while (unw_step (&c) >= 0);
+  while (unw_step (&c) > 0);
 
   abort ();
 }
+
+#endif  /* __GLIBC__ */
