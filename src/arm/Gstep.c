@@ -171,6 +171,7 @@ unw_step (unw_cursor_t *cursor)
   if (unw_is_signal_frame (cursor))
      return unw_handle_signal_frame (cursor);
 
+#ifdef CONFIG_DEBUG_FRAME
   /* First, try DWARF-based unwinding. */
   if (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF))
     {
@@ -188,6 +189,7 @@ unw_step (unw_cursor_t *cursor)
         return ret;
       }
     }
+#endif /* CONFIG_DEBUG_FRAME */
 
   /* Next, try extbl-based unwinding. */
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
