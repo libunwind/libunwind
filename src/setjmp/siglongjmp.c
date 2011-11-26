@@ -35,7 +35,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define _NSIG (_SIG_MAXSIG - 1)
 #endif
 
-#if defined(__GLIBC__) && __GLIBC_PREREQ(2, 4)
+#if defined(__GLIBC__)
+#if __GLIBC_PREREQ(2, 4)
 
 /* Starting with glibc-2.4, {sig,}setjmp in GLIBC obfuscates the
    register values in jmp_buf by XORing them with a "random"
@@ -47,7 +48,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    Doing so is possible, but doesn't appear to be worth the trouble,
    so we simply defer to glibc siglongjmp here.  */
 
-#else
+#define siglongjmp __nonworking_siglongjmp
+static void siglongjmp (sigjmp_buf env, int val);
+#endif
+#endif /* __GLIBC_PREREQ */
 
 void
 siglongjmp (sigjmp_buf env, int val)
@@ -114,5 +118,3 @@ siglongjmp (sigjmp_buf env, int val)
 
   abort ();
 }
-
-#endif  /* __GLIBC__ */

@@ -35,7 +35,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "jmpbuf.h"
 #include "setjmp_i.h"
 
-#if defined(__GLIBC__) && __GLIBC_PREREQ(2, 4)
+#if defined(__GLIBC__)
+#if __GLIBC_PREREQ(2, 4)
 
 /* Starting with glibc-2.4, {sig,}setjmp in GLIBC obfuscates the
    register values in jmp_buf by XORing them with a "random"
@@ -46,8 +47,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
    Doing so is possible, but doesn't appear to be worth the trouble,
    so we simply defer to glibc longjmp here.  */
-
-#else
+#define _longjmp __nonworking__longjmp
+#define longjmp __nonworking_longjmp
+static void _longjmp (jmp_buf env, int val);
+static void longjmp (jmp_buf env, int val);
+#endif
+#endif /* __GLIBC__ */
 
 void
 _longjmp (jmp_buf env, int val)
@@ -95,7 +100,10 @@ _longjmp (jmp_buf env, int val)
 }
 
 #ifdef __GNUC__
-void longjmp (jmp_buf env, int val) __attribute__ ((alias ("_longjmp")));
+#define STRINGIFY1(x) #x
+#define STRINGIFY(x) STRINGIFY1(x)
+void longjmp (jmp_buf env, int val) 
+  __attribute__ ((alias (STRINGIFY(_longjmp))));
 #else
 
 void
@@ -104,6 +112,4 @@ longjmp (jmp_buf env, int val)
   _longjmp (env, val);
 }
 
-#endif  /* __GLIBC__  */
-
-#endif
+#endif /* __GNUC__ */
