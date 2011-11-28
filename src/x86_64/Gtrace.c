@@ -35,12 +35,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Initial hash table size. Table expands by 2 bits (times four). */
 #define HASH_MIN_BITS 14
 
-/* There's not enough space to store RIP's location in a signal
-   frame, but we can calculate it relative to RBP's (or RSP's)
-   position in mcontext structure.  Note we don't want to use
-   the UC_MCONTEXT_GREGS_* directly since we rely on DWARF info. */
-#define dRIP (UC_MCONTEXT_GREGS_RIP - UC_MCONTEXT_GREGS_RBP)
-
 typedef struct
 {
   unw_tdep_frame_t *frames;
@@ -496,16 +490,13 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       break;
 
     case UNW_X86_64_FRAME_SIGRETURN:
-      /* Advance standard signal frame, whose CFA points above saved
-         registers (ucontext) among other things.  We know the info
-	 is stored at some unknown constant offset off inner frame's
-	 CFA.  We determine the actual offset from DWARF unwind info. */
-      cfa = cfa + f->cfa_reg_offset;
-      ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rbp_cfa_offset + dRIP, rip);
+      cfa = cfa + f->cfa_reg_offset; /* cfa now points to ucontext_t.  */
+
+      ACCESS_MEM_FAST(ret, c->validate, d, cfa + UC_MCONTEXT_GREGS_RIP, rip);
       if (likely(ret >= 0))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rbp_cfa_offset, rbp);
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + UC_MCONTEXT_GREGS_RBP, rbp);
       if (likely(ret >= 0))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->rsp_cfa_offset, rsp);
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + UC_MCONTEXT_GREGS_RSP, rsp);
 
       /* Resume stack at signal restoration point. The stack is not
          necessarily continuous here, especially with sigaltstack(). */

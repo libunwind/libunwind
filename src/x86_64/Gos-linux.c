@@ -64,10 +64,9 @@ tdep_reuse_frame (struct dwarf_cursor *dw, struct dwarf_reg_state *rs)
   c->sigcontext_format = rs->signal_frame;
   if (c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME)
   {
-    /* Rest will be filled by tdep_stash_frame(), save what it needs. */
     c->frame_info.frame_type = UNW_X86_64_FRAME_SIGRETURN;
-    c->frame_info.cfa_reg_offset = -1;
-    c->frame_info.cfa_reg_rsp = -1;
+    /* Offset from cfa to ucontext_t in signal frame.  */
+    c->frame_info.cfa_reg_offset = 0;
     c->sigcontext_addr = dw->cfa;
   }
   else

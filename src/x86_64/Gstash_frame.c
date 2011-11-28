@@ -74,19 +74,20 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
     Debug (4, " standard frame\n");
   }
 
-  /* Signal frame was detected via augmentation in tdep_fetch_frame()
-     and partially filled in tdep_reuse_frame().  Now that we have
-     the delta between inner and outer CFAs available to use, fill in
-     the offsets for CFA and stored registers.  We don't have space
-     for RIP, it's location is calculated relative to RBP location. */
+  /* Signal frame was detected via augmentation in tdep_fetch_frame()  */
   else if (f->frame_type == UNW_X86_64_FRAME_SIGRETURN)
   {
-    assert (f->cfa_reg_offset == -1);
-    f->cfa_reg_offset = d->cfa - c->sigcontext_addr;
-    f->rbp_cfa_offset = DWARF_GET_LOC(d->loc[RBP]) - d->cfa;
-    f->rsp_cfa_offset = DWARF_GET_LOC(d->loc[RSP]) - d->cfa;
-    Debug (4, " sigreturn frame rbpoff %d rspoff %d\n",
-	   f->rbp_cfa_offset, f->rsp_cfa_offset);
+    /* Later we are going to fish out {RBP,RSP,RIP} from sigcontext via
+       their ucontext_t offsets.  Confirm DWARF info agrees with the
+       offsets we expect.  */
+
+    const unw_word_t uc = c->sigcontext_addr;
+
+    assert (DWARF_GET_LOC(d->loc[RIP]) - uc == UC_MCONTEXT_GREGS_RIP);
+    assert (DWARF_GET_LOC(d->loc[RBP]) - uc == UC_MCONTEXT_GREGS_RBP);
+    assert (DWARF_GET_LOC(d->loc[RSP]) - uc == UC_MCONTEXT_GREGS_RSP);
+
+    Debug (4, " sigreturn frame\n");
   }
 
   /* PLT and guessed RBP-walked frames are handled in unw_step(). */
