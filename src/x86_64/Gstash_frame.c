@@ -81,7 +81,7 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
        their ucontext_t offsets.  Confirm DWARF info agrees with the
        offsets we expect.  */
 
-#ifdef NDEBUG
+#ifndef NDEBUG
     const unw_word_t uc = c->sigcontext_addr;
 
     assert (DWARF_GET_LOC(d->loc[RIP]) - uc == UC_MCONTEXT_GREGS_RIP);
