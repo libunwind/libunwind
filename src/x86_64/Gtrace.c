@@ -66,10 +66,10 @@ trace_cache_free (void *arg)
 	  PTHREAD_DESTRUCTOR_ITERATIONS - cache->dtor_count);
     return;
   }
+  tls_cache_destroyed = 1;
+  tls_cache = NULL;
   munmap (cache->frames, (1u << cache->log_size) * sizeof(unw_tdep_frame_t));
   mempool_free (&trace_cache_pool, cache);
-  tls_cache = NULL;
-  tls_cache_destroyed = 1;
   Debug(5, "freed cache %p\n", cache);
 }
 
