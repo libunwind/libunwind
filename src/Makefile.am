@@ -332,7 +332,7 @@ else
 #
 install-exec-hook:
 	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind-generic.a
-	if test -f $(DESTDIR)$(libdir)/libunwind-generic.so; then \
+	if test -f $(DESTDIR)$(libdir)/libunwind-$(arch).so; then \
 	    $(LN_S) -f libunwind-$(arch).so \
 		$(DESTDIR)$(libdir)/libunwind-generic.so; \
 	fi
