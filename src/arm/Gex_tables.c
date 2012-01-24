@@ -120,14 +120,14 @@ arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c)
       break;
     case ARM_EXIDX_CMD_VFP_POP:
       /* Skip VFP registers, but be sure to adjust stack */
-      for (i = ARM_EXBUF_START (edata->data); i < ARM_EXBUF_END (edata->data);
+      for (i = ARM_EXBUF_START (edata->data); i <= ARM_EXBUF_END (edata->data);
 	   i++)
 	c->cfa += 8;
       if (!(edata->data & ARM_EXIDX_VFP_DOUBLE))
 	c->cfa += 4;
       break;
     case ARM_EXIDX_CMD_WREG_POP:
-      for (i = ARM_EXBUF_START (edata->data); i < ARM_EXBUF_END (edata->data);
+      for (i = ARM_EXBUF_START (edata->data); i <= ARM_EXBUF_END (edata->data);
 	   i++)
 	c->cfa += 8;
       break;
