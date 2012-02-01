@@ -397,7 +397,7 @@ tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       unw_word_t last = di->u.rti.table_data + di->u.rti.table_len - 8;
       unw_word_t entry, val;
 
-      if (prel31_to_addr (as, arg, first, &val) < 0 && ip < val)
+      if (prel31_to_addr (as, arg, first, &val) < 0 || ip < val)
 	return -UNW_ENOINFO;
 
       if (prel31_to_addr (as, arg, last, &val) < 0)
