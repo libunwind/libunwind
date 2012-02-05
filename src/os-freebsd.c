@@ -89,7 +89,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
        {
          strncpy(path, kv->kve_path, pathlen);
        }
-     ret = elf_map_image(ei, kv->kve_path);
+     ret = elf_map_image (ei, kv->kve_path);
      break;
   }
   free_mem(buf, len1);
