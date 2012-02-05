@@ -92,7 +92,8 @@ siglongjmp (sigjmp_buf env, int val)
       if (!resume_restores_sigmask (&c, wp) && wp[JB_MASK_SAVED])
 	{
 	  /* sigmask was saved */
-	  if (UNW_NUM_EH_REGS < 4 || _NSIG >= 16 * sizeof (unw_word_t))
+#if defined(__linux__)
+	  if (UNW_NUM_EH_REGS < 4 || _NSIG > 16 * sizeof (unw_word_t))
 	    /* signal mask doesn't fit into EH arguments and we can't
 	       put it on the stack without overwriting something
 	       else... */
@@ -102,6 +103,12 @@ siglongjmp (sigjmp_buf env, int val)
 		|| (_NSIG > 8 * sizeof (unw_word_t)
 		    && unw_set_reg (&c, UNW_REG_EH + 3, wp[JB_MASK + 1]) < 0))
 	      abort ();
+#elif defined(__FreeBSD__)
+	  if (unw_set_reg (&c, UNW_REG_EH + 2, &wp[JB_MASK]) < 0)
+	      abort();
+#else
+#error Port me
+#endif
 	  cont = &_UI_siglongjmp_cont;
 	}
 
