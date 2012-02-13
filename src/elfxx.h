@@ -43,11 +43,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-extern int elf_w (valid_object) (struct elf_image *ei);
 extern int elf_w (get_proc_name) (unw_addr_space_t as,
 				  pid_t pid, unw_word_t ip,
 				  char *buf, size_t len,
 				  unw_word_t *offp);
+
+static inline int
+elf_w (valid_object) (struct elf_image *ei)
+{
+  if (ei->size <= EI_VERSION)
+    return 0;
+
+  return (memcmp (ei->image, ELFMAG, SELFMAG) == 0
+	  && ((uint8_t *) ei->image)[EI_CLASS] == ELF_CLASS
+	  && ((uint8_t *) ei->image)[EI_VERSION] != EV_NONE
+	  && ((uint8_t *) ei->image)[EI_VERSION] <= EV_CURRENT);
+}
 
 static inline int
 elf_map_image (struct elf_image *ei, const char *path)
