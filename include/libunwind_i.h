@@ -184,7 +184,7 @@ extern intrmask_t unwi_full_mask;
 
 /* Silence compiler warnings about variables which are used only if libunwind
    is configured in a certain way */
-static inline void mark_as_used(void *v) {
+static inline void mark_as_used(void *v UNUSED) {
 }
 
 #if defined(CONFIG_BLOCK_SIGNALS)
