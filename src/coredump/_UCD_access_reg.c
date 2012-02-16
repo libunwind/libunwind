@@ -55,17 +55,15 @@ _UCD_access_reg (unw_addr_space_t as,
 #elif defined(UNW_TARGET_X86_64)
   static const int8_t remap_regs[] =
     {
-      [UNW_X86_RAX]    = offsetof(struct user_regs_struct, rax) / sizeof(long),
-      [UNW_X86_RDX]    = offsetof(struct user_regs_struct, rdx) / sizeof(long),
-      [UNW_X86_RCX]    = offsetof(struct user_regs_struct, rcx) / sizeof(long),
-      [UNW_X86_RBX]    = offsetof(struct user_regs_struct, rbx) / sizeof(long),
-      [UNW_X86_RSI]    = offsetof(struct user_regs_struct, rsi) / sizeof(long),
-      [UNW_X86_RDI]    = offsetof(struct user_regs_struct, rdi) / sizeof(long),
-      [UNW_X86_RBP]    = offsetof(struct user_regs_struct, rbp) / sizeof(long),
-      [UNW_X86_RSP]    = offsetof(struct user_regs_struct, rsp) / sizeof(long),
-      [UNW_X86_RIP]    = offsetof(struct user_regs_struct, rip) / sizeof(long),
-      [UNW_X86_RFLAGS] = offsetof(struct user_regs_struct, rflags) / sizeof(long),
-      [UNW_X86_TRAPNO] = offsetof(struct user_regs_struct, orig_rax) / sizeof(long),
+      [UNW_X86_64_RAX]    = offsetof(struct user_regs_struct, rax) / sizeof(long),
+      [UNW_X86_64_RDX]    = offsetof(struct user_regs_struct, rdx) / sizeof(long),
+      [UNW_X86_64_RCX]    = offsetof(struct user_regs_struct, rcx) / sizeof(long),
+      [UNW_X86_64_RBX]    = offsetof(struct user_regs_struct, rbx) / sizeof(long),
+      [UNW_X86_64_RSI]    = offsetof(struct user_regs_struct, rsi) / sizeof(long),
+      [UNW_X86_64_RDI]    = offsetof(struct user_regs_struct, rdi) / sizeof(long),
+      [UNW_X86_64_RBP]    = offsetof(struct user_regs_struct, rbp) / sizeof(long),
+      [UNW_X86_64_RSP]    = offsetof(struct user_regs_struct, rsp) / sizeof(long),
+      [UNW_X86_64_RIP]    = offsetof(struct user_regs_struct, rip) / sizeof(long),
     };
 #else
 #error Port me
