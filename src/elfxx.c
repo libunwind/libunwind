@@ -127,22 +127,19 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
    sensitive to the performance of this routine, why bother...  */
 
 HIDDEN int
-elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
+elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
+		       unsigned long segbase,
+		       unsigned long mapoff,
+		       unw_word_t ip,
 		       char *buf, size_t buf_len, unw_word_t *offp)
 {
-  unsigned long segbase, mapoff;
   Elf_W (Addr) load_offset = 0;
-  struct elf_image ei;
   Elf_W (Ehdr) *ehdr;
   Elf_W (Phdr) *phdr;
   int i, ret;
 
-  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, NULL, 0);
-  if (ret < 0)
-    return ret;
-
-  ehdr = ei.image;
-  phdr = (Elf_W (Phdr) *) ((char *) ei.image + ehdr->e_phoff);
+  ehdr = ei->image;
+  phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD && phdr[i].p_offset == mapoff)
@@ -151,7 +148,24 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
 	break;
       }
 
-  ret = elf_w (lookup_symbol) (as, ip, &ei, load_offset, buf, buf_len, offp);
+  ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, offp);
+
+  return ret;
+}
+
+HIDDEN int
+elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
+		       char *buf, size_t buf_len, unw_word_t *offp)
+{
+  unsigned long segbase, mapoff;
+  struct elf_image ei;
+  int ret;
+
+  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, NULL, 0);
+  if (ret < 0)
+    return ret;
+
+  ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, mapoff, ip, buf, buf_len, offp);
 
   munmap (ei.image, ei.size);
   ei.image = NULL;
