@@ -35,6 +35,7 @@
 #include <stdarg.h>
 #include <stddef.h>
 #include <string.h>
+#include <syslog.h>
 #include <sys/poll.h>
 #include <sys/mman.h>
 #include <sys/socket.h>
@@ -205,7 +206,17 @@ void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
   ucontext_t *uc;
 
   uc = ucontext;
-  ip = uc->uc_mcontext.gregs[REG_EIP];
+#if defined(__linux__)
+#ifdef TARGET_X86
+	ip = uc->uc_mcontext.gregs[REG_EIP];
+#elif defined(TARGET_X86_64)
+	ip = uc->uc_mcontext.gregs[REG_RIP];
+#elif defined(TARGET_ARM)
+	ip = uc->uc_mcontext.arm_ip;
+#endif
+#else
+#error Port me
+#endif
   dprintf(2, "signal:%d address:0x%lx ip:0x%lx\n",
 			sig,
 			/* this is void*, but using %p would print "(null)"
