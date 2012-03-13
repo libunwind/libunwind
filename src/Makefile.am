@@ -109,12 +109,14 @@ libunwind_dwarf_common_la_SOURCES = dwarf/global.c
 
 libunwind_dwarf_local_la_SOURCES = \
 	dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c dwarf/Lpe.c dwarf/Lstep.c \
-        dwarf/Lfind_proc_info-lsb.c
+	dwarf/Lfind_proc_info-lsb.c \
+	dwarf/Lfind_unwind_table.c
 libunwind_dwarf_local_la_LIBADD = libunwind-dwarf-common.la
 
 libunwind_dwarf_generic_la_SOURCES = \
 	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c \
-        dwarf/Gfind_proc_info-lsb.c
+	dwarf/Gfind_proc_info-lsb.c \
+	dwarf/Gfind_unwind_table.c
 libunwind_dwarf_generic_la_LIBADD = libunwind-dwarf-common.la
 
 if USE_DWARF

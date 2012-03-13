@@ -56,11 +56,4 @@ struct UPT_info
 
 extern int _UPT_reg_offset[UNW_REG_LAST + 1];
 
-extern int _UPTi_find_unwind_table (struct elf_dyn_info *ui,
-				    unw_addr_space_t as,
-				    char *path,
-				    unw_word_t segbase,
-				    unw_word_t mapoff,
-				    unw_word_t ip);
-
 #endif /* _UPT_internal_h */
