@@ -8,7 +8,7 @@ COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 lib_LIBRARIES =
 lib_LTLIBRARIES =
 if !REMOTE_ONLY
-lib_LIBRARIES += libunwind-ptrace.a
+lib_LIBRARIES += libunwind-ptrace.a libunwind-coredump.a
 lib_LTLIBRARIES += libunwind.la
 endif
 
@@ -25,6 +25,24 @@ libunwind_ptrace_a_SOURCES =						  \
 	ptrace/_UPT_put_unwind_info.c ptrace/_UPT_get_proc_name.c	  \
 	ptrace/_UPT_reg_offset.c ptrace/_UPT_resume.c
 noinst_HEADERS += ptrace/_UPT_internal.h
+
+### libunwind-coredump:
+libunwind_coredump_a_SOURCES = \
+	coredump/_UCD_accessors.c \
+	coredump/_UCD_create.c \
+	coredump/_UCD_destroy.c \
+	coredump/_UCD_access_reg.c \
+	coredump/_UCD_access_mem.c \
+	coredump/_UCD_elf_map_image.c \
+	coredump/_UCD_find_proc_info.c \
+	coredump/_UCD_get_proc_name.c \
+	\
+	coredump/_UPT_elf.c \
+	coredump/_UPT_access_fpreg.c \
+	coredump/_UPT_get_dyn_info_list_addr.c \
+	coredump/_UPT_put_unwind_info.c \
+	coredump/_UPT_resume.c
+noinst_HEADERS += coredump/_UCD_internal.h
 
 ### libunwind-setjmp:
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
