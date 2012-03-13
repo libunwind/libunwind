@@ -21,10 +21,20 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
 /* Endian detection */
 #include <limits.h>
+#if defined(HAVE_BYTESWAP_H)
 #include <byteswap.h>
-#include <endian.h>
+#endif
+#if defined(HAVE_ENDIAN_H)
+# include <endian.h>
+#elif defined(HAVE_SYS_ENDIAN_H)
+# include <sys/endian.h>
+#endif
 #if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN
 # define WE_ARE_BIG_ENDIAN    1
 # define WE_ARE_LITTLE_ENDIAN 0
