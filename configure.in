@@ -55,6 +55,12 @@ AC_CHECK_TYPES([sighandler_t], [], [],
 # include <signal.h>
 #endif
 ])
+AC_CHECK_TYPES([struct elf_prstatus, struct prstatus], [], [],
+[$ac_includes_default
+#if HAVE_SYS_PROCFS_H
+# include <sys/procfs.h>
+#endif
+])
 
 AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA,
 PTRACE_TRACEME, PTRACE_CONT, PTRACE_SINGLESTEP,
