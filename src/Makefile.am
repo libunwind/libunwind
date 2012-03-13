@@ -31,7 +31,6 @@ libunwind_coredump_a_SOURCES = \
 	coredump/_UCD_accessors.c \
 	coredump/_UCD_create.c \
 	coredump/_UCD_destroy.c \
-	coredump/_UCD_access_reg.c \
 	coredump/_UCD_access_mem.c \
 	coredump/_UCD_elf_map_image.c \
 	coredump/_UCD_find_proc_info.c \
@@ -366,6 +365,7 @@ if OS_LINUX
  libunwind_la_SOURCES_x86_os_local    = x86/Los-linux.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
+ libunwind_coredump_a_SOURCES += coredump/_UCD_access_reg_linux.c
 endif
 
 if OS_HPUX
@@ -381,6 +381,7 @@ if OS_FREEBSD
  libunwind_la_SOURCES_x86_os_local    = x86/Los-freebsd.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-freebsd.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
+ libunwind_coredump_a_SOURCES += coredump/_UCD_access_reg_freebsd.c
 endif
 
 if ARCH_ARM
