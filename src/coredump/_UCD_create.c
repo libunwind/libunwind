@@ -122,8 +122,8 @@ _UCD_create(const char *filename)
   if (_64bits && sizeof(elf_header64.e_entry) > sizeof(off_t))
     {
       Debug(0, "Can't process '%s': 64-bit file "
-				"while only %d bits are supported",
-				filename, 8 * sizeof(off_t));
+				"while only %ld bits are supported",
+				filename, 8L * sizeof(off_t));
       goto err;
     }
 
