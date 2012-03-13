@@ -119,9 +119,11 @@ check_local_unw_abi () {
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_search_unwind_table
 	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
 	hppa)
 	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_setcontext
 	    ;;
@@ -133,16 +135,19 @@ check_local_unw_abi () {
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
 	x86_64)
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
 	    match _U${plat}_setcontext
 	    ;;
 	*)
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
     esac
 
@@ -182,9 +187,11 @@ check_generic_unw_abi () {
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_search_unwind_table
 	    match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_dwarf_find_unwind_table
 	    ;;
 	hppa)
 	    match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_dwarf_find_unwind_table
 	    match _U${plat}_get_elf_image
 	    ;;
 	ia64)
@@ -203,15 +210,18 @@ check_generic_unw_abi () {
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_dwarf_find_unwind_table
 	    ;;
 	x86_64)
 	    match _U${plat}_get_elf_image
 	    match _U${plat}_is_fpreg
 	    match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_dwarf_find_unwind_table
 	    ;;
 	*)
 	    match _U${plat}_is_fpreg
 	    match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_dwarf_find_unwind_table
 	    ;;
     esac
 
