@@ -46,24 +46,17 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
       if (off)
 	continue;
 
-      if (ui->ei.image)
-	{
-	  munmap (ui->ei.image, ui->ei.size);
-	  ui->ei.image = NULL;
-	  ui->ei.size = 0;
-	  /* invalidate the cache: */
-	  ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
-	}
+      invalidate_edi(&ui->edi);
 
-      if (elf_map_image (&ui->ei, path) < 0)
+      if (elf_map_image (&ui->edi.ei, path) < 0)
 	/* ignore unmappable stuff like "/SYSV00001b58 (deleted)" */
 	continue;
 
       Debug (16, "checking object %s\n", path);
 
-      if (_UPTi_find_unwind_table (ui, as, path, lo, off, 0) > 0)
+      if (_UPTi_find_unwind_table (&ui->edi, as, path, lo, off, 0) > 0)
 	{
-	  res = _Uia64_find_dyn_list (as, &ui->di_cache, arg);
+	  res = _Uia64_find_dyn_list (as, &ui->edi.di_cache, arg);
 	  if (res && count++ == 0)
 	    {
 	      Debug (12, "dyn_info_list_addr = 0x%lx\n", (long) res);

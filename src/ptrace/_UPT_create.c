@@ -37,10 +37,10 @@ _UPT_create (pid_t pid)
 
   memset (ui, 0, sizeof (*ui));
   ui->pid = pid;
-  ui->di_cache.format = -1;
-  ui->di_debug.format = -1;
+  ui->edi.di_cache.format = -1;
+  ui->edi.di_debug.format = -1;
 #if UNW_TARGET_IA64
-  ui->ktab.format = -1;;
+  ui->edi.ktab.format = -1;
 #endif
   return ui;
 }

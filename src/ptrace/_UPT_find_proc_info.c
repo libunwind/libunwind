@@ -37,10 +37,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "elf64.h"
 
 static unw_word_t
-find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
+find_gp (struct elf_dyn_info *edi, Elf64_Phdr *pdyn, Elf64_Addr load_base)
 {
   Elf64_Off soff, str_soff;
-  Elf64_Ehdr *ehdr = ui->ei.image;
+  Elf64_Ehdr *ehdr = edi->ei.image;
   Elf64_Shdr *shdr;
   Elf64_Shdr *str_shdr;
   Elf64_Addr gp = 0;
@@ -51,7 +51,7 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
     {
       /* If we have a PT_DYNAMIC program header, fetch the gp-value
 	 from the DT_PLTGOT entry.  */
-      Elf64_Dyn *dyn = (Elf64_Dyn *) (pdyn->p_offset + (char *) ui->ei.image);
+      Elf64_Dyn *dyn = (Elf64_Dyn *) (pdyn->p_offset + (char *) edi->ei.image);
       for (; dyn->d_tag != DT_NULL; ++dyn)
 	if (dyn->d_tag == DT_PLTGOT)
 	  {
@@ -68,35 +68,35 @@ find_gp (struct UPT_info *ui, Elf64_Phdr *pdyn, Elf64_Addr load_base)
   soff = ehdr->e_shoff;
   str_soff = soff + (ehdr->e_shstrndx * ehdr->e_shentsize);
 
-  if (soff + ehdr->e_shnum * ehdr->e_shentsize > ui->ei.size)
+  if (soff + ehdr->e_shnum * ehdr->e_shentsize > edi->ei.size)
     {
       Debug (1, "section table outside of image? (%lu > %lu)",
 	     soff + ehdr->e_shnum * ehdr->e_shentsize,
-	     ui->ei.size);
+	     edi->ei.size);
       goto done;
     }
 
-  shdr = (Elf64_Shdr *) ((char *) ui->ei.image + soff);
-  str_shdr = (Elf64_Shdr *) ((char *) ui->ei.image + str_soff);
-  strtab = (char *) ui->ei.image + str_shdr->sh_offset;
+  shdr = (Elf64_Shdr *) ((char *) edi->ei.image + soff);
+  str_shdr = (Elf64_Shdr *) ((char *) edi->ei.image + str_soff);
+  strtab = (char *) edi->ei.image + str_shdr->sh_offset;
   for (i = 0; i < ehdr->e_shnum; ++i)
     {
       if (strcmp (strtab + shdr->sh_name, ".opd") == 0
 	  && shdr->sh_size >= 16)
 	{
-	  gp = ((Elf64_Addr *) ((char *) ui->ei.image + shdr->sh_offset))[1];
+	  gp = ((Elf64_Addr *) ((char *) edi->ei.image + shdr->sh_offset))[1];
 	  goto done;
 	}
       shdr = (Elf64_Shdr *) (((char *) shdr) + ehdr->e_shentsize);
     }
 
  done:
-  Debug (16, "image at %p, gp = %lx\n", ui->ei.image, gp);
+  Debug (16, "image at %p, gp = %lx\n", edi->ei.image, gp);
   return gp;
 }
 
 HIDDEN int
-_UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
+_UPTi_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff,
 			 unw_word_t ip)
 {
@@ -104,11 +104,11 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   Elf64_Ehdr *ehdr;
   int i;
 
-  if (!_Uelf64_valid_object (&ui->ei))
+  if (!_Uelf64_valid_object (&edi->ei))
     return -UNW_ENOINFO;
 
-  ehdr = ui->ei.image;
-  phdr = (Elf64_Phdr *) ((char *) ui->ei.image + ehdr->e_phoff);
+  ehdr = edi->ei.image;
+  phdr = (Elf64_Phdr *) ((char *) edi->ei.image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
@@ -134,15 +134,15 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
   if (!ptxt || !punw)
     return 0;
 
-  ui->di_cache.start_ip = segbase;
-  ui->di_cache.end_ip = ui->di_cache.start_ip + ptxt->p_memsz;
-  ui->di_cache.gp = find_gp (ui, pdyn, segbase - ptxt->p_vaddr);
-  ui->di_cache.format = UNW_INFO_FORMAT_TABLE;
-  ui->di_cache.u.ti.name_ptr = 0;
-  ui->di_cache.u.ti.segbase = segbase;
-  ui->di_cache.u.ti.table_len = punw->p_memsz / sizeof (unw_word_t);
-  ui->di_cache.u.ti.table_data = (unw_word_t *)
-    ((char *) ui->ei.image + (punw->p_vaddr - ptxt->p_vaddr));
+  edi->di_cache.start_ip = segbase;
+  edi->di_cache.end_ip = edi->di_cache.start_ip + ptxt->p_memsz;
+  edi->di_cache.gp = find_gp (edi, pdyn, segbase - ptxt->p_vaddr);
+  edi->di_cache.format = UNW_INFO_FORMAT_TABLE;
+  edi->di_cache.u.ti.name_ptr = 0;
+  edi->di_cache.u.ti.segbase = segbase;
+  edi->di_cache.u.ti.table_len = punw->p_memsz / sizeof (unw_word_t);
+  edi->di_cache.u.ti.table_data = (unw_word_t *)
+    ((char *) edi->ei.image + (punw->p_vaddr - ptxt->p_vaddr));
   return 1;
 }
 
@@ -165,7 +165,7 @@ dwarf_read_encoded_pointer (unw_addr_space_t as, unw_accessors_t *a,
 }
 
 HIDDEN int
-_UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
+_UPTi_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 			 char *path, unw_word_t segbase, unw_word_t mapoff,
 			 unw_word_t ip)
 {
@@ -185,11 +185,11 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 
   /* XXX: Much of this code is Linux/LSB-specific.  */
 
-  if (!elf_w(valid_object) (&ui->ei))
+  if (!elf_w(valid_object) (&edi->ei))
     return -UNW_ENOINFO;
 
-  ehdr = ui->ei.image;
-  phdr = (Elf_W(Phdr) *) ((char *) ui->ei.image + ehdr->e_phoff);
+  ehdr = edi->ei.image;
+  phdr = (Elf_W(Phdr) *) ((char *) edi->ei.image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
     {
@@ -204,8 +204,8 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 
 	  if (phdr[i].p_offset == mapoff)
 	    ptxt = phdr + i;
-	  if ((uintptr_t) ui->ei.image + phdr->p_filesz > max_load_addr)
-	    max_load_addr = (uintptr_t) ui->ei.image + phdr->p_filesz;
+	  if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
+	    max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
 	  break;
 
 	case PT_GNU_EH_FRAME:
@@ -242,13 +242,13 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	     DT_PLTGOT is the value that data-relative addresses are
 	     relative to for that object.  We call this the "gp".  */
 		Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
-						 + (char *) ui->ei.image);
+						 + (char *) edi->ei.image);
 	  for (; dyn->d_tag != DT_NULL; ++dyn)
 	    if (dyn->d_tag == DT_PLTGOT)
 	      {
 		/* Assume that _DYNAMIC is writable and GLIBC has
 		   relocated it (true for x86 at least).  */
-		ui->di_cache.gp = dyn->d_un.d_ptr;
+		edi->di_cache.gp = dyn->d_un.d_ptr;
 		break;
 	      }
 	}
@@ -256,10 +256,10 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	/* Otherwise this is a static executable with no _DYNAMIC.  Assume
 	   that data-relative addresses are relative to 0, i.e.,
 	   absolute.  */
-	ui->di_cache.gp = 0;
+	edi->di_cache.gp = 0;
 
       hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
-					   + (char *) ui->ei.image);
+					   + (char *) edi->ei.image);
       if (hdr->version != DW_EH_VERSION)
 	{
 	  Debug (1, "table `%s' has unexpected version %d\n",
@@ -275,7 +275,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 	 job.  Since we don't have a procedure-context at this point, all
 	 we have to do is fill in the global-pointer.  */
       memset (&pi, 0, sizeof (pi));
-      pi.gp = ui->di_cache.gp;
+      pi.gp = edi->di_cache.gp;
 
       /* (Optionally) read eh_frame_ptr: */
       if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
@@ -317,20 +317,20 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
     #endif
 	}
 
-      ui->di_cache.start_ip = start_ip;
-      ui->di_cache.end_ip = end_ip;
-      ui->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
-      ui->di_cache.u.rti.name_ptr = 0;
+      edi->di_cache.start_ip = start_ip;
+      edi->di_cache.end_ip = end_ip;
+      edi->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
+      edi->di_cache.u.rti.name_ptr = 0;
       /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
-      ui->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
-      ui->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
-				       + (addr - (unw_word_t) ui->ei.image
+      edi->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
+      edi->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
+				       + (addr - (unw_word_t) edi->ei.image
 					  - peh_hdr->p_offset));
 
       /* For the binary-search table in the eh_frame_hdr, data-relative
 	 means relative to the start of that section... */
-      ui->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
-				    + ((unw_word_t) hdr - (unw_word_t) ui->ei.image
+      edi->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
+				    + ((unw_word_t) hdr - (unw_word_t) edi->ei.image
 				       - peh_hdr->p_offset));
       found = 1;
     }
@@ -338,19 +338,19 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 #if UNW_TARGET_ARM
   if (parm_exidx)
     {
-      ui->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
-      ui->di_arm.start_ip = start_ip;
-      ui->di_arm.end_ip = end_ip;
-      ui->di_arm.u.rti.name_ptr = (unw_word_t) path;
-      ui->di_arm.u.rti.table_data = load_base + parm_exidx->p_vaddr;
-      ui->di_arm.u.rti.table_len = parm_exidx->p_memsz;
+      edi->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
+      edi->di_arm.start_ip = start_ip;
+      edi->di_arm.end_ip = end_ip;
+      edi->di_arm.u.rti.name_ptr = (unw_word_t) path;
+      edi->di_arm.u.rti.table_data = load_base + parm_exidx->p_vaddr;
+      edi->di_arm.u.rti.table_len = parm_exidx->p_memsz;
       found = 1;
     }
 #endif
 
 #ifdef CONFIG_DEBUG_FRAME
   /* Try .debug_frame. */
-  found = dwarf_find_debug_frame (found, &ui->di_debug, ip, segbase, path,
+  found = dwarf_find_debug_frame (found, &edi->edi.di_debug, ip, segbase, path,
 				  start_ip, end_ip);
 #endif
 
@@ -360,72 +360,57 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 #endif /* UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_HPPA*/
 
 static int
-get_unwind_info (struct UPT_info *ui, unw_addr_space_t as, unw_word_t ip)
+get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_word_t ip)
 {
   unsigned long segbase, mapoff;
   char path[PATH_MAX];
 
 #if UNW_TARGET_IA64 && defined(__linux)
-  if (!ui->ktab.start_ip && _Uia64_get_kernel_table (&ui->ktab) < 0)
+  if (!edi->ktab.start_ip && _Uia64_get_kernel_table (&edi->ktab) < 0)
     return -UNW_ENOINFO;
 
-  if (ui->ktab.format != -1 && ip >= ui->ktab.start_ip && ip < ui->ktab.end_ip)
+  if (edi->ktab.format != -1 && ip >= edi->ktab.start_ip && ip < edi->ktab.end_ip)
     return 0;
 #endif
 
-  if ((ui->di_cache.format != -1
-       && ip >= ui->di_cache.start_ip && ip < ui->di_cache.end_ip)
+  if ((edi->di_cache.format != -1
+       && ip >= edi->di_cache.start_ip && ip < edi->di_cache.end_ip)
 #if UNW_TARGET_ARM
-      || (ui->di_debug.format != -1
-       && ip >= ui->di_arm.start_ip && ip < ui->di_arm.end_ip)
+      || (edi->di_debug.format != -1
+       && ip >= edi->di_arm.start_ip && ip < edi->di_arm.end_ip)
 #endif
-      || (ui->di_debug.format != -1
-       && ip >= ui->di_debug.start_ip && ip < ui->di_debug.end_ip))
+      || (edi->di_debug.format != -1
+       && ip >= edi->di_debug.start_ip && ip < edi->di_debug.end_ip))
     return 0;
 
-  if (ui->ei.image)
-    {
-      munmap (ui->ei.image, ui->ei.size);
-      ui->ei.image = NULL;
-      ui->ei.size = 0;
+  invalidate_edi(edi);
 
-      /* invalidate the cache: */
-      ui->di_cache.start_ip = ui->di_cache.end_ip = 0;
-      ui->di_debug.start_ip = ui->di_debug.end_ip = 0;
-      ui->di_cache.format = -1;
-      ui->di_debug.format = -1;
-#if UNW_TARGET_ARM
-      ui->di_arm.start_ip = ui->di_arm.end_ip = 0;
-      ui->di_arm.format = -1;
-#endif
-    }
-
-  if (tdep_get_elf_image (&ui->ei, ui->pid, ip, &segbase, &mapoff, path,
+  if (tdep_get_elf_image (&edi->ei, pid, ip, &segbase, &mapoff, path,
                           sizeof(path)) < 0)
     return -UNW_ENOINFO;
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  if (_UPTi_find_unwind_table (ui, as, path, segbase, mapoff, ip) < 0)
+  if (_UPTi_find_unwind_table (edi, as, path, segbase, mapoff, ip) < 0)
     return -UNW_ENOINFO;
 
   /* This can happen in corner cases where dynamically generated
      code falls into the same page that contains the data-segment
      and the page-offset of the code is within the first page of
      the executable.  */
-  if (ui->di_cache.format != -1
-      && (ip < ui->di_cache.start_ip || ip >= ui->di_cache.end_ip))
-     ui->di_cache.format = -1;
+  if (edi->di_cache.format != -1
+      && (ip < edi->di_cache.start_ip || ip >= edi->di_cache.end_ip))
+     edi->di_cache.format = -1;
 
-  if (ui->di_debug.format != -1
-      && (ip < ui->di_debug.start_ip || ip >= ui->di_debug.end_ip))
-     ui->di_debug.format = -1;
+  if (edi->di_debug.format != -1
+      && (ip < edi->di_debug.start_ip || ip >= edi->di_debug.end_ip))
+     edi->di_debug.format = -1;
 
-  if (ui->di_cache.format == -1
+  if (edi->di_cache.format == -1
 #if UNW_TARGET_ARM
-      && ui->di_arm.format == -1
+      && edi->di_arm.format == -1
 #endif
-      && ui->di_debug.format == -1)
+      && edi->di_debug.format == -1)
     return -UNW_ENOINFO;
 
   return 0;
@@ -438,11 +423,11 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   struct UPT_info *ui = arg;
   int ret = -UNW_ENOINFO;
 
-  if (get_unwind_info (ui, as, ip) < 0)
+  if (get_unwind_info (&ui->edi, ui->pid, as, ip) < 0)
     return -UNW_ENOINFO;
 
 #if UNW_TARGET_IA64
-  if (ui->ktab.format != -1)
+  if (ui->edi.ktab.format != -1)
     {
       /* The kernel unwind table resides in local memory, so we have
 	 to use the local address space to search it.  Since
@@ -450,7 +435,7 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 	 case, we simply make a copy of the unwind-info, so
 	 _UPT_put_unwind_info() can always free() the unwind-info
 	 without ill effects.  */
-      ret = tdep_search_unwind_table (unw_local_addr_space, ip, &ui->ktab, pi,
+      ret = tdep_search_unwind_table (unw_local_addr_space, ip, &ui->edi.ktab, pi,
 				      need_unwind_info, arg);
       if (ret >= 0)
 	{
@@ -469,18 +454,18 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
     }
 #endif
 
-  if (ret == -UNW_ENOINFO && ui->di_cache.format != -1)
-    ret = tdep_search_unwind_table (as, ip, &ui->di_cache,
+  if (ret == -UNW_ENOINFO && ui->edi.di_cache.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_cache,
 				    pi, need_unwind_info, arg);
 
 #if UNW_TARGET_ARM
-  if (ret == -UNW_ENOINFO && ui->di_arm.format != -1)
-    ret = tdep_search_unwind_table (as, ip, &ui->di_arm, pi,
+  if (ret == -UNW_ENOINFO && ui->edi.di_arm.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_arm, pi,
                                     need_unwind_info, arg);
 #endif
 
-  if (ret == -UNW_ENOINFO && ui->di_debug.format != -1)
-    ret = tdep_search_unwind_table (as, ip, &ui->di_debug, pi,
+  if (ret == -UNW_ENOINFO && ui->edi.di_debug.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
 				    need_unwind_info, arg);
 
   return ret;
