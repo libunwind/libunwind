@@ -45,8 +45,8 @@ endif #ARCH_IA64
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
-			Ltest-nomalloc Ltest-nocalloc rs-race    \
-            test-coredump-unwind
+			Ltest-nomalloc Ltest-nocalloc rs-race    	 \
+			test-coredump-unwind
  noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc			 \
 			Gperf-simple Lperf-simple
 
