@@ -91,6 +91,8 @@ struct UCD_info
     unsigned phdrs_count;
     void *note_phdr; /* allocated or NULL */
     struct PRSTATUS_STRUCT *prstatus; /* points inside note_phdr */
+    int n_threads;
+    struct PRSTATUS_STRUCT **threads;
 
     struct elf_dyn_info edi;
   };

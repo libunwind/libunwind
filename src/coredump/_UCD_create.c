@@ -206,6 +206,9 @@ _UCD_create(const char *filename)
 	Debug(2, "phdr[%03d]: type:%d", i, cur->p_type);
 	if (cur->p_type == PT_NOTE)
 	  {
+	    unsigned char *p, *note_end;
+	    unsigned n_threads;
+
 	    ui->note_phdr = malloc(cur->p_filesz);
 	    if (lseek(fd, cur->p_offset, SEEK_SET) != (off_t)cur->p_offset
 	     || (uoff_t)read(fd, ui->note_phdr, cur->p_filesz) != cur->p_filesz
@@ -215,33 +218,46 @@ _UCD_create(const char *filename)
 		goto err;
 	      }
 
-	    /* Note is three 32-bit words: */
-	    /* Elf32_Word n_namesz; Length of the note's name */
-	    /* Elf32_Word n_descsz; Length of the note's descriptor */
-	    /* Elf32_Word n_type;   Type */
-	    /* followed by name (padded to 32 bits(?)) and then descr */
-	    Elf32_Nhdr *note_hdr = ui->note_phdr;
-	    if (cur->p_filesz >= 3*4
-	     && note_hdr->n_type == NT_PRSTATUS
-	     && cur->p_filesz >= (3*4 + note_hdr->n_namesz + note_hdr->n_descsz + sizeof(*ui->prstatus))
-	    )
+	    note_end = (unsigned char *)ui->note_phdr + cur->p_filesz;
+
+	    /* Count number of threads */
+	    n_threads = 0;
+	    p = ui->note_phdr;
+	    while (p + sizeof (Elf32_Nhdr) <= note_end)
 	      {
-		ui->prstatus = (void*) ((((long)note_hdr + sizeof(*note_hdr) + note_hdr->n_namesz) + 3) & ~3L);
-#if 0
-		printf("pid:%d\n", ui->prstatus->pr_pid);
-		printf("ebx:%ld\n", (long)ui->prstatus->pr_reg[0]);
-		printf("ecx:%ld\n", (long)ui->prstatus->pr_reg[1]);
-		printf("edx:%ld\n", (long)ui->prstatus->pr_reg[2]);
-		printf("esi:%ld\n", (long)ui->prstatus->pr_reg[3]);
-		printf("edi:%ld\n", (long)ui->prstatus->pr_reg[4]);
-		printf("ebp:%ld\n", (long)ui->prstatus->pr_reg[5]);
-		printf("eax:%ld\n", (long)ui->prstatus->pr_reg[6]);
-		printf("xds:%ld\n", (long)ui->prstatus->pr_reg[7]);
-		printf("xes:%ld\n", (long)ui->prstatus->pr_reg[8]);
-		printf("xfs:%ld\n", (long)ui->prstatus->pr_reg[9]);
-		printf("xgs:%ld\n", (long)ui->prstatus->pr_reg[10]);
-		printf("orig_eax:%ld\n", (long)ui->prstatus->pr_reg[11]);
-#endif
+		Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
+		unsigned char *p_next;
+
+		p_next = p + sizeof (Elf32_Nhdr) + ((note_hdr->n_namesz + 3) & ~3L) + note_hdr->n_descsz;
+
+		if (p_next >= note_end)
+		  break;
+
+		if (note_hdr->n_type == NT_PRSTATUS)
+		  n_threads++;
+
+		p = p_next;
+	      }
+
+	    ui->n_threads = n_threads;
+	    ui->threads = malloc(sizeof (void *) * n_threads);
+
+	    n_threads = 0;
+	    p = ui->note_phdr;
+	    while (p + sizeof (Elf32_Nhdr) <= note_end)
+	      {
+		Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
+		unsigned char *p_next;
+
+		p_next = p + sizeof (Elf32_Nhdr) + ((note_hdr->n_namesz + 3) & ~3L) + note_hdr->n_descsz;
+
+		if (p_next >= note_end)
+		  break;
+
+		if (note_hdr->n_type == NT_PRSTATUS)
+		  ui->threads[n_threads++] = (void*) ((((long)note_hdr + sizeof(*note_hdr) + note_hdr->n_namesz) + 3) & ~3L);
+
+		p = p_next;
 	      }
 	  }
 	if (cur->p_type == PT_LOAD)
@@ -263,17 +279,30 @@ _UCD_create(const char *filename)
 	cur++;
       }
 
-    if (!ui->prstatus)
+    if (ui->n_threads == 0)
       {
 	Debug(0, "No NT_PRSTATUS note found in '%s'\n", filename);
 	goto err;
       }
+
+    ui->prstatus = ui->threads[0];
 
   return ui;
 
  err:
   _UCD_destroy(ui);
   return NULL;
+}
+
+int _UCD_get_num_threads(struct UCD_info *ui)
+{
+  return ui->n_threads;
+}
+
+void _UCD_select_thread(struct UCD_info *ui, int n)
+{
+  if (n >= 0 && n < ui->n_threads)
+    ui->prstatus = ui->threads[n];
 }
 
 pid_t _UCD_get_pid(struct UCD_info *ui)
