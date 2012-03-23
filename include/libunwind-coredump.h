@@ -40,6 +40,8 @@ struct UCD_info;
 extern struct UCD_info *_UCD_create(const char *filename);
 extern void _UCD_destroy(struct UCD_info *);
 
+extern pid_t _UCD_get_pid(struct UCD_info *);
+extern int _UCD_get_cursig(struct UCD_info *);
 extern int _UCD_add_backing_file_at_segment(struct UCD_info *, int phdr_no, const char *filename);
 extern int _UCD_add_backing_file_at_vaddr(struct UCD_info *,
 				          unsigned long vaddr,

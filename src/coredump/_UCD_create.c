@@ -276,6 +276,16 @@ _UCD_create(const char *filename)
   return NULL;
 }
 
+pid_t _UCD_get_pid(struct UCD_info *ui)
+{
+  return ui->prstatus->pr_pid;
+}
+
+int _UCD_get_cursig(struct UCD_info *ui)
+{
+  return ui->prstatus->pr_cursig;
+}
+
 int _UCD_add_backing_file_at_segment(struct UCD_info *ui, int phdr_no, const char *filename)
 {
   if ((unsigned)phdr_no >= ui->phdrs_count)
