@@ -122,15 +122,15 @@ _UCD_create(const char *filename)
   if (_64bits && sizeof(elf_header64.e_entry) > sizeof(off_t))
     {
       Debug(0, "Can't process '%s': 64-bit file "
-				"while only %ld bits are supported",
-				filename, 8L * sizeof(off_t));
+               "while only %ld bits are supported",
+            filename, 8L * sizeof(off_t));
       goto err;
     }
 
   /* paranoia check */
   if (_64bits
-	    ? 0 /* todo: (elf_header64.e_ehsize != NN || elf_header64.e_phentsize != NN) */
-	    : (elf_header32.e_ehsize != 52 || elf_header32.e_phentsize != 32)
+            ? 0 /* todo: (elf_header64.e_ehsize != NN || elf_header64.e_phentsize != NN) */
+            : (elf_header32.e_ehsize != 52 || elf_header32.e_phentsize != 32)
   )
     {
       Debug(0, "'%s' has wrong e_ehsize or e_phentsize\n", filename);
@@ -150,139 +150,143 @@ _UCD_create(const char *filename)
       coredump_phdr_t *cur = phdrs;
       unsigned i = 0;
       while (i < size)
-	{
+        {
           Elf64_Phdr hdr64;
-	  if (read(fd, &hdr64, sizeof(hdr64)) != sizeof(hdr64))
-	    {
-	      Debug(0, "Can't read phdrs from '%s'\n", filename);
-	      goto err;
-	    }
-	  cur->p_type   = hdr64.p_type  ;
-	  cur->p_flags  = hdr64.p_flags ;
-	  cur->p_offset = hdr64.p_offset;
-	  cur->p_vaddr  = hdr64.p_vaddr ;
-	  /*cur->p_paddr  = hdr32.p_paddr ; always 0 */
+          if (read(fd, &hdr64, sizeof(hdr64)) != sizeof(hdr64))
+            {
+              Debug(0, "Can't read phdrs from '%s'\n", filename);
+              goto err;
+            }
+          cur->p_type   = hdr64.p_type  ;
+          cur->p_flags  = hdr64.p_flags ;
+          cur->p_offset = hdr64.p_offset;
+          cur->p_vaddr  = hdr64.p_vaddr ;
+          /*cur->p_paddr  = hdr32.p_paddr ; always 0 */
 //TODO: check that and abort if it isn't?
-	  cur->p_filesz = hdr64.p_filesz;
-	  cur->p_memsz  = hdr64.p_memsz ;
-	  cur->p_align  = hdr64.p_align ;
-	  /* cur->backing_filename = NULL; - done by memset */
-	  cur->backing_fd = -1;
-	  cur->backing_filesize = hdr64.p_filesz;
-	  i++;
-	  cur++;
-	}
+          cur->p_filesz = hdr64.p_filesz;
+          cur->p_memsz  = hdr64.p_memsz ;
+          cur->p_align  = hdr64.p_align ;
+          /* cur->backing_filename = NULL; - done by memset */
+          cur->backing_fd = -1;
+          cur->backing_filesize = hdr64.p_filesz;
+          i++;
+          cur++;
+        }
     } else {
       coredump_phdr_t *cur = phdrs;
       unsigned i = 0;
       while (i < size)
-	{
-	  Elf32_Phdr hdr32;
-	  if (read(fd, &hdr32, sizeof(hdr32)) != sizeof(hdr32))
-	    {
-	      Debug(0, "Can't read phdrs from '%s'\n", filename);
-	      goto err;
-	    }
-	  cur->p_type   = hdr32.p_type  ;
-	  cur->p_flags  = hdr32.p_flags ;
-	  cur->p_offset = hdr32.p_offset;
-	  cur->p_vaddr  = hdr32.p_vaddr ;
-	  /*cur->p_paddr  = hdr32.p_paddr ; always 0 */
-	  cur->p_filesz = hdr32.p_filesz;
-	  cur->p_memsz  = hdr32.p_memsz ;
-	  cur->p_align  = hdr32.p_align ;
-	  /* cur->backing_filename = NULL; - done by memset */
-	  cur->backing_fd = -1;
-	  cur->backing_filesize = hdr32.p_memsz;
-	  i++;
-	  cur++;
-	}
+        {
+          Elf32_Phdr hdr32;
+          if (read(fd, &hdr32, sizeof(hdr32)) != sizeof(hdr32))
+            {
+              Debug(0, "Can't read phdrs from '%s'\n", filename);
+              goto err;
+            }
+          cur->p_type   = hdr32.p_type  ;
+          cur->p_flags  = hdr32.p_flags ;
+          cur->p_offset = hdr32.p_offset;
+          cur->p_vaddr  = hdr32.p_vaddr ;
+          /*cur->p_paddr  = hdr32.p_paddr ; always 0 */
+          cur->p_filesz = hdr32.p_filesz;
+          cur->p_memsz  = hdr32.p_memsz ;
+          cur->p_align  = hdr32.p_align ;
+          /* cur->backing_filename = NULL; - done by memset */
+          cur->backing_fd = -1;
+          cur->backing_filesize = hdr32.p_memsz;
+          i++;
+          cur++;
+        }
     }
 
     unsigned i = 0;
     coredump_phdr_t *cur = phdrs;
     while (i < size)
       {
-	Debug(2, "phdr[%03d]: type:%d", i, cur->p_type);
-	if (cur->p_type == PT_NOTE)
-	  {
-	    unsigned char *p, *note_end;
-	    unsigned n_threads;
+        Debug(2, "phdr[%03d]: type:%d", i, cur->p_type);
+        if (cur->p_type == PT_NOTE)
+          {
+            unsigned char *p, *note_end;
+            unsigned n_threads;
 
-	    ui->note_phdr = malloc(cur->p_filesz);
-	    if (lseek(fd, cur->p_offset, SEEK_SET) != (off_t)cur->p_offset
-	     || (uoff_t)read(fd, ui->note_phdr, cur->p_filesz) != cur->p_filesz
-	    )
-	      {
-		Debug(0, "Can't read PT_NOTE from '%s'\n", filename);
-		goto err;
-	      }
+            ui->note_phdr = malloc(cur->p_filesz);
+            if (lseek(fd, cur->p_offset, SEEK_SET) != (off_t)cur->p_offset
+             || (uoff_t)read(fd, ui->note_phdr, cur->p_filesz) != cur->p_filesz)
+              {
+                    Debug(0, "Can't read PT_NOTE from '%s'\n", filename);
+                    goto err;
+              }
 
-	    note_end = (unsigned char *)ui->note_phdr + cur->p_filesz;
+            note_end = (unsigned char *)ui->note_phdr + cur->p_filesz;
 
-	    /* Count number of threads */
-	    n_threads = 0;
-	    p = ui->note_phdr;
-	    while (p + sizeof (Elf32_Nhdr) <= note_end)
-	      {
-		Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
-		unsigned char *p_next;
+            /* Count number of threads */
+            n_threads = 0;
+            p = ui->note_phdr;
+            while (p + sizeof (Elf32_Nhdr) <= note_end)
+              {
+                Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
+                unsigned char *p_next;
 
-		p_next = p + sizeof (Elf32_Nhdr) + ((note_hdr->n_namesz + 3) & ~3L) + note_hdr->n_descsz;
+                p_next = p + sizeof (Elf32_Nhdr) 
+                         + ((note_hdr->n_namesz + 3) & ~3L) 
+                         + note_hdr->n_descsz;
 
-		if (p_next >= note_end)
-		  break;
+                if (p_next >= note_end)
+                  break;
 
-		if (note_hdr->n_type == NT_PRSTATUS)
-		  n_threads++;
+                if (note_hdr->n_type == NT_PRSTATUS)
+                  n_threads++;
 
-		p = p_next;
-	      }
+                p = p_next;
+              }
 
-	    ui->n_threads = n_threads;
-	    ui->threads = malloc(sizeof (void *) * n_threads);
+            ui->n_threads = n_threads;
+            ui->threads = malloc(sizeof (void *) * n_threads);
 
-	    n_threads = 0;
-	    p = ui->note_phdr;
-	    while (p + sizeof (Elf32_Nhdr) <= note_end)
-	      {
-		Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
-		unsigned char *p_next;
+            n_threads = 0;
+            p = ui->note_phdr;
+            while (p + sizeof (Elf32_Nhdr) <= note_end)
+              {
+                Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
+                unsigned char *p_next;
 
-		p_next = p + sizeof (Elf32_Nhdr) + ((note_hdr->n_namesz + 3) & ~3L) + note_hdr->n_descsz;
+                p_next = p + sizeof (Elf32_Nhdr) 
+                           + ((note_hdr->n_namesz + 3) & ~3L) 
+                           + note_hdr->n_descsz;
 
-		if (p_next >= note_end)
-		  break;
+                if (p_next >= note_end)
+                  break;
 
-		if (note_hdr->n_type == NT_PRSTATUS)
-		  ui->threads[n_threads++] = (void*) ((((long)note_hdr + sizeof(*note_hdr) + note_hdr->n_namesz) + 3) & ~3L);
+                if (note_hdr->n_type == NT_PRSTATUS)
+                  ui->threads[n_threads++] = (void*) ((((long)note_hdr
+                    + sizeof(*note_hdr) + note_hdr->n_namesz) + 3) & ~3L);
 
-		p = p_next;
-	      }
-	  }
-	if (cur->p_type == PT_LOAD)
-	  {
-	    Debug(2, " ofs:%08llx va:%08llx filesize:%08llx memsize:%08llx flg:%x",
-				(unsigned long long) cur->p_offset,
-				(unsigned long long) cur->p_vaddr,
-				(unsigned long long) cur->p_filesz,
-				(unsigned long long) cur->p_memsz,
-				cur->p_flags
-	    );
-	    if (cur->p_filesz < cur->p_memsz)
-	      Debug(2, " partial");
-	    if (cur->p_flags & PF_X)
-	      Debug(2, " executable");
-	  }
-	Debug(2, "\n");
-	i++;
-	cur++;
+                p = p_next;
+              }
+          }
+        if (cur->p_type == PT_LOAD)
+          {
+            Debug(2, " ofs:%08llx va:%08llx filesize:%08llx memsize:%08llx flg:%x",
+                                (unsigned long long) cur->p_offset,
+                                (unsigned long long) cur->p_vaddr,
+                                (unsigned long long) cur->p_filesz,
+                                (unsigned long long) cur->p_memsz,
+                                cur->p_flags
+            );
+            if (cur->p_filesz < cur->p_memsz)
+              Debug(2, " partial");
+            if (cur->p_flags & PF_X)
+              Debug(2, " executable");
+          }
+        Debug(2, "\n");
+        i++;
+        cur++;
       }
 
     if (ui->n_threads == 0)
       {
-	Debug(0, "No NT_PRSTATUS note found in '%s'\n", filename);
-	goto err;
+        Debug(0, "No NT_PRSTATUS note found in '%s'\n", filename);
+        goto err;
       }
 
     ui->prstatus = ui->threads[0];
@@ -355,9 +359,9 @@ int _UCD_add_backing_file_at_segment(struct UCD_info *ui, int phdr_no, const cha
     {
       /* This is expected */
       Debug(2, "Note: phdr[%u] is %lld bytes, file is larger: %lld bytes\n",
-			phdr_no,
-			(unsigned long long)phdr->p_memsz,
-			(unsigned long long)phdr->backing_filesize
+                        phdr_no,
+                        (unsigned long long)phdr->p_memsz,
+                        (unsigned long long)phdr->backing_filesize
       );
     }
 //TODO: else loudly complain? Maybe even fail?
@@ -370,31 +374,31 @@ int _UCD_add_backing_file_at_segment(struct UCD_info *ui, int phdr_no, const cha
       if (lseek(ui->coredump_fd, phdr->p_offset, SEEK_SET) != (off_t)phdr->p_offset
        || (uoff_t)read(ui->coredump_fd, core_buf, phdr->p_filesz) != phdr->p_filesz
       )
-	{
-	  Debug(0, "Error reading from coredump file\n");
+        {
+          Debug(0, "Error reading from coredump file\n");
  err_read:
-	  free(core_buf);
-	  free(file_buf);
-	  goto err;
-	}
+          free(core_buf);
+          free(file_buf);
+          goto err;
+        }
       if ((uoff_t)read(fd, file_buf, phdr->p_filesz) != phdr->p_filesz)
-	{
-	  Debug(0, "Error reading from '%s'\n", filename);
-	  goto err_read;
-	}
+        {
+          Debug(0, "Error reading from '%s'\n", filename);
+          goto err_read;
+        }
       int r = memcmp(core_buf, file_buf, phdr->p_filesz);
       free(core_buf);
       free(file_buf);
       if (r != 0)
-	{
-	  Debug(1, "Note: phdr[%u] first %lld bytes in core dump and in file do not match\n",
-				phdr_no, (unsigned long long)phdr->p_filesz
-	  );
-	} else {
-	  Debug(1, "Note: phdr[%u] first %lld bytes in core dump and in file match\n",
-				phdr_no, (unsigned long long)phdr->p_filesz
-	  );
-	}
+        {
+          Debug(1, "Note: phdr[%u] first %lld bytes in core dump and in file do not match\n",
+                                phdr_no, (unsigned long long)phdr->p_filesz
+          );
+        } else {
+          Debug(1, "Note: phdr[%u] first %lld bytes in core dump and in file match\n",
+                                phdr_no, (unsigned long long)phdr->p_filesz
+          );
+        }
     }
 
   /* Success */
@@ -412,8 +416,8 @@ int _UCD_add_backing_file_at_segment(struct UCD_info *ui, int phdr_no, const cha
 }
 
 int _UCD_add_backing_file_at_vaddr(struct UCD_info *ui,
-				          unsigned long vaddr,
-					  const char *filename)
+                                   unsigned long vaddr,
+                                   const char *filename)
 {
   unsigned i;
   for (i = 0; i < ui->phdrs_count; i++)
