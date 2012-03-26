@@ -66,6 +66,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "_UCD_lib.h"
 #include "_UCD_internal.h"
 
+#define NOTE_DATA(_hdr) STRUCT_MEMBER_P((_hdr), sizeof (Elf32_Nhdr) + ALIGN((_hdr)->n_namesz, 4))
+#define NOTE_SIZE(_hdr) (sizeof (Elf32_Nhdr) + ALIGN((_hdr)->n_namesz, 4) + (_hdr)->n_descsz)
+#define NOTE_NEXT(_hdr) STRUCT_MEMBER_P((_hdr), NOTE_SIZE(_hdr))
+#define NOTE_FITS_IN(_hdr, _size) ((_size) >= sizeof (Elf32_Nhdr) && (_size) >= NOTE_SIZE (_hdr))
+#define NOTE_FITS(_hdr, _end) NOTE_FITS_IN((_hdr), (unsigned long)((char *)(_end) - (char *)(_hdr)))
+
 struct UCD_info *
 _UCD_create(const char *filename)
 {
@@ -206,7 +212,7 @@ _UCD_create(const char *filename)
         Debug(2, "phdr[%03d]: type:%d", i, cur->p_type);
         if (cur->p_type == PT_NOTE)
           {
-            unsigned char *p, *note_end;
+            Elf32_Nhdr *note_hdr, *note_end;
             unsigned n_threads;
 
             ui->note_phdr = malloc(cur->p_filesz);
@@ -217,51 +223,30 @@ _UCD_create(const char *filename)
                     goto err;
               }
 
-            note_end = (unsigned char *)ui->note_phdr + cur->p_filesz;
+            note_end = STRUCT_MEMBER_P (ui->note_phdr, cur->p_filesz);
 
             /* Count number of threads */
             n_threads = 0;
-            p = ui->note_phdr;
-            while (p + sizeof (Elf32_Nhdr) <= note_end)
+            note_hdr = (Elf32_Nhdr *)ui->note_phdr;
+            while (NOTE_FITS (note_hdr, note_end))
               {
-                Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
-                unsigned char *p_next;
-
-                p_next = p + sizeof (Elf32_Nhdr) 
-                         + ((note_hdr->n_namesz + 3) & ~3L) 
-                         + note_hdr->n_descsz;
-
-                if (p_next >= note_end)
-                  break;
-
                 if (note_hdr->n_type == NT_PRSTATUS)
                   n_threads++;
 
-                p = p_next;
+                note_hdr = NOTE_NEXT (note_hdr);
               }
 
             ui->n_threads = n_threads;
             ui->threads = malloc(sizeof (void *) * n_threads);
 
             n_threads = 0;
-            p = ui->note_phdr;
-            while (p + sizeof (Elf32_Nhdr) <= note_end)
+            note_hdr = (Elf32_Nhdr *)ui->note_phdr;
+            while (NOTE_FITS (note_hdr, note_end))
               {
-                Elf32_Nhdr *note_hdr = (Elf32_Nhdr *)p;
-                unsigned char *p_next;
-
-                p_next = p + sizeof (Elf32_Nhdr) 
-                           + ((note_hdr->n_namesz + 3) & ~3L) 
-                           + note_hdr->n_descsz;
-
-                if (p_next >= note_end)
-                  break;
-
                 if (note_hdr->n_type == NT_PRSTATUS)
-                  ui->threads[n_threads++] = (void*) ((((long)note_hdr
-                    + sizeof(*note_hdr) + note_hdr->n_namesz) + 3) & ~3L);
+                  ui->threads[n_threads++] = NOTE_DATA (note_hdr);
 
-                p = p_next;
+                note_hdr = NOTE_NEXT (note_hdr);
               }
           }
         if (cur->p_type == PT_LOAD)
