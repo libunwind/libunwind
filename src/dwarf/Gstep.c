@@ -33,7 +33,7 @@ dwarf_step (struct dwarf_cursor *c)
 
   if ((ret = dwarf_find_save_locs (c)) >= 0) {
     c->pi_valid = 0;
-    ret = (c->ip == 0) ? 0 : 1;
+    ret = 1;
   }
 
   Debug (15, "returning %d\n", ret);

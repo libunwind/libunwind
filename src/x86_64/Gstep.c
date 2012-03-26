@@ -213,7 +213,6 @@ unw_step (unw_cursor_t *cursor)
       if (c->dwarf.ip == prev_ip && c->dwarf.cfa == prev_cfa)
 	return -UNW_EBADFRAME;
     }
-  ret = (c->dwarf.ip == 0) ? 0 : 1;
   Debug (2, "returning %d\n", ret);
   return ret;
 }
