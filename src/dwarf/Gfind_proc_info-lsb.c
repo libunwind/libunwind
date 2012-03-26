@@ -776,7 +776,7 @@ lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
     {
       mid = (lo + hi) / 2;
       e = table + mid;
-      Debug (1, "e->start_ip_offset = %lx\n", (long) e->start_ip_offset);
+      Debug (15, "e->start_ip_offset = %lx\n", (long) e->start_ip_offset);
       if (rel_ip < e->start_ip_offset)
 	hi = mid;
       else
