@@ -510,6 +510,7 @@ flush_rs_cache (struct dwarf_rs_cache *cache)
 	cache->buckets[i].lru_chain = (i - 1);
       cache->buckets[i].coll_chain = -1;
       cache->buckets[i].ip = 0;
+      cache->buckets[i].valid = 0;
     }
   for (i = 0; i<DWARF_UNW_HASH_SIZE; ++i)
     cache->hash[i] = -1;
@@ -562,7 +563,7 @@ hash (unw_word_t ip)
 static inline long
 cache_match (dwarf_reg_state_t *rs, unw_word_t ip)
 {
-  if (ip == rs->ip)
+  if (rs->valid && (ip == rs->ip))
     return 1;
   return 0;
 }
@@ -646,6 +647,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 
   rs->hint = 0;
   rs->ip = c->ip;
+  rs->valid = 1;
   rs->ret_addr_column = c->ret_addr_column;
   rs->signal_frame = 0;
   tdep_cache_frame (c, rs);

@@ -251,7 +251,8 @@ typedef struct dwarf_reg_state
     unsigned short lru_chain;	  /* used for least-recently-used chain */
     unsigned short coll_chain;	/* used for hash collisions */
     unsigned short hint;	      /* hint for next rs to try (or -1) */
-    unsigned short signal_frame; /* optional machine-dependent signal info */
+    unsigned short valid : 1;         /* optional machine-dependent signal info */
+    unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
   }
 dwarf_reg_state_t;
 
