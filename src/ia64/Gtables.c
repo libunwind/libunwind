@@ -255,6 +255,7 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
   unw_word_t addr, hdr_addr, info_addr, info_end_addr, hdr, *wp;
   const struct ia64_table_entry *e = NULL;
   unw_word_t handler_offset, segbase = 0;
+  struct ia64_table_entry ent;
   int ret, is_local;
 
   assert ((di->format == UNW_INFO_FORMAT_TABLE
@@ -275,8 +276,6 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
 #ifndef UNW_LOCAL_ONLY
   else
     {
-      struct ia64_table_entry ent;
-
       segbase = di->u.rti.segbase;
       if ((ret = remote_lookup (as, di->u.rti.table_data,
 				di->u.rti.table_len * sizeof (unw_word_t),
