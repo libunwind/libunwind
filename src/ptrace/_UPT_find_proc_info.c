@@ -147,7 +147,7 @@ _UPTi_find_unwind_table (struct UPT_info *ui, unw_addr_space_t as,
 }
 
 #elif UNW_TARGET_X86 || UNW_TARGET_X86_64 || UNW_TARGET_HPPA \
-|| UNW_TARGET_PPC32 || UNW_TARGET_PPC64 || UNW_TARGET_ARM
+|| UNW_TARGET_PPC32 || UNW_TARGET_PPC64 || UNW_TARGET_ARM || UNW_TARGET_MIPS
 
 #include "dwarf-eh.h"
 #include "dwarf_i.h"
