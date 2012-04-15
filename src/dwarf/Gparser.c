@@ -785,7 +785,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 
 	case DWARF_WHERE_EXPR:
 	  addr = rs->reg[i].val;
-	  if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) , 0)
+	  if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
 	    return ret;
 	  break;
 	}
