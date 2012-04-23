@@ -82,7 +82,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
      if (ip < kv->kve_start || ip >= kv->kve_end)
        continue;
      if (kv->kve_type != KVME_TYPE_VNODE)
-       break;
+       continue;
      *segbase = kv->kve_start;
      *mapoff = kv->kve_offset;
      if (path)
