@@ -69,14 +69,14 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   len1 = len * 4 / 3;
   buf = get_mem(len1);
   if (buf == NULL)
-    return (-1);
+    return (-UNW_EUNSPEC);
   len = len1;
   error = sysctl(mib, 4, buf, &len, NULL, 0);
-  if (error) {
+  if (error == -1) {
     free_mem(buf, len1);
-    return (-1);
+    return (-UNW_EUNSPEC);
   }
-  ret = -1;
+  ret = -UNW_EUNSPEC;
   for (bp = buf, eb = buf + len; bp < eb; bp += kv->kve_structsize) {
      kv = (struct kinfo_vmentry *)(uintptr_t)bp;
      if (ip < kv->kve_start || ip >= kv->kve_end)
