@@ -77,8 +77,9 @@ eb fd			jmp	0b
   */
   if ((ret = (*a->access_mem) (as, ip - 5, &b0, 0, arg)) < 0)
     return (0);
-  b0 &= 0xffffffffff;
-  if (b0 == 0x000000050fca8949)
+  Debug (12, "b0 0x%lx\n", b0);
+  if ((b0 & 0xffffffffffffff) == 0x050fca89490000 ||
+      (b0 & 0xffffffffff) == 0x050fca8949)
    {
     c->sigcontext_format = X86_64_SCF_FREEBSD_SYSCALL;
     return (c->sigcontext_format);
