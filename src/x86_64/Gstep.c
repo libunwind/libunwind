@@ -85,7 +85,10 @@ unw_step (unw_cursor_t *cursor)
       /* x86_64 ABI specifies that end of call-chain is marked with a
 	 NULL RBP.  */
       if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
-	c->dwarf.ip = 0;
+	{
+	  c->dwarf.ip = 0;
+	  ret = 0;
+	}
     }
   else
     {
@@ -206,6 +209,7 @@ unw_step (unw_cursor_t *cursor)
 	      Debug (2, "returning %d\n", ret);
 	      return ret;
 	    }
+	  ret = 1;
 	}
       else
 	c->dwarf.ip = 0;
