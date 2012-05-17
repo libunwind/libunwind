@@ -1,0 +1,20 @@
+#!/bin/sh
+
+TESTDIR=`pwd`
+TEMPDIR=`mktemp -d`
+
+# create core dump
+(
+    cd $TEMPDIR
+    ulimit -c 10000
+    $TESTDIR/crasher $TEMPDIR/backing_files
+) 2>/dev/null
+COREFILE=$TEMPDIR/core*
+
+# fail if any command fails
+set -e
+
+# magic option -testcase enables checking for the specific contents of the stack
+./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+
+rm -r -- $TEMPDIR

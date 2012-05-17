@@ -10,11 +10,13 @@
  *    -oexample-core-unwind
  *
  * Run:
- * objdump -sx COREDUMP
  * eu-unstrip -n --core COREDUMP
- *   figure out which segments in COREDUMP correspond to which mapped executable files
+ *   figure out which virtual addresses in COREDUMP correspond to which mapped executable files
  *   (binary and libraries), then supply them like this:
- * ./example-core-unwind COREDUMP 3:/bin/crashed_program 6:/lib/libc.so.6 [...]
+ * ./example-core-unwind COREDUMP 0x400000:/bin/crashed_program 0x3458600000:/lib/libc.so.6 [...]
+ *
+ * Note: Program eu-unstrip is part of elfutils, virtual addresses of shared
+ * libraries can be determined by ldd (at least on linux).
  */
 
 #undef _GNU_SOURCE
@@ -207,11 +209,11 @@ void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
 
   uc = ucontext;
 #if defined(__linux__)
-#ifdef TARGET_X86
+#ifdef UNW_TARGET_X86
 	ip = uc->uc_mcontext.gregs[REG_EIP];
-#elif defined(TARGET_X86_64)
+#elif defined(UNW_TARGET_X86_64)
 	ip = uc->uc_mcontext.gregs[REG_RIP];
-#elif defined(TARGET_ARM)
+#elif defined(UNW_TARGET_ARM)
 	ip = uc->uc_mcontext.arm_ip;
 #endif
 #elif defined(__FreeBSD__)
@@ -266,6 +268,11 @@ main(int argc, char **argv)
   unw_cursor_t c;
   int ret;
 
+#define TEST_FRAMES 4
+  int testcase = 0;
+  int test_cur = 0;
+  long test_start_ips[TEST_FRAMES];
+
   install_sigsegv_handler();
 
   const char *progname = strrchr(argv[0], '/');
@@ -275,7 +282,7 @@ main(int argc, char **argv)
     progname = argv[0];
 
   if (!argv[1])
-    error_msg_and_die("Usage: %s COREDUMP [SEGMENT_NO:BINARY_FILE]...", progname);
+    error_msg_and_die("Usage: %s COREDUMP [VADDR:BINARY_FILE]...", progname);
 
   msg_prefix = progname;
 
@@ -291,16 +298,23 @@ main(int argc, char **argv)
     error_msg_and_die("unw_init_remote() failed: ret=%d\n", ret);
 
   argv += 2;
+
+  /* Enable checks for the crasher test program? */
+  if (*argv && !strcmp(*argv, "-testcase"))
+  {
+    testcase = 1;
+    logmode = LOGMODE_NONE;
+    argv++;
+  }
+
   while (*argv)
     {
-      char *colon = strchr(*argv, ':');
-      if (!colon)
+      char *colon;
+      long vaddr = strtol(*argv, &colon, 16);
+      if (*colon != ':')
         error_msg_and_die("Bad format: '%s'", *argv);
-      *colon = '\0';
-      unsigned n = atoi(*argv);
-      *colon = ':';
-      if (_UCD_add_backing_file_at_segment(ui, n, colon + 1) < 0)
-        error_msg_and_die("Can't add backing file '%s'", *argv);
+      if (_UCD_add_backing_file_at_vaddr(ui, vaddr, colon + 1) < 0)
+        error_msg_and_die("Can't add backing file '%s'", colon + 1);
       argv++;
     }
 
@@ -315,10 +329,18 @@ main(int argc, char **argv)
       ret = unw_get_proc_info(&c, &pi);
       if (ret < 0)
         error_msg_and_die("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
-      printf("\tip=0x%08lx proc=%08lx-%08lx handler=0x%08lx lsda=0x%08lx\n",
+
+      if (!testcase)
+        printf("\tip=0x%08lx proc=%08lx-%08lx handler=0x%08lx lsda=0x%08lx\n",
 				(long) ip,
 				(long) pi.start_ip, (long) pi.end_ip,
 				(long) pi.handler, (long) pi.lsda);
+
+      if (testcase && test_cur < TEST_FRAMES)
+        {
+           test_start_ips[test_cur] = (long) pi.start_ip;
+           test_cur++;
+        }
 
       log("step");
       ret = unw_step(&c);
@@ -329,6 +351,20 @@ main(int argc, char **argv)
         break;
     }
   log("stepping ended");
+
+  /* Check that the second and third frames are equal, but distinct of the
+   * others */
+  if (testcase &&
+       (test_cur != 4
+       || test_start_ips[1] != test_start_ips[2]
+       || test_start_ips[0] == test_start_ips[1]
+       || test_start_ips[2] == test_start_ips[3]
+       )
+     )
+    {
+      fprintf(stderr, "FAILURE: start IPs incorrect\n");
+      return -1;
+    }
 
   _UCD_destroy(ui);
 

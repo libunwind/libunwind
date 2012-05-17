@@ -38,10 +38,12 @@ tests/Ltest-nomalloc
 tests/Ltest-nocalloc
 tests/Lperf-simple
 tests/check-namespace.sh
+tests/crasher
 tests/forker
 tests/mapper
 tests/rs-race
 tests/test-async-sig
+tests/test-coredump-unwind
 tests/test-flush-cache
 tests/test-init-remote
 tests/test-mem

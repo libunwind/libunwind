@@ -1,8 +1,8 @@
 AM_CPPFLAGS = -I$(top_srcdir)/include
 
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
-		run-check-namespace check-namespace.sh.in Gtest-nomalloc.c \
-		Gtest-nocalloc.c
+		run-check-namespace run-coredump-unwind \
+		check-namespace.sh.in Gtest-nomalloc.c Gtest-nocalloc.c
 
 MAINTAINERCLEANFILES = Makefile.in
 
@@ -45,9 +45,8 @@ endif #ARCH_IA64
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace		 \
-			Ltest-nomalloc Ltest-nocalloc rs-race    	 \
-			test-coredump-unwind
- noinst_PROGRAMS_cdep = forker mapper test-ptrace-misc			 \
+			Ltest-nomalloc Ltest-nocalloc rs-race
+ noinst_PROGRAMS_cdep = forker crasher mapper test-ptrace-misc		 \
 			Gperf-simple Lperf-simple
 
 if HAVE_BACKTRACE
@@ -56,6 +55,11 @@ endif
 
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
+endif
+
+if OS_LINUX
+ check_SCRIPTS_cdep += run-coredump-unwind
+ noinst_PROGRAMS_cdep += test-coredump-unwind
 endif
 
 perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
@@ -110,6 +114,10 @@ Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
+
+# prevent function inlining
+crasher: crasher.c
+	$(CC) -O0 -o crasher crasher.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
