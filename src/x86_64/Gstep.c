@@ -209,6 +209,7 @@ unw_step (unw_cursor_t *cursor)
 	      Debug (2, "returning %d\n", ret);
 	      return ret;
 	    }
+	  ret = 1;
 	}
       else
 	c->dwarf.ip = 0;
