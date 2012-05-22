@@ -30,9 +30,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/mman.h>
 
 #include "libunwind_i.h"
-
-#if UNW_TARGET_IA64
-
 #include "elf64.h"
 
 static unw_word_t

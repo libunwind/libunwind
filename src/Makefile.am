@@ -191,7 +191,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
 	ia64/Lglobal.c ia64/Linit.c ia64/Linit_local.c ia64/Linit_remote.c   \
 	ia64/Linstall_cursor.S ia64/Lis_signal_frame.c ia64/Lparser.c	     \
 	ia64/Lrbs.c ia64/Lregs.c ia64/Lresume.c ia64/Lscript.c ia64/Lstep.c  \
-	ia64/Ltables.c ia64/Lfind_unwind_tables.c
+	ia64/Ltables.c ia64/Lfind_unwind_table.c
 
 # The list of files that go into libunwind-ia64:
 libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
@@ -200,7 +200,7 @@ libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
 	ia64/Gglobal.c ia64/Ginit.c ia64/Ginit_local.c ia64/Ginit_remote.c   \
 	ia64/Ginstall_cursor.S ia64/Gis_signal_frame.c ia64/Gparser.c	     \
 	ia64/Grbs.c ia64/Gregs.c ia64/Gresume.c ia64/Gscript.c ia64/Gstep.c  \
-	ia64/Gtables.c ia64/Gfind_unwind_tables.c
+	ia64/Gtables.c ia64/Gfind_unwind_table.c
 
 # The list of files that go both into libunwind and libunwind-hppa:
 noinst_HEADERS += hppa/init.h hppa/offsets.h hppa/unwind_i.h

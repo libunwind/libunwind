@@ -64,7 +64,7 @@ get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_w
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  if (dwarf_find_unwind_table (edi, as, path, segbase, mapoff, ip) < 0)
+  if (tdep_find_unwind_table (edi, as, path, segbase, mapoff, ip) < 0)
     return -UNW_ENOINFO;
 
   /* This can happen in corner cases where dynamically generated
