@@ -1,4 +1,6 @@
-include_HEADERS = include/libunwind-dynamic.h include/libunwind-ptrace.h
+include_HEADERS = include/libunwind-dynamic.h \
+    include/libunwind-ptrace.h \
+    include/libunwind-coredump.h
 
 if ARCH_ARM
 include_HEADERS += include/libunwind-arm.h

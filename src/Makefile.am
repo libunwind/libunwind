@@ -8,7 +8,7 @@ COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 lib_LIBRARIES =
 lib_LTLIBRARIES =
 if !REMOTE_ONLY
-lib_LIBRARIES += libunwind-ptrace.a
+lib_LIBRARIES += libunwind-ptrace.a libunwind-coredump.a
 lib_LTLIBRARIES += libunwind.la
 endif
 
@@ -25,6 +25,23 @@ libunwind_ptrace_a_SOURCES =						  \
 	ptrace/_UPT_put_unwind_info.c ptrace/_UPT_get_proc_name.c	  \
 	ptrace/_UPT_reg_offset.c ptrace/_UPT_resume.c
 noinst_HEADERS += ptrace/_UPT_internal.h
+
+### libunwind-coredump:
+libunwind_coredump_a_SOURCES = \
+	coredump/_UCD_accessors.c \
+	coredump/_UCD_create.c \
+	coredump/_UCD_destroy.c \
+	coredump/_UCD_access_mem.c \
+	coredump/_UCD_elf_map_image.c \
+	coredump/_UCD_find_proc_info.c \
+	coredump/_UCD_get_proc_name.c \
+	\
+	coredump/_UPT_elf.c \
+	coredump/_UPT_access_fpreg.c \
+	coredump/_UPT_get_dyn_info_list_addr.c \
+	coredump/_UPT_put_unwind_info.c \
+	coredump/_UPT_resume.c
+noinst_HEADERS += coredump/_UCD_internal.h
 
 ### libunwind-setjmp:
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
@@ -109,12 +126,14 @@ libunwind_dwarf_common_la_SOURCES = dwarf/global.c
 
 libunwind_dwarf_local_la_SOURCES = \
 	dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c dwarf/Lpe.c dwarf/Lstep.c \
-        dwarf/Lfind_proc_info-lsb.c
+	dwarf/Lfind_proc_info-lsb.c \
+	dwarf/Lfind_unwind_table.c
 libunwind_dwarf_local_la_LIBADD = libunwind-dwarf-common.la
 
 libunwind_dwarf_generic_la_SOURCES = \
 	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c \
-        dwarf/Gfind_proc_info-lsb.c
+	dwarf/Gfind_proc_info-lsb.c \
+	dwarf/Gfind_unwind_table.c
 libunwind_dwarf_generic_la_LIBADD = libunwind-dwarf-common.la
 
 if USE_DWARF
@@ -172,7 +191,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
 	ia64/Lglobal.c ia64/Linit.c ia64/Linit_local.c ia64/Linit_remote.c   \
 	ia64/Linstall_cursor.S ia64/Lis_signal_frame.c ia64/Lparser.c	     \
 	ia64/Lrbs.c ia64/Lregs.c ia64/Lresume.c ia64/Lscript.c ia64/Lstep.c  \
-	ia64/Ltables.c
+	ia64/Ltables.c ia64/Lfind_unwind_tables.c
 
 # The list of files that go into libunwind-ia64:
 libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
@@ -181,7 +200,7 @@ libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
 	ia64/Gglobal.c ia64/Ginit.c ia64/Ginit_local.c ia64/Ginit_remote.c   \
 	ia64/Ginstall_cursor.S ia64/Gis_signal_frame.c ia64/Gparser.c	     \
 	ia64/Grbs.c ia64/Gregs.c ia64/Gresume.c ia64/Gscript.c ia64/Gstep.c  \
-	ia64/Gtables.c
+	ia64/Gtables.c ia64/Gfind_unwind_tables.c
 
 # The list of files that go both into libunwind and libunwind-hppa:
 noinst_HEADERS += hppa/init.h hppa/offsets.h hppa/unwind_i.h
@@ -346,6 +365,7 @@ if OS_LINUX
  libunwind_la_SOURCES_x86_os_local    = x86/Los-linux.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
+ libunwind_coredump_a_SOURCES += coredump/_UCD_access_reg_linux.c
 endif
 
 if OS_HPUX
@@ -361,6 +381,7 @@ if OS_FREEBSD
  libunwind_la_SOURCES_x86_os_local    = x86/Los-freebsd.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-freebsd.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
+ libunwind_coredump_a_SOURCES += coredump/_UCD_access_reg_freebsd.c
 endif
 
 if ARCH_ARM

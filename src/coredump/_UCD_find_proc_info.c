@@ -1,6 +1,4 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -24,89 +22,107 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <elf.h>
-#include <fcntl.h>
-#include <string.h>
-#include <unistd.h>
 
-#include <sys/mman.h>
-
-#include "_UPT_internal.h"
+#include "_UCD_lib.h"
+#include "_UCD_internal.h"
 
 static int
-get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_word_t ip)
+get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
 {
   unsigned long segbase, mapoff;
-  char path[PATH_MAX];
 
 #if UNW_TARGET_IA64 && defined(__linux)
-  if (!edi->ktab.start_ip && _Uia64_get_kernel_table (&edi->ktab) < 0)
+  if (!ui->edi.ktab.start_ip && _Uia64_get_kernel_table (&ui->edi.ktab) < 0)
     return -UNW_ENOINFO;
 
-  if (edi->ktab.format != -1 && ip >= edi->ktab.start_ip && ip < edi->ktab.end_ip)
+  if (ui->edi.ktab.format != -1 && ip >= ui->edi.ktab.start_ip && ip < ui->edi.ktab.end_ip)
     return 0;
 #endif
 
-  if ((edi->di_cache.format != -1
-       && ip >= edi->di_cache.start_ip && ip < edi->di_cache.end_ip)
+  if ((ui->edi.di_cache.format != -1
+       && ip >= ui->edi.di_cache.start_ip && ip < ui->edi.di_cache.end_ip)
 #if UNW_TARGET_ARM
-      || (edi->di_debug.format != -1
-       && ip >= edi->di_arm.start_ip && ip < edi->di_arm.end_ip)
+      || (ui->edi.di_debug.format != -1
+       && ip >= ui->edi.di_arm.start_ip && ip < ui->edi.di_arm.end_ip)
 #endif
-      || (edi->di_debug.format != -1
-       && ip >= edi->di_debug.start_ip && ip < edi->di_debug.end_ip))
+      || (ui->edi.di_debug.format != -1
+       && ip >= ui->edi.di_debug.start_ip && ip < ui->edi.di_debug.end_ip))
     return 0;
 
-  invalidate_edi(edi);
+  invalidate_edi (&ui->edi);
 
-  if (tdep_get_elf_image (&edi->ei, pid, ip, &segbase, &mapoff, path,
-                          sizeof(path)) < 0)
-    return -UNW_ENOINFO;
+  /* Used to be tdep_get_elf_image() in ptrace unwinding code */
+  coredump_phdr_t *phdr = _UCD_get_elf_image(ui, ip);
+  if (!phdr)
+    {
+      Debug(1, "%s returns error: _UCD_get_elf_image failed\n", __func__);
+      return -UNW_ENOINFO;
+    }
+  /* segbase: where it is mapped in virtual memory */
+  /* mapoff: offset in the file */
+  segbase = phdr->p_vaddr;
+  /*mapoff  = phdr->p_offset; WRONG! phdr->p_offset is the offset in COREDUMP file */
+  mapoff  = 0;
+///FIXME. text segment is USUALLY, not always, at offset 0 in the binary/.so file.
+// ensure that at initialization.
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  if (dwarf_find_unwind_table (edi, as, path, segbase, mapoff, ip) < 0)
-    return -UNW_ENOINFO;
+  if (dwarf_find_unwind_table(&ui->edi, as, phdr->backing_filename, segbase, mapoff, ip) < 0)
+    {
+      Debug(1, "%s returns error: dwarf_find_unwind_table failed\n", __func__);
+      return -UNW_ENOINFO;
+    }
 
   /* This can happen in corner cases where dynamically generated
      code falls into the same page that contains the data-segment
      and the page-offset of the code is within the first page of
      the executable.  */
-  if (edi->di_cache.format != -1
-      && (ip < edi->di_cache.start_ip || ip >= edi->di_cache.end_ip))
-     edi->di_cache.format = -1;
+  if (ui->edi.di_cache.format != -1
+      && (ip < ui->edi.di_cache.start_ip || ip >= ui->edi.di_cache.end_ip))
+     ui->edi.di_cache.format = -1;
 
-  if (edi->di_debug.format != -1
-      && (ip < edi->di_debug.start_ip || ip >= edi->di_debug.end_ip))
-     edi->di_debug.format = -1;
+  if (ui->edi.di_debug.format != -1
+      && (ip < ui->edi.di_debug.start_ip || ip >= ui->edi.di_debug.end_ip))
+     ui->edi.di_debug.format = -1;
 
-  if (edi->di_cache.format == -1
+  if (ui->edi.di_cache.format == -1
 #if UNW_TARGET_ARM
-      && edi->di_arm.format == -1
+      && ui->edi.di_arm.format == -1
 #endif
-      && edi->di_debug.format == -1)
+      && ui->edi.di_debug.format == -1)
+  {
+    Debug(1, "%s returns error: all formats are -1\n", __func__);
     return -UNW_ENOINFO;
+  }
 
+  Debug(1, "%s returns success\n", __func__);
   return 0;
 }
 
 int
-_UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
+_UCD_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 		     int need_unwind_info, void *arg)
 {
-  struct UPT_info *ui = arg;
+  struct UCD_info *ui = arg;
+
+  Debug(1, "%s: entering\n", __func__);
+
   int ret = -UNW_ENOINFO;
 
-  if (get_unwind_info (&ui->edi, ui->pid, as, ip) < 0)
+  if (get_unwind_info(ui, as, ip) < 0) {
+    Debug(1, "%s returns error: get_unwind_info failed\n", __func__);
     return -UNW_ENOINFO;
+  }
 
 #if UNW_TARGET_IA64
   if (ui->edi.ktab.format != -1)
     {
       /* The kernel unwind table resides in local memory, so we have
 	 to use the local address space to search it.  Since
-	 _UPT_put_unwind_info() has no easy way of detecting this
+	 _UCD_put_unwind_info() has no easy way of detecting this
 	 case, we simply make a copy of the unwind-info, so
-	 _UPT_put_unwind_info() can always free() the unwind-info
+	 _UCD_put_unwind_info() can always free() the unwind-info
 	 without ill effects.  */
       ret = tdep_search_unwind_table (unw_local_addr_space, ip, &ui->edi.ktab, pi,
 				      need_unwind_info, arg);
@@ -140,6 +156,8 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   if (ret == -UNW_ENOINFO && ui->edi.di_debug.format != -1)
     ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
 				    need_unwind_info, arg);
+
+  Debug(1, "%s: returns %d\n", __func__, ret);
 
   return ret;
 }

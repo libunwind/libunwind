@@ -1,6 +1,4 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -23,12 +21,37 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "_UPT_internal.h"
+#ifndef _UCD_lib_h
+#define _UCD_lib_h
 
-void
-_UPT_destroy (void *ptr)
-{
-  struct UPT_info *ui = (struct UPT_info *) ptr;
-  invalidate_edi (&ui->edi);
-  free (ptr);
-}
+#include <assert.h>
+#include <ctype.h>
+#include <dirent.h>
+#include <errno.h>
+#include <fcntl.h>
+#include <inttypes.h>
+#include <setjmp.h>
+#include <signal.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <stdarg.h>
+#include <stddef.h>
+#include <string.h>
+#include <sys/poll.h>
+#include <sys/mman.h>
+#include <sys/socket.h>
+#include <sys/stat.h>
+#include <sys/time.h>
+#include <sys/types.h>
+#include <sys/wait.h>
+#include <termios.h>
+#include <time.h>
+#include <unistd.h>
+#include <stdbool.h>
+#include <limits.h>
+#include <sys/param.h>
+#include <pwd.h>
+#include <grp.h>
+#include <syslog.h>
+
+#endif

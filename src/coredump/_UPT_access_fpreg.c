@@ -1,6 +1,4 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -23,12 +21,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "_UPT_internal.h"
+#include "_UCD_lib.h"
+#include "_UCD_internal.h"
 
-void
-_UPT_destroy (void *ptr)
+int
+_UCD_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+		   int write, void *arg)
 {
-  struct UPT_info *ui = (struct UPT_info *) ptr;
-  invalidate_edi (&ui->edi);
-  free (ptr);
+  print_error (__func__);
+  print_error (" not implemented\n");
+  return -UNW_EINVAL;
 }

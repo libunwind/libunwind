@@ -37,6 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 
 struct dwarf_cursor;	/* forward-declaration */
+struct elf_dyn_info;
 
 #include "dwarf-config.h"
 #ifndef UNW_REMOTE_ONLY
@@ -369,6 +370,7 @@ struct dwarf_callback_data
 #define dwarf_find_proc_info		UNW_OBJ (dwarf_find_proc_info)
 #define dwarf_find_debug_frame		UNW_OBJ (dwarf_find_debug_frame)
 #define dwarf_search_unwind_table	UNW_OBJ (dwarf_search_unwind_table)
+#define dwarf_find_unwind_table		UNW_OBJ (dwarf_find_unwind_table)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_put_unwind_info		UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_eval_expr			UNW_OBJ (dwarf_eval_expr)
@@ -396,6 +398,9 @@ extern int dwarf_search_unwind_table (unw_addr_space_t as,
 				      unw_dyn_info_t *di,
 				      unw_proc_info_t *pi,
 				      int need_unwind_info, void *arg);
+extern int dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
+				    char *path, unw_word_t segbase, unw_word_t mapoff,
+				    unw_word_t ip);
 extern void dwarf_put_unwind_info (unw_addr_space_t as,
 				   unw_proc_info_t *pi, void *arg);
 extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr,

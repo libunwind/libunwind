@@ -1,6 +1,4 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -23,12 +21,30 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "_UPT_internal.h"
+#include "_UCD_internal.h"
 
 void
-_UPT_destroy (void *ptr)
+_UCD_destroy (struct UCD_info *ui)
 {
-  struct UPT_info *ui = (struct UPT_info *) ptr;
+  if (!ui)
+    return;
+
+  if (ui->coredump_fd >= 0)
+    close(ui->coredump_fd);
+  free(ui->coredump_filename);
+
   invalidate_edi (&ui->edi);
-  free (ptr);
+
+  unsigned i;
+  for (i = 0; i < ui->phdrs_count; i++)
+    {
+      struct coredump_phdr *phdr = &ui->phdrs[i];
+      free(phdr->backing_filename);
+      if (phdr->backing_fd >= 0)
+        close(phdr->backing_fd);
+    }
+
+  free(ui->note_phdr);
+
+  free(ui);
 }

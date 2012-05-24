@@ -48,6 +48,18 @@ extern int elf_w (get_proc_name) (unw_addr_space_t as,
 				  char *buf, size_t len,
 				  unw_word_t *offp);
 
+extern int elf_w (get_proc_name_in_image) (unw_addr_space_t as,
+					   struct elf_image *ei,
+					   unsigned long segbase,
+					   unsigned long mapoff,
+					   unw_word_t ip,
+					   char *buf, size_t buf_len, unw_word_t *offp);
+
+extern int elf_w (get_proc_name) (unw_addr_space_t as,
+				  pid_t pid, unw_word_t ip,
+				  char *buf, size_t len,
+				  unw_word_t *offp);
+
 static inline int
 elf_w (valid_object) (struct elf_image *ei)
 {

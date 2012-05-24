@@ -23,7 +23,8 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "_UPT_internal.h"
+#include "_UCD_lib.h"
+#include "_UCD_internal.h"
 
 #if UNW_TARGET_IA64 && defined(__linux)
 # include "elf64.h"
@@ -37,6 +38,7 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
   struct UPT_info *ui = arg;
   struct map_iterator mi;
   char path[PATH_MAX];
+  unw_dyn_info_t *di;
   unw_word_t res;
   int count = 0;
 
@@ -46,17 +48,18 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
       if (off)
 	continue;
 
-      invalidate_edi(&ui->edi);
+      invalidate_edi (&ui->edi);
 
-      if (elf_map_image (&ui->edi.ei, path) < 0)
+      if (elf_map_image (&ui->ei, path) < 0)
 	/* ignore unmappable stuff like "/SYSV00001b58 (deleted)" */
 	continue;
 
       Debug (16, "checking object %s\n", path);
 
-      if (dwarf_find_unwind_table (&ui->edi, as, path, lo, off, 0) > 0)
+      di = dwarf_find_unwind_table (&ui->edi, as, path, lo, off);
+      if (di)
 	{
-	  res = _Uia64_find_dyn_list (as, &ui->edi.di_cache, arg);
+	  res = _Uia64_find_dyn_list (as, di, arg);
 	  if (res && count++ == 0)
 	    {
 	      Debug (12, "dyn_info_list_addr = 0x%lx\n", (long) res);
@@ -83,7 +86,7 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
 #endif
 
 int
-_UPT_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
+_UCD_get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dil_addr,
 			     void *arg)
 {
   int count, ret;
