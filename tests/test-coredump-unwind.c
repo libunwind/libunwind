@@ -214,6 +214,14 @@ void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
 #elif defined(TARGET_ARM)
 	ip = uc->uc_mcontext.arm_ip;
 #endif
+#elif defined(__FreeBSD__)
+#ifdef __i386__
+	ip = uc->uc_mcontext.mc_eip;
+#elif defined(__amd64__)
+	ip = uc->uc_mcontext.mc_rip;
+#else
+#error Port me
+#endif
 #else
 #error Port me
 #endif
@@ -230,7 +238,9 @@ void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
     void *array[50];
     int size;
     size = backtrace(array, 50);
+#ifdef __linux__
     backtrace_symbols_fd(array, size, 2);
+#endif
   }
 
   _exit(1);
