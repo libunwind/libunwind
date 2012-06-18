@@ -3,11 +3,17 @@
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
+#include <unistd.h>
+#ifdef __FreeBSD__
+#include <sys/types.h>
+#include <sys/sysctl.h>
+#include <sys/user.h>
+#endif
 
 void a(void) __attribute__((noinline));
 void b(int x) __attribute__((noinline));
 
-#ifdef __linux__
+#if defined(__linux__)
 void write_maps(char *fname)
 {
     char buf[512], path[128];
@@ -34,6 +40,48 @@ void write_maps(char *fname)
 
     fclose(out);
     fclose(maps);
+}
+#elif defined(__FreeBSD__)
+void
+write_maps(char *fname)
+{
+    FILE *out;
+    char *buf, *bp, *eb;
+    struct kinfo_vmentry *kv;
+    int mib[4], error;
+    size_t len;
+
+    out = fopen(fname, "w");
+    if (out == NULL)
+        exit(EXIT_FAILURE);
+
+    len = 0;
+    mib[0] = CTL_KERN;
+    mib[1] = KERN_PROC;
+    mib[2] = KERN_PROC_VMMAP;
+    mib[3] = getpid();
+    error = sysctl(mib, 4, NULL, &len, NULL, 0);
+    if (error == -1)
+	exit(EXIT_FAILURE);
+    len = len * 4 / 3;
+    buf = malloc(len);
+    if (buf == NULL)
+	exit(EXIT_FAILURE);
+    error = sysctl(mib, 4, buf, &len, NULL, 0);
+    if (error == -1)
+	    exit(EXIT_FAILURE);
+
+    for (bp = buf, eb = buf + len; bp < eb; bp += kv->kve_structsize) {
+        kv = (struct kinfo_vmentry *)(uintptr_t)bp;
+	if (kv->kve_type == KVME_TYPE_VNODE &&
+	  (kv->kve_protection & KVME_PROT_EXEC) != 0) {
+	    fprintf(out, "0x%jx:%s ", kv->kve_start, kv->kve_path);
+	}
+    }
+
+    fprintf(out, "\n");
+    fclose(out);
+    free(buf);
 }
 #else
 #error Port me
