@@ -1,5 +1,6 @@
 SOVERSION=8:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
+COREDUMP_SO_VERSION=0:0:0
 #
 # Don't link with start-files since we don't use any constructors/destructors:
 #
@@ -8,8 +9,8 @@ COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 lib_LIBRARIES =
 lib_LTLIBRARIES =
 if !REMOTE_ONLY
-lib_LIBRARIES += libunwind-ptrace.a libunwind-coredump.a
-lib_LTLIBRARIES += libunwind.la
+lib_LIBRARIES += libunwind-ptrace.a
+lib_LTLIBRARIES += libunwind.la libunwind-coredump.la
 endif
 
 noinst_HEADERS =
@@ -27,7 +28,7 @@ libunwind_ptrace_a_SOURCES =						  \
 noinst_HEADERS += ptrace/_UPT_internal.h
 
 ### libunwind-coredump:
-libunwind_coredump_a_SOURCES = \
+libunwind_coredump_la_SOURCES = \
 	coredump/_UCD_accessors.c \
 	coredump/_UCD_create.c \
 	coredump/_UCD_destroy.c \
@@ -41,6 +42,8 @@ libunwind_coredump_a_SOURCES = \
 	coredump/_UPT_get_dyn_info_list_addr.c \
 	coredump/_UPT_put_unwind_info.c \
 	coredump/_UPT_resume.c
+libunwind_coredump_la_LDFLAGS = $(COMMON_SO_LDFLAGS) \
+				-version-info $(COREDUMP_SO_VERSION)
 noinst_HEADERS += coredump/_UCD_internal.h
 
 ### libunwind-setjmp:
@@ -365,7 +368,7 @@ if OS_LINUX
  libunwind_la_SOURCES_x86_os_local    = x86/Los-linux.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
- libunwind_coredump_a_SOURCES += coredump/_UCD_access_reg_linux.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_linux.c
 endif
 
 if OS_HPUX
@@ -381,7 +384,7 @@ if OS_FREEBSD
  libunwind_la_SOURCES_x86_os_local    = x86/Los-freebsd.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-freebsd.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
- libunwind_coredump_a_SOURCES += coredump/_UCD_access_reg_freebsd.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
 endif
 
 if ARCH_ARM

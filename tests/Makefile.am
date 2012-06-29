@@ -121,7 +121,7 @@ crasher: crasher.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
-LIBUNWIND_coredump = $(top_builddir)/src/libunwind-coredump.a
+LIBUNWIND_coredump = $(top_builddir)/src/libunwind-coredump.la
 
 if USE_ELF32
 LIBUNWIND_ELF = $(top_builddir)/src/libunwind-elf32.la
