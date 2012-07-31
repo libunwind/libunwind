@@ -40,10 +40,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
-#ifndef HAVE_SIGHANDLER_T
-typedef RETSIGTYPE (*sighandler_t) (int);
-#endif
-
 #define SIG_STACK_SIZE 0x100000
 
 int verbose;

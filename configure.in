@@ -42,19 +42,12 @@ AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h sys/endian.h execinfo.h \
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
-AC_TYPE_SIGNAL
 AC_TYPE_SIZE_T
 AC_CHECK_SIZEOF(off_t)
 
 CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
 
 AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
-AC_CHECK_TYPES([sighandler_t], [], [],
-[$ac_includes_default
-#if HAVE_SIGNAL_H
-# include <signal.h>
-#endif
-])
 AC_CHECK_TYPES([struct elf_prstatus, struct prstatus], [], [],
 [$ac_includes_default
 #if HAVE_SYS_PROCFS_H
@@ -76,7 +69,6 @@ PT_STEP, PT_SYSCALL], [], [],
 
 dnl Checks for library functions.
 AC_FUNC_MEMCMP
-AC_TYPE_SIGNAL
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore)
 is_gcc_m64() {
