@@ -255,8 +255,10 @@ unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
   unw_word_t addr, hdr_addr, info_addr, info_end_addr, hdr, *wp;
   const struct ia64_table_entry *e = NULL;
   unw_word_t handler_offset, segbase = 0;
-  struct ia64_table_entry ent;
   int ret, is_local;
+#ifndef UNW_LOCAL_ONLY
+  struct ia64_table_entry ent;
+#endif
 
   assert ((di->format == UNW_INFO_FORMAT_TABLE
 	   || di->format == UNW_INFO_FORMAT_REMOTE_TABLE)
