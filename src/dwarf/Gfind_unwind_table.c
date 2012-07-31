@@ -220,7 +220,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
 #ifdef CONFIG_DEBUG_FRAME
   /* Try .debug_frame. */
-  found = dwarf_find_debug_frame (found, &edi->edi.di_debug, ip, segbase, path,
+  found = dwarf_find_debug_frame (found, &edi->di_debug, ip, segbase, path,
 				  start_ip, end_ip);
 #endif
 
