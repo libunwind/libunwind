@@ -68,9 +68,9 @@ get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
-  if (dwarf_find_unwind_table(&ui->edi, as, phdr->backing_filename, segbase, mapoff, ip) < 0)
+  if (tdep_find_unwind_table(&ui->edi, as, phdr->backing_filename, segbase, mapoff, ip) < 0)
     {
-      Debug(1, "%s returns error: dwarf_find_unwind_table failed\n", __func__);
+      Debug(1, "%s returns error: tdep_find_unwind_table failed\n", __func__);
       return -UNW_ENOINFO;
     }
 

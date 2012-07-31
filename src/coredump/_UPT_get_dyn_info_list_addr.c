@@ -56,7 +56,7 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
 
       Debug (16, "checking object %s\n", path);
 
-      di = dwarf_find_unwind_table (&ui->edi, as, path, lo, off);
+      di = tdep_find_unwind_table (&ui->edi, as, path, lo, off);
       if (di)
 	{
 	  res = _Uia64_find_dyn_list (as, di, arg);
