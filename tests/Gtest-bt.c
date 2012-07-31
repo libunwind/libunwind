@@ -50,7 +50,7 @@ int num_errors;
  * cause the signal stack to overflow */
 char buf[512], name[256];
 unw_cursor_t cursor;
-ucontext_t uc;
+unw_context_t uc;
 
 static void
 do_backtrace (void)

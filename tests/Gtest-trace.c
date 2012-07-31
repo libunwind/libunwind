@@ -50,7 +50,7 @@ int num_errors;
 char buf[512], name[256];
 void *addresses[3][128];
 unw_cursor_t cursor;
-ucontext_t uc;
+unw_context_t uc;
 
 static void
 do_backtrace (void)
