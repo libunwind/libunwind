@@ -33,7 +33,7 @@ HIDDEN int tdep_needs_initialization = 1;
 
 /* The API register numbers are exactly the same as the .eh_frame
    registers, for now at least.  */
-uint8_t dwarf_to_unw_regnum_map[DWARF_REGNUM_MAP_LENGTH] =
+HIDDEN uint8_t dwarf_to_unw_regnum_map[DWARF_REGNUM_MAP_LENGTH] =
   {
 	[UNW_PPC32_R0]=UNW_PPC32_R0,
 	[UNW_PPC32_R1]=UNW_PPC32_R1,
