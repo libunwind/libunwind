@@ -242,14 +242,14 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 # define tdep_find_proc_info(c,ip,n)				\
 	dwarf_find_proc_info((c)->as, (ip), &(c)->pi, (n),	\
 				       (c)->as_arg)
-# define tdep_put_unwind_info(c,pi)				\
-	dwarf_put_unwind_info((c)->as, (pi), (c)->as_arg)
+# define tdep_put_unwind_info(as,pi,arg)		\
+	dwarf_put_unwind_info((as), (pi), (arg))
 #else
 # define tdep_find_proc_info(c,ip,n)					\
 	(*(c)->as->acc.find_proc_info)((c)->as, (ip), &(c)->pi, (n),	\
 				       (c)->as_arg)
-# define tdep_put_unwind_info(c,pi)					\
-	(*(c)->as->acc.put_unwind_info)((c)->as, (pi), (c)->as_arg)
+# define tdep_put_unwind_info(as,pi,arg)		\
+	(*(as)->acc.put_unwind_info)((as), (pi), (arg))
 #endif
 
 #define tdep_get_as(c)			((c)->dwarf.as)
