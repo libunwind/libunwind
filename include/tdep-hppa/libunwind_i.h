@@ -52,6 +52,7 @@ struct unw_addr_space
 #endif
     unw_word_t dyn_generation;		/* see dyn-common.h */
     unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
+    struct dwarf_rs_cache global_cache;
     struct unw_debug_frame_list *debug_frames;
    };
 
