@@ -299,7 +299,7 @@ check_cxx_abi () {
 
 check_empty () {
     if [ -n "$symtab" ]; then
-	echo -e "  ERROR: Extraneous symbols:\n$symtab"
+	printf "  ERROR: Extraneous symbols:\n$symtab\n"
 	num_errors=`expr $num_errors + 1`
     fi
 }
