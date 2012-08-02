@@ -15,13 +15,13 @@
 # define dwarf_addr_size(as) (sizeof (unw_word_t))
 #endif
 
-#define dwarf_to_unw_regnum_map		UNW_OBJ (dwarf_to_unw_regnum_map)
-
+#ifndef dwarf_to_unw_regnum
+# define dwarf_to_unw_regnum_map		UNW_OBJ (dwarf_to_unw_regnum_map)
 extern uint8_t dwarf_to_unw_regnum_map[DWARF_REGNUM_MAP_LENGTH];
-
 /* REG is evaluated multiple times; it better be side-effects free!  */
-#define dwarf_to_unw_regnum(reg)					  \
+# define dwarf_to_unw_regnum(reg)					  \
   (((reg) <= DWARF_REGNUM_MAP_LENGTH) ? dwarf_to_unw_regnum_map[reg] : 0)
+#endif
 
 #ifdef UNW_LOCAL_ONLY
 
