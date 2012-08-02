@@ -104,7 +104,7 @@ bar (int v)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   int val = argc;
 

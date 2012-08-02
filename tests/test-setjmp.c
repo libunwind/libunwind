@@ -139,7 +139,7 @@ sighandler (int signal)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   volatile sigset_t sigset1, sigset2, sigset3;
   volatile struct sigaction act;

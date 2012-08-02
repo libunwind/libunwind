@@ -43,15 +43,20 @@ int errors;
 	{ ++errors; fprintf (stderr, args); return -1; }
 
 static int
-find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pip,
-		int need_unwind_info, void *arg)
+find_proc_info (unw_addr_space_t as __attribute__((unused)),
+                unw_word_t ip __attribute__((unused)),
+                unw_proc_info_t *pip __attribute__((unused)),
+                int need_unwind_info __attribute__((unused)),
+                void *arg __attribute__((unused)))
 {
   return -UNW_ESTOPUNWIND;
 }
 
 static int
-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *valp,
-	    int write, void *arg)
+access_mem (unw_addr_space_t as __attribute__((unused)),
+            unw_word_t addr __attribute__((unused)),
+            unw_word_t *valp, int write,
+            void *arg __attribute__((unused)))
 {
   if (!write)
     *valp = 0;
@@ -59,8 +64,10 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *valp,
 }
 
 static int
-access_reg (unw_addr_space_t as, unw_regnum_t regnum, unw_word_t *valp,
-	    int write, void *arg)
+access_reg (unw_addr_space_t as __attribute__((unused)),
+            unw_regnum_t regnum __attribute__((unused)),
+            unw_word_t *valp, int write,
+            void *arg __attribute__((unused)))
 {
   if (!write)
     *valp = 32;
@@ -68,8 +75,10 @@ access_reg (unw_addr_space_t as, unw_regnum_t regnum, unw_word_t *valp,
 }
 
 static int
-access_fpreg (unw_addr_space_t as, unw_regnum_t regnum, unw_fpreg_t *valp,
-	      int write, void *arg)
+access_fpreg (unw_addr_space_t as __attribute__((unused)),
+              unw_regnum_t regnum __attribute__((unused)),
+              unw_fpreg_t *valp, int write,
+              void *arg __attribute__((unused)))
 {
   if (!write)
     memset (valp, 0, sizeof (*valp));
@@ -77,27 +86,37 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t regnum, unw_fpreg_t *valp,
 }
 
 static int
-get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dilap, void *arg)
+get_dyn_info_list_addr (unw_addr_space_t as __attribute__((unused)),
+                        unw_word_t *dilap __attribute__((unused)),
+                        void *arg __attribute__((unused)))
 {
   return -UNW_ENOINFO;
 }
 
 static void
-put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
+put_unwind_info (unw_addr_space_t as __attribute__((unused)),
+                 unw_proc_info_t *pi __attribute__((unused)),
+                 void *arg __attribute__((unused)))
 {
   ++errors;
   fprintf (stderr, "%s() got called!\n", __FUNCTION__);
 }
 
 static int
-resume (unw_addr_space_t as, unw_cursor_t *reg, void *arg)
+resume (unw_addr_space_t as __attribute__((unused)),
+        unw_cursor_t *reg __attribute__((unused)),
+        void *arg __attribute__((unused)))
 {
   panic ("%s() got called!\n", __FUNCTION__);
 }
 
 static int
-get_proc_name (unw_addr_space_t as, unw_word_t ip, char *buf, size_t buf_len,
-	       unw_word_t *offp, void *arg)
+get_proc_name (unw_addr_space_t as __attribute__((unused)),
+               unw_word_t ip __attribute__((unused)),
+               char *buf __attribute__((unused)),
+               size_t buf_len __attribute__((unused)),
+               unw_word_t *offp __attribute__((unused)),
+               void *arg __attribute__((unused)))
 {
   panic ("%s() got called!\n", __FUNCTION__);
 }

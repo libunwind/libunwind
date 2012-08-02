@@ -158,7 +158,7 @@ sighandler (int signal)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   struct sigaction act;
   long i = 0;

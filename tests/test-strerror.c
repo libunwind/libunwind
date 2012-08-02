@@ -2,7 +2,7 @@
 #include <stdio.h>
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   int i, verbose = argc > 1;
   const char *msg;

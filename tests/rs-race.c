@@ -1331,7 +1331,7 @@ foo_128 (void)
 }
 
 void *
-bar(void *p)
+bar(void *p __attribute__((unused)))
 {
   int i;
   for (i = 0; i < ITERS; ++i) {
@@ -1485,7 +1485,7 @@ int doit ()
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   if (argc > 1)
     verbose = 1;

@@ -157,13 +157,13 @@ sighandler (int signal)
 }
 
 int
-dev_null (const char *format, ...)
+dev_null (const char *format __attribute__((unused)), ...)
 {
   return 0;
 }
 
 int
-main (int argc, char *argv[])
+main (int argc, char *argv[] __attribute__((unused)))
 {
   unw_dyn_region_info_t *region;
   unw_dyn_info_t di;

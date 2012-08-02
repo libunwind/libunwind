@@ -82,7 +82,7 @@ consume_some_stack_space (void)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   struct rlimit rlim;
 

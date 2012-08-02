@@ -46,7 +46,7 @@ int got_usr1, got_usr2;
 char *sigusr1_sp;
 
 void
-handler (int sig)
+handler (int sig __attribute__((unused)))
 {
   unw_word_t ip;
   unw_context_t uc;
@@ -68,7 +68,7 @@ handler (int sig)
 }
 
 void *
-worker (void *arg)
+worker (void *arg __attribute__((unused)))
 {
   signal (SIGUSR1, handler);
 
@@ -102,7 +102,7 @@ doit (void)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   if (argc > 1)
     verbose = 1;

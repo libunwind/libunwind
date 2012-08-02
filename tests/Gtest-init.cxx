@@ -99,7 +99,7 @@ Test_Class::Test_Class (void)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   verbose = argc > 1;
   return atexit (a);

@@ -87,7 +87,7 @@ test_local (void)
 #endif /* !UNW_REMOTE_ONLY */
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   if (argc > 1)
     verbose = 1;

@@ -261,7 +261,7 @@ static void install_sigsegv_handler(void)
 }
 
 int
-main(int argc, char **argv)
+main(int argc __attribute__((unused)), char **argv)
 {
   unw_addr_space_t as;
   struct UCD_info *ui;

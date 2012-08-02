@@ -127,7 +127,7 @@ handler (int sig)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv __attribute__((unused)))
 {
   float d = 1.0;
   int n = 0;
