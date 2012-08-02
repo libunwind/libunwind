@@ -78,6 +78,13 @@ filter_misc () {
 	ignore __end__
 	ignore _bss_end__
     fi
+
+    if [ ${plat} = "mips" ]; then
+	ignore _fbss
+	ignore _fdata
+	ignore _ftext
+	ignore _gp
+    fi
 }
 
 check_local_unw_abi () {
