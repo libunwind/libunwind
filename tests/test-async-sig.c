@@ -182,7 +182,7 @@ main (int argc, char **argv __attribute__((unused)))
       do_backtrace (0, (i++ % 100) == 0);
       if (nerrors > nerrors_max)
         {
-	  panic ("Too many errors (%d)\n", nerrors);
+	  fprintf (stderr, "Too many errors (%d)\n", nerrors);
 	  exit (-1);
         }
     }
