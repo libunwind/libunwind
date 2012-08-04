@@ -49,7 +49,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    so we simply defer to glibc siglongjmp here.  */
 
 #define siglongjmp __nonworking_siglongjmp
-static void siglongjmp (sigjmp_buf env, int val);
+static void siglongjmp (sigjmp_buf env, int val) UNUSED;
 #endif
 #endif /* __GLIBC_PREREQ */
 
