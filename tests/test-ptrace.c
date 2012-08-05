@@ -204,6 +204,8 @@ main (int argc, char **argv)
 	  ++optind, print_names = 0;
 	else
 	  fprintf(stderr, "unrecognized option: %s\n", argv[optind++]);
+        if (optind >= argc)
+          break;
       }
 
   target_pid = fork ();
@@ -221,6 +223,11 @@ main (int argc, char **argv)
 #else
 #error Trace me
 #endif
+
+      if (optind == argc) {
+        fprintf(stderr, "Need to specify a command line for the child\n");
+        exit (-1);
+      }
       execve (argv[optind], argv + optind, environ);
       _exit (-1);
     }
