@@ -108,7 +108,6 @@ void
 foo1 (void)
 {
   foo2 ();
-  return NULL;
 }
 
 int
@@ -123,6 +122,10 @@ main (int argc, char **argv)
     if (pthread_key_create (&key, NULL))
       panic ("FAILURE: unable to create key %d\n", i);
   }
+  /* Call backtrace right after thread creation,
+   * where we are sure that we're not inside malloc */
+  do_backtrace();
+  num_mallocs = num_callocs = 0;
   foo1 ();
   num_errors = num_mallocs + num_callocs;
   if (num_errors > 0)
