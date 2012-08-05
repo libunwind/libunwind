@@ -37,8 +37,15 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 #ifdef UNW_LOCAL_ONLY
   return NULL;
 #else
-  unw_addr_space_t as = malloc (sizeof (*as));
+  unw_addr_space_t as;
 
+  /*
+   * x86 supports only little-endian.
+   */
+  if (byte_order != 0 && byte_order != __LITTLE_ENDIAN)
+    return NULL;
+
+  as = malloc (sizeof (*as));
   if (!as)
     return NULL;
 
@@ -46,11 +53,6 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 
   as->acc = *a;
 
-  /*
-   * x86 supports only little-endian.
-   */
-  if (byte_order != 0 && byte_order != __LITTLE_ENDIAN)
-    return NULL;
   return as;
 #endif
 }

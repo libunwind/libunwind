@@ -3,6 +3,7 @@
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
    Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -39,8 +40,15 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 #ifdef UNW_LOCAL_ONLY
   return NULL;
 #else
-  unw_addr_space_t as = malloc (sizeof (*as));
+  unw_addr_space_t as;
 
+  /*
+   * x86_64 supports only little-endian.
+   */
+  if (byte_order != 0 && byte_order != __LITTLE_ENDIAN)
+    return NULL;
+
+  as = malloc (sizeof (*as));
   if (!as)
     return NULL;
 
@@ -48,11 +56,6 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 
   as->acc = *a;
 
-  /*
-   * x86_64 supports only little-endian.
-   */
-  if (byte_order != 0 && byte_order != __LITTLE_ENDIAN)
-    return NULL;
   return as;
 #endif
 }
