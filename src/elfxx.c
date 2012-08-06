@@ -41,7 +41,7 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   Elf_W (Off) soff, str_soff;
   Elf_W (Shdr) *shdr, *str_shdr;
   Elf_W (Addr) val, min_dist = ~(Elf_W (Addr))0;
-  int i, ret = 0;
+  int i, ret = -UNW_ENOINFO;
   char *strtab;
 
   if (!elf_w (valid_object) (ei))
@@ -102,8 +102,8 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
 		      min_dist = (Elf_W (Addr)) (ip - val);
 		      strncpy (buf, strtab + sym->st_name, buf_len);
 		      buf[buf_len - 1] = '\0';
-		      if (strlen (strtab + sym->st_name) >= buf_len)
-			ret = -UNW_ENOMEM;
+		      ret = (strlen (strtab + sym->st_name) >= buf_len
+			     ? -UNW_ENOMEM : 0);
 		    }
 		}
 	    }
