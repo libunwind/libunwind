@@ -105,7 +105,7 @@ _UCD_create(const char *filename)
       goto err;
     }
 
-  if (memcmp(&elf_header32, "\x7f""ELF", 4) != 0)
+  if (memcmp(&elf_header32, ELFMAG, SELFMAG) != 0)
     {
       Debug(0, "'%s' is not an ELF file\n", filename);
       goto err;
