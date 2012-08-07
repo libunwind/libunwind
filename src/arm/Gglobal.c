@@ -31,17 +31,6 @@ HIDDEN int tdep_needs_initialization = 1;
 /* Unwinding methods to use. See UNW_METHOD_ enums */
 HIDDEN int unwi_unwind_method = UNW_ARM_METHOD_ALL;
 
-/* FIXME: I'm pretty sure we don't need this at all for ARM, but "generic"
-   code (include/dwarf_i.h) seems to expect it to be here at present.  */
-
-HIDDEN uint8_t dwarf_to_unw_regnum_map[16] =
-  {
-    /* 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 */
-    UNW_ARM_R0, UNW_ARM_R1, UNW_ARM_R2, UNW_ARM_R3, UNW_ARM_R4, UNW_ARM_R5,
-    UNW_ARM_R6, UNW_ARM_R7, UNW_ARM_R8, UNW_ARM_R9, UNW_ARM_R10, UNW_ARM_R11,
-    UNW_ARM_R12, UNW_ARM_R13, UNW_ARM_R14, UNW_ARM_R15
-  };
-
 HIDDEN void
 tdep_init (void)
 {

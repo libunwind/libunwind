@@ -1,5 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -29,8 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    explicitly defined.  */
 #define DWARF_NUM_PRESERVED_REGS	128
 
-/* FIXME: Probably unnecessary on ARM.  See arm/Gglobal.c.  */
-#define DWARF_REGNUM_MAP_LENGTH		16
+#define dwarf_to_unw_regnum(reg) (((reg) < 16) ? (reg) : 0)
 
 /* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
 #define dwarf_is_big_endian(addr_space)	0
