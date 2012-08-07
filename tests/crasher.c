@@ -24,7 +24,7 @@ void write_maps(char *fname)
 
     while (fgets(buf, sizeof(buf), maps))
     {
-        if (sscanf(buf, "%jx-%*jx %*c%*c%c%*c %*x %*s %*d /%126[^\n]", &addr, &exec, path+1) != 3)
+        if (sscanf(buf, "%jx-%*x %*c%*c%c%*c %*x %*s %*d /%126[^\n]", &addr, &exec, path+1) != 3)
             continue;
 
         if (exec != 'x')
