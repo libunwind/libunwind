@@ -28,15 +28,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN pthread_mutex_t mips_lock = PTHREAD_MUTEX_INITIALIZER;
 HIDDEN int tdep_needs_initialization = 1;
 
-/* FIXME: I'm pretty sure we don't need this at all for MIPS, but "generic"
-   code (include/dwarf_i.h) seems to expect it to be here at present.  */
-
-HIDDEN uint8_t dwarf_to_unw_regnum_map[] =
-  {
-    0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15,
-    16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31
-  };
-
 HIDDEN void
 tdep_init (void)
 {
