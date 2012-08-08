@@ -2,7 +2,8 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 		run-check-namespace run-coredump-unwind \
-		check-namespace.sh.in Gtest-nomalloc.c Gtest-nocalloc.c
+		run-coredump-unwind-mdi check-namespace.sh.in \
+		Gtest-nomalloc.c Gtest-nocalloc.c
 
 MAINTAINERCLEANFILES = Makefile.in
 
@@ -60,6 +61,10 @@ endif
 if OS_LINUX
  check_SCRIPTS_cdep += run-coredump-unwind
  noinst_PROGRAMS_cdep += test-coredump-unwind
+
+if HAVE_LZMA
+ check_SCRIPTS_cdep += run-coredump-unwind-mdi
+endif
 endif
 
 perf: perf-startup Gperf-simple Lperf-simple Lperf-trace

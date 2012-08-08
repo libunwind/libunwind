@@ -269,7 +269,7 @@ main(int argc, char **argv)
   int ret;
 
 #define TEST_FRAMES 4
-#define TEST_NAME_LEN 16
+#define TEST_NAME_LEN 32
   int testcase = 0;
   int test_cur = 0;
   long test_start_ips[TEST_FRAMES];
