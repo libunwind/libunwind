@@ -269,9 +269,11 @@ main(int argc, char **argv)
   int ret;
 
 #define TEST_FRAMES 4
+#define TEST_NAME_LEN 16
   int testcase = 0;
   int test_cur = 0;
   long test_start_ips[TEST_FRAMES];
+  char test_names[TEST_FRAMES][TEST_NAME_LEN];
 
   install_sigsegv_handler();
 
@@ -338,7 +340,13 @@ main(int argc, char **argv)
 
       if (testcase && test_cur < TEST_FRAMES)
         {
+           unw_word_t off;
+
            test_start_ips[test_cur] = (long) pi.start_ip;
+           if (unw_get_proc_name(&c, test_names[test_cur], sizeof(test_names[0]), &off) != 0)
+           {
+             test_names[test_cur][0] = '\0';
+           }
            test_cur++;
         }
 
@@ -363,6 +371,18 @@ main(int argc, char **argv)
      )
     {
       fprintf(stderr, "FAILURE: start IPs incorrect\n");
+      return -1;
+    }
+
+  if (testcase &&
+       (  strcmp(test_names[0], "a")
+       || strcmp(test_names[1], "b")
+       || strcmp(test_names[2], "b")
+       || strcmp(test_names[3], "main")
+       )
+     )
+    {
+      fprintf(stderr, "FAILURE: procedure names are missing/incorrect\n");
       return -1;
     }
 

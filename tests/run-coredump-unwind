@@ -1,7 +1,8 @@
 #!/bin/sh
 
 TESTDIR=`pwd`
-TEMPDIR=`mktemp -d`
+TEMPDIR=`mktemp --tmpdir -d libunwind-test-XXXXXXXXXX`
+trap "rm -r -- $TEMPDIR" EXIT
 
 # create core dump
 (
@@ -11,10 +12,5 @@ TEMPDIR=`mktemp -d`
 ) 2>/dev/null
 COREFILE=$TEMPDIR/core*
 
-# fail if any command fails
-set -e
-
 # magic option -testcase enables checking for the specific contents of the stack
 ./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
-
-rm -r -- $TEMPDIR
