@@ -27,6 +27,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <sys/param.h>
 
+#ifdef HAVE_LZMA
+#include <lzma.h>
+#endif /* HAVE_LZMA */
+
 #include "libunwind_i.h"
 
 static Elf_W (Shdr)*
@@ -83,13 +87,13 @@ static int
 elf_w (lookup_symbol) (unw_addr_space_t as,
 		       unw_word_t ip, struct elf_image *ei,
 		       Elf_W (Addr) load_offset,
-		       char *buf, size_t buf_len, unw_word_t *offp)
+		       char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
 {
   size_t syment_size;
   Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Sym) *sym, *symtab, *symtab_end;
   Elf_W (Shdr) *shdr;
-  Elf_W (Addr) val, min_dist = ~(Elf_W (Addr))0;
+  Elf_W (Addr) val;
   int i, ret = -UNW_ENOINFO;
   char *strtab;
 
@@ -131,9 +135,9 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
 		  Debug (16, "0x%016lx info=0x%02x %s\n",
 			 (long) val, sym->st_info, strtab + sym->st_name);
 
-		  if ((Elf_W (Addr)) (ip - val) < min_dist)
+		  if ((Elf_W (Addr)) (ip - val) < *min_dist)
 		    {
-		      min_dist = (Elf_W (Addr)) (ip - val);
+		      *min_dist = (Elf_W (Addr)) (ip - val);
 		      strncpy (buf, strtab + sym->st_name, buf_len);
 		      buf[buf_len - 1] = '\0';
 		      ret = (strlen (strtab + sym->st_name) >= buf_len
@@ -148,10 +152,6 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
 	}
       shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
-  if (min_dist >= ei->size)
-    return -UNW_ENOINFO;		/* not found */
-  if (offp)
-    *offp = min_dist;
   return ret;
 }
 
@@ -177,6 +177,123 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
   return offset;
 }
 
+#if HAVE_LZMA
+static size_t
+xz_uncompressed_size (uint8_t *compressed, size_t length)
+{
+  uint64_t memlimit = UINT64_MAX;
+  size_t ret = 0, pos = 0;
+  lzma_stream_flags options;
+  lzma_index *index;
+
+  if (length < LZMA_STREAM_HEADER_SIZE)
+    return 0;
+
+  uint8_t *footer = compressed + length - LZMA_STREAM_HEADER_SIZE;
+  if (lzma_stream_footer_decode (&options, footer) != LZMA_OK)
+    return 0;
+
+  if (length < LZMA_STREAM_HEADER_SIZE + options.backward_size)
+    return 0;
+
+  uint8_t *indexdata = footer - options.backward_size;
+  if (lzma_index_buffer_decode (&index, &memlimit, NULL, indexdata,
+				&pos, options.backward_size) != LZMA_OK)
+    return 0;
+
+  if (lzma_index_size (index) == options.backward_size)
+    {
+      ret = lzma_index_uncompressed_size (index);
+    }
+
+  lzma_index_end (index, NULL);
+  return ret;
+}
+
+static int
+elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
+{
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Shdr) *shdr;
+  char *strtab;
+  int i;
+  uint8_t *compressed = NULL;
+  uint64_t memlimit = UINT64_MAX; /* no memory limit */
+  size_t compressed_len, uncompressed_len;
+
+  if (!elf_w (valid_object) (ei))
+    return 0;
+
+  shdr = elf_w (section_table) (ei);
+  if (!shdr)
+    return 0;
+
+  strtab = elf_w (string_table) (ei, ehdr->e_shstrndx);
+  if (!strtab)
+    return 0;
+
+  for (i = 0; i < ehdr->e_shnum; ++i)
+    {
+      if (strcmp (strtab + shdr->sh_name, ".gnu_debugdata") == 0)
+	{
+	  if (shdr->sh_offset + shdr->sh_size > ei->size)
+	    {
+	      Debug (1, ".gnu_debugdata outside image? (0x%lu > 0x%lu)\n",
+		     (unsigned long) shdr->sh_offset + shdr->sh_size,
+		     (unsigned long) ei->size);
+	      return 0;
+	    }
+
+	  Debug (16, "found .gnu_debugdata at 0x%lx\n",
+		 (unsigned long) shdr->sh_offset);
+	  compressed = ((uint8_t *) ei->image) + shdr->sh_offset;
+	  compressed_len = shdr->sh_size;
+	  break;
+	}
+
+      shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
+    }
+
+  /* not found */
+  if (!compressed)
+    return 0;
+
+  uncompressed_len = xz_uncompressed_size (compressed, compressed_len);
+  if (uncompressed_len == 0)
+    {
+      Debug (1, "invalid .gnu_debugdata contents\n");
+      return 0;
+    }
+
+  mdi->size = uncompressed_len;
+  mdi->image = mmap (NULL, uncompressed_len, PROT_READ|PROT_WRITE,
+		     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+
+  if (mdi->image == MAP_FAILED)
+    return 0;
+
+  size_t in_pos = 0, out_pos = 0;
+  lzma_ret lret;
+  lret = lzma_stream_buffer_decode (&memlimit, 0, NULL,
+				    compressed, &in_pos, compressed_len,
+				    mdi->image, &out_pos, mdi->size);
+  if (lret != LZMA_OK)
+    {
+      Debug (1, "LZMA decompression failed: %d\n", lret);
+      munmap (mdi->image, mdi->size);
+      return 0;
+    }
+
+  return 1;
+}
+#else
+static int
+elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
+{
+  return 0;
+}
+#endif /* !HAVE_LZMA */
+
 /* Find the ELF image that contains IP and return the "closest"
    procedure name, if there is one.  With some caching, this could be
    sped up greatly, but until an application materializes that's
@@ -190,13 +307,36 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
 		       char *buf, size_t buf_len, unw_word_t *offp)
 {
   Elf_W (Addr) load_offset;
+  Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
   load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
-  ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, offp);
+  ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist);
 
+  /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
+     there as well and replace the previously found if it is closer. */
+  struct elf_image mdi;
+  if (elf_w (extract_minidebuginfo) (ei, &mdi))
+    {
+      int ret_mdi;
 
+      load_offset = elf_w (get_load_offset) (&mdi, segbase, mapoff);
+      ret_mdi = elf_w (lookup_symbol) (as, ip, &mdi, load_offset, buf,
+				       buf_len, &min_dist);
 
+      /* Closer symbol was found (possibly truncated). */
+      if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
+	{
+	  ret = ret_mdi;
+	}
+
+      munmap (mdi.image, mdi.size);
+    }
+
+  if (min_dist >= ei->size)
+    return -UNW_ENOINFO;		/* not found */
+  if (offp)
+    *offp = min_dist;
   return ret;
 }
 
