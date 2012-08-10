@@ -42,6 +42,7 @@ endif #ARCH_IA64
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-resume-sig Ltest-resume-sig		 \
+			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
 			Gtest-dyn1 Ltest-dyn1				 \
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
@@ -154,6 +155,7 @@ Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gperf_simple_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_trace_LDADD=$(LIBUNWIND) $(LIBUNWIND_local)
 Gperf_trace_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
@@ -166,6 +168,7 @@ Ltest_init_LDADD = $(LIBUNWIND_local)
 Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
 Ltest_nocalloc_LDADD = $(LIBUNWIND_local) @DLLIB@ -lpthread
 Ltest_resume_sig_LDADD = $(LIBUNWIND_local)
+Ltest_resume_sig_rt_LDADD = $(LIBUNWIND_local)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
 Lperf_trace_LDADD = $(LIBUNWIND_local)

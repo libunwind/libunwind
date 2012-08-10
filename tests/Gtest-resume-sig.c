@@ -31,7 +31,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 #include <unistd.h>
+#include <errno.h>
 
 #ifdef HAVE_IA64INTRIN_H
 # include <ia64intrin.h>
@@ -59,8 +61,15 @@ get_bsp (void)
 #endif
 }
 
+#ifdef TEST_WITH_SIGINFO
+void
+handler (int sig,
+         siginfo_t *si __attribute__((unused)),
+         void *ucontext __attribute__((unused)))
+#else
 void
 handler (int sig)
+#endif
 {
   unw_word_t ip;
   sigset_t mask, oldmask;
@@ -88,7 +97,6 @@ handler (int sig)
       kill (getpid (), SIGUSR2);	/* pend SIGUSR2 */
 
       signal (SIGUSR1, SIG_IGN);
-      signal (SIGUSR2, handler);
 
       if ((ret = unw_getcontext (&uc)) < 0)
 	panic ("unw_getcontext() failed: ret=%d\n", ret);
@@ -102,7 +110,7 @@ handler (int sig)
       if ((ret = unw_step (&c)) < 0)		/* step to signal trampoline */
 	panic ("unw_step(1) failed: ret=%d\n", ret);
 
-      if ((ret = unw_step (&c)) < 0)		/* step to signal trampoline */
+      if ((ret = unw_step (&c)) < 0)		/* step to kill() */
 	panic ("unw_step(2) failed: ret=%d\n", ret);
 
       if ((ret = unw_get_reg (&c, UNW_REG_IP, &ip)) < 0)
@@ -129,13 +137,27 @@ handler (int sig)
 int
 main (int argc, char **argv __attribute__((unused)))
 {
+  struct sigaction sa;
   float d = 1.0;
   int n = 0;
 
   if (argc > 1)
     verbose = 1;
 
-  signal (SIGUSR1, handler);
+  memset (&sa, 0, sizeof(sa));
+#ifdef TEST_WITH_SIGINFO
+  sa.sa_sigaction = handler;
+  sa.sa_flags = SA_SIGINFO;
+#else
+  sa.sa_handler = handler;
+#endif
+
+  if (sigaction (SIGUSR1, &sa, NULL) != 0 ||
+      sigaction (SIGUSR2, &sa, NULL) != 0)
+    {
+      fprintf (stderr, "sigaction() failed: %s\n", strerror (errno));
+      return -1;
+    }
 
   /* Use the FPU a bit; otherwise we get spurious errors should the
      signal handler need to use the FPU for any reason.  This seems to
