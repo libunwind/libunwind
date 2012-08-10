@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
    Copyright 2011 Linaro Limited
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -51,11 +52,16 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       regs[8] = uc->regs[13]; /* SP */
       regs[9] = uc->regs[14]; /* LR */
 
+      struct regs_overlay {
+	      char x[sizeof(regs)];
+      };
+
       asm __volatile__ (
 	"ldmia %0, {r4-r12, lr}\n"
 	"mov sp, r12\n"
 	"bx lr\n"
-	: : "r" (regs)
+	: : "r" (regs),
+	    "m" (*(struct regs_overlay *)regs)
       );
     }
   else
@@ -90,6 +96,7 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	: : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc)
       );
    }
+  __builtin_unreachable();
 #else
   printf ("%s: implement me\n", __FUNCTION__);
 #endif
