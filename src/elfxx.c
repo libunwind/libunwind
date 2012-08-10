@@ -29,6 +29,56 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+static Elf_W (Shdr)*
+elf_w (section_table) (struct elf_image *ei)
+{
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Off) soff;
+
+  soff = ehdr->e_shoff;
+  if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
+    {
+      Debug (1, "section table outside of image? (%lu > %lu)\n",
+	     (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
+	     (unsigned long) ei->size);
+      return NULL;
+    }
+
+  return (Elf_W (Shdr) *) ((char *) ei->image + soff);
+}
+
+static char*
+elf_w (string_table) (struct elf_image *ei, int section)
+{
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Off) soff, str_soff;
+  Elf_W (Shdr) *str_shdr;
+
+  /* this offset is assumed to be OK */
+  soff = ehdr->e_shoff;
+
+  str_soff = soff + (section * ehdr->e_shentsize);
+  if (str_soff + ehdr->e_shentsize > ei->size)
+    {
+      Debug (1, "string shdr table outside of image? (%lu > %lu)\n",
+	     (unsigned long) (str_soff + ehdr->e_shentsize),
+	     (unsigned long) ei->size);
+      return NULL;
+    }
+  str_shdr = (Elf_W (Shdr) *) ((char *) ei->image + str_soff);
+
+  if (str_shdr->sh_offset + str_shdr->sh_size > ei->size)
+    {
+      Debug (1, "string table outside of image? (%lu > %lu)\n",
+	     (unsigned long) (str_shdr->sh_offset + str_shdr->sh_size),
+	     (unsigned long) ei->size);
+      return NULL;
+    }
+
+  Debug (16, "strtab=0x%lx\n", (long) str_shdr->sh_offset);
+  return ei->image + str_shdr->sh_offset;
+}
+
 static int
 elf_w (lookup_symbol) (unw_addr_space_t as,
 		       unw_word_t ip, struct elf_image *ei,
@@ -38,8 +88,7 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   size_t syment_size;
   Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Sym) *sym, *symtab, *symtab_end;
-  Elf_W (Off) soff, str_soff;
-  Elf_W (Shdr) *shdr, *str_shdr;
+  Elf_W (Shdr) *shdr;
   Elf_W (Addr) val, min_dist = ~(Elf_W (Addr))0;
   int i, ret = -UNW_ENOINFO;
   char *strtab;
@@ -47,16 +96,9 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   if (!elf_w (valid_object) (ei))
     return -UNW_ENOINFO;
 
-  soff = ehdr->e_shoff;
-  if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
-    {
-      Debug (1, "section table outside of image? (%lu > %lu)\n",
-	     (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
-	     (unsigned long) ei->size);
-      return -UNW_ENOINFO;
-    }
-
-  shdr = (Elf_W (Shdr) *) ((char *) ei->image + soff);
+  shdr = elf_w (section_table) (ei);
+  if (!shdr)
+    return -UNW_ENOINFO;
 
   for (i = 0; i < ehdr->e_shnum; ++i)
     {
@@ -68,20 +110,12 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
 	  symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
 	  syment_size = shdr->sh_entsize;
 
-	  str_soff = soff + (shdr->sh_link * ehdr->e_shentsize);
-	  if (str_soff + ehdr->e_shentsize >= ei->size)
-	    {
-	      Debug (1, "string table outside of image? (%lu >= %lu)\n",
-		     (unsigned long) (str_soff + ehdr->e_shentsize),
-		     (unsigned long) ei->size);
-	      break;
-	    }
-	  str_shdr = (Elf_W (Shdr) *) ((char *) ei->image + str_soff);
-	  strtab = (char *) ei->image + str_shdr->sh_offset;
+	  strtab = elf_w (string_table) (ei, shdr->sh_link);
+	  if (!strtab)
+	    break;
 
-	  Debug (16, "symtab=0x%lx[%d], strtab=0x%lx\n",
-		 (long) shdr->sh_offset, shdr->sh_type,
-		 (long) str_shdr->sh_offset);
+	  Debug (16, "symtab=0x%lx[%d]\n",
+		 (long) shdr->sh_offset, shdr->sh_type);
 
 	  for (sym = symtab;
 	       sym < symtab_end;
@@ -121,6 +155,28 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   return ret;
 }
 
+static Elf_W (Addr)
+elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
+			 unsigned long mapoff)
+{
+  Elf_W (Addr) offset = 0;
+  Elf_W (Ehdr) *ehdr;
+  Elf_W (Phdr) *phdr;
+  int i;
+
+  ehdr = ei->image;
+  phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
+
+  for (i = 0; i < ehdr->e_phnum; ++i)
+    if (phdr[i].p_type == PT_LOAD && phdr[i].p_offset == mapoff)
+      {
+	offset = segbase - phdr[i].p_vaddr;
+	break;
+      }
+
+  return offset;
+}
+
 /* Find the ELF image that contains IP and return the "closest"
    procedure name, if there is one.  With some caching, this could be
    sped up greatly, but until an application materializes that's
@@ -133,22 +189,13 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
 		       unw_word_t ip,
 		       char *buf, size_t buf_len, unw_word_t *offp)
 {
-  Elf_W (Addr) load_offset = 0;
-  Elf_W (Ehdr) *ehdr;
-  Elf_W (Phdr) *phdr;
-  int i, ret;
+  Elf_W (Addr) load_offset;
+  int ret;
 
-  ehdr = ei->image;
-  phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
-
-  for (i = 0; i < ehdr->e_phnum; ++i)
-    if (phdr[i].p_type == PT_LOAD && phdr[i].p_offset == mapoff)
-      {
-	load_offset = segbase - phdr[i].p_vaddr;
-	break;
-      }
-
+  load_offset = elf_w (get_load_offset) (ei, segbase, mapoff);
   ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, offp);
+
+
 
   return ret;
 }
