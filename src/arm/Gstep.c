@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
    Copyright 2011 Linaro Limited
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -111,7 +112,6 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 	  c->sigcontext_format = ARM_SCF_LINUX_OLD_SIGFRAME;
 	  sc_addr = sp_addr;
 	}
-      c->sigcontext_addr = sp_addr;
     }
   else if (ret == 2)
     {
@@ -120,17 +120,18 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
       if (sp == sp_addr + 8)
 	{
 	  c->sigcontext_format = ARM_SCF_LINUX_OLD_RT_SIGFRAME;
-	  c->sigcontext_addr = sp_addr + 8 + sizeof (siginfo_t); 
+	  sc_addr = sp_addr + 8 + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
 	}
       else
 	{
 	  c->sigcontext_format = ARM_SCF_LINUX_RT_SIGFRAME;
-	  c->sigcontext_addr = sp_addr + sizeof (siginfo_t);
+	  sc_addr = sp_addr + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
 	}
-      sc_addr = c->sigcontext_addr + LINUX_UC_MCONTEXT_OFF;
     }
   else
     return -UNW_EUNSPEC;
+
+  c->sigcontext_addr = sc_addr;
 
   /* Update the dwarf cursor.
      Set the location of the registers to the corresponding addresses of the
