@@ -120,10 +120,6 @@ Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 
-# prevent function inlining
-crasher: crasher.c
-	$(CC) -O0 -o crasher crasher.c
-
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
 LIBUNWIND_coredump = $(top_builddir)/src/libunwind-coredump.la

@@ -10,9 +10,6 @@
 #include <sys/user.h>
 #endif
 
-void a(void) __attribute__((noinline));
-void b(int x) __attribute__((noinline));
-
 #if defined(__linux__)
 void write_maps(char *fname)
 {
@@ -87,17 +84,35 @@ write_maps(char *fname)
 #error Port me
 #endif
 
-void a(void)
+#ifdef __GNUC__
+int a(void) __attribute__((noinline));
+int b(int x) __attribute__((noinline));
+int c(int x) __attribute__((noinline, alias("b")));
+#define compiler_barrier() asm volatile("");
+#else
+int a(void);
+int b(int x);
+int c(int x);
+#define compiler_barrier()
+#endif
+
+int a(void)
 {
-  *(int *)NULL = 42;
+  *(volatile int *)32 = 1;
+  return 1;
 }
 
-void b(int x)
+int b(int x)
 {
+  int r;
+
+  compiler_barrier();
+  
   if (x)
-    a();
+    r = a();
   else
-    b(1);
+    r = c(1);
+  return r + 1;
 }
 
 int
