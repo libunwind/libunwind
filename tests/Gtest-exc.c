@@ -97,7 +97,7 @@ a (int n)
 	    n, &stack, (unsigned long) get_bsp ());
 
   if (n > 0)
-    a (n - 1) + 1;
+    a (n - 1);
   else
     b (16);
 
