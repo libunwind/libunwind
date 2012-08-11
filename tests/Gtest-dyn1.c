@@ -86,7 +86,9 @@ struct fdesc
 # define get_gp(fdesc)		(0)
 #endif
 
+#ifndef __GNUC__
 extern void flush_cache (void *addr, size_t len);
+#endif
 
 void
 template (int i, template_t self,
@@ -186,7 +188,7 @@ main (int argc, char *argv[] __attribute__((unused)))
 	    2*getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC);
 
 #ifdef __GNUC__
-  __clear_cache(mem, mem + MAX_FUNC_SIZE);
+  __builtin___clear_cache(mem, mem + MAX_FUNC_SIZE);
 #else
   flush_cache (mem, MAX_FUNC_SIZE);
 #endif

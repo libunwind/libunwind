@@ -1,3 +1,5 @@
+#ifndef __GNUC__
+
 #if defined(__ia64__)
 
 	.global flush_cache
@@ -79,4 +81,6 @@ flush_cache:
 #if defined ( __linux__) && !defined (__arm__)
         /* We do not need executable stack.  */
         .section        .note.GNU-stack,"",@progbits
+#endif
+
 #endif
