@@ -316,7 +316,7 @@ struct elf_dyn_info
 #endif
   };
 
-static void inline invalidate_edi (struct elf_dyn_info *edi)
+static inline void invalidate_edi (struct elf_dyn_info *edi)
 {
   if (edi->ei.image)
     munmap (edi->ei.image, edi->ei.size);
