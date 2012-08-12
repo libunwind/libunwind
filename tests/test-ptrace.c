@@ -224,7 +224,7 @@ main (int argc, char **argv)
 #error Trace me
 #endif
 
-      if (optind == argc) {
+      if ((argc > 1) && (optind == argc)) {
         fprintf(stderr, "Need to specify a command line for the child\n");
         exit (-1);
       }
