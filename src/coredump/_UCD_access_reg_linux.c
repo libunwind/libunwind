@@ -80,7 +80,7 @@ _UCD_access_reg (unw_addr_space_t as,
   /* pr_reg is a long[] array, but it contains struct user_regs_struct's
    * image.
    */
-  Debug(1, "pr_reg[%d]:%ld (0x%lx)", regnum,
+  Debug(1, "pr_reg[%d]:%ld (0x%lx)\n", regnum,
 		(long)ui->prstatus->pr_reg[regnum],
 		(long)ui->prstatus->pr_reg[regnum]
   );
