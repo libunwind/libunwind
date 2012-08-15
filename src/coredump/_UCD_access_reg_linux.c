@@ -1,4 +1,5 @@
 /* libunwind - a platform-independent unwind library
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -30,12 +31,18 @@ _UCD_access_reg (unw_addr_space_t as,
                                 unw_regnum_t regnum, unw_word_t *valp,
                                 int write, void *arg)
 {
+  struct UCD_info *ui = arg;
+
   if (write)
     {
       Debug(0, "write is not supported\n");
       return -UNW_EINVAL;
     }
 
+#if defined(UNW_TARGET_ARM)
+  if (regnum < 0 || regnum >= 16)
+    goto badreg;
+#else
 #if defined(UNW_TARGET_X86)
   static const uint8_t remap_regs[] =
     {
@@ -69,13 +76,11 @@ _UCD_access_reg (unw_addr_space_t as,
 #error Port me
 #endif
 
-  struct UCD_info *ui = arg;
   if (regnum < 0 || regnum >= (unw_regnum_t)ARRAY_SIZE(remap_regs))
-    {
-      Debug(0, "bad regnum:%d\n", regnum);
-      return -UNW_EINVAL;
-    }
+    goto badreg;
+
   regnum = remap_regs[regnum];
+#endif
 
   /* pr_reg is a long[] array, but it contains struct user_regs_struct's
    * image.
@@ -87,4 +92,8 @@ _UCD_access_reg (unw_addr_space_t as,
   *valp = ui->prstatus->pr_reg[regnum];
 
   return 0;
+
+badreg:
+  Debug(0, "bad regnum:%d\n", regnum);
+  return -UNW_EINVAL;
 }
