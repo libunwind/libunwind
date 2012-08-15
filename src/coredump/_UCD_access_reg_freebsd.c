@@ -32,7 +32,7 @@ _UCD_access_reg (unw_addr_space_t as,
 {
   if (write)
     {
-      Debug(0, "%s: write is not supported\n", __func__);
+      Debug(0, "write is not supported\n");
       return -UNW_EINVAL;
     }
 
@@ -74,7 +74,7 @@ _UCD_access_reg (unw_addr_space_t as,
      *valp = ui->prstatus->pr_reg.r_trapno;
      break;
   default:
-      Debug(0, "%s: bad regnum:%d\n", __func__, regnum);
+      Debug(0, "bad regnum:%d\n", regnum);
       return -UNW_EINVAL;
   };
 #elif defined(UNW_TARGET_X86_64)
@@ -107,7 +107,7 @@ _UCD_access_reg (unw_addr_space_t as,
      *valp = ui->prstatus->pr_reg.r_rip;
      break;
   default:
-      Debug(0, "%s: bad regnum:%d\n", __func__, regnum);
+      Debug(0, "bad regnum:%d\n", regnum);
       return -UNW_EINVAL;
   };
 #else

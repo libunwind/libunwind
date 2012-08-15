@@ -32,7 +32,7 @@ _UCD_access_reg (unw_addr_space_t as,
 {
   if (write)
     {
-      Debug(0, "%s: write is not supported\n", __func__);
+      Debug(0, "write is not supported\n");
       return -UNW_EINVAL;
     }
 
@@ -72,7 +72,7 @@ _UCD_access_reg (unw_addr_space_t as,
   struct UCD_info *ui = arg;
   if (regnum < 0 || regnum >= (unw_regnum_t)ARRAY_SIZE(remap_regs))
     {
-      Debug(0, "%s: bad regnum:%d\n", __func__, regnum);
+      Debug(0, "bad regnum:%d\n", regnum);
       return -UNW_EINVAL;
     }
   regnum = remap_regs[regnum];

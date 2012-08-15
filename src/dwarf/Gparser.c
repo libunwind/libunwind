@@ -527,7 +527,7 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
 
   if (likely (caching == UNW_CACHE_GLOBAL))
     {
-      Debug (16, "%s: acquiring lock\n", __FUNCTION__);
+      Debug (16, "acquiring lock\n");
       lock_acquire (&cache->lock, *saved_maskp);
     }
 

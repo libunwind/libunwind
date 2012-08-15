@@ -55,7 +55,7 @@ get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
   coredump_phdr_t *phdr = _UCD_get_elf_image(ui, ip);
   if (!phdr)
     {
-      Debug(1, "%s returns error: _UCD_get_elf_image failed\n", __func__);
+      Debug(1, "returns error: _UCD_get_elf_image failed\n");
       return -UNW_ENOINFO;
     }
   /* segbase: where it is mapped in virtual memory */
@@ -70,7 +70,7 @@ get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
      which covers the IP we're looking for.  */
   if (tdep_find_unwind_table(&ui->edi, as, phdr->backing_filename, segbase, mapoff, ip) < 0)
     {
-      Debug(1, "%s returns error: tdep_find_unwind_table failed\n", __func__);
+      Debug(1, "returns error: tdep_find_unwind_table failed\n");
       return -UNW_ENOINFO;
     }
 
@@ -92,11 +92,11 @@ get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
 #endif
       && ui->edi.di_debug.format == -1)
   {
-    Debug(1, "%s returns error: all formats are -1\n", __func__);
+    Debug(1, "returns error: all formats are -1\n");
     return -UNW_ENOINFO;
   }
 
-  Debug(1, "%s returns success\n", __func__);
+  Debug(1, "returns success\n");
   return 0;
 }
 
@@ -106,12 +106,12 @@ _UCD_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
 {
   struct UCD_info *ui = arg;
 
-  Debug(1, "%s: entering\n", __func__);
+  Debug(1, "entering\n");
 
   int ret = -UNW_ENOINFO;
 
   if (get_unwind_info(ui, as, ip) < 0) {
-    Debug(1, "%s returns error: get_unwind_info failed\n", __func__);
+    Debug(1, "returns error: get_unwind_info failed\n");
     return -UNW_ENOINFO;
   }
 
@@ -157,7 +157,7 @@ _UCD_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
     ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
 				    need_unwind_info, arg);
 
-  Debug(1, "%s: returns %d\n", __func__, ret);
+  Debug(1, "returns %d\n", ret);
 
   return ret;
 }

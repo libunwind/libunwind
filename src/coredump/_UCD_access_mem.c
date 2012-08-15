@@ -30,7 +30,7 @@ _UCD_access_mem(unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
 {
   if (write)
     {
-      Debug(0, "%s: write is not supported\n", __func__);
+      Debug(0, "write is not supported\n");
       return -UNW_EINVAL;
     }
 
@@ -47,9 +47,7 @@ _UCD_access_mem(unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
 	  goto found;
 	}
     }
-  Debug(1, "%s: addr 0x%llx is unmapped\n",
-		__func__, (unsigned long long)addr
-  );
+  Debug(1, "addr 0x%llx is unmapped\n", (unsigned long long)addr);
   return -UNW_EINVAL;
 
  found: ;
@@ -63,8 +61,8 @@ _UCD_access_mem(unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
       /* Do we have it in the backup file? */
       if (phdr->backing_fd < 0)
         {
-          Debug(1, "%s: access to not-present data in phdr[%d]: addr:0x%llx\n",
-				__func__, i, (unsigned long long)addr
+          Debug(1, "access to not-present data in phdr[%d]: addr:0x%llx\n",
+				i, (unsigned long long)addr
 			);
           return -UNW_EINVAL;
         }
@@ -83,8 +81,7 @@ _UCD_access_mem(unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
   if (read(fd, val, sizeof(*val)) != sizeof(*val))
     goto read_error;
 
-  Debug(1, "%s: 0x%llx <- [addr:0x%llx fileofs:0x%llx]\n",
-	__func__,
+  Debug(1, "0x%llx <- [addr:0x%llx fileofs:0x%llx]\n",
 	(unsigned long long)(*val),
 	(unsigned long long)addr,
 	(unsigned long long)fileofs
@@ -92,8 +89,7 @@ _UCD_access_mem(unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
   return 0;
 
  read_error:
-  Debug(1, "%s: access out of file: addr:0x%llx fileofs:%llx file:'%s'\n",
-	__func__,
+  Debug(1, "access out of file: addr:0x%llx fileofs:%llx file:'%s'\n",
 	(unsigned long long)addr,
 	(unsigned long long)fileofs,
 	filename
