@@ -89,7 +89,8 @@ do_backtrace (int may_print, int get_proc_name)
       buf[0] = '\0';
       if (get_proc_name || (may_print && verbose))
 	{
-	  if (unw_get_proc_name (&cursor, name, sizeof (name), &off) == 0)
+	  ret = unw_get_proc_name (&cursor, name, sizeof (name), &off);
+	  if (ret == 0 && (may_print && verbose))
 	    {
 	      if (off)
 		snprintf (buf, sizeof (buf), "<%s+0x%lx>", name, (long) off);
