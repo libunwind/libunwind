@@ -500,6 +500,7 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_ARM_R14]      = 0x38,
     [UNW_ARM_R15]      = 0x3c,
 #elif defined(UNW_TARGET_MIPS)
+#elif defined(UNW_TARGET_SH)
 #else
 # error Fix me.
 #endif

@@ -356,6 +356,24 @@ libunwind_ppc64_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common) \
 	ppc64/Gglobal.c ppc64/Ginit.c					\
 	ppc64/Gregs.c ppc64/Gresume.c ppc64/Gstep.c
 
+# The list of files that go into libunwind and libunwind-sh:
+noinst_HEADERS += sh/init.h sh/offsets.h sh/unwind_i.h
+libunwind_la_SOURCES_sh_common = $(libunwind_la_SOURCES_common)		\
+	sh/is_fpreg.c sh/regname.c
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_sh = $(libunwind_la_SOURCES_sh_common)		\
+	$(libunwind_la_SOURCES_local)					\
+	sh/Lcreate_addr_space.c sh/Lget_proc_info.c sh/Lget_save_loc.c	\
+	sh/Lglobal.c sh/Linit.c sh/Linit_local.c sh/Linit_remote.c	\
+	sh/Lis_signal_frame.c sh/Lregs.c sh/Lresume.c sh/Lstep.c
+
+libunwind_sh_la_SOURCES_sh = $(libunwind_la_SOURCES_sh_common)		\
+	$(libunwind_la_SOURCES_generic)					\
+	sh/Gcreate_addr_space.c sh/Gget_proc_info.c sh/Gget_save_loc.c	\
+	sh/Gglobal.c sh/Ginit.c sh/Ginit_local.c sh/Ginit_remote.c	\
+	sh/Gis_signal_frame.c sh/Gregs.c sh/Gresume.c sh/Gstep.c
+
 if REMOTE_ONLY
 install-exec-hook:
 #	Nothing to do here....
@@ -506,7 +524,20 @@ if !REMOTE_ONLY
  libunwind_ppc64_la_LIBADD += libunwind.la -lc
 endif
  libunwind_setjmp_la_SOURCES += ppc/longjmp.S ppc/siglongjmp.S
+else
+if ARCH_SH
+ lib_LTLIBRARIES += libunwind-sh.la
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_sh)
+ libunwind_sh_la_SOURCES = $(libunwind_sh_la_SOURCES_sh)
+ libunwind_sh_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+ libunwind_sh_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_sh_la_LIBADD += libunwind-elf32.la
+if !REMOTE_ONLY
+ libunwind_sh_la_LIBADD += libunwind.la -lc
+endif
+ libunwind_setjmp_la_SOURCES += sh/siglongjmp.S
 
+endif # ARCH_SH
 endif # ARCH_PPC64
 endif # ARCH_PPC32
 endif # ARCH_X86_64
@@ -541,6 +572,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_arm)			\
 		$(libunwind_la_SOURCES_hppa)			\
 		$(libunwind_la_SOURCES_ia64)			\
 		$(libunwind_la_SOURCES_mips)			\
+		$(libunwind_la_SOURCES_sh)			\
 		$(libunwind_la_SOURCES_x86)			\
 		$(libunwind_la_SOURCES_os_freebsd)		\
 		$(libunwind_la_SOURCES_os_linux)		\
@@ -552,6 +584,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_arm)			\
 		$(libunwind_hppa_la_SOURCES_hppa)		\
 		$(libunwind_ia64_la_SOURCES_ia64)		\
 		$(libunwind_mips_la_SOURCES_mips)		\
+		$(libunwind_sh_la_SOURCES_sh)			\
 		$(libunwind_x86_la_SOURCES_x86)			\
 		$(libunwind_x86_64_la_SOURCES_x86_64)
 

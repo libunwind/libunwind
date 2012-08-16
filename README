@@ -10,6 +10,7 @@ several architecture/operating-system combinations:
  Linux/PARISC:	Works well, but C library missing unwind-info.
  HP-UX/IA-64:	Mostly works but known to have some serious limitations.
  Linux/PPC64:	Newly added.
+ Linux/SuperH:	Newly added.
  FreeBSD/i386:	Newly added.
  FreeBSD/x86-64: Newly added (FreeBSD architecture is known as amd64).
 

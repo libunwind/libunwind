@@ -26,6 +26,9 @@ endif
 if ARCH_PPC64
 include_HEADERS += include/libunwind-ppc64.h
 endif
+if ARCH_SH
+include_HEADERS += include/libunwind-sh.h
+endif
 
 if !REMOTE_ONLY
 include_HEADERS += include/libunwind.h include/unwind.h
@@ -54,6 +57,8 @@ noinst_HEADERS = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
 	include/tdep-ppc32/jmpbuf.h include/tdep-ppc32/libunwind_i.h	\
 	include/tdep-ppc64/dwarf-config.h				\
 	include/tdep-ppc64/jmpbuf.h include/tdep-ppc64/libunwind_i.h	\
+	include/tdep-sh/dwarf-config.h					\
+	include/tdep-sh/jmpbuf.h include/tdep-sh/libunwind_i.h		\
 	include/tdep/libunwind_i.h					\
 	include/tdep/jmpbuf.h include/tdep/dwarf-config.h
 

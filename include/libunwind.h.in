@@ -15,6 +15,8 @@
 # include "libunwind-ppc32.h"
 #elif defined __powerpc64__
 # include "libunwind-ppc64.h"
+#elif defined __sh__
+# include "libunwind-sh.h"
 #elif defined __i386__
 # include "libunwind-x86.h"
 #elif defined __x86_64__

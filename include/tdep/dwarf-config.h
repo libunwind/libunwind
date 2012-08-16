@@ -13,6 +13,8 @@
 # include "tdep-ppc32/dwarf-config.h"
 #elif defined __powerpc64__
 # include "tdep-ppc64/dwarf-config.h"
+#elif defined __sh__
+# include "tdep-sh/dwarf-config.h"
 #elif defined __i386__
 # include "tdep-x86/dwarf-config.h"
 #elif defined __x86_64__ || defined __amd64__
