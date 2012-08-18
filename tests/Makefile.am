@@ -121,7 +121,7 @@ Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
-LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.a
+LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.la
 LIBUNWIND_coredump = $(top_builddir)/src/libunwind-coredump.la
 
 if USE_ELF32
