@@ -41,7 +41,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 
 int
-main (int argc, char **argv)
+main (void)
 {
   long n = 0;
 

@@ -45,7 +45,7 @@ a (int d, ...)
 }
 
 int
-main (int argc, char **argv)
+main (void)
 {
   a (5, 3, 4, 5, 6);
   return 0;

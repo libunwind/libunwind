@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef HAVE_TTRACE
 
 int
-main (int argc, char **argv)
+main (void)
 {
   printf ("FAILURE: ttrace() not supported yet\n");
   return -1;
@@ -73,7 +73,7 @@ static struct UPT_info *ui;
 static int killed;
 
 void
-do_backtrace (pid_t target_pid)
+do_backtrace (void)
 {
   unw_word_t ip, sp, start_ip = 0, off;
   int n = 0, ret;
@@ -301,7 +301,7 @@ main (int argc, char **argv)
 #endif
 	  else
 	    {
-	      do_backtrace (target_pid);
+	      do_backtrace ();
 #if HAVE_DECL_PTRACE_SINGLESTEP
 	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
 #elif HAVE_DECL_PT_STEP
@@ -314,7 +314,7 @@ main (int argc, char **argv)
 
 	case SYSCALL:
 	  if (!state)
-	    do_backtrace (target_pid);
+	    do_backtrace ();
 	  state ^= 1;
 #if HAVE_DECL_PTRACE_SYSCALL
 	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
@@ -326,7 +326,7 @@ main (int argc, char **argv)
 	  break;
 
 	case INSTRUCTION:
-	  do_backtrace (target_pid);
+	  do_backtrace ();
 #if HAVE_DECL_PTRACE_SINGLESTEP
 	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
 #elif HAVE_DECL_PT_STEP

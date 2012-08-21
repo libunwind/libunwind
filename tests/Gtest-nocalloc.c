@@ -111,7 +111,7 @@ foo1 (void)
 }
 
 int
-main (int argc, char **argv)
+main (void)
 {
   int i, num_errors;
 
