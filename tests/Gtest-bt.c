@@ -82,10 +82,12 @@ do_backtrace (void)
 	{
 	  printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
-	  unw_get_proc_info (&cursor, &pi);
-	  printf ("\tproc=%lx-%lx\n\thandler=%lx lsda=%lx gp=%lx",
+	  if (unw_get_proc_info (&cursor, &pi) == 0)
+	    {
+	      printf ("\tproc=0x%lx-0x%lx\n\thandler=0x%lx lsda=0x%lx gp=0x%lx",
 		  (long) pi.start_ip, (long) pi.end_ip,
 		  (long) pi.handler, (long) pi.lsda, (long) pi.gp);
+	    }
 
 #if UNW_TARGET_IA64
 	  {
