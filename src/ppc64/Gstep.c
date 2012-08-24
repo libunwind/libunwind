@@ -100,8 +100,8 @@ unw_step (unw_cursor_t * cursor)
 	  if ((ret =
 	       dwarf_get (&c->dwarf, back_chain_loc, &c->dwarf.cfa)) < 0)
 	    {
-	      Debug
-		("Unable to retrieve CFA from back chain in stack frame - %d\n",
+	      Debug (2,
+		 "Unable to retrieve CFA from back chain in stack frame - %d\n",
 		 ret);
 	      return ret;
 	    }
@@ -114,8 +114,8 @@ unw_step (unw_cursor_t * cursor)
 
 	  if ((ret = dwarf_get (&c->dwarf, lr_save_loc, &c->dwarf.ip)) < 0)
 	    {
-	      Debug
-		("Unable to retrieve IP from lr save in stack frame - %d\n",
+	      Debug (2,
+		 "Unable to retrieve IP from lr save in stack frame - %d\n",
 		 ret);
 	      return ret;
 	    }
