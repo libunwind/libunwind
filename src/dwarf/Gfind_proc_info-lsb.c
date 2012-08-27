@@ -226,9 +226,9 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 
 /* An error reading image file. Release resources and return error code */
 file_error:
-  if (stringtab) free(stringtab);
-  if (sec_hdrs) free(sec_hdrs);
-  if (linkbuf) free(linkbuf);
+  free(stringtab);
+  free(sec_hdrs);
+  free(linkbuf);
   fclose(f);
 
   return 1;
