@@ -332,18 +332,6 @@ struct debug_frame_tab
     uint32_t size;
   };
 
-static struct debug_frame_tab *
-debug_frame_tab_new (unsigned int base_size)
-{
-  struct debug_frame_tab *tab = malloc (sizeof (struct debug_frame_tab));
-
-  tab->tab = calloc (base_size, sizeof (struct table_entry));
-  tab->length = 0;
-  tab->size = base_size;
-  
-  return tab;
-}
-
 static void
 debug_frame_tab_append (struct debug_frame_tab *tab,
 			unw_word_t fde_offset, unw_word_t start_ip)
@@ -412,7 +400,7 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
       unw_word_t item_start, item_end = 0;
       uint32_t u32val = 0;
       uint64_t cie_id = 0;
-      struct debug_frame_tab *tab;
+      struct debug_frame_tab tab;
 
       Debug (15, "loaded .debug_frame\n");
 
@@ -435,7 +423,9 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
          /* Find all FDE entries in debug_frame, and make into a sorted
             index.  */
 
-         tab = debug_frame_tab_new (16);
+         tab.length = 0;
+         tab.size = 16;
+         tab.tab = calloc (tab.size, sizeof (struct table_entry));
 
          while (addr < (unw_word_t) (uintptr_t) (buf + bufsize))
            {
@@ -488,7 +478,7 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
                    {
                      Debug (15, "start_ip = %lx, end_ip = %lx\n",
                             (long) this_pi.start_ip, (long) this_pi.end_ip);
-                     debug_frame_tab_append (tab,
+                     debug_frame_tab_append (&tab,
                                              item_start - (unw_word_t) (uintptr_t) buf,
                                              this_pi.start_ip);
                    }
@@ -499,18 +489,17 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
              addr = item_end;
            }
 
-         debug_frame_tab_shrink (tab);
-         qsort (tab->tab, tab->length, sizeof (struct table_entry),
+         debug_frame_tab_shrink (&tab);
+         qsort (tab.tab, tab.length, sizeof (struct table_entry),
                 debug_frame_tab_compare);
-         /* for (i = 0; i < tab->length; i++)
+         /* for (i = 0; i < tab.length; i++)
             {
             fprintf (stderr, "ip %x, fde offset %x\n",
-            (int) tab->tab[i].start_ip_offset,
-            (int) tab->tab[i].fde_offset);
+            (int) tab.tab[i].start_ip_offset,
+            (int) tab.tab[i].fde_offset);
             }*/
-         fdesc->index = tab->tab;
-         fdesc->index_size = tab->length;
-         free (tab);
+         fdesc->index = tab.tab;
+         fdesc->index_size = tab.length;
        }
 
       di->format = UNW_INFO_FORMAT_TABLE;
