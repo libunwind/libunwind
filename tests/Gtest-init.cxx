@@ -45,7 +45,7 @@ class Test_Class {
 static Test_Class t;
 
 static void
-backtrace (void)
+do_backtrace (void)
 {
   char name[128], off[32];
   unw_word_t ip, offset;
@@ -78,14 +78,14 @@ backtrace (void)
 static void
 b (void)
 {
-  backtrace();
+  do_backtrace();
 }
 
 static void
 a (void)
 {
   if (verbose)
-    printf ("backtrace() from atexit()-handler:\n");
+    printf ("do_backtrace() from atexit()-handler:\n");
   b();
   if (errors)
     abort ();	/* cannot portably call exit() from an atexit() handler */
@@ -94,7 +94,7 @@ a (void)
 Test_Class::Test_Class (void)
 {
   if (verbose)
-    printf ("backtrace() from constructor:\n");
+    printf ("do_backtrace() from constructor:\n");
   b();
 }
 
