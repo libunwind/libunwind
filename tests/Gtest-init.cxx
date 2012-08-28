@@ -62,7 +62,7 @@ do_backtrace (void)
       name[0] = '\0';
       off[0] = '\0';
       if (unw_get_proc_name (&cursor, name, sizeof (name), &offset) == 0
-	  && off > 0)
+	  && offset > 0)
 	snprintf (off, sizeof (off), "+0x%lx", (long) offset);
       if (verbose)
 	printf ("  [%lx] <%s%s>\n", (long) ip, name, off);
