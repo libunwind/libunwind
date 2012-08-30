@@ -25,6 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* This file tests dynamic code-generation via function-cloning.  */
 
+#include "flush-cache.h"
+
 #include <libunwind.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -84,10 +86,6 @@ struct fdesc
 # define get_fdesc(fdesc,func)	(fdesc.code = (long) &(func))
 # define get_funcp(fdesc)	((template_t) (fdesc).code)
 # define get_gp(fdesc)		(0)
-#endif
-
-#ifndef __GNUC__
-extern void flush_cache (void *addr, size_t len);
 #endif
 
 void
@@ -187,11 +185,7 @@ main (int argc, char *argv[] __attribute__((unused)))
   mprotect ((void *) ((long) mem & ~(getpagesize () - 1)),
 	    2*getpagesize(), PROT_READ | PROT_WRITE | PROT_EXEC);
 
-#ifdef __GNUC__
-  __builtin___clear_cache(mem, mem + MAX_FUNC_SIZE);
-#else
   flush_cache (mem, MAX_FUNC_SIZE);
-#endif
 
   signal (SIGSEGV, sighandler);
 

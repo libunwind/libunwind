@@ -277,6 +277,17 @@ if test x$intel_compiler = xyes; then
   AC_MSG_RESULT([$have_static_libcxa])
 fi
 
+AC_MSG_CHECKING([for __builtin___clear_cache])
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[]], [[__builtin___clear_cache(0, 0)]])],
+  [have__builtin___clear_cache=yes],
+  [have__builtin___clear_cache=no])
+if test x$have__builtin___clear_cache = xyes; then
+  AC_DEFINE([HAVE__BUILTIN___CLEAR_CACHE], [1],
+            [Defined if __builtin___clear_cache() is available])
+fi
+AC_MSG_RESULT([$have__builtin___clear_cache])
+
 CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 
 arch="$target_arch"

@@ -101,15 +101,16 @@ Lia64_test_rbs_SOURCES = Lia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Gia64_test_rbs_SOURCES = Gia64-test-rbs.c ia64-test-rbs-asm.S ia64-test-rbs.h
 Lia64_test_nat_SOURCES = Lia64-test-nat.c ia64-test-nat-asm.S
 Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
-ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S
+ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S \
+				flush-cache.h
 ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
 ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
 
-Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S
-Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S
+Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S flush-cache.h
+Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S flush-cache.h
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
 test_static_link_LDFLAGS = -static
 forker_LDFLAGS = -static

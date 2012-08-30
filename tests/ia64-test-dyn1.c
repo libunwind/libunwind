@@ -1,3 +1,5 @@
+#include "flush-cache.h"
+
 #include <assert.h>
 #include <libunwind.h>
 #include <unistd.h>
@@ -20,10 +22,6 @@ int verbose;
 # define EXTRA			0
 #endif
 
-#ifndef __GNUC__
-extern void flush_cache (void *addr, size_t len);
-#endif
-
 int
 make_executable (void *addr, size_t len)
 {
@@ -33,11 +31,7 @@ make_executable (void *addr, size_t len)
       perror ("mprotect");
       return -1;
     }
-#ifdef __GNUC__
-  __builtin___clear_cache(addr, addr + len);
-#else
   flush_cache (addr, len);
-#endif
   return 0;
 }
 

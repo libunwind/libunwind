@@ -1,4 +1,8 @@
-#ifndef __GNUC__
+#ifdef HAVE_CONFIG_H
+# include "config.h"
+#endif
+
+#ifndef HAVE__BUILTIN___CLEAR_CACHE
 
 #if defined(__ia64__)
 
