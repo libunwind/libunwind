@@ -68,7 +68,6 @@ PT_STEP, PT_SYSCALL], [], [],
 ])
 
 dnl Checks for library functions.
-AC_FUNC_MEMCMP
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore)
 is_gcc_m64() {
