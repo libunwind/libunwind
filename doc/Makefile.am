@@ -1,6 +1,7 @@
 # man pages that go into section 3:
 man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 	libunwind-ptrace.man libunwind-setjmp.man			\
+	unw_backtrace.man						\
 	unw_flush_cache.man						\
 	unw_get_accessors.man						\
 	unw_get_proc_info.man						\
@@ -26,6 +27,7 @@ man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 EXTRA_DIST = NOTES libunwind.trans					\
 	libunwind.tex libunwind-dynamic.tex libunwind-ia64.tex		\
 	libunwind-ptrace.tex libunwind-setjmp.tex			\
+	unw_backtrace.tex						\
 	unw_flush_cache.tex						\
 	unw_get_accessors.tex						\
 	unw_get_proc_info.tex						\
