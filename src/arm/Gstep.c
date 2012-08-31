@@ -68,6 +68,8 @@ arm_exidx_step (struct cursor *c)
       return -UNW_EBADFRAME;
     }
 
+  c->dwarf.pi_valid = 0;
+
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
 
@@ -156,6 +158,8 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   /* Set SP/CFA and PC/IP.  */
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R13], &c->dwarf.cfa);
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R15], &c->dwarf.ip);
+
+  c->dwarf.pi_valid = 0;
 
   return 1;
 }
@@ -253,6 +257,7 @@ unw_step (unw_cursor_t *cursor)
                 }
               c->dwarf.loc[UNW_ARM_R12] = ip_loc;
               c->dwarf.loc[UNW_ARM_R11] = fp_loc;
+              c->dwarf.pi_valid = 0;
               Debug(15, "ip=%lx\n", c->dwarf.ip);
             }
           else
