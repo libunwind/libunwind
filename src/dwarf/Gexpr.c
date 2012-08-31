@@ -431,7 +431,7 @@ do {						\
 
 	case DW_OP_drop:
 	  Debug (15, "OP_drop\n");
-	  pop ();
+	  (void) pop ();
 	  break;
 
 	case DW_OP_pick:
