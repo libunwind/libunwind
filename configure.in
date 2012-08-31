@@ -303,7 +303,6 @@ old_LIBS="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(backtrace, execinfo)
 AM_CONDITIONAL(HAVE_BACKTRACE, test "x$ac_cv_search_backtrace" != xno)
-BACKTRACELIB="$LIBS"
 LIBS="$old_LIBS"
 
 AC_SUBST(build_arch)
@@ -319,7 +318,6 @@ AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
-AC_SUBST(BACKTRACELIB)
 
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
 		doc/Makefile doc/common.tex include/libunwind-common.h
