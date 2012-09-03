@@ -400,14 +400,14 @@ endif
 else
 if ARCH_IA64
  BUILT_SOURCES = Gcursor_i.h Lcursor_i.h
-mk_Gcursor_i.s: ia64/mk_Gcursor_i.c
-	$(COMPILE) -S ia64/mk_Gcursor_i.c -o mk_Gcursor_i.s
-mk_Lcursor_i.s: ia64/mk_Lcursor_i.c
-	$(COMPILE) -S ia64/mk_Lcursor_i.c -o mk_Lcursor_i.s
+mk_Gcursor_i.s: $(srcdir)/ia64/mk_Gcursor_i.c
+	$(COMPILE) -S "$(srcdir)/ia64/mk_Gcursor_i.c" -o mk_Gcursor_i.s
+mk_Lcursor_i.s: $(srcdir)/ia64/mk_Lcursor_i.c
+	$(COMPILE) -S "$(srcdir)/ia64/mk_Lcursor_i.c" -o mk_Lcursor_i.s
 Gcursor_i.h: mk_Gcursor_i.s
-	ia64/mk_cursor_i mk_Gcursor_i.s > Gcursor_i.h
+	"$(srcdir)/ia64/mk_cursor_i" mk_Gcursor_i.s > Gcursor_i.h
 Lcursor_i.h: mk_Lcursor_i.s
-	ia64/mk_cursor_i mk_Lcursor_i.s > Lcursor_i.h
+	"$(srcdir)/ia64/mk_cursor_i" mk_Lcursor_i.s > Lcursor_i.h
 
  lib_LTLIBRARIES += libunwind-ia64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_ia64)
