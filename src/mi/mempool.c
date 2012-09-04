@@ -39,14 +39,14 @@ sos_alloc (size_t size)
 #ifdef HAVE_CMPXCHG
   char *old_mem;
 
-  size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
+  size = UNW_ALIGN(size, MAX_ALIGN);
   if (!sos_memp)
     cmpxchg_ptr (&sos_memp, 0, sos_memory);
   do
     {
       old_mem = sos_memp;
 
-      mem = (char *) (((unsigned long) old_mem + MAX_ALIGN - 1) & -MAX_ALIGN);
+      mem = (char *) UNW_ALIGN((unsigned long) old_mem, MAX_ALIGN);
       mem += size;
       assert (mem < sos_memory + sizeof (sos_memory));
     }
@@ -55,14 +55,14 @@ sos_alloc (size_t size)
   static define_lock (sos_lock);
   intrmask_t saved_mask;
 
-  size = (size + MAX_ALIGN - 1) & -MAX_ALIGN;
+  size = UNW_ALIGN(size, MAX_ALIGN);
 
   lock_acquire (&sos_lock, saved_mask);
   {
     if (!sos_memp)
       sos_memp = sos_memory;
 
-    mem = (char *) (((unsigned long) sos_memp + MAX_ALIGN - 1) & -MAX_ALIGN);
+    mem = (char *) UNW_ALIGN((unsigned long) sos_memp, MAX_ALIGN);
     mem += size;
     assert (mem < sos_memory + sizeof (sos_memory));
     sos_memp = mem;
@@ -126,7 +126,7 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
   lock_init (&pool->lock);
 
   /* round object-size up to integer multiple of MAX_ALIGN */
-  obj_size = (obj_size + MAX_ALIGN - 1) & -MAX_ALIGN;
+  obj_size = UNW_ALIGN(obj_size, MAX_ALIGN);
 
   if (!reserve)
     {

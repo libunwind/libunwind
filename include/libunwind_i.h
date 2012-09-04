@@ -352,4 +352,6 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
 # define tdep_get_func_addr(as,addr,v)		(*(v) = addr, 0)
 #endif
 
+#define UNW_ALIGN(x,a) (((x)+(a)-1UL)&~((a)-1UL))
+
 #endif /* libunwind_i_h */
