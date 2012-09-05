@@ -26,14 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef dwarf_h
 #define dwarf_h
 
-#ifdef HAVE_CONFIG_H
-#include <config.h>
-#endif
-
-#ifdef HAVE_ATOMIC_OPS_H
-# include <atomic_ops.h>
-#endif
-
 #include <libunwind.h>
 
 struct dwarf_cursor;	/* forward-declaration */
