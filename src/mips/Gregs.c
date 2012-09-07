@@ -69,6 +69,10 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       loc = c->dwarf.loc[reg - UNW_MIPS_R0];
       break;
 
+    case UNW_MIPS_PC:
+      loc = c->dwarf.loc[reg];
+      break;
+
     case UNW_MIPS_CFA:
       if (write)
         return -UNW_EREADONLYREG;

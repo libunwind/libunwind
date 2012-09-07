@@ -95,6 +95,8 @@ typedef enum
     UNW_MIPS_R30,
     UNW_MIPS_R31,
 
+    UNW_MIPS_PC = 34,
+
     /* FIXME: Other registers!  */
 
     /* For MIPS, the CFA is the value of SP (r29) at the call site in the

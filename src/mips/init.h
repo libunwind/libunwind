@@ -34,7 +34,9 @@ common_init (struct cursor *c, unsigned use_prev_instr)
   for (i = 32; i < DWARF_NUM_PRESERVED_REGS; ++i)
     c->dwarf.loc[i] = DWARF_NULL_LOC;
 
-  ret = dwarf_get (&c->dwarf, c->dwarf.loc[31], &c->dwarf.ip);
+  c->dwarf.loc[UNW_MIPS_PC] = DWARF_REG_LOC (&c->dwarf, UNW_MIPS_PC);
+
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_MIPS_PC], &c->dwarf.ip);
   if (ret < 0)
     return ret;
 

@@ -41,6 +41,8 @@ unw_regname (unw_regnum_t reg)
 {
   if (reg < (unw_regnum_t) ARRAY_SIZE (regname))
     return regname[reg];
+  else if (reg == UNW_MIPS_PC)
+    return "pc";
   else
     return "???";
 }

@@ -103,7 +103,7 @@ SET_ARCH([$target_cpu],[target_arch])
 
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
-        [AS_CASE([$host_arch], [x86*], [enable_coredump=yes], [enable_coredump=no])]
+        [AS_CASE([$host_arch], [mips*|x86*], [enable_coredump=yes], [enable_coredump=no])]
 )
 
 AC_MSG_CHECKING([if we should build libunwind-coredump])
