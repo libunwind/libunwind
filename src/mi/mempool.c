@@ -115,7 +115,7 @@ expand (struct mempool *pool)
   GET_MEMORY (mem, size);
   if (!mem)
     {
-      size = (pool->obj_size + pg_size - 1) & -pg_size;
+      size = UNW_ALIGN(pool->obj_size, pg_size);
       GET_MEMORY (mem, size);
       if (!mem)
 	{
@@ -149,7 +149,7 @@ mempool_init (struct mempool *pool, size_t obj_size, size_t reserve)
 
   pool->obj_size = obj_size;
   pool->reserve = reserve;
-  pool->chunk_size = (2*reserve*obj_size + pg_size - 1) & -pg_size;
+  pool->chunk_size = UNW_ALIGN(2*reserve*obj_size, pg_size);
 
   expand (pool);
 }
