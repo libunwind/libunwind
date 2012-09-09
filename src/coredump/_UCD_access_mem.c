@@ -52,7 +52,7 @@ _UCD_access_mem(unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
 
  found: ;
 
-  const char *filename;
+  const char *filename UNUSED;
   off_t fileofs;
   int fd;
   if (addr_last >= phdr->p_vaddr + phdr->p_filesz)
