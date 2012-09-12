@@ -81,14 +81,15 @@ do_unwind_tests (void)
 	    {
 	      v0 = v1 = v2 = v3 = 0;
 	      n0 = n1 = n2 = n3 = 0;
-	      ((ret = unw_get_reg (&c, UNW_IA64_GR + reg, &v0)) < 0
+	      (void)
+	         ((ret = unw_get_reg (&c, UNW_IA64_GR  + reg, &v0)) < 0
 	       || (ret = unw_get_reg (&c, UNW_IA64_NAT + reg, &n0)) < 0
 	       || (ret = unw_get_reg (&c, UNW_IA64_GR  + reg + 1, &v1)) < 0
 	       || (ret = unw_get_reg (&c, UNW_IA64_NAT + reg + 1, &n1)) < 0
 	       || (ret = unw_get_reg (&c, UNW_IA64_GR  + reg + 2, &v2)) < 0
 	       || (ret = unw_get_reg (&c, UNW_IA64_NAT + reg + 2, &n2)) < 0
 	       || (ret = unw_get_reg (&c, UNW_IA64_GR  + reg + 3, &v3)) < 0
-	   || (ret = unw_get_reg (&c, UNW_IA64_NAT + reg + 3, &n3)) < 0);
+	       || (ret = unw_get_reg (&c, UNW_IA64_NAT + reg + 3, &n3)) < 0);
 	      if (reg < 100)
 		printf ("  r%d", reg);
 	      else
