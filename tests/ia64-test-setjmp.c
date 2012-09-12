@@ -73,7 +73,8 @@ sighandler (int signal, void *siginfo, void *sigcontext)
 /* Direct call of doit () at the end of doit () would get optimized by GCC to
    a branch.  */
 static void doit (int n);
-static volatile void (*doit_pointer) (int n) = doit;
+typedef void (*doit_type) (int);
+static volatile doit_type doit_pointer = doit;
 
 static void
 doit (int n)
