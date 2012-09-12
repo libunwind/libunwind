@@ -21,17 +21,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
 #include <unistd.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <libunwind.h>
+#include "compiler.h"
 
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
+
+static int verbose;
 
 struct Test
 {
@@ -55,13 +54,16 @@ extern "C" void bar()
     throw 5;
   } catch (...) {
     Test t;
-    printf("Throwing an int\n");
+    if (verbose)
+      printf("Throwing an int\n");
     throw 6;
   }
 }
 
-int main()
+int main(int argc, char **argv UNUSED)
 {
+  if (argc > 1)
+    verbose = 1;
   try {
     Test t;
     bar();
