@@ -62,7 +62,7 @@ unw_step (unw_cursor_t *cursor)
 	  c->sigcontext_addr = sc_addr;
 	  c->dwarf.ret_addr_column = UNW_HPPA_RP;
 
-	  if ((ret = dwarf_get (&c->dwarf, iaoq_loc, &ip)) , 0)
+	  if ((ret = dwarf_get (&c->dwarf, iaoq_loc, &ip)) < 0)
 	    {
 	      Debug (2, "failed to read IAOQ[1] (ret=%d)\n", ret);
 	      return ret;
