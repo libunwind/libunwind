@@ -25,6 +25,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "config.h"
 #endif
 
+#include "compiler.h"
+
 #include <errno.h>
 #if HAVE_EXECINFO_H
 # include <execinfo.h>
@@ -164,8 +166,10 @@ bar (long v)
 void
 sighandler (int signal, void *siginfo __attribute__((unused)), void *context)
 {
-  ucontext_t *uc = context;
+  ucontext_t *uc UNUSED;
   int sp;
+
+  uc = context;
 
   if (verbose)
     {
