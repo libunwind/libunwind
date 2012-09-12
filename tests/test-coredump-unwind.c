@@ -204,7 +204,7 @@ void die_out_of_memory(void)
 static
 void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
 {
-  long ip;
+  long ip = 0;
   ucontext_t *uc;
 
   uc = ucontext;
