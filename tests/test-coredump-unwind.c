@@ -19,6 +19,8 @@
  * libraries can be determined by ldd (at least on linux).
  */
 
+#include "compiler.h"
+
 #undef _GNU_SOURCE
 #define _GNU_SOURCE 1
 #undef __USE_GNU
@@ -205,7 +207,7 @@ static
 void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
 {
   long ip = 0;
-  ucontext_t *uc;
+  ucontext_t *uc UNUSED;
 
   uc = ucontext;
 #if defined(__linux__)
