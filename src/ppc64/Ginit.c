@@ -42,11 +42,6 @@ static struct unw_addr_space local_addr_space;
 
 PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
-
-#define PAGE_SIZE 4096
-#define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
-
-
 static void *
 uc_addr (ucontext_t *uc, int reg)
 {
