@@ -25,7 +25,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-#define MAX_ALIGN	(sizeof (long double))
+/* From GCC docs: ``Gcc also provides a target specific macro
+ * __BIGGEST_ALIGNMENT__, which is the largest alignment ever used for any data
+ * type on the target machine you are compiling for.'' */
+#ifdef __BIGGEST_ALIGNMENT__
+# define MAX_ALIGN	__BIGGEST_ALIGNMENT__
+#else
+# define MAX_ALIGN	(sizeof (long double))
+#endif
 
 static char sos_memory[SOS_MEMORY_SIZE];
 static char *sos_memp;
