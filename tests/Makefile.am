@@ -60,13 +60,15 @@ if SUPPORT_CXX_EXCEPTIONS
 endif
 
 if OS_LINUX
+if BUILD_COREDUMP
  check_SCRIPTS_cdep += run-coredump-unwind
  noinst_PROGRAMS_cdep += test-coredump-unwind
 
 if HAVE_LZMA
  check_SCRIPTS_cdep += run-coredump-unwind-mdi
-endif
-endif
+endif # HAVE_LZMA
+endif # BUILD_COREDUMP
+endif # OS_LINUX
 
 perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
 	@echo "########## Basic performance of generic libunwind:"
@@ -177,7 +179,9 @@ Lperf_trace_LDADD = $(LIBUNWIND_local)
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 
+if BUILD_COREDUMP
 test_coredump_unwind_LDADD = $(LIBUNWIND_coredump) $(LIBUNWIND)
+endif
 
 Gia64_test_nat_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gia64_test_stack_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)

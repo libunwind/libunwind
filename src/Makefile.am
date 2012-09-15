@@ -9,7 +9,10 @@ COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 lib_LIBRARIES =
 lib_LTLIBRARIES =
 if !REMOTE_ONLY
-lib_LTLIBRARIES += libunwind.la libunwind-coredump.la libunwind-ptrace.la
+lib_LTLIBRARIES += libunwind.la libunwind-ptrace.la
+if BUILD_COREDUMP
+lib_LTLIBRARIES += libunwind-coredump.la
+endif
 endif
 
 noinst_HEADERS =
