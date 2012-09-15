@@ -335,8 +335,153 @@ int _UPT_reg_offset[UNW_REG_LAST + 1] =
 #else
 #error Port me
 #endif
-#elif defined(UNW_TARGET_PPC32)
-#elif defined(UNW_TARGET_PPC64)
+#elif defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
+
+#define UNW_REG_SLOT_SIZE sizeof(unsigned long)
+#define UNW_PPC_R(v) ((v) * UNW_REG_SLOT_SIZE)
+#define UNW_PPC_PT(p) UNW_PPC_R(PT_##p)
+
+#define UNW_FP_OFF(b, i)    \
+    [UNW_PPC##b##_F##i] = UNW_PPC_R(PT_FPR0 + i * 8/UNW_REG_SLOT_SIZE)
+
+#define UNW_R_OFF(b, i) \
+    [UNW_PPC##b##_R##i] = UNW_PPC_R(PT_R##i)
+
+#define UNW_PPC_REGS(b) \
+    UNW_R_OFF(b, 0),	\
+    UNW_R_OFF(b, 1),	\
+    UNW_R_OFF(b, 2),	\
+    UNW_R_OFF(b, 3),	\
+    UNW_R_OFF(b, 4),	\
+    UNW_R_OFF(b, 5),	\
+    UNW_R_OFF(b, 6),	\
+    UNW_R_OFF(b, 7),	\
+    UNW_R_OFF(b, 8),	\
+    UNW_R_OFF(b, 9),	\
+    UNW_R_OFF(b, 10),	\
+    UNW_R_OFF(b, 11),	\
+    UNW_R_OFF(b, 12),	\
+    UNW_R_OFF(b, 13),	\
+    UNW_R_OFF(b, 14),	\
+    UNW_R_OFF(b, 15),	\
+    UNW_R_OFF(b, 16),	\
+    UNW_R_OFF(b, 17),	\
+    UNW_R_OFF(b, 18),	\
+    UNW_R_OFF(b, 19),	\
+    UNW_R_OFF(b, 20),	\
+    UNW_R_OFF(b, 21),	\
+    UNW_R_OFF(b, 22),	\
+    UNW_R_OFF(b, 23),	\
+    UNW_R_OFF(b, 24),	\
+    UNW_R_OFF(b, 25),	\
+    UNW_R_OFF(b, 26),	\
+    UNW_R_OFF(b, 27),	\
+    UNW_R_OFF(b, 28),	\
+    UNW_R_OFF(b, 29),	\
+    UNW_R_OFF(b, 30),	\
+    UNW_R_OFF(b, 31),	\
+                               \
+    [UNW_PPC##b##_CTR] = UNW_PPC_PT(CTR), \
+    [UNW_PPC##b##_XER] = UNW_PPC_PT(XER), \
+    [UNW_PPC##b##_LR]  = UNW_PPC_PT(LNK), \
+                               \
+    UNW_FP_OFF(b, 0), \
+    UNW_FP_OFF(b, 1), \
+    UNW_FP_OFF(b, 2), \
+    UNW_FP_OFF(b, 3), \
+    UNW_FP_OFF(b, 4), \
+    UNW_FP_OFF(b, 5), \
+    UNW_FP_OFF(b, 6), \
+    UNW_FP_OFF(b, 7), \
+    UNW_FP_OFF(b, 8), \
+    UNW_FP_OFF(b, 9), \
+    UNW_FP_OFF(b, 10), \
+    UNW_FP_OFF(b, 11), \
+    UNW_FP_OFF(b, 12), \
+    UNW_FP_OFF(b, 13), \
+    UNW_FP_OFF(b, 14), \
+    UNW_FP_OFF(b, 15), \
+    UNW_FP_OFF(b, 16), \
+    UNW_FP_OFF(b, 17), \
+    UNW_FP_OFF(b, 18), \
+    UNW_FP_OFF(b, 19), \
+    UNW_FP_OFF(b, 20), \
+    UNW_FP_OFF(b, 21), \
+    UNW_FP_OFF(b, 22), \
+    UNW_FP_OFF(b, 23), \
+    UNW_FP_OFF(b, 24), \
+    UNW_FP_OFF(b, 25), \
+    UNW_FP_OFF(b, 26), \
+    UNW_FP_OFF(b, 27), \
+    UNW_FP_OFF(b, 28), \
+    UNW_FP_OFF(b, 29), \
+    UNW_FP_OFF(b, 30), \
+    UNW_FP_OFF(b, 31)
+
+#define UNW_PPC32_REGS \
+    [UNW_PPC##b##_FPSCR] = UNW_PPC_PT(FPSCR), \
+    [UNW_PPC##b##_CCR] = UNW_PPC_PT(CCR)
+
+#define UNW_VR_OFF(i)	\
+    [UNW_PPC64_V##i] = UNW_PPC_R(PT_VR0 + i * 2)
+
+#define UNW_PPC64_REGS \
+    [UNW_PPC64_NIP] = UNW_PPC_PT(NIP), \
+    [UNW_PPC64_FRAME_POINTER] = -1, \
+    [UNW_PPC64_ARG_POINTER] = -1,   \
+    [UNW_PPC64_CR0] = -1,           \
+    [UNW_PPC64_CR1] = -1,           \
+    [UNW_PPC64_CR2] = -1,           \
+    [UNW_PPC64_CR3] = -1,           \
+    [UNW_PPC64_CR4] = -1,           \
+    [UNW_PPC64_CR5] = -1,           \
+    [UNW_PPC64_CR6] = -1,           \
+    [UNW_PPC64_CR7] = -1,           \
+    [UNW_PPC64_VRSAVE] = UNW_PPC_PT(VRSAVE), \
+    [UNW_PPC64_VSCR] = UNW_PPC_PT(VSCR),     \
+    [UNW_PPC64_SPE_ACC] = -1,       \
+    [UNW_PPC64_SPEFSCR] = -1,       \
+    UNW_VR_OFF(0), \
+    UNW_VR_OFF(1), \
+    UNW_VR_OFF(2), \
+    UNW_VR_OFF(3), \
+    UNW_VR_OFF(4), \
+    UNW_VR_OFF(5), \
+    UNW_VR_OFF(6), \
+    UNW_VR_OFF(7), \
+    UNW_VR_OFF(8), \
+    UNW_VR_OFF(9), \
+    UNW_VR_OFF(10), \
+    UNW_VR_OFF(11), \
+    UNW_VR_OFF(12), \
+    UNW_VR_OFF(13), \
+    UNW_VR_OFF(14), \
+    UNW_VR_OFF(15), \
+    UNW_VR_OFF(16), \
+    UNW_VR_OFF(17), \
+    UNW_VR_OFF(18), \
+    UNW_VR_OFF(19), \
+    UNW_VR_OFF(20), \
+    UNW_VR_OFF(21), \
+    UNW_VR_OFF(22), \
+    UNW_VR_OFF(23), \
+    UNW_VR_OFF(24), \
+    UNW_VR_OFF(25), \
+    UNW_VR_OFF(26), \
+    UNW_VR_OFF(27), \
+    UNW_VR_OFF(28), \
+    UNW_VR_OFF(29), \
+    UNW_VR_OFF(30), \
+    UNW_VR_OFF(31)
+
+#if defined(UNW_TARGET_PPC32)
+    UNW_PPC_REGS(32),
+    UNW_PPC32_REGS,
+#else
+    UNW_PPC_REGS(64),
+    UNW_PPC64_REGS,
+#endif
+
 #elif defined(UNW_TARGET_ARM)
     [UNW_ARM_R0]       = 0x00,
     [UNW_ARM_R1]       = 0x04,
