@@ -86,21 +86,20 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #endif
 ]])], [ppc_bits=64], [ppc_bits=32])
 
-get_arch() {
- case "$1" in
-  arm*) echo arm;;
-  i?86) echo x86;;
-  hppa*) echo hppa;;
-  mips*) echo mips;;
-  powerpc*) echo ppc$ppc_bits;;
-  amd64) echo x86_64;;
-  *) echo $1;;
- esac
-}
+AC_DEFUN([SET_ARCH],[
+    AS_CASE([$1],
+        [arm*],[$2=arm],
+        [i?86],[$2=x86],
+        [hppa*],[$2=hppa],
+        [mips*],[$2=mips],
+        [powerpc*],[$2=ppc$ppc_bits],
+        [amd64],[$2=x86_64],
+        [$2=$1])
+]) dnl SET_ARCH
 
-build_arch=`get_arch $build_cpu`
-host_arch=`get_arch $host_cpu`
-target_arch=`get_arch $target_cpu`
+SET_ARCH([$build_cpu],[build_arch])
+SET_ARCH([$host_cpu],[host_arch])
+SET_ARCH([$target_cpu],[target_arch])
 
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),
