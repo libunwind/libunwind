@@ -149,6 +149,9 @@ static const char *regname[] =
     [UNW_PPC64_SPE_ACC]="SPE_ACC",
     [UNW_PPC64_SPEFSCR]="SPEFSCR",
 
+    [UNW_PPC64_FRAME_POINTER]="FRAME_POINTER",
+    [UNW_PPC64_NIP]="NIP",
+
    };
 
 PROTECTED const char *
