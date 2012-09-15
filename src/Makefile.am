@@ -18,6 +18,18 @@ endif
 noinst_HEADERS =
 noinst_LTLIBRARIES =
 
+pkgconfigdir = $(libdir)/pkgconfig
+pkgconfig_DATA = libunwind-generic.pc
+
+if !REMOTE_ONLY
+pkgconfig_DATA += unwind/libunwind.pc ptrace/libunwind-ptrace.pc         \
+                  setjmp/libunwind-setjmp.pc
+endif
+
+if BUILD_COREDUMP
+pkgconfig_DATA += coredump/libunwind-coredump.pc
+endif
+
 ### libunwind-ptrace:
 libunwind_ptrace_la_SOURCES =						  \
 	ptrace/_UPT_elf.c						  \
