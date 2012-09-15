@@ -141,9 +141,9 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   unw_word_t *addr;
   ucontext_t *uc = arg;
 
-  if ((unsigned int) (reg - UNW_PPC64_F0) < 32)
+  if (UNW_PPC64_F0 <= reg && reg <= UNW_PPC64_F31)
     goto badreg;
-  if ((unsigned int) (reg - UNW_PPC64_V0) < 32)
+  if (UNW_PPC64_V0 <= reg && reg <= UNW_PPC64_V31)
     goto badreg;
 
   addr = uc_addr (uc, reg);
