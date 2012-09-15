@@ -29,14 +29,13 @@ if ARCH_IA64
 			Gia64-test-rbs Lia64-test-rbs			\
 			Gia64-test-readonly Lia64-test-readonly		\
 			ia64-test-setjmp ia64-test-sig
-else
+else #!ARCH_IA64
 if ARCH_PPC64
 if USE_ALTIVEC
- noinst_PROGRAMS_arch_altivec = ppc64-test-altivec ppc64-test-wchar
+ noinst_PROGRAMS_arch = ppc64-test-altivec
 endif #USE_ALTIVEC
- noinst_PROGRAMS_arch = $(noinst_PROGRAMS_arch_altivec) ppc64-test-wchar
 endif #ARCH_PPC64
-endif #ARCH_IA64
+endif #!ARCH_IA64
  check_SCRIPTS_cdep =	run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
@@ -60,13 +59,15 @@ if SUPPORT_CXX_EXCEPTIONS
 endif
 
 if OS_LINUX
+if BUILD_COREDUMP
  check_SCRIPTS_cdep += run-coredump-unwind
  noinst_PROGRAMS_cdep += test-coredump-unwind
 
 if HAVE_LZMA
  check_SCRIPTS_cdep += run-coredump-unwind-mdi
-endif
-endif
+endif # HAVE_LZMA
+endif # BUILD_COREDUMP
+endif # OS_LINUX
 
 perf: perf-startup Gperf-simple Lperf-simple Lperf-trace
 	@echo "########## Basic performance of generic libunwind:"
@@ -104,7 +105,6 @@ Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S \
 				flush-cache.h
 ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
-ppc64_test_wchar_SOURCES = ppc64-test-wchar.c
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
@@ -177,7 +177,9 @@ Lperf_trace_LDADD = $(LIBUNWIND_local)
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 
+if BUILD_COREDUMP
 test_coredump_unwind_LDADD = $(LIBUNWIND_coredump) $(LIBUNWIND)
+endif
 
 Gia64_test_nat_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gia64_test_stack_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)

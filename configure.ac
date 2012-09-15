@@ -70,44 +70,44 @@ PT_STEP, PT_SYSCALL], [], [],
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore)
-is_gcc_m64() {
- if test `echo $CFLAGS | grep "\-m64" -c` -eq 1 ; then echo ppc64;
- else
-  if test `echo $CC | grep "\-m64" -c` -eq 1 ; then echo ppc64; else echo ppc32; fi;
- fi;
-}
-
-is_gcc_altivec() {
- if test `echo $CFLAGS | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec;
- else
-  if test `echo $CC | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec; else echo no_altivec; fi;
- fi;
-}
 
 AC_MSG_CHECKING([if building with AltiVec])
-use_altivec=`is_gcc_altivec`
-AM_CONDITIONAL(USE_ALTIVEC, test x$use_altivec = xhas_altivec)
-if test x$use_altivec = xhas_altivec; then
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
-fi
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#ifndef __ALTIVEC__
+# error choke
+#endif
+]])], [use_altivec=yes],[use_altivec=no])
+AM_CONDITIONAL(USE_ALTIVEC, [test x$use_altivec = xyes])
+AC_MSG_RESULT([$use_altivec])
 
-get_arch() {
- case "$1" in
-  arm*) echo arm;;
-  i?86) echo x86;;
-  hppa*) echo hppa;;
-  mips*) echo mips;;
-  powerpc*) is_gcc_m64;;
-  amd64) echo x86_64;;
-  *) echo $1;;
- esac
-}
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#ifndef __powerpc64__
+# error choke
+#endif
+]])], [ppc_bits=64], [ppc_bits=32])
 
-build_arch=`get_arch $build_cpu`
-host_arch=`get_arch $host_cpu`
-target_arch=`get_arch $target_cpu`
+AC_DEFUN([SET_ARCH],[
+    AS_CASE([$1],
+        [arm*],[$2=arm],
+        [i?86],[$2=x86],
+        [hppa*],[$2=hppa],
+        [mips*],[$2=mips],
+        [powerpc*],[$2=ppc$ppc_bits],
+        [amd64],[$2=x86_64],
+        [$2=$1])
+]) dnl SET_ARCH
+
+SET_ARCH([$build_cpu],[build_arch])
+SET_ARCH([$host_cpu],[host_arch])
+SET_ARCH([$target_cpu],[target_arch])
+
+AC_ARG_ENABLE(coredump,
+	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
+        [AS_CASE([$host_arch], [x86*], [enable_coredump=yes], [enable_coredump=no])]
+)
+
+AC_MSG_CHECKING([if we should build libunwind-coredump])
+AC_MSG_RESULT([$enable_coredump])
 
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
@@ -118,6 +118,7 @@ AC_MSG_RESULT([$target_arch])
 AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
 
+AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
@@ -168,8 +169,7 @@ AC_MSG_RESULT([$remote_only])
 
 AC_MSG_CHECKING([whether to enable debug support])
 AC_ARG_ENABLE(debug,
-[  --enable-debug          turn on debug support (slows down execution)],
-[enable_debug=$enableval], [enable_debug=no])
+AS_HELP_STRING([--enable-debug],[turn on debug support (slows down execution)]))
 if test x$enable_debug = xyes; then
   CPPFLAGS="${CPPFLAGS} -DDEBUG"
 else
@@ -179,8 +179,7 @@ AC_MSG_RESULT([$enable_debug])
 
 AC_MSG_CHECKING([whether to enable C++ exception support])
 AC_ARG_ENABLE(cxx_exceptions,
-[  --enable-cxx-exceptions use libunwind to handle C++ exceptions],
-[enable_cxx_exceptions=$enableval], 
+AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions]),,
 [
 # C++ exception handling doesn't work too well on x86
 case $target_arch in
@@ -196,8 +195,7 @@ AC_MSG_RESULT([$enable_cxx_exceptions])
 
 AC_MSG_CHECKING([whether to load .debug_frame sections])
 AC_ARG_ENABLE(debug_frame,
-[  --enable-debug-frame Load the ".debug_frame" section if available],
-[enable_debug_frame=$enableval], [
+AS_HELP_STRING([--enable-debug-frame],[Load the ".debug_frame" section if available]),, [
 case "${target_arch}" in
   (arm) enable_debug_frame=yes;;
   (*)   enable_debug_frame=no;;
@@ -209,8 +207,8 @@ AC_MSG_RESULT([$enable_debug_frame])
 
 AC_MSG_CHECKING([whether to block signals during mutex ops])
 AC_ARG_ENABLE(block_signals,
-[  --enable-block-signals Block signals before performing mutex operations],
-[enable_block_signals=$enableval], [enable_block_signals=yes])
+AS_HELP_STRING([--enable-block-signals],[Block signals before performing mutex operations]),,
+[enable_block_signals=yes])
 if test x$enable_block_signals = xyes; then
   AC_DEFINE([CONFIG_BLOCK_SIGNALS], [], [Block signals before mutex operations])
 fi
@@ -218,8 +216,8 @@ AC_MSG_RESULT([$enable_block_signals])
 
 AC_MSG_CHECKING([whether to validate memory addresses before use])
 AC_ARG_ENABLE(conservative_checks,
-[  --enable-conservative-checks Validate all memory addresses before use],
-[enable_conservative_checks=$enableval], [enable_conservative_checks=yes])
+AS_HELP_STRING([--enable-conservative-checks],[Validate all memory addresses before use]),,
+[enable_conservative_checks=yes])
 if test x$enable_conservative_checks = xyes; then
   AC_DEFINE(CONSERVATIVE_CHECKS, 1,
 	[Define to 1 if you want every memory access validated])
@@ -228,8 +226,7 @@ AC_MSG_RESULT([$enable_conservative_checks])
 
 AC_MSG_CHECKING([whether to enable msabi support])
 AC_ARG_ENABLE(msabi_support,
-[  --enable-msabi-support Enables support for Microsoft ABI extensions ],
-[enable_msabi_support=$enableval], [enable_msabi_support=no])
+AS_HELP_STRING([--enable-msabi-support],[Enables support for Microsoft ABI extensions]))
 if test x$enable_msabi_support = xyes; then
   AC_DEFINE([CONFIG_MSABI_SUPPORT], [], [Support for Microsoft ABI extensions])
 fi
@@ -237,8 +234,7 @@ AC_MSG_RESULT([$enable_msabi_support])
 
 AC_MSG_CHECKING([whether to support LZMA-compressed symbol tables])
 AC_ARG_ENABLE(minidebuginfo,
-AS_HELP_STRING([--enable-minidebuginfo], [Enables support for LZMA-compressed symbol tables]),
-[enable_minidebuginfo=$enableval], [enable_minidebuginfo=auto])
+AS_HELP_STRING([--enable-minidebuginfo], [Enables support for LZMA-compressed symbol tables]),, [enable_minidebuginfo=auto])
 AC_MSG_RESULT([$enable_minidebuginfo])
 if test x$enable_minidebuginfo != xno; then
    AC_CHECK_LIB([lzma], [lzma_mf_is_supported],
@@ -321,4 +317,7 @@ AC_SUBST(DLLIB)
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
 		doc/Makefile doc/common.tex include/libunwind-common.h
                 include/libunwind.h include/tdep/libunwind_i.h)
+AC_CONFIG_FILES(src/unwind/libunwind.pc src/coredump/libunwind-coredump.pc
+                src/ptrace/libunwind-ptrace.pc src/setjmp/libunwind-setjmp.pc
+                src/libunwind-generic.pc:src/libunwind-generic.pc.in)
 AC_OUTPUT

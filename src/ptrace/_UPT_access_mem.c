@@ -32,6 +32,9 @@ _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
 		 int write, void *arg)
 {
   struct UPT_info *ui = arg;
+  if (!ui)
+	return -UNW_EINVAL;
+
   pid_t pid = ui->pid;
 
   errno = 0;
@@ -65,6 +68,8 @@ _UPT_access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val,
 		 int write, void *arg)
 {
   struct UPT_info *ui = arg;
+  if (!ui)
+	return -UNW_EINVAL;
   pid_t pid = ui->pid;
   struct ptrace_io_desc iod;
 
