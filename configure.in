@@ -102,8 +102,7 @@ SET_ARCH([$host_cpu],[host_arch])
 SET_ARCH([$target_cpu],[target_arch])
 
 AC_ARG_ENABLE(coredump,
-	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),
-	[enable_coredump=$enableval],
+	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
         [AS_CASE([$host_arch], [x86*], [enable_coredump=yes], [enable_coredump=no])]
 )
 
@@ -180,8 +179,7 @@ AC_MSG_RESULT([$enable_debug])
 
 AC_MSG_CHECKING([whether to enable C++ exception support])
 AC_ARG_ENABLE(cxx_exceptions,
-AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions]),
-[enable_cxx_exceptions=$enableval], 
+AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions]),,
 [
 # C++ exception handling doesn't work too well on x86
 case $target_arch in
@@ -197,8 +195,7 @@ AC_MSG_RESULT([$enable_cxx_exceptions])
 
 AC_MSG_CHECKING([whether to load .debug_frame sections])
 AC_ARG_ENABLE(debug_frame,
-AS_HELP_STRING([--enable-debug-frame],[Load the ".debug_frame" section if available]),
-[enable_debug_frame=$enableval], [
+AS_HELP_STRING([--enable-debug-frame],[Load the ".debug_frame" section if available]),, [
 case "${target_arch}" in
   (arm) enable_debug_frame=yes;;
   (*)   enable_debug_frame=no;;
@@ -210,8 +207,8 @@ AC_MSG_RESULT([$enable_debug_frame])
 
 AC_MSG_CHECKING([whether to block signals during mutex ops])
 AC_ARG_ENABLE(block_signals,
-AS_HELP_STRING([--enable-block-signals],[Block signals before performing mutex operations]),
-[enable_block_signals=$enableval], [enable_block_signals=yes])
+AS_HELP_STRING([--enable-block-signals],[Block signals before performing mutex operations]),,
+[enable_block_signals=yes])
 if test x$enable_block_signals = xyes; then
   AC_DEFINE([CONFIG_BLOCK_SIGNALS], [], [Block signals before mutex operations])
 fi
@@ -219,8 +216,8 @@ AC_MSG_RESULT([$enable_block_signals])
 
 AC_MSG_CHECKING([whether to validate memory addresses before use])
 AC_ARG_ENABLE(conservative_checks,
-AS_HELP_STRING([--enable-conservative-checks],[Validate all memory addresses before use]),
-[enable_conservative_checks=$enableval], [enable_conservative_checks=yes])
+AS_HELP_STRING([--enable-conservative-checks],[Validate all memory addresses before use]),,
+[enable_conservative_checks=yes])
 if test x$enable_conservative_checks = xyes; then
   AC_DEFINE(CONSERVATIVE_CHECKS, 1,
 	[Define to 1 if you want every memory access validated])
@@ -237,8 +234,7 @@ AC_MSG_RESULT([$enable_msabi_support])
 
 AC_MSG_CHECKING([whether to support LZMA-compressed symbol tables])
 AC_ARG_ENABLE(minidebuginfo,
-AS_HELP_STRING([--enable-minidebuginfo], [Enables support for LZMA-compressed symbol tables]),
-[enable_minidebuginfo=$enableval], [enable_minidebuginfo=auto])
+AS_HELP_STRING([--enable-minidebuginfo], [Enables support for LZMA-compressed symbol tables]),, [enable_minidebuginfo=auto])
 AC_MSG_RESULT([$enable_minidebuginfo])
 if test x$enable_minidebuginfo != xno; then
    AC_CHECK_LIB([lzma], [lzma_mf_is_supported],
