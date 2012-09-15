@@ -171,7 +171,7 @@ AC_MSG_RESULT([$remote_only])
 
 AC_MSG_CHECKING([whether to enable debug support])
 AC_ARG_ENABLE(debug,
-[  --enable-debug          turn on debug support (slows down execution)],
+AS_HELP_STRING([--enable-debug],[turn on debug support (slows down execution)]),
 [enable_debug=$enableval], [enable_debug=no])
 if test x$enable_debug = xyes; then
   CPPFLAGS="${CPPFLAGS} -DDEBUG"
@@ -182,7 +182,7 @@ AC_MSG_RESULT([$enable_debug])
 
 AC_MSG_CHECKING([whether to enable C++ exception support])
 AC_ARG_ENABLE(cxx_exceptions,
-[  --enable-cxx-exceptions use libunwind to handle C++ exceptions],
+AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions]),
 [enable_cxx_exceptions=$enableval], 
 [
 # C++ exception handling doesn't work too well on x86
@@ -199,7 +199,7 @@ AC_MSG_RESULT([$enable_cxx_exceptions])
 
 AC_MSG_CHECKING([whether to load .debug_frame sections])
 AC_ARG_ENABLE(debug_frame,
-[  --enable-debug-frame Load the ".debug_frame" section if available],
+AS_HELP_STRING([--enable-debug-frame],[Load the ".debug_frame" section if available]),
 [enable_debug_frame=$enableval], [
 case "${target_arch}" in
   (arm) enable_debug_frame=yes;;
@@ -212,7 +212,7 @@ AC_MSG_RESULT([$enable_debug_frame])
 
 AC_MSG_CHECKING([whether to block signals during mutex ops])
 AC_ARG_ENABLE(block_signals,
-[  --enable-block-signals Block signals before performing mutex operations],
+AS_HELP_STRING([--enable-block-signals],[Block signals before performing mutex operations]),
 [enable_block_signals=$enableval], [enable_block_signals=yes])
 if test x$enable_block_signals = xyes; then
   AC_DEFINE([CONFIG_BLOCK_SIGNALS], [], [Block signals before mutex operations])
@@ -221,7 +221,7 @@ AC_MSG_RESULT([$enable_block_signals])
 
 AC_MSG_CHECKING([whether to validate memory addresses before use])
 AC_ARG_ENABLE(conservative_checks,
-[  --enable-conservative-checks Validate all memory addresses before use],
+AS_HELP_STRING([--enable-conservative-checks],[Validate all memory addresses before use]),
 [enable_conservative_checks=$enableval], [enable_conservative_checks=yes])
 if test x$enable_conservative_checks = xyes; then
   AC_DEFINE(CONSERVATIVE_CHECKS, 1,
@@ -231,7 +231,7 @@ AC_MSG_RESULT([$enable_conservative_checks])
 
 AC_MSG_CHECKING([whether to enable msabi support])
 AC_ARG_ENABLE(msabi_support,
-[  --enable-msabi-support Enables support for Microsoft ABI extensions ],
+AS_HELP_STRING([--enable-msabi-support],[Enables support for Microsoft ABI extensions]),
 [enable_msabi_support=$enableval], [enable_msabi_support=no])
 if test x$enable_msabi_support = xyes; then
   AC_DEFINE([CONFIG_MSABI_SUPPORT], [], [Support for Microsoft ABI extensions])
