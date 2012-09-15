@@ -43,6 +43,8 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   pid_t pid = ui->pid;
 
 #if UNW_DEBUG
+  Debug(16, "using pokeuser: reg: %s [%u], val: %lx, write: %d\n", unw_regname(reg), (unsigned) reg, (long) val, write);
+
   if (write)
     Debug (16, "%s <- %lx\n", unw_regname (reg), (long) *val);
 #endif
@@ -221,10 +223,13 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	  }
 	break;
       }
-#endif
+#endif /* End of IA64 */
 
   if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
     {
+#if UNW_DEBUG
+      Debug(2, "register out of range: >= %zu / %zu\n", sizeof(_UPT_reg_offset), sizeof(_UPT_reg_offset[0]));
+#endif
       errno = EINVAL;
       goto badreg;
     }
@@ -235,10 +240,19 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   errno = 0;
   if (write)
     ptrace (PTRACE_POKEUSER, pid, _UPT_reg_offset[reg], *val);
-  else
+  else {
+#if UNW_DEBUG
+    Debug(16, "ptrace PEEKUSER pid: %lu , reg: %lu , offs: %lu\n", (unsigned long)pid, (unsigned long)reg,
+        (unsigned long)_UPT_reg_offset[reg]);
+#endif
     *val = ptrace (PTRACE_PEEKUSER, pid, _UPT_reg_offset[reg], 0);
-  if (errno)
+  }
+  if (errno) {
+#if UNW_DEBUG
+    Debug(2, "ptrace failure\n");
+#endif
     goto badreg;
+  }
 #endif
 
 #ifdef UNW_TARGET_IA64
@@ -246,7 +260,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 #endif
 #if UNW_DEBUG
   if (!write)
-    Debug (16, "%s -> %lx\n", unw_regname (reg), (long) *val);
+    Debug (16, "%s[%u] -> %lx\n", unw_regname (reg), (unsigned) reg, (long) *val);
 #endif
   return 0;
 
@@ -265,8 +279,10 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   char *r;
 
 #if UNW_DEBUG
+  Debug(16, "using getregs: reg: %s [%u], val: %lx, write: %u\n", unw_regname(reg), (unsigned) reg, (long) val, write);
+
   if (write)
-    Debug (16, "%s <- %lx\n", unw_regname (reg), (long) *val);
+    Debug (16, "%s [%u] <- %lx\n", unw_regname (reg), (unsigned) reg, (long) *val);
 #endif
   if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
     {
