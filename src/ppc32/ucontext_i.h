@@ -44,7 +44,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* These are dummy structures used only for obtaining the offsets of the
    various structure members. */
 static ucontext_t dmy_ctxt;
-static vrregset_t dmy_vrregset;
 
 #define UC_MCONTEXT_GREGS_R0 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[0] - (void *)&dmy_ctxt)
 #define UC_MCONTEXT_GREGS_R1 ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[1] - (void *)&dmy_ctxt)
