@@ -71,21 +71,14 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore)
 
-is_gcc_altivec() {
- if test `echo $CFLAGS | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec;
- else
-  if test `echo $CC | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec; else echo no_altivec; fi;
- fi;
-}
-
 AC_MSG_CHECKING([if building with AltiVec])
-use_altivec=`is_gcc_altivec`
-AM_CONDITIONAL(USE_ALTIVEC, test x$use_altivec = xhas_altivec)
-if test x$use_altivec = xhas_altivec; then
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
-fi
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#ifndef __ALTIVEC__
+# error choke
+#endif
+]])], [use_altivec=yes],[use_altivec=no])
+AM_CONDITIONAL(USE_ALTIVEC, [test x$use_altivec = xyes])
+AC_MSG_RESULT([$use_altivec])
 
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #ifndef __powerpc64__
