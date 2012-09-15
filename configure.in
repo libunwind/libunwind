@@ -70,12 +70,6 @@ PT_STEP, PT_SYSCALL], [], [],
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore)
-is_gcc_m64() {
- if test `echo $CFLAGS | grep "\-m64" -c` -eq 1 ; then echo ppc64;
- else
-  if test `echo $CC | grep "\-m64" -c` -eq 1 ; then echo ppc64; else echo ppc32; fi;
- fi;
-}
 
 is_gcc_altivec() {
  if test `echo $CFLAGS | grep "\-maltivec" -c` -eq 1 ; then echo has_altivec;
@@ -93,13 +87,19 @@ else
   AC_MSG_RESULT([no])
 fi
 
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#ifndef __powerpc64__
+# error choke
+#endif
+]])], [ppc_bits=64], [ppc_bits=32])
+
 get_arch() {
  case "$1" in
   arm*) echo arm;;
   i?86) echo x86;;
   hppa*) echo hppa;;
   mips*) echo mips;;
-  powerpc*) is_gcc_m64;;
+  powerpc*) echo ppc$ppc_bits;;
   amd64) echo x86_64;;
   *) echo $1;;
  esac
