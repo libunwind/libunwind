@@ -50,9 +50,7 @@ endif #!ARCH_IA64
  noinst_PROGRAMS_cdep = forker crasher mapper test-ptrace-misc		 \
 			Gperf-simple Lperf-simple
 
-if HAVE_BACKTRACE
  noinst_PROGRAMS_cdep += Gperf-trace Lperf-trace
-endif
 
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions

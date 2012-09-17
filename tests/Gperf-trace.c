@@ -21,7 +21,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include <execinfo.h>
 #include <memory.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -62,7 +61,7 @@ measure_unwind (int maxlevel, double *step)
   void *buffer[128];
 
   start = gettime ();
-  level = backtrace(buffer, 128);
+  level = unw_backtrace(buffer, 128);
   stop = gettime ();
 
   if (level <= maxlevel)

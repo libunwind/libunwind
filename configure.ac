@@ -311,7 +311,6 @@ PKG_MAINTAINER=pkg_maintainer
 old_LIBS="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(backtrace, execinfo)
-AM_CONDITIONAL(HAVE_BACKTRACE, test "x$ac_cv_search_backtrace" != xno)
 LIBS="$old_LIBS"
 
 AC_SUBST(build_arch)
