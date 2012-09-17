@@ -198,6 +198,12 @@ unw_step (unw_cursor_t *cursor)
 
       c->dwarf.ret_addr_column = RIP;
 
+      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+        {
+	  ret = 0;
+	  Debug (2, "NULL %rbp loc, returning %d\n", ret);
+	  return ret;
+        }
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RIP]))
 	{
 	  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
