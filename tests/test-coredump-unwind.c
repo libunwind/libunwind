@@ -389,6 +389,7 @@ main(int argc __attribute__((unused)), char **argv)
     }
 
   _UCD_destroy(ui);
+  unw_destroy_addr_space(as);
 
   return 0;
 }

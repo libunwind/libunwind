@@ -341,6 +341,7 @@ main (int argc, char **argv)
     }
 
   _UPT_destroy (ui);
+  unw_destroy_addr_space (as);
 
   if (nerrors)
     {

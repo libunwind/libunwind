@@ -162,6 +162,8 @@ main (int argc, char **argv)
     panic ("Second call to unw_step() returned %d instead of %d\n",
 	   ret, -UNW_ESTOPUNWIND);
 
+  unw_destroy_addr_space (as);
+
   if (verbose)
     printf ("SUCCESS\n");
   return 0;

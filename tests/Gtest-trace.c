@@ -267,5 +267,11 @@ main (int argc, char **argv __attribute__((unused)))
 
   if (verbose)
     printf ("SUCCESS.\n");
+
+  signal (SIGTERM, SIG_DFL);
+  stk.ss_flags = SS_DISABLE;
+  sigaltstack (&stk, NULL);
+  free (stk.ss_sp);
+
   return 0;
 }
