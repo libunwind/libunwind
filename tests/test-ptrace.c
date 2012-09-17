@@ -178,7 +178,7 @@ main (int argc, char **argv)
 
   if (argc == 1)
     {
-      char *args[] = { "self", "/bin/ls", "/usr", NULL };
+      static char *args[] = { "self", "/bin/ls", "/usr", NULL };
 
       /* automated test case */
       argv = args;
