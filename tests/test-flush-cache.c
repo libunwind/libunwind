@@ -25,15 +25,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifdef HAVE_CONFIG_H
-# include "config.h"
-#endif
-
-#if HAVE_EXECINFO_H
-# include <execinfo.h>
-#else
-  extern int backtrace (void **, int);
-#endif
 #include <stdio.h>
 #include <string.h>
 
@@ -50,7 +41,7 @@ f257 (void)
 
   if (verbose)
     printf ("First backtrace:\n");
-  n = backtrace (buffer, 300);
+  n = unw_backtrace (buffer, 300);
   if (verbose)
     for (i = 0; i < n; ++i)
       printf ("[%d] ip=%p\n", i, buffer[i]);
@@ -59,7 +50,7 @@ f257 (void)
 
   if (verbose)
     printf ("\nSecond backtrace:\n");
-  n = backtrace (buffer, 300);
+  n = unw_backtrace (buffer, 300);
   if (verbose)
     for (i = 0; i < n; ++i)
       printf ("[%d] ip=%p\n", i, buffer[i]);
