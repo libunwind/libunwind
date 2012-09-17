@@ -3,7 +3,7 @@ AM_CPPFLAGS = -I$(top_srcdir)/include
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 		run-check-namespace run-coredump-unwind \
 		run-coredump-unwind-mdi check-namespace.sh.in \
-		Gtest-nomalloc.c Gtest-nocalloc.c
+		Gtest-nomalloc.c
 
 MAINTAINERCLEANFILES = Makefile.in
 
