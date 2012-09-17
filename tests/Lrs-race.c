@@ -23,11 +23,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /*  Verify that register state caches work under all caching policies
     in a multi-threaded environment with a large number IPs */
+
+#define UNW_LOCAL_ONLY
+#include <libunwind.h>
+
 #include <stdio.h>
 #include <pthread.h>
 #include <stdlib.h>
-#include <libunwind.h>
-#include <execinfo.h>
 
 /* ITERS=1000, NTHREAD=10 caught some bugs in the past */
 #ifndef ITERS 
@@ -46,7 +48,7 @@ foo_0 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -56,7 +58,7 @@ foo_1 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -66,7 +68,7 @@ foo_2 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -76,7 +78,7 @@ foo_3 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -86,7 +88,7 @@ foo_4 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -96,7 +98,7 @@ foo_5 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -106,7 +108,7 @@ foo_6 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -116,7 +118,7 @@ foo_7 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -126,7 +128,7 @@ foo_8 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -136,7 +138,7 @@ foo_9 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -146,7 +148,7 @@ foo_10 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -156,7 +158,7 @@ foo_11 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -166,7 +168,7 @@ foo_12 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -176,7 +178,7 @@ foo_13 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -186,7 +188,7 @@ foo_14 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -196,7 +198,7 @@ foo_15 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -206,7 +208,7 @@ foo_16 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -216,7 +218,7 @@ foo_17 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -226,7 +228,7 @@ foo_18 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -236,7 +238,7 @@ foo_19 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -246,7 +248,7 @@ foo_20 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -256,7 +258,7 @@ foo_21 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -266,7 +268,7 @@ foo_22 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -276,7 +278,7 @@ foo_23 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -286,7 +288,7 @@ foo_24 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -296,7 +298,7 @@ foo_25 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -306,7 +308,7 @@ foo_26 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -316,7 +318,7 @@ foo_27 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -326,7 +328,7 @@ foo_28 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -336,7 +338,7 @@ foo_29 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -346,7 +348,7 @@ foo_30 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -356,7 +358,7 @@ foo_31 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -366,7 +368,7 @@ foo_32 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -376,7 +378,7 @@ foo_33 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -386,7 +388,7 @@ foo_34 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -396,7 +398,7 @@ foo_35 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -406,7 +408,7 @@ foo_36 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -416,7 +418,7 @@ foo_37 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -426,7 +428,7 @@ foo_38 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -436,7 +438,7 @@ foo_39 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -446,7 +448,7 @@ foo_40 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -456,7 +458,7 @@ foo_41 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -466,7 +468,7 @@ foo_42 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -476,7 +478,7 @@ foo_43 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -486,7 +488,7 @@ foo_44 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -496,7 +498,7 @@ foo_45 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -506,7 +508,7 @@ foo_46 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -516,7 +518,7 @@ foo_47 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -526,7 +528,7 @@ foo_48 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -536,7 +538,7 @@ foo_49 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -546,7 +548,7 @@ foo_50 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -556,7 +558,7 @@ foo_51 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -566,7 +568,7 @@ foo_52 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -576,7 +578,7 @@ foo_53 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -586,7 +588,7 @@ foo_54 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -596,7 +598,7 @@ foo_55 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -606,7 +608,7 @@ foo_56 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -616,7 +618,7 @@ foo_57 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -626,7 +628,7 @@ foo_58 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -636,7 +638,7 @@ foo_59 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -646,7 +648,7 @@ foo_60 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -656,7 +658,7 @@ foo_61 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -666,7 +668,7 @@ foo_62 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -676,7 +678,7 @@ foo_63 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -686,7 +688,7 @@ foo_64 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -696,7 +698,7 @@ foo_65 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -706,7 +708,7 @@ foo_66 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -716,7 +718,7 @@ foo_67 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -726,7 +728,7 @@ foo_68 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -736,7 +738,7 @@ foo_69 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -746,7 +748,7 @@ foo_70 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -756,7 +758,7 @@ foo_71 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -766,7 +768,7 @@ foo_72 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -776,7 +778,7 @@ foo_73 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -786,7 +788,7 @@ foo_74 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -796,7 +798,7 @@ foo_75 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -806,7 +808,7 @@ foo_76 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -816,7 +818,7 @@ foo_77 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -826,7 +828,7 @@ foo_78 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -836,7 +838,7 @@ foo_79 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -846,7 +848,7 @@ foo_80 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -856,7 +858,7 @@ foo_81 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -866,7 +868,7 @@ foo_82 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -876,7 +878,7 @@ foo_83 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -886,7 +888,7 @@ foo_84 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -896,7 +898,7 @@ foo_85 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -906,7 +908,7 @@ foo_86 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -916,7 +918,7 @@ foo_87 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -926,7 +928,7 @@ foo_88 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -936,7 +938,7 @@ foo_89 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -946,7 +948,7 @@ foo_90 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -956,7 +958,7 @@ foo_91 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -966,7 +968,7 @@ foo_92 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -976,7 +978,7 @@ foo_93 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -986,7 +988,7 @@ foo_94 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -996,7 +998,7 @@ foo_95 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1006,7 +1008,7 @@ foo_96 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1016,7 +1018,7 @@ foo_97 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1026,7 +1028,7 @@ foo_98 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1036,7 +1038,7 @@ foo_99 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1046,7 +1048,7 @@ foo_100 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1056,7 +1058,7 @@ foo_101 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1066,7 +1068,7 @@ foo_102 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1076,7 +1078,7 @@ foo_103 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1086,7 +1088,7 @@ foo_104 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1096,7 +1098,7 @@ foo_105 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1106,7 +1108,7 @@ foo_106 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1116,7 +1118,7 @@ foo_107 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1126,7 +1128,7 @@ foo_108 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1136,7 +1138,7 @@ foo_109 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1146,7 +1148,7 @@ foo_110 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1156,7 +1158,7 @@ foo_111 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1166,7 +1168,7 @@ foo_112 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1176,7 +1178,7 @@ foo_113 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1186,7 +1188,7 @@ foo_114 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1196,7 +1198,7 @@ foo_115 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1206,7 +1208,7 @@ foo_116 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1216,7 +1218,7 @@ foo_117 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1226,7 +1228,7 @@ foo_118 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1236,7 +1238,7 @@ foo_119 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1246,7 +1248,7 @@ foo_120 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1256,7 +1258,7 @@ foo_121 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1266,7 +1268,7 @@ foo_122 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1276,7 +1278,7 @@ foo_123 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1286,7 +1288,7 @@ foo_124 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1296,7 +1298,7 @@ foo_125 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1306,7 +1308,7 @@ foo_126 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1316,7 +1318,7 @@ foo_127 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 
@@ -1326,7 +1328,7 @@ foo_128 (void)
   void *buf[20];
   int n;
 
-  if ((n = backtrace (buf, 20)) < 3)
+  if ((n = unw_backtrace (buf, 20)) < 3)
     abort ();
 }
 

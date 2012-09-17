@@ -46,7 +46,7 @@ endif #!ARCH_IA64
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-setjmp test-ptrace Ltest-varargs	 \
-			Ltest-nomalloc Ltest-nocalloc rs-race
+			Ltest-nomalloc Ltest-nocalloc Lrs-race
  noinst_PROGRAMS_cdep = forker crasher mapper test-ptrace-misc		 \
 			Gperf-simple Lperf-simple
 
@@ -147,7 +147,7 @@ test_ptrace_LDADD = $(LIBUNWIND_ptrace) $(LIBUNWIND)
 test_proc_info_LDADD = $(LIBUNWIND)
 test_static_link_LDADD = $(LIBUNWIND)
 test_strerror_LDADD = $(LIBUNWIND)
-rs_race_LDADD = $(LIBUNWIND) -lpthread
+Lrs_race_LDADD = $(LIBUNWIND_local) -lpthread
 Ltest_varargs_LDADD = $(LIBUNWIND_local)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
