@@ -249,6 +249,10 @@ struct ia64_global_unwind_state
 #define unw				UNW_OBJ(data)
 
 extern void tdep_init (void);
+extern int tdep_find_unwind_table (struct elf_dyn_info *edi,
+				   unw_addr_space_t as, char *path,
+				   unw_word_t segbase, unw_word_t mapoff,
+				   unw_word_t ip);
 extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 				unw_proc_info_t *pi, int need_unwind_info,
 				void *arg);
