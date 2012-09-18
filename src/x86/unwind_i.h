@@ -26,7 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef unwind_i_h
 #define unwind_i_h
 
-#include <memory.h>
 #include <stdint.h>
 
 #include <libunwind-x86.h>
