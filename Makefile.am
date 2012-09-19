@@ -41,7 +41,7 @@ SUBDIRS = src tests doc
 noinst_HEADERS = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
 	include/compiler.h include/libunwind_i.h include/mempool.h	\
 	include/remote.h						\
-	include/tdep-arm/dwarf-config.h					\
+	include/tdep-arm/dwarf-config.h	include/tdep-arm/ex_tables.h	\
 	include/tdep-arm/jmpbuf.h include/tdep-arm/libunwind_i.h	\
 	include/tdep-ia64/jmpbuf.h include/tdep-ia64/rse.h 		\
 	include/tdep-ia64/libunwind_i.h	include/tdep-ia64/script.h	\
