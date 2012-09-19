@@ -225,7 +225,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
       }
 #endif /* End of IA64 */
 
-  if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
+  if ((unsigned) reg >= ARRAY_SIZE (_UPT_reg_offset))
     {
 #if UNW_DEBUG
       Debug(2, "register out of range: >= %zu / %zu\n", sizeof(_UPT_reg_offset), sizeof(_UPT_reg_offset[0]));
@@ -284,7 +284,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   if (write)
     Debug (16, "%s [%u] <- %lx\n", unw_regname (reg), (unsigned) reg, (long) *val);
 #endif
-  if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
+  if ((unsigned) reg >= ARRAY_SIZE (_UPT_reg_offset))
     {
       errno = EINVAL;
       goto badreg;

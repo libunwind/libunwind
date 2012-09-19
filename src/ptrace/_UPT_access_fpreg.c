@@ -36,7 +36,7 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   pid_t pid = ui->pid;
   int i;
 
-  if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
+  if ((unsigned) reg >= ARRAY_SIZE (_UPT_reg_offset))
     return -UNW_EBADREG;
 
   errno = 0;
@@ -75,7 +75,7 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   pid_t pid = ui->pid;
   fpregset_t fpreg;
 
-  if ((unsigned) reg >= sizeof (_UPT_reg_offset) / sizeof (_UPT_reg_offset[0]))
+  if ((unsigned) reg >= ARRAY_SIZE (_UPT_reg_offset))
     return -UNW_EBADREG;
 
   if (ptrace(PT_GETFPREGS, pid, (caddr_t)&fpreg, 0) == -1)
