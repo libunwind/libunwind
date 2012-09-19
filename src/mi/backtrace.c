@@ -76,6 +76,6 @@ unw_backtrace (void **buffer, int size)
 }
 
 extern int backtrace (void **buffer, int size)
-  __attribute__((weak, alias("unw_backtrace")));
+  WEAK __attribute__((alias("unw_backtrace")));
 
 #endif /* !UNW_REMOTE_ONLY */
