@@ -31,7 +31,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef __BIGGEST_ALIGNMENT__
 # define MAX_ALIGN	__BIGGEST_ALIGNMENT__
 #else
-# define MAX_ALIGN	(sizeof (long double))
+/* Crude hack to check that MAX_ALIGN is power-of-two.
+ * sizeof(long double) = 12 on i386. */
+# define MAX_ALIGN_(n)	(n < 8 ? 8 : \
+			 n < 16 ? 16 : n)
+# define MAX_ALIGN	MAX_ALIGN_(sizeof (long double))
 #endif
 
 static char sos_memory[SOS_MEMORY_SIZE];
