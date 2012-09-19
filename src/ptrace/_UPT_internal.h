@@ -54,6 +54,6 @@ struct UPT_info
     struct elf_dyn_info edi;
   };
 
-extern int _UPT_reg_offset[UNW_REG_LAST + 1];
+extern const int _UPT_reg_offset[UNW_REG_LAST + 1];
 
 #endif /* _UPT_internal_h */

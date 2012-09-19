@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <asm/ptrace_offsets.h>
 #endif
 
-int _UPT_reg_offset[UNW_REG_LAST + 1] =
+const int _UPT_reg_offset[UNW_REG_LAST + 1] =
   {
 #ifdef HAVE_ASM_PTRACE_OFFSETS_H
 # ifndef PT_AR_CSD
