@@ -87,7 +87,7 @@ write_maps(char *fname)
 #endif
 
 #ifdef __GNUC__
-int c(int x) NOINLINE __attribute__((alias("b")));
+int c(int x) NOINLINE ALIAS(b);
 #define compiler_barrier() asm volatile("");
 #else
 int c(int x);
