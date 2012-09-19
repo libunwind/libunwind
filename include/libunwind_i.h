@@ -110,11 +110,12 @@ cmpxchg_ptr (void *addr, void *old, void *new)
   return AO_compare_and_swap(u.aop, (AO_t) old, (AO_t) new);
 }
 # define fetch_and_add1(_ptr)		AO_fetch_and_add1(_ptr)
+# define fetch_and_add(_ptr, value)	AO_fetch_and_add(_ptr, value)
    /* GCC 3.2.0 on HP-UX crashes on cmpxchg_ptr() */
 #  if !(defined(__hpux) && __GNUC__ == 3 && __GNUC_MINOR__ == 2)
 #   define HAVE_CMPXCHG
 #  endif
-# define HAVE_FETCH_AND_ADD1
+# define HAVE_FETCH_AND_ADD
 #else
 # ifdef HAVE_IA64INTRIN_H
 #  include <ia64intrin.h>
@@ -132,8 +133,9 @@ cmpxchg_ptr (void *addr, void *old, void *new)
   return __sync_bool_compare_and_swap(u.vlp, (long) old, (long) new);
 }
 #  define fetch_and_add1(_ptr)		__sync_fetch_and_add(_ptr, 1)
+#  define fetch_and_add(_ptr, value)	__sync_fetch_and_add(_ptr, value)
 #  define HAVE_CMPXCHG
-#  define HAVE_FETCH_AND_ADD1
+#  define HAVE_FETCH_AND_ADD
 # endif
 #endif
 #define atomic_read(ptr)	(*(ptr))
