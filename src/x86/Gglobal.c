@@ -31,7 +31,7 @@ HIDDEN int tdep_init_done;
 
 /* See comments for svr4_dbx_register_map[] in gcc/config/i386/i386.c.  */
 
-HIDDEN uint8_t dwarf_to_unw_regnum_map[19] =
+HIDDEN const uint8_t dwarf_to_unw_regnum_map[19] =
   {
     UNW_X86_EAX, UNW_X86_ECX, UNW_X86_EDX, UNW_X86_EBX,
     UNW_X86_ESP, UNW_X86_EBP, UNW_X86_ESI, UNW_X86_EDI,
