@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 
 #include <libunwind.h>
+#include "compiler.h"
 
 #include <sys/resource.h>
 #include <sys/time.h>
@@ -53,7 +54,7 @@ gettime (void)
   return tv.tv_sec + 1e-6*tv.tv_usec;
 }
 
-static int __attribute__((noinline))
+static int NOINLINE
 measure_unwind (int maxlevel, double *step)
 {
   double stop, start;
@@ -74,7 +75,7 @@ measure_unwind (int maxlevel, double *step)
 
 static int f1 (int, int, double *);
 
-static int __attribute__((noinline))
+static int NOINLINE
 g1 (int level, int maxlevel, double *step)
 {
   if (level == maxlevel)
@@ -84,7 +85,7 @@ g1 (int level, int maxlevel, double *step)
     return f1 (level + 1, maxlevel, step) + level;
 }
 
-static int __attribute__((noinline))
+static int NOINLINE
 f1 (int level, int maxlevel, double *step)
 {
   if (level == maxlevel)

@@ -1,5 +1,7 @@
 /* This program should crash and produce coredump */
 
+#include "compiler.h"
+
 #include <stdio.h>
 #include <stdint.h>
 #include <stdlib.h>
@@ -85,24 +87,20 @@ write_maps(char *fname)
 #endif
 
 #ifdef __GNUC__
-int a(void) __attribute__((noinline));
-int b(int x) __attribute__((noinline));
-int c(int x) __attribute__((noinline, alias("b")));
+int c(int x) NOINLINE __attribute__((alias("b")));
 #define compiler_barrier() asm volatile("");
 #else
-int a(void);
-int b(int x);
 int c(int x);
 #define compiler_barrier()
 #endif
 
-int a(void)
+int NOINLINE a(void)
 {
   *(volatile int *)32 = 1;
   return 1;
 }
 
-int b(int x)
+int NOINLINE b(int x)
 {
   int r;
 

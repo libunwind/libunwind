@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef __GNUC__
 # define ALIGNED(x)	__attribute__((aligned(x)))
 # define UNUSED		__attribute__((unused))
+# define NOINLINE	__attribute__((noinline))
 # define NORETURN	__attribute__((noreturn))
 # define ALIAS(name)	__attribute__((alias (#name)))
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
@@ -55,6 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define ALIGNED(x)
 # define ALWAYS_INLINE
 # define UNUSED
+# define NOINLINE
 # define NORETURN
 # define ALIAS(name)
 # define HIDDEN

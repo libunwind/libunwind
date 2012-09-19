@@ -1,5 +1,7 @@
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#include "compiler.h"
+
 #include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -9,12 +11,12 @@ int ok;
 int verbose;
 
 #if __GNUC__ > 4 || (__GNUC__ == 4 && __GNUC_MINOR__ > 3)
-void a (int, ...) __attribute__((noinline, optimize(0)));
-void b (void) __attribute__((noinline, optimize(0)));
-void c (void) __attribute__((noinline, optimize(0)));
+void a (int, ...) __attribute__((optimize(0)));
+void b (void) __attribute__((optimize(0)));
+void c (void) __attribute__((optimize(0)));
 #endif
 
-void
+void NOINLINE
 b (void)
 {
   void *v[20];
@@ -33,13 +35,13 @@ b (void)
       printf ("[%d] %p\n", i, v[i]);
 }
 
-void
+void NOINLINE
 c (void)
 {
     b ();
 }
 
-void
+void NOINLINE
 a (int d, ...)
 {
   switch (d)
