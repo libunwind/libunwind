@@ -35,6 +35,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "config.h"
 #endif
 
+#include "compiler.h"
+
 #ifdef HAVE___THREAD
   /* For now, turn off per-thread caching.  It uses up too much TLS
      memory per thread even when the thread never uses libunwind at
@@ -70,44 +72,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # endif
 #endif
 
-#ifdef __GNUC__
-# define UNUSED		__attribute__((unused))
-# define NORETURN	__attribute__((noreturn))
-# define ALIAS(name)	__attribute__((alias (#name)))
-# if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
-#  define ALWAYS_INLINE	inline __attribute__((always_inline))
-#  define HIDDEN	__attribute__((visibility ("hidden")))
-#  define PROTECTED	__attribute__((visibility ("protected")))
-# else
-#  define ALWAYS_INLINE
-#  define HIDDEN
-#  define PROTECTED
-# endif
-# if (__GNUC__ >= 3)
-#  define likely(x)	__builtin_expect ((x), 1)
-#  define unlikely(x)	__builtin_expect ((x), 0)
-# else
-#  define likely(x)	(x)
-#  define unlikely(x)	(x)
-# endif
-#else
-# define ALWAYS_INLINE
-# define UNUSED
-# define NORETURN
-# define ALIAS(name)
-# define HIDDEN
-# define PROTECTED
-# define likely(x)	(x)
-# define unlikely(x)	(x)
-#endif
-
 #ifdef DEBUG
 # define UNW_DEBUG	1
 #else
 # define UNW_DEBUG	0
 #endif
-
-#define ARRAY_SIZE(a)	(sizeof (a) / sizeof ((a)[0]))
 
 /* Make it easy to write thread-safe code which may or may not be
    linked against libpthread.  The macros below can be used
