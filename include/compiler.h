@@ -32,6 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifdef __GNUC__
 # define ALIGNED(x)	__attribute__((aligned(x)))
+# define CONST_ATTR	__attribute__((__const__))
 # define UNUSED		__attribute__((unused))
 # define NOINLINE	__attribute__((noinline))
 # define NORETURN	__attribute__((noreturn))
@@ -56,6 +57,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #else
 # define ALIGNED(x)
 # define ALWAYS_INLINE
+# define CONST_ATTR
 # define UNUSED
 # define NOINLINE
 # define NORETURN

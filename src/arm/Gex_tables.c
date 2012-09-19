@@ -53,7 +53,7 @@ struct arm_cb_data
     unw_dyn_info_t di;         /* info about the ARM exidx segment */
   };
 
-static inline uint32_t
+static inline uint32_t CONST_ATTR
 prel31_read (uint32_t prel31)
 {
   return ((int32_t)prel31 << 1) >> 1;

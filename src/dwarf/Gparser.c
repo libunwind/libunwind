@@ -551,7 +551,7 @@ put_rs_cache (unw_addr_space_t as, struct dwarf_rs_cache *cache,
     lock_release (&cache->lock, *saved_maskp);
 }
 
-static inline unw_hash_index_t
+static inline unw_hash_index_t CONST_ATTR
 hash (unw_word_t ip)
 {
   /* based on (sqrt(5)/2-1)*2^64 */

@@ -56,7 +56,7 @@ static __thread struct ia64_script_cache ia64_per_thread_cache =
   };
 #endif
 
-static inline unw_hash_index_t
+static inline unw_hash_index_t CONST_ATTR
 hash (unw_word_t ip)
 {
   /* based on (sqrt(5)/2-1)*2^64 */

@@ -109,7 +109,7 @@ free_state_stack (struct ia64_reg_state *rs)
 
 /* Unwind decoder routines */
 
-static enum ia64_pregnum __attribute__ ((const))
+static enum ia64_pregnum CONST_ATTR
 decode_abreg (unsigned char abreg, int memory)
 {
   switch (abreg)
