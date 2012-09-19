@@ -31,6 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define COMPILER_H
 
 #ifdef __GNUC__
+# define ALIGNED(x)	__attribute__((aligned(x)))
 # define UNUSED		__attribute__((unused))
 # define NORETURN	__attribute__((noreturn))
 # define ALIAS(name)	__attribute__((alias (#name)))
@@ -51,6 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #  define unlikely(x)	(x)
 # endif
 #else
+# define ALIGNED(x)
 # define ALWAYS_INLINE
 # define UNUSED
 # define NORETURN

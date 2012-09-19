@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2002-2003, 2005 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -38,7 +39,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define MAX_ALIGN	MAX_ALIGN_(sizeof (long double))
 #endif
 
-static char sos_memory[SOS_MEMORY_SIZE];
+static char sos_memory[SOS_MEMORY_SIZE] ALIGNED(MAX_ALIGN);
 static char *sos_memp;
 static size_t pg_size;
 
