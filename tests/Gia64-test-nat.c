@@ -31,14 +31,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 
 #include <libunwind.h>
+#include "compiler.h"
 
 #ifdef HAVE_SYS_UC_ACCESS_H
 # include <sys/uc_access.h>
 #endif
 
 #include "tdep-ia64/rse.h"
-
-#define ARRAY_SIZE(a)	((int) (sizeof (a) / sizeof ((a)[0])))
 
 #define NUM_RUNS		1024
 //#define NUM_RUNS		1
@@ -588,9 +587,9 @@ run_check (int test)
     {
       if (test == 1)
 	/* Make first test once go through each test... */
-	index = i % ARRAY_SIZE (all_funcs);
+	index = i % (int) ARRAY_SIZE (all_funcs);
       else
-	index = random () % ARRAY_SIZE (all_funcs);
+	index = random () % (int) ARRAY_SIZE (all_funcs);
       funcs[i] = all_funcs[index].func;
       checks[i] = all_funcs[index].check;
     }

@@ -32,13 +32,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 
 #include <libunwind.h>
+#include "compiler.h"
 
 #include "ia64-test-rbs.h"
 
 #define panic(args...)							  \
 	do { fprintf (stderr, args); ++nerrors; return -9999; } while (0)
-
-#define ARRAY_SIZE(a)	((int) (sizeof (a) / sizeof ((a)[0])))
 
 /* The loadrs field in ar.rsc is 14 bits wide, which limits all ia64
    implementations to at most 2048 physical stacked registers
@@ -138,7 +137,7 @@ run_check (int test)
 
   /* First, generate a set of 88 random values which loadup() will load
      into loc2-loc89 (r37-r124).  */
-  for (i = 0; i < ARRAY_SIZE (reg_values); ++i)
+  for (i = 0; i < (int) ARRAY_SIZE (reg_values); ++i)
     {
       reg_values[i] = random ();
       /* Generate NaTs with a reasonably probability (1/16th): */
@@ -150,7 +149,7 @@ run_check (int test)
   nfuncs = 0;
   do
     {
-      n = random () % ARRAY_SIZE (spill_funcs);
+      n = random () % (int) ARRAY_SIZE (spill_funcs);
       func[nfuncs++] = spill_funcs[n];
       nspills += 2 + n;
     }
