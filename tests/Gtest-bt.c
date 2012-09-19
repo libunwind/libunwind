@@ -127,7 +127,7 @@ do_backtrace (void)
 }
 
 void
-foo (long val __attribute__((unused)))
+foo (long val UNUSED)
 {
   do_backtrace ();
 }
@@ -164,7 +164,7 @@ bar (long v)
 }
 
 void
-sighandler (int signal, void *siginfo __attribute__((unused)), void *context)
+sighandler (int signal, void *siginfo UNUSED, void *context)
 {
   ucontext_t *uc UNUSED;
   int sp;
@@ -206,7 +206,7 @@ sighandler (int signal, void *siginfo __attribute__((unused)), void *context)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   struct sigaction act;
   stack_t stk;

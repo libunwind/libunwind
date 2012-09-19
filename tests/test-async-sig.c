@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "config.h"
 #endif
 
+#include "compiler.h"
+
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -159,7 +161,7 @@ sighandler (int signal)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   struct sigaction act;
   long i = 0;

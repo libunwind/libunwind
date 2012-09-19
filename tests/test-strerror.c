@@ -1,8 +1,9 @@
+#include "compiler.h"
 #include <libunwind.h>
 #include <stdio.h>
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   int i, verbose = argc > 1;
   const char *msg;

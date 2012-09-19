@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#include "compiler.h"
 
 #include <stdio.h>
 #include <pthread.h>
@@ -1333,7 +1334,7 @@ foo_128 (void)
 }
 
 void *
-bar(void *p __attribute__((unused)))
+bar(void *p UNUSED)
 {
   int i;
   for (i = 0; i < ITERS; ++i) {
@@ -1487,7 +1488,7 @@ int doit ()
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   if (argc > 1)
     verbose = 1;

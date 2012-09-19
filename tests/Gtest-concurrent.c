@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "config.h"
 #endif
 
+#include "compiler.h"
+
 #include <libunwind.h>
 #include <limits.h>
 #include <pthread.h>
@@ -46,7 +48,7 @@ int got_usr1, got_usr2;
 char *sigusr1_sp;
 
 void
-handler (int sig __attribute__((unused)))
+handler (int sig UNUSED)
 {
   unw_word_t ip;
   unw_context_t uc;
@@ -68,7 +70,7 @@ handler (int sig __attribute__((unused)))
 }
 
 void *
-worker (void *arg __attribute__((unused)))
+worker (void *arg UNUSED)
 {
   signal (SIGUSR1, handler);
 
@@ -102,7 +104,7 @@ doit (void)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   if (argc > 1)
     verbose = 1;

@@ -23,6 +23,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* The setjmp()/longjmp(), sigsetjmp()/siglongjmp().  */
 
+#include "compiler.h"
+
 #include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
@@ -139,7 +141,7 @@ sighandler (int signal)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   volatile sigset_t sigset1, sigset2, sigset3;
   volatile struct sigaction act;

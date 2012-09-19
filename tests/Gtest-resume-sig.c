@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "config.h"
 #endif
 
+#include "compiler.h"
+
 #include <libunwind.h>
 #include <signal.h>
 #include <stdio.h>
@@ -64,8 +66,8 @@ get_bsp (void)
 #ifdef TEST_WITH_SIGINFO
 void
 handler (int sig,
-         siginfo_t *si __attribute__((unused)),
-         void *ucontext __attribute__((unused)))
+         siginfo_t *si UNUSED,
+         void *ucontext UNUSED)
 #else
 void
 handler (int sig)
@@ -135,7 +137,7 @@ handler (int sig)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   struct sigaction sa;
   float d = 1.0;

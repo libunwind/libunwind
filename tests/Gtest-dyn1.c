@@ -27,6 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "flush-cache.h"
 
+#include "compiler.h"
+
 #include <libunwind.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -157,13 +159,13 @@ sighandler (int signal)
 }
 
 int
-dev_null (const char *format __attribute__((unused)), ...)
+dev_null (const char *format UNUSED, ...)
 {
   return 0;
 }
 
 int
-main (int argc, char *argv[] __attribute__((unused)))
+main (int argc, char *argv[] UNUSED)
 {
   unw_dyn_region_info_t *region;
   unw_dyn_info_t di;

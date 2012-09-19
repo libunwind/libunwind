@@ -36,6 +36,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 
 #include <libunwind.h>
+#include "compiler.h"
 
 int errors;
 
@@ -43,20 +44,20 @@ int errors;
 	{ ++errors; fprintf (stderr, args); return -1; }
 
 static int
-find_proc_info (unw_addr_space_t as __attribute__((unused)),
-                unw_word_t ip __attribute__((unused)),
-                unw_proc_info_t *pip __attribute__((unused)),
-                int need_unwind_info __attribute__((unused)),
-                void *arg __attribute__((unused)))
+find_proc_info (unw_addr_space_t as UNUSED,
+                unw_word_t ip UNUSED,
+                unw_proc_info_t *pip UNUSED,
+                int need_unwind_info UNUSED,
+                void *arg UNUSED)
 {
   return -UNW_ESTOPUNWIND;
 }
 
 static int
-access_mem (unw_addr_space_t as __attribute__((unused)),
-            unw_word_t addr __attribute__((unused)),
+access_mem (unw_addr_space_t as UNUSED,
+            unw_word_t addr UNUSED,
             unw_word_t *valp, int write,
-            void *arg __attribute__((unused)))
+            void *arg UNUSED)
 {
   if (!write)
     *valp = 0;
@@ -64,10 +65,10 @@ access_mem (unw_addr_space_t as __attribute__((unused)),
 }
 
 static int
-access_reg (unw_addr_space_t as __attribute__((unused)),
-            unw_regnum_t regnum __attribute__((unused)),
+access_reg (unw_addr_space_t as UNUSED,
+            unw_regnum_t regnum UNUSED,
             unw_word_t *valp, int write,
-            void *arg __attribute__((unused)))
+            void *arg UNUSED)
 {
   if (!write)
     *valp = 32;
@@ -75,10 +76,10 @@ access_reg (unw_addr_space_t as __attribute__((unused)),
 }
 
 static int
-access_fpreg (unw_addr_space_t as __attribute__((unused)),
-              unw_regnum_t regnum __attribute__((unused)),
+access_fpreg (unw_addr_space_t as UNUSED,
+              unw_regnum_t regnum UNUSED,
               unw_fpreg_t *valp, int write,
-              void *arg __attribute__((unused)))
+              void *arg UNUSED)
 {
   if (!write)
     memset (valp, 0, sizeof (*valp));
@@ -86,37 +87,37 @@ access_fpreg (unw_addr_space_t as __attribute__((unused)),
 }
 
 static int
-get_dyn_info_list_addr (unw_addr_space_t as __attribute__((unused)),
-                        unw_word_t *dilap __attribute__((unused)),
-                        void *arg __attribute__((unused)))
+get_dyn_info_list_addr (unw_addr_space_t as UNUSED,
+                        unw_word_t *dilap UNUSED,
+                        void *arg UNUSED)
 {
   return -UNW_ENOINFO;
 }
 
 static void
-put_unwind_info (unw_addr_space_t as __attribute__((unused)),
-                 unw_proc_info_t *pi __attribute__((unused)),
-                 void *arg __attribute__((unused)))
+put_unwind_info (unw_addr_space_t as UNUSED,
+                 unw_proc_info_t *pi UNUSED,
+                 void *arg UNUSED)
 {
   ++errors;
   fprintf (stderr, "%s() got called!\n", __FUNCTION__);
 }
 
 static int
-resume (unw_addr_space_t as __attribute__((unused)),
-        unw_cursor_t *reg __attribute__((unused)),
-        void *arg __attribute__((unused)))
+resume (unw_addr_space_t as UNUSED,
+        unw_cursor_t *reg UNUSED,
+        void *arg UNUSED)
 {
   panic ("%s() got called!\n", __FUNCTION__);
 }
 
 static int
-get_proc_name (unw_addr_space_t as __attribute__((unused)),
-               unw_word_t ip __attribute__((unused)),
-               char *buf __attribute__((unused)),
-               size_t buf_len __attribute__((unused)),
-               unw_word_t *offp __attribute__((unused)),
-               void *arg __attribute__((unused)))
+get_proc_name (unw_addr_space_t as UNUSED,
+               unw_word_t ip UNUSED,
+               char *buf UNUSED,
+               size_t buf_len UNUSED,
+               unw_word_t *offp UNUSED,
+               void *arg UNUSED)
 {
   panic ("%s() got called!\n", __FUNCTION__);
 }

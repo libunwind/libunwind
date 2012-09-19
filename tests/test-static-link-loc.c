@@ -33,6 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#include "compiler.h"
 
 extern int test_generic (void);
 
@@ -87,7 +88,7 @@ test_local (void)
 #endif /* !UNW_REMOTE_ONLY */
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   if (argc > 1)
     verbose = 1;

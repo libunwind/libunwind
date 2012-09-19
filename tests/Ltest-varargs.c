@@ -64,7 +64,7 @@ a (int d, ...)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   if (argc > 1)
     verbose = 1;

@@ -31,6 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 
 #include <libunwind.h>
+#include "compiler.h"
 
 int verbose, errors;
 
@@ -99,7 +100,7 @@ Test_Class::Test_Class (void)
 }
 
 int
-main (int argc, char **argv __attribute__((unused)))
+main (int argc, char **argv UNUSED)
 {
   verbose = argc > 1;
   return atexit (a);
