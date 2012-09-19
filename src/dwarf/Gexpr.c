@@ -49,7 +49,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define OFFSET	0x6	/* 32-bit offset for 32-bit DWARF, 64-bit otherwise */
 #define ADDR	0x7	/* Machine address.  */
 
-static uint8_t operands[256] =
+static const uint8_t operands[256] =
   {
     [DW_OP_addr] =		OPND1 (ADDR),
     [DW_OP_const1u] =		OPND1 (VAL8),
