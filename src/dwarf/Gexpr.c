@@ -254,7 +254,7 @@ do {						\
 				   OPND1_TYPE (operands_signature),
 				   &operand1, arg)) < 0)
 	    return ret;
-	  if (NUM_OPERANDS (operands_signature > 1))
+	  if (NUM_OPERANDS (operands_signature) > 1)
 	    if ((ret = read_operand (as, a, addr,
 				     OPND2_TYPE (operands_signature),
 				     &operand2, arg)) < 0)
