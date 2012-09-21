@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "dwarf_i.h"
 
-HIDDEN pthread_mutex_t ppc32_lock = PTHREAD_MUTEX_INITIALIZER;
+HIDDEN define_lock (ppc32_lock);
 HIDDEN int tdep_init_done;
 
 /* The API register numbers are exactly the same as the .eh_frame

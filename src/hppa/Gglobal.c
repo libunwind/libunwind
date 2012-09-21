@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-HIDDEN pthread_mutex_t hppa_lock = PTHREAD_MUTEX_INITIALIZER;
+HIDDEN define_lock (hppa_lock);
 HIDDEN int tdep_init_done;
 
 HIDDEN void

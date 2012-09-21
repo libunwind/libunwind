@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "dwarf_i.h"
 
-HIDDEN pthread_mutex_t arm_lock = PTHREAD_MUTEX_INITIALIZER;
+HIDDEN define_lock (arm_lock);
 HIDDEN int tdep_init_done;
 
 /* Unwinding methods to use. See UNW_METHOD_ enums */

@@ -45,7 +45,7 @@ typedef struct
 } unw_trace_cache_t;
 
 static const unw_tdep_frame_t empty_frame = { 0, UNW_X86_64_FRAME_OTHER, -1, -1, 0, -1, -1 };
-static pthread_mutex_t trace_init_lock = PTHREAD_MUTEX_INITIALIZER;
+static define_lock (trace_init_lock);
 static pthread_once_t trace_cache_once = PTHREAD_ONCE_INIT;
 static sig_atomic_t trace_cache_once_happen;
 static pthread_key_t trace_cache_key;

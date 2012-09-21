@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "dwarf_i.h"
 
-HIDDEN pthread_mutex_t x86_lock = PTHREAD_MUTEX_INITIALIZER;
+HIDDEN define_lock (x86_lock);
 HIDDEN int tdep_init_done;
 
 /* See comments for svr4_dbx_register_map[] in gcc/config/i386/i386.c.  */
