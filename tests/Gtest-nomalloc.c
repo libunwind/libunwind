@@ -79,19 +79,19 @@ do_backtrace (void)
 }
 
 void
-foo3 ()
+foo3 (void)
 {
   do_backtrace ();
 }
 
 void
-foo2 ()
+foo2 (void)
 {
   foo3 ();
 }
 
 void
-foo1 ()
+foo1 (void)
 {
   foo2 ();
 }

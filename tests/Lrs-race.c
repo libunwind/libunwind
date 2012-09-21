@@ -1471,7 +1471,7 @@ bar(void *p UNUSED)
   return NULL;
 }
 
-int doit ()
+int doit (void)
 {
   pthread_t tid[NTHREAD];
   int i;
