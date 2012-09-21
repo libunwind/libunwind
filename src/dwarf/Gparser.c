@@ -582,7 +582,7 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 
   index = cache->hash[hash (ip)];
   if (index >= DWARF_UNW_CACHE_SIZE)
-    return 0;
+    return NULL;
 
   rs = cache->buckets + index;
   while (1)
@@ -595,7 +595,7 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
           return rs;
         }
       if (rs->coll_chain >= DWARF_UNW_HASH_SIZE)
-        return 0;
+        return NULL;
       rs = cache->buckets + rs->coll_chain;
     }
 }
@@ -620,7 +620,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
     {
       index = hash (rs->ip);
       tmp = cache->buckets + cache->hash[index];
-      prev = 0;
+      prev = NULL;
       while (1)
 	{
 	  if (tmp == rs)

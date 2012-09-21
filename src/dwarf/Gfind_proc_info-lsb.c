@@ -757,7 +757,7 @@ static inline const struct table_entry *
 lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
 {
   unsigned long table_len = table_size / sizeof (struct table_entry);
-  const struct table_entry *e = 0;
+  const struct table_entry *e = NULL;
   unsigned long lo, hi, mid;
 
   /* do a binary search for right entry: */

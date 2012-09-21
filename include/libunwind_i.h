@@ -88,11 +88,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #pragma weak pthread_mutex_unlock
 
 #define mutex_init(l)							\
-	(pthread_mutex_init != 0 ? pthread_mutex_init ((l), 0) : 0)
+	(pthread_mutex_init != NULL ? pthread_mutex_init ((l), NULL) : 0)
 #define mutex_lock(l)							\
-	(pthread_mutex_lock != 0 ? pthread_mutex_lock (l) : 0)
+	(pthread_mutex_lock != NULL ? pthread_mutex_lock (l) : 0)
 #define mutex_unlock(l)							\
-	(pthread_mutex_unlock != 0 ? pthread_mutex_unlock (l) : 0)
+	(pthread_mutex_unlock != NULL ? pthread_mutex_unlock (l) : 0)
 
 #ifdef HAVE_ATOMIC_OPS_H
 # include <atomic_ops.h>
@@ -187,8 +187,8 @@ do {						\
 #define GET_MEMORY(mem, size)				    		    \
 do {									    \
   /* Hopefully, mmap() goes straight through to a system call stub...  */   \
-  mem = mmap (0, size, PROT_READ | PROT_WRITE, MAP_PRIVATE | MAP_ANONYMOUS, \
-	      -1, 0);							    \
+  mem = mmap (NULL, size, PROT_READ | PROT_WRITE,			    \
+	      MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);			    \
   if (mem == MAP_FAILED)						    \
     mem = NULL;								    \
 } while (0)

@@ -89,7 +89,7 @@ trace_cache_buckets (size_t n)
   size_t i;
 
   GET_MEMORY(frames, n * sizeof (unw_tdep_frame_t));
-  if (likely(frames != 0))
+  if (likely(frames != NULL))
     for (i = 0; i < n; ++i)
       frames[i] = empty_frame;
 
@@ -162,7 +162,7 @@ trace_cache_get_unthreaded (void)
 {
   unw_trace_cache_t *cache;
   intrmask_t saved_mask;
-  static unw_trace_cache_t *global_cache = 0;
+  static unw_trace_cache_t *global_cache = NULL;
   lock_acquire (&trace_init_lock, saved_mask);
   if (! global_cache)
   {
@@ -180,7 +180,7 @@ static unw_trace_cache_t *
 trace_cache_get (void)
 {
   unw_trace_cache_t *cache;
-  if (likely (pthread_once != 0))
+  if (likely (pthread_once != NULL))
   {
     pthread_once(&trace_cache_once, &trace_cache_init_once);
     if (!trace_cache_once_happen)

@@ -77,7 +77,7 @@ maps_init (struct map_iterator *mi, pid_t pid)
     {
       /* Try to allocate a page-sized buffer.  */
       mi->buf_size = getpagesize ();
-      cp = mmap (0, mi->buf_size, PROT_READ | PROT_WRITE,
+      cp = mmap (NULL, mi->buf_size, PROT_READ | PROT_WRITE,
 		 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       if (cp == MAP_FAILED)
 	{
@@ -290,7 +290,7 @@ maps_close (struct map_iterator *mi)
   if (mi->buf)
     {
       munmap (mi->buf_end - mi->buf_size, mi->buf_size);
-      mi->buf = mi->buf_end = 0;
+      mi->buf = mi->buf_end = NULL;
     }
 }
 

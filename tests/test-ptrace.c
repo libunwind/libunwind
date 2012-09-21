@@ -237,7 +237,7 @@ main (int argc, char **argv)
 
   while (nerrors <= nerrors_max)
     {
-      pid = wait4 (-1, &status,  0, 0);
+      pid = wait4 (-1, &status, 0, NULL);
       if (pid == -1)
 	{
 	  if (errno == EINTR)
