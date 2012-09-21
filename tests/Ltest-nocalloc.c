@@ -33,7 +33,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
-int verbose;
 int num_mallocs;
 int num_callocs;
 int in_unwind;
