@@ -47,7 +47,8 @@ calloc(size_t n, size_t s)
      causes infinite recursion.  Instead, we simply use it by its other
      name.  */
   extern void *__libc_calloc(size_t, size_t);
-  func = &__libc_calloc;
+  if (!func)
+    func = &__libc_calloc;
 #else
   if(!func)
     func = dlsym(RTLD_NEXT, "calloc");
