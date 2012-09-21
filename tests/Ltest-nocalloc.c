@@ -40,17 +40,17 @@ int in_unwind;
 void *
 calloc(size_t n, size_t s)
 {
-  static void * (*func)();
+  static void * (*func)(size_t, size_t);
 
 #ifdef __GLIBC__
   /* In glibc, dlsym() calls calloc. Calling dlsym(RTLD_NEXT, "calloc") here
      causes infinite recursion.  Instead, we simply use it by its other
      name.  */
-  extern void *__libc_calloc();
+  extern void *__libc_calloc(size_t, size_t);
   func = &__libc_calloc;
 #else
   if(!func)
-    func = (void *(*)()) dlsym(RTLD_NEXT, "calloc");
+    func = dlsym(RTLD_NEXT, "calloc");
 #endif
 
   if (in_unwind) {
@@ -64,10 +64,10 @@ calloc(size_t n, size_t s)
 void *
 malloc(size_t s)
 {
-  static void * (*func)();
+  static void * (*func)(size_t);
 
   if(!func)
-    func = (void *(*)()) dlsym(RTLD_NEXT, "malloc");
+    func = dlsym(RTLD_NEXT, "malloc");
 
   if (in_unwind) {
     num_mallocs++;
