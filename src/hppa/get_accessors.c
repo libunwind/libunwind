@@ -28,10 +28,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 PROTECTED unw_accessors_t *
 unw_get_accessors (unw_addr_space_t as)
 {
-  if (hppa_needs_initialization)
-    {
-      hppa_needs_initialization = 0;
-      hppa_init ();
-    }
+  if (!tdep_init_done)
+    tdep_init ();
+
   return &as->acc;
 }

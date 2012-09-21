@@ -178,7 +178,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 }
 
 #define tdep_getcontext_trace	        UNW_ARCH_OBJ(getcontext_trace)
-#define tdep_needs_initialization	UNW_OBJ(needs_initialization)
+#define tdep_init_done			UNW_OBJ(init_done)
 #define tdep_init_mem_validate		UNW_OBJ(init_mem_validate)
 #define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
@@ -220,7 +220,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_ip(c)			((c)->dwarf.ip)
 #define tdep_big_endian(as)		0
 
-extern int tdep_needs_initialization;
+extern int tdep_init_done;
 
 extern void tdep_init (void);
 extern void tdep_init_mem_validate (void);

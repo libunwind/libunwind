@@ -43,7 +43,7 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 {
   struct cursor *c = (struct cursor *) cursor;
 
-  if (unlikely (tdep_needs_initialization))
+  if (unlikely (!tdep_init_done))
     tdep_init ();
 
   Debug (1, "(cursor=%p)\n", c);

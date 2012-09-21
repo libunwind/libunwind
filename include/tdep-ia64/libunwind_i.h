@@ -186,7 +186,7 @@ struct ia64_global_unwind_state
   {
     pthread_mutex_t lock;		/* global data lock */
 
-    volatile char needs_initialization;
+    volatile char init_done;
 
     /* Table of registers that prologues can save (and order in which
        they're saved).  */
@@ -217,7 +217,7 @@ struct ia64_global_unwind_state
   };
 
 #define tdep_getcontext_trace           unw_getcontext
-#define tdep_needs_initialization	unw.needs_initialization
+#define tdep_init_done			unw.init_done
 #define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */

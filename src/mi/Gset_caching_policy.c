@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 PROTECTED int
 unw_set_caching_policy (unw_addr_space_t as, unw_caching_policy_t policy)
 {
-  if (tdep_needs_initialization)
+  if (!tdep_init_done)
     tdep_init ();
 
 #ifndef HAVE___THREAD

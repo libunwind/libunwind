@@ -227,7 +227,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #endif /* !UNW_LOCAL_ONLY */
 
 #define tdep_getcontext_trace           unw_getcontext
-#define tdep_needs_initialization	UNW_OBJ(needs_initialization)
+#define tdep_init_done			UNW_OBJ(init_done)
 #define tdep_init			UNW_OBJ(init)
 #define arm_find_proc_info		UNW_OBJ(find_proc_info)
 #define arm_put_unwind_info		UNW_OBJ(put_unwind_info)
@@ -264,7 +264,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_ip(c)			((c)->dwarf.ip)
 #define tdep_big_endian(as)		((as)->big_endian)
 
-extern int tdep_needs_initialization;
+extern int tdep_init_done;
 
 extern void tdep_init (void);
 extern int arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,

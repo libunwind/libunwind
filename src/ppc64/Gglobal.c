@@ -29,7 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 
 HIDDEN pthread_mutex_t ppc64_lock = PTHREAD_MUTEX_INITIALIZER;
-HIDDEN int tdep_needs_initialization = 1;
+HIDDEN int tdep_init_done;
 
 /* The API register numbers are exactly the same as the .eh_frame
    registers, for now at least.  */
@@ -164,7 +164,7 @@ tdep_init (void)
 
   lock_acquire (&ppc64_lock, saved_mask);
   {
-    if (!tdep_needs_initialization)
+    if (tdep_init_done)
       /* another thread else beat us to it... */
       goto out;
 
@@ -175,7 +175,7 @@ tdep_init (void)
 #ifndef UNW_REMOTE_ONLY
     ppc64_local_addr_space_init ();
 #endif
-    tdep_needs_initialization = 0;	/* signal that we're initialized... */
+    tdep_init_done = 1;	/* signal that we're initialized... */
   }
  out:
   lock_release (&ppc64_lock, saved_mask);

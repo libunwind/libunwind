@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 PROTECTED unw_accessors_t *
 unw_get_accessors (unw_addr_space_t as)
 {
-  if (tdep_needs_initialization)
+  if (!tdep_init_done)
     tdep_init ();
   return &as->acc;
 }

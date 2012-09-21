@@ -29,7 +29,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 HIDDEN struct ia64_global_unwind_state unw =
   {
-    .needs_initialization = 1,
     .lock = PTHREAD_MUTEX_INITIALIZER,
     .save_order = {
       IA64_REG_IP, IA64_REG_PFS, IA64_REG_PSP, IA64_REG_PR,
@@ -73,7 +72,7 @@ tdep_init (void)
 
   lock_acquire (&unw.lock, saved_mask);
   {
-    if (!tdep_needs_initialization)
+    if (tdep_init_done)
       /* another thread else beat us to it... */
       goto out;
 
@@ -116,7 +115,7 @@ tdep_init (void)
 #ifndef UNW_REMOTE_ONLY
     ia64_local_addr_space_init ();
 #endif
-    tdep_needs_initialization = 0;	/* signal that we're initialized... */
+    tdep_init_done = 1;	/* signal that we're initialized... */
   }
  out:
   lock_release (&unw.lock, saved_mask);
