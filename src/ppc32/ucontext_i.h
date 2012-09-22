@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef ucontext_i_h
 #define ucontext_i_h
 
+#include "libunwind_i.h"
 #include <ucontext.h>
 
 /* These values were derived by reading
