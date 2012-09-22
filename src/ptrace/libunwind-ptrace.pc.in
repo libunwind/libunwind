@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: libunwind-ptrace
 Description: libunwind ptrace library
 Version: @VERSION@
-Requires: libunwind-@arch@ libunwind
+Requires: libunwind-generic libunwind
 Libs: -L${libdir} -lunwind-ptrace

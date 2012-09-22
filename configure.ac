@@ -319,5 +319,5 @@ AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
                 include/libunwind.h include/tdep/libunwind_i.h)
 AC_CONFIG_FILES(src/unwind/libunwind.pc src/coredump/libunwind-coredump.pc
                 src/ptrace/libunwind-ptrace.pc src/setjmp/libunwind-setjmp.pc
-                src/libunwind-generic.pc:src/libunwind-generic.pc.in)
+                src/libunwind-generic.pc)
 AC_OUTPUT

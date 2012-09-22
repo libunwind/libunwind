@@ -6,5 +6,5 @@ includedir=@includedir@
 Name: libunwind-coredump
 Description: libunwind coredump library
 Version: @VERSION@
-Requires: libunwind-@arch@ libunwind
+Requires: libunwind-generic libunwind
 Libs: -L${libdir} -lunwind-coredump
