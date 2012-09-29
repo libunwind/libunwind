@@ -50,12 +50,10 @@ sos_alloc (size_t size)
 
   size = UNW_ALIGN(size, MAX_ALIGN);
 
-#if defined(__GNUC__)
+#if defined(__GNUC__) && defined(HAVE_FETCH_AND_ADD)
   /* Assume `sos_memory' is suitably aligned. */
   assert(((uintptr_t) &sos_memory[0] & (MAX_ALIGN-1)) == 0);
-#endif
 
-#if defined(__GNUC__) && defined(HAVE_FETCH_AND_ADD)
   pos = fetch_and_add (&sos_memory_freepos, size);
 #else
   static define_lock (sos_lock);
@@ -63,7 +61,6 @@ sos_alloc (size_t size)
 
   lock_acquire (&sos_lock, saved_mask);
   {
-# ifndef __GNUC__
     /* No assumptions about `sos_memory' alignment. */
     if (sos_memory_freepos == 0)
       {
@@ -71,7 +68,6 @@ sos_alloc (size_t size)
 				- (uintptr_t) &sos_memory[0];
 	sos_memory_freepos = align;
       }
-# endif
     pos = sos_memory_freepos;
     sos_memory_freepos += size;
   }
