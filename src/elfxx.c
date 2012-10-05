@@ -24,14 +24,14 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "libunwind_i.h"
+
 #include <stdio.h>
 #include <sys/param.h>
 
 #ifdef HAVE_LZMA
 #include <lzma.h>
 #endif /* HAVE_LZMA */
-
-#include "libunwind_i.h"
 
 static Elf_W (Shdr)*
 elf_w (section_table) (struct elf_image *ei)
