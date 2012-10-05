@@ -201,7 +201,7 @@ unw_step (unw_cursor_t *cursor)
       if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
         {
 	  ret = 0;
-	  Debug (2, "NULL %rbp loc, returning %d\n", ret);
+	  Debug (2, "NULL %%rbp loc, returning %d\n", ret);
 	  return ret;
         }
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RIP]))
