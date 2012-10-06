@@ -1,5 +1,5 @@
 define(pkg_major, 1)
-define(pkg_minor, 0)
+define(pkg_minor, 1)
 define(pkg_extra, )
 define(pkg_maintainer, libunwind-devel@nongnu.org)
 define(mkvers, $1.$2$3)

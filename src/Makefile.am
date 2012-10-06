@@ -1,4 +1,4 @@
-SOVERSION=8:0:0		# See comments at end of file.
+SOVERSION=8:1:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 COREDUMP_SO_VERSION=0:0:0
 #
