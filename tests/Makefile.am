@@ -87,6 +87,10 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 
+if !ARCH_IA64
+XFAIL_TESTS = Gtest-dyn1 Ltest-dyn1
+endif
+
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 
