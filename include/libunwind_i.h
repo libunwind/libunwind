@@ -72,6 +72,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # endif
 #endif
 
+#if defined(HAVE__BUILTIN_UNREACHABLE)
+# define unreachable() __builtin_unreachable()
+#else
+# define unreachable() do { } while (1)
+#endif
+
 #ifdef DEBUG
 # define UNW_DEBUG	1
 #else

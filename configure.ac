@@ -285,6 +285,17 @@ if test x$have__builtin___clear_cache = xyes; then
 fi
 AC_MSG_RESULT([$have__builtin___clear_cache])
 
+AC_MSG_CHECKING([for __builtin_unreachable])
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[]], [[__builtin_unreachable()]])],
+  [have__builtin_unreachable=yes],
+  [have__builtin_unreachable=no])
+if test x$have__builtin_unreachable = xyes; then
+  AC_DEFINE([HAVE__BUILTIN_UNREACHABLE], [1],
+            [Defined if __builtin_unreachable() is available])
+fi
+AC_MSG_RESULT([$have__builtin_unreachable])
+
 AC_MSG_CHECKING([for __sync atomics])
 AC_LINK_IFELSE(
   [AC_LANG_PROGRAM([[]], [[

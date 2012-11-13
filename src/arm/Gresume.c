@@ -96,7 +96,7 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 	: : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc)
       );
    }
-  __builtin_unreachable();
+  unreachable();
 #else
   printf ("%s: implement me\n", __FUNCTION__);
 #endif
