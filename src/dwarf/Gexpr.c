@@ -574,42 +574,42 @@ do {						\
 	  Debug (15, "OP_le\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (as, tmp1) <= sword (as, tmp2));
+	  push (sword (as, tmp2) <= sword (as, tmp1));
 	  break;
 
 	case DW_OP_ge:
 	  Debug (15, "OP_ge\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (as, tmp1) >= sword (as, tmp2));
+	  push (sword (as, tmp2) >= sword (as, tmp1));
 	  break;
 
 	case DW_OP_eq:
 	  Debug (15, "OP_eq\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (as, tmp1) == sword (as, tmp2));
+	  push (sword (as, tmp2) == sword (as, tmp1));
 	  break;
 
 	case DW_OP_lt:
 	  Debug (15, "OP_lt\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (as, tmp1) < sword (as, tmp2));
+	  push (sword (as, tmp2) < sword (as, tmp1));
 	  break;
 
 	case DW_OP_gt:
 	  Debug (15, "OP_gt\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (as, tmp1) > sword (as, tmp2));
+	  push (sword (as, tmp2) > sword (as, tmp1));
 	  break;
 
 	case DW_OP_ne:
 	  Debug (15, "OP_ne\n");
 	  tmp1 = pop ();
 	  tmp2 = pop ();
-	  push (sword (as, tmp1) != sword (as, tmp2));
+	  push (sword (as, tmp2) != sword (as, tmp1));
 	  break;
 
 	case DW_OP_skip:
