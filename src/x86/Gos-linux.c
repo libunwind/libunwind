@@ -57,10 +57,11 @@ unw_is_signal_frame (unw_cursor_t *cursor)
      if SA_SIGINFO is specified.
   */
   ip = c->dwarf.ip;
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0)
-    return ret;
-  ret = ((w0 == 0x0077b858 && w1 == 0x80cd0000)
+  if ((*a->access_mem) (as, ip, &w0, 0, arg) < 0
+      || (*a->access_mem) (as, ip + 4, &w1, 0, arg) < 0)
+    ret = 0;
+  else
+    ret = ((w0 == 0x0077b858 && w1 == 0x80cd0000)
 	 || (w0 == 0x0000adb8 && (w1 & 0xffffff) == 0x80cd00));
   Debug (16, "returning %d\n", ret);
   return ret;
