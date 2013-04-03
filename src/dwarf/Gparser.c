@@ -460,9 +460,6 @@ parse_dynamic (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
 static inline void
 put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
 {
-  if (!c->pi_valid)
-    return;
-
   if (c->pi_is_dynamic)
     unwi_put_dynamic_unwind_info (c->as, pi, c->as_arg);
   else if (pi->unwind_info)
@@ -824,7 +821,10 @@ uncached_dwarf_find_save_locs (struct dwarf_cursor *c)
   int ret;
 
   if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
-    return ret;
+    {
+      put_unwind_info (c, &c->pi);
+      return ret;
+    }
 
   if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
     return ret;
@@ -863,7 +863,8 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       if ((ret = fetch_proc_info (c, c->ip, 1)) < 0 ||
 	  (ret = create_state_record_for (c, &sr, c->ip)) < 0)
 	{
-	  put_rs_cache (c->as, cache, &saved_mask);
+          put_rs_cache (c->as, cache, &saved_mask);
+          put_unwind_info (c, &c->pi);
 	  return ret;
 	}
 
