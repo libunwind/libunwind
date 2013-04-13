@@ -62,7 +62,7 @@ extern "C" {
  * round that up to 280.
  */
 
-#define UNW_TDEP_CURSOR_LEN 200
+#define UNW_TDEP_CURSOR_LEN 280
 
 #if __WORDSIZE==32
 typedef uint32_t unw_word_t;
