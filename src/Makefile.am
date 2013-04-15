@@ -9,7 +9,10 @@ COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
 lib_LIBRARIES =
 lib_LTLIBRARIES =
 if !REMOTE_ONLY
-lib_LTLIBRARIES += libunwind.la libunwind-ptrace.la
+lib_LTLIBRARIES += libunwind.la
+if BUILD_PTRACE
+lib_LTLIBRARIES += libunwind-ptrace.la
+endif
 if BUILD_COREDUMP
 lib_LTLIBRARIES += libunwind-coredump.la
 endif
@@ -22,8 +25,11 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libunwind-generic.pc
 
 if !REMOTE_ONLY
-pkgconfig_DATA += unwind/libunwind.pc ptrace/libunwind-ptrace.pc         \
-                  setjmp/libunwind-setjmp.pc
+pkgconfig_DATA += unwind/libunwind.pc setjmp/libunwind-setjmp.pc
+endif
+
+if BUILD_PTRACE
+pkgconfig_DATA += ptrace/libunwind-ptrace.pc
 endif
 
 if BUILD_COREDUMP

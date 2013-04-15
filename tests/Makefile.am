@@ -36,7 +36,7 @@ if USE_ALTIVEC
 endif #USE_ALTIVEC
 endif #ARCH_PPC64
 endif #!ARCH_IA64
- check_SCRIPTS_cdep =	run-ptrace-mapper run-ptrace-misc
+ check_SCRIPTS_cdep =
  check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
@@ -45,12 +45,16 @@ endif #!ARCH_IA64
 			Gtest-dyn1 Ltest-dyn1				 \
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
-			test-mem test-setjmp test-ptrace Ltest-varargs	 \
+			test-mem test-setjmp Ltest-varargs	 \
 			Ltest-nomalloc Ltest-nocalloc Lrs-race
- noinst_PROGRAMS_cdep = forker crasher mapper test-ptrace-misc		 \
-			Gperf-simple Lperf-simple
+ noinst_PROGRAMS_cdep = forker crasher Gperf-simple Lperf-simple \
+			Gperf-trace Lperf-trace
 
- noinst_PROGRAMS_cdep += Gperf-trace Lperf-trace
+if BUILD_PTRACE
+ check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
+ check_PROGRAMS_cdep += test-ptrace
+ noinst_PROGRAMS_cdep += mapper test-ptrace-misc
+endif
 
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions

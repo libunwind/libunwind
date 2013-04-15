@@ -110,6 +110,14 @@ AC_ARG_ENABLE(coredump,
 AC_MSG_CHECKING([if we should build libunwind-coredump])
 AC_MSG_RESULT([$enable_coredump])
 
+AC_ARG_ENABLE(ptrace,
+	AS_HELP_STRING([--enable-ptrace],[building libunwind-ptrace library]),,
+        [AC_CHECK_HEADER([sys/ptrace.h], [enable_ptrace=yes], [enable_ptrace=no])]
+)
+
+AC_MSG_CHECKING([if we should build libunwind-ptrace])
+AC_MSG_RESULT([$enable_ptrace])
+
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
 AC_MSG_CHECKING([for host architecture])
@@ -120,6 +128,7 @@ AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
 
 AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
+AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
