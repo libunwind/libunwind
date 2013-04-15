@@ -56,7 +56,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 #include <sys/mman.h>
-#include <elf.h>
+
+#if defined(HAVE_ELF_H)
+# include <elf.h>
+#elif defined(HAVE_SYS_ELF_H)
+# include <sys/elf.h>
+#else
+# error Could not locate <elf.h>
+#endif
 
 #if defined(HAVE_ENDIAN_H)
 # include <endian.h>
@@ -67,6 +74,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define __BIG_ENDIAN		4321
 # if defined(__hpux)
 #   define __BYTE_ORDER __BIG_ENDIAN
+# elif defined(__QNX__)
+#   if defined(__BIGENDIAN__)
+#     define __BYTE_ORDER __BIG_ENDIAN
+#   elif defined(__LITTLEENDIAN__)
+#     define __BYTE_ORDER __LITTLE_ENDIAN
+#   else
+#     error Host has unknown byte-order.
+#   endif
 # else
 #   error Host has unknown byte-order.
 # endif

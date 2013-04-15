@@ -4,7 +4,7 @@ COREDUMP_SO_VERSION=0:0:0
 #
 # Don't link with start-files since we don't use any constructors/destructors:
 #
-COMMON_SO_LDFLAGS =	-XCClinker -nostartfiles
+COMMON_SO_LDFLAGS = $(LDFLAGS_NOSTARTFILES)
 
 lib_LIBRARIES =
 lib_LTLIBRARIES =
@@ -148,6 +148,8 @@ libunwind_la_SOURCES_os_linux = os-linux.c
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 
 libunwind_la_SOURCES_os_freebsd = os-freebsd.c
+
+libunwind_la_SOURCES_os_qnx = os-qnx.c
 
 libunwind_dwarf_common_la_SOURCES = dwarf/global.c
 
@@ -450,6 +452,11 @@ if OS_FREEBSD
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
 endif
 
+if OS_QNX
+ libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_qnx)
+ libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_qnx_local)
+endif
+
 if ARCH_AARCH64
  lib_LTLIBRARIES += libunwind-aarch64.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_aarch64)
@@ -622,6 +629,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_aarch64)			\
 		$(libunwind_la_SOURCES_os_freebsd)		\
 		$(libunwind_la_SOURCES_os_linux)		\
 		$(libunwind_la_SOURCES_os_hpux)			\
+		$(libunwind_la_SOURCES_os_qnx)			\
 		$(libunwind_la_SOURCES_common)			\
 		$(libunwind_la_SOURCES_local)			\
 		$(libunwind_la_SOURCES_generic)			\

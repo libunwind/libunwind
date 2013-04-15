@@ -32,9 +32,21 @@ struct dwarf_cursor;	/* forward-declaration */
 struct elf_dyn_info;
 
 #include "dwarf-config.h"
-#ifndef UNW_REMOTE_ONLY
-#include <link.h>
+
+#ifdef HAVE_CONFIG_H
+# include "config.h"
 #endif
+
+#ifndef UNW_REMOTE_ONLY
+  #if defined(HAVE_LINK_H)
+    #include <link.h>
+  #elif defined(HAVE_SYS_LINK_H)
+    #include <sys/link.h>
+  #else
+    #error Could not find <link.h>
+  #endif
+#endif
+
 #include <pthread.h>
 
 /* DWARF expression opcodes.  */

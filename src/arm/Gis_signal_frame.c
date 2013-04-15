@@ -77,6 +77,9 @@ unw_is_signal_frame (unw_cursor_t *cursor)
     return 2;
 
   return 0;
+#elif defined(__QNX__)
+  /* Not supported yet */
+  return 0;
 #else
   printf ("%s: implement me\n", __FUNCTION__);
   return -UNW_ENOINFO;

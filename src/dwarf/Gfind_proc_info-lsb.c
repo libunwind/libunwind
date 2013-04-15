@@ -26,9 +26,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Locate an FDE via the ELF data-structures defined by LSB v1.3
    (http://www.linuxbase.org/spec/).  */
 
-#ifndef UNW_REMOTE_ONLY
-#include <link.h>
-#endif /* !UNW_REMOTE_ONLY */
 #include <stddef.h>
 #include <stdio.h>
 #include <limits.h>

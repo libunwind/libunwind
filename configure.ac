@@ -37,7 +37,7 @@ dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h sys/endian.h execinfo.h \
 		ia64intrin.h sys/uc_access.h unistd.h signal.h sys/types.h \
-		sys/procfs.h sys/ptrace.h byteswap.h)
+		sys/procfs.h sys/ptrace.h byteswap.h elf.h sys/elf.h link.h sys/link.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
@@ -152,6 +152,7 @@ AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
+AM_CONDITIONAL(OS_QNX, expr x$target_os : xnto-qnx >/dev/null)
 
 AC_MSG_CHECKING([for ELF helper width])
 case "${target_arch}" in
@@ -278,9 +279,12 @@ AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[#ifndef __INTEL_COMPILER
 
 if test x$GCC = xyes -a x$intel_compiler != xyes; then
   CFLAGS="${CFLAGS} -fexceptions -Wall -Wsign-compare"
-  LIBCRTS="-lgcc"
 fi
 AC_MSG_RESULT([$intel_compiler])
+
+AC_MSG_CHECKING([for QCC compiler])
+AS_CASE([$CC], [qcc*|QCC*], [qcc_compiler=yes], [qcc_compiler=no])
+AC_MSG_RESULT([$qcc_compiler])
 
 if test x$intel_compiler = xyes; then
   AC_MSG_CHECKING([if linker supports -static-libcxa])
@@ -292,6 +296,16 @@ if test x$intel_compiler = xyes; then
     LDFLAGS_STATIC_LIBCXA="-XCClinker -static-libcxa"
   fi
   AC_MSG_RESULT([$have_static_libcxa])
+fi
+
+if test x$qcc_compiler = xyes; then
+    LDFLAGS_NOSTARTFILES="-XCClinker -Wc,-nostartfiles"
+else
+    LDFLAGS_NOSTARTFILES="-XCClinker -nostartfiles"
+fi
+
+if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes; then
+  LIBCRTS="-lgcc"
 fi
 
 AC_MSG_CHECKING([for __builtin___clear_cache])
@@ -351,6 +365,7 @@ AC_SUBST(target_os)
 AC_SUBST(arch)
 AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
+AC_SUBST(LDFLAGS_NOSTARTFILES)
 AC_SUBST(LIBCRTS)
 AC_SUBST(PKG_MAJOR)
 AC_SUBST(PKG_MINOR)
