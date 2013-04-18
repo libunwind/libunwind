@@ -25,11 +25,15 @@ pkgconfigdir = $(libdir)/pkgconfig
 pkgconfig_DATA = libunwind-generic.pc
 
 if !REMOTE_ONLY
-pkgconfig_DATA += unwind/libunwind.pc setjmp/libunwind-setjmp.pc
+pkgconfig_DATA += unwind/libunwind.pc
 endif
 
 if BUILD_PTRACE
 pkgconfig_DATA += ptrace/libunwind-ptrace.pc
+endif
+
+if BUILD_SETJMP
+pkgconfig_DATA += setjmp/libunwind-setjmp.pc
 endif
 
 if BUILD_COREDUMP
@@ -554,7 +558,7 @@ endif # ARCH_ARM
 
 # libunwind-setjmp depends on libunwind-$(arch). Therefore must be added
 # at the end.
-if !REMOTE_ONLY
+if BUILD_SETJMP
 lib_LTLIBRARIES += libunwind-setjmp.la
 endif
 

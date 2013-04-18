@@ -45,8 +45,8 @@ endif #!ARCH_IA64
 			Gtest-dyn1 Ltest-dyn1				 \
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
-			test-mem test-setjmp Ltest-varargs	 \
-			Ltest-nomalloc Ltest-nocalloc Lrs-race
+			test-mem Ltest-varargs Ltest-nomalloc	 \
+			Ltest-nocalloc Lrs-race
  noinst_PROGRAMS_cdep = forker crasher Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
@@ -54,6 +54,10 @@ if BUILD_PTRACE
  check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep += test-ptrace
  noinst_PROGRAMS_cdep += mapper test-ptrace-misc
+endif
+
+if BUILD_SETJMP
+ check_PROGRAMS_cdep += test-setjmp
 endif
 
 if SUPPORT_CXX_EXCEPTIONS

@@ -118,6 +118,14 @@ AC_ARG_ENABLE(ptrace,
 AC_MSG_CHECKING([if we should build libunwind-ptrace])
 AC_MSG_RESULT([$enable_ptrace])
 
+AC_ARG_ENABLE(setjmp,
+	AS_HELP_STRING([--enable-setjmp],[building libunwind-setjmp library]),,
+        [AS_IF([test x$target_arch == x$host_arch], [enable_setjmp=yes], [enable_setjmp=no])]
+)
+
+AC_MSG_CHECKING([if we should build libunwind-setjmp])
+AC_MSG_RESULT([$enable_setjmp])
+
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
 AC_MSG_CHECKING([for host architecture])
@@ -129,6 +137,7 @@ AC_MSG_RESULT([$target_os])
 
 AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
+AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
