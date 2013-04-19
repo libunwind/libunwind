@@ -47,7 +47,7 @@ endif #!ARCH_IA64
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem Ltest-varargs Ltest-nomalloc	 \
 			Ltest-nocalloc Lrs-race
- noinst_PROGRAMS_cdep = forker crasher Gperf-simple Lperf-simple \
+ noinst_PROGRAMS_cdep = forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
 if BUILD_PTRACE
@@ -67,7 +67,7 @@ endif
 if OS_LINUX
 if BUILD_COREDUMP
  check_SCRIPTS_cdep += run-coredump-unwind
- noinst_PROGRAMS_cdep += test-coredump-unwind
+ noinst_PROGRAMS_cdep += crasher test-coredump-unwind
 
 if HAVE_LZMA
  check_SCRIPTS_cdep += run-coredump-unwind-mdi
