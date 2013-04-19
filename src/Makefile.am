@@ -394,10 +394,10 @@ else
 # to be there if the user configured with --disable-shared.
 #
 install-exec-hook:
-	$(LN_S) -f libunwind-$(arch).a  $(DESTDIR)$(libdir)/libunwind-generic.a
+	cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).a libunwind-generic.a
 	if test -f $(DESTDIR)$(libdir)/libunwind-$(arch).so; then \
-	    $(LN_S) -f libunwind-$(arch).so \
-		$(DESTDIR)$(libdir)/libunwind-generic.so; \
+		cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).so \
+		libunwind-generic.so; \
 	fi
 endif
 
