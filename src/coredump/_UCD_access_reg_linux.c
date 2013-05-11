@@ -39,7 +39,10 @@ _UCD_access_reg (unw_addr_space_t as,
       return -UNW_EINVAL;
     }
 
-#if defined(UNW_TARGET_ARM)
+#if defined(UNW_TARGET_AARCH64)
+  if (regnum < 0 || regnum >= UNW_AARCH64_FPCR)
+    goto badreg;
+#elif defined(UNW_TARGET_ARM)
   if (regnum < 0 || regnum >= 16)
     goto badreg;
 #elif defined(UNW_TARGET_SH)

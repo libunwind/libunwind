@@ -104,7 +104,7 @@ SET_ARCH([$target_cpu],[target_arch])
 
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
-        [AS_CASE([$host_arch], [arm*|mips*|sh*|x86*], [enable_coredump=yes], [enable_coredump=no])]
+        [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*], [enable_coredump=yes], [enable_coredump=no])]
 )
 
 AC_MSG_CHECKING([if we should build libunwind-coredump])
@@ -139,6 +139,7 @@ AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
 AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
+AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
 AM_CONDITIONAL(ARCH_HPPA, test x$target_arch = xhppa)
@@ -155,7 +156,7 @@ AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
 AC_MSG_CHECKING([for ELF helper width])
 case "${target_arch}" in
 (arm|hppa|ppc32|x86|sh) use_elf32=yes; AC_MSG_RESULT([32]);;
-(ia64|ppc64|x86_64)    use_elf64=yes; AC_MSG_RESULT([64]);;
+(aarch64|ia64|ppc64|x86_64)    use_elf64=yes; AC_MSG_RESULT([64]);;
 (mips)                 use_elfxx=yes; AC_MSG_RESULT([xx]);;
 *)                     AC_MSG_ERROR([Unknown ELF target: ${target_arch}])
 esac
@@ -204,6 +205,7 @@ AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions
 # C++ exception handling doesn't work too well on x86
 case $target_arch in
   x86*) enable_cxx_exceptions=no;;
+  aarch64*) enable_cxx_exceptions=no;;
   arm*) enable_cxx_exceptions=no;;
   mips*) enable_cxx_exceptions=no;;
   *) enable_cxx_exceptions=yes;;

@@ -9,6 +9,7 @@ several architecture/operating-system combinations:
  Linux/IA-64:	Fully tested and supported.
  Linux/PARISC:	Works well, but C library missing unwind-info.
  HP-UX/IA-64:	Mostly works but known to have some serious limitations.
+ Linux/AArch64:	Newly added.
  Linux/PPC64:	Newly added.
  Linux/SuperH:	Newly added.
  FreeBSD/i386:	Newly added.

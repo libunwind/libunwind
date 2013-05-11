@@ -1,7 +1,9 @@
 /* Provide a real file - not a symlink - as it would cause multiarch conflicts
    when multiple different arch releases are installed simultaneously.  */
 
-#if defined __arm__
+#if defined __aarch64__
+# include "tdep-aarch64/dwarf-config.h"
+#elif defined __arm__
 # include "tdep-arm/dwarf-config.h"
 #elif defined __hppa__
 # include "tdep-hppa/dwarf-config.h"

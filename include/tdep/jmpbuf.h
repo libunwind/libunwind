@@ -3,6 +3,8 @@
 
 #ifndef UNW_REMOTE_ONLY
 
+#if defined __aarch64__
+# include "tdep-aarch64/jmpbuf.h"
 #if defined __arm__
 # include "tdep-arm/jmpbuf.h"
 #elif defined __hppa__

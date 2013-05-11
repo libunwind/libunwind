@@ -3,7 +3,9 @@
 
 #ifndef UNW_REMOTE_ONLY
 
-#if defined __arm__
+#if defined __aarch64__
+#include "libunwind-aarch64.h"
+#elif defined __arm__
 # include "libunwind-arm.h"
 #elif defined __hppa__
 # include "libunwind-hppa.h"

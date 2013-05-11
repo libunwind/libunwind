@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
 	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2013 Linaro Limited
 
 This file is part of libunwind.
 
@@ -501,6 +502,41 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_ARM_R15]      = 0x3c,
 #elif defined(UNW_TARGET_MIPS)
 #elif defined(UNW_TARGET_SH)
+#elif defined(UNW_TARGET_AARCH64)
+    [UNW_AARCH64_X0]       = 0x00,
+    [UNW_AARCH64_X1]       = 0x08,
+    [UNW_AARCH64_X2]       = 0x10,
+    [UNW_AARCH64_X3]       = 0x18,
+    [UNW_AARCH64_X4]       = 0x20,
+    [UNW_AARCH64_X5]       = 0x28,
+    [UNW_AARCH64_X6]       = 0x30,
+    [UNW_AARCH64_X7]       = 0x38,
+    [UNW_AARCH64_X8]       = 0x40,
+    [UNW_AARCH64_X9]       = 0x48,
+    [UNW_AARCH64_X10]      = 0x50,
+    [UNW_AARCH64_X11]      = 0x58,
+    [UNW_AARCH64_X12]      = 0x60,
+    [UNW_AARCH64_X13]      = 0x68,
+    [UNW_AARCH64_X14]      = 0x70,
+    [UNW_AARCH64_X15]      = 0x78,
+    [UNW_AARCH64_X16]      = 0x80,
+    [UNW_AARCH64_X17]      = 0x88,
+    [UNW_AARCH64_X18]      = 0x90,
+    [UNW_AARCH64_X19]      = 0x98,
+    [UNW_AARCH64_X20]      = 0xa0,
+    [UNW_AARCH64_X21]      = 0xa8,
+    [UNW_AARCH64_X22]      = 0xb0,
+    [UNW_AARCH64_X23]      = 0xb8,
+    [UNW_AARCH64_X24]      = 0xc0,
+    [UNW_AARCH64_X25]      = 0xc8,
+    [UNW_AARCH64_X26]      = 0xd0,
+    [UNW_AARCH64_X27]      = 0xd8,
+    [UNW_AARCH64_X28]      = 0xe0,
+    [UNW_AARCH64_X29]      = 0xe8,
+    [UNW_AARCH64_X30]      = 0xf0,
+    [UNW_AARCH64_SP]       = 0xf8,
+    [UNW_AARCH64_PC]       = 0x100,
+    [UNW_AARCH64_PSTATE]   = 0x108
 #else
 # error Fix me.
 #endif
