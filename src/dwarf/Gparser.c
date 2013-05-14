@@ -462,7 +462,7 @@ put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
 {
   if (c->pi_is_dynamic)
     unwi_put_dynamic_unwind_info (c->as, pi, c->as_arg);
-  else if (pi->unwind_info)
+  else if (pi->unwind_info && pi->format == UNW_INFO_FORMAT_TABLE)
     {
       mempool_free (&dwarf_cie_info_pool, pi->unwind_info);
       pi->unwind_info = NULL;
