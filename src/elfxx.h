@@ -30,6 +30,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/mman.h>
 #include <sys/stat.h>
 
+#include "libunwind_i.h"
+
 #if ELF_CLASS == ELFCLASS32
 # define ELF_W(x)	ELF32_##x
 # define Elf_W(x)	Elf32_##x
@@ -39,8 +41,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define Elf_W(x)	Elf64_##x
 # define elf_w(x)	_Uelf64_##x
 #endif
-
-#include "libunwind_i.h"
 
 extern int elf_w (get_proc_name) (unw_addr_space_t as,
 				  pid_t pid, unw_word_t ip,
