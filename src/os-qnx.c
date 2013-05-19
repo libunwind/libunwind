@@ -65,19 +65,25 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   cbi.offset = 0;
   cbi.path = NULL;
 
-  /* QNX's support for accessing symbol maps is severely broken.  There is a devctl() call that
-     can be made on a proc node (DCMD_PROC_MAPDEBUG) which returns information similar to Linux's
-     /proc/<pid>/maps node, however the filename that is returned by this call is not an absolute
-     path, and there is no foolproof way to map the filename back to the file that it came from.
+  /* QNX's support for accessing symbol maps is severely broken.  There is
+     a devctl() call that can be made on a proc node (DCMD_PROC_MAPDEBUG)
+     which returns information similar to Linux's /proc/<pid>/maps
+     node, however the filename that is returned by this call is not an
+     absolute path, and there is no foolproof way to map the filename
+     back to the file that it came from.
 
-     Therefore, the normal approach for implementing this function, which works equally well for
-     both local and remote unwinding, will not work here.  The only type of image lookup which
-     works reliably is locally, using dl_iterate_phdr().  However, the only time that this function
-     is required to look up a remote image is for ptrace support, which doesn't work on QNX anyway.
-     Local unwinding, which is the main case that makes use of this function, will work fine with
-     dl_iterate_phdr().  Therefore, in lieu of any better platform support for remote image lookup,
-     this function has just been implemented in terms of dl_iterate_phdr().
+     Therefore, the normal approach for implementing this function,
+     which works equally well for both local and remote unwinding,
+     will not work here.  The only type of image lookup which works
+     reliably is locally, using dl_iterate_phdr().  However, the only
+     time that this function is required to look up a remote image is for
+     ptrace support, which doesn't work on QNX anyway.  Local unwinding,
+     which is the main case that makes use of this function, will work
+     fine with dl_iterate_phdr().  Therefore, in lieu of any better
+     platform support for remote image lookup, this function has just
+     been implemented in terms of dl_iterate_phdr().
   */
+
   if (pid != getpid())
   {
     /* Return an error if an attempt is made to perform remote image lookup */
