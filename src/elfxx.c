@@ -319,11 +319,8 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
   struct elf_image mdi;
   if (elf_w (extract_minidebuginfo) (ei, &mdi))
     {
-      int ret_mdi;
-
-      load_offset = elf_w (get_load_offset) (&mdi, segbase, mapoff);
-      ret_mdi = elf_w (lookup_symbol) (as, ip, &mdi, load_offset, buf,
-				       buf_len, &min_dist);
+      int ret_mdi = elf_w (lookup_symbol) (as, ip, &mdi, load_offset, buf,
+					   buf_len, &min_dist);
 
       /* Closer symbol was found (possibly truncated). */
       if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
