@@ -8,3 +8,4 @@ Description: libunwind setjmp library
 Version: @VERSION@
 Requires: libunwind
 Libs: -L${libdir} -lunwind-setjmp
+Cflags: -I${includedir}

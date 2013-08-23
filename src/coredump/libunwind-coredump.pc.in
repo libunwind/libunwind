@@ -8,3 +8,4 @@ Description: libunwind coredump library
 Version: @VERSION@
 Requires: libunwind-generic libunwind
 Libs: -L${libdir} -lunwind-coredump
+Cflags: -I${includedir}

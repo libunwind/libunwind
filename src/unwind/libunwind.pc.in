@@ -7,3 +7,4 @@ Name: libunwind
 Description: libunwind base library
 Version: @VERSION@
 Libs: -L${libdir} -lunwind
+Cflags: -I${includedir}
