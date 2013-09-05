@@ -255,19 +255,21 @@ if test x$enable_msabi_support = xyes; then
 fi
 AC_MSG_RESULT([$enable_msabi_support])
 
+LIBLZMA=
 AC_MSG_CHECKING([whether to support LZMA-compressed symbol tables])
 AC_ARG_ENABLE(minidebuginfo,
 AS_HELP_STRING([--enable-minidebuginfo], [Enables support for LZMA-compressed symbol tables]),, [enable_minidebuginfo=auto])
 AC_MSG_RESULT([$enable_minidebuginfo])
 if test x$enable_minidebuginfo != xno; then
    AC_CHECK_LIB([lzma], [lzma_mf_is_supported],
-   [AC_SUBST([LIBLZMA], [-lzma])
+   [LIBLZMA=-llzma
     AC_DEFINE([HAVE_LZMA], [1], [Define if you have liblzma])
     enable_minidebuginfo=yes],
    [if test x$enable_minidebuginfo = xyes; then
       AC_MSG_FAILURE([liblzma not found])
     fi])
 fi
+AC_SUBST([LIBLZMA])
 AM_CONDITIONAL(HAVE_LZMA, test x$enable_minidebuginfo = xyes)
 
 LIBUNWIND___THREAD
