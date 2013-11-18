@@ -186,8 +186,15 @@ static inline void mark_as_used(void *v UNUSED) {
 # define SIGPROCMASK(how, new_mask, old_mask) mark_as_used(old_mask)
 #endif
 
+/* Prefer adaptive mutexes if available */
+#ifdef PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP
+#define UNW_PTHREAD_MUTEX_INITIALIZER PTHREAD_ADAPTIVE_MUTEX_INITIALIZER_NP
+#else
+#define UNW_PTHREAD_MUTEX_INITIALIZER PTHREAD_MUTEX_INITIALIZER
+#endif
+
 #define define_lock(name) \
-  pthread_mutex_t name = PTHREAD_MUTEX_INITIALIZER
+  pthread_mutex_t name = UNW_PTHREAD_MUTEX_INITIALIZER
 #define lock_init(l)		mutex_init (l)
 #define lock_acquire(l,m)				\
 do {							\
