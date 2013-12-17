@@ -212,12 +212,13 @@ dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr, unw_word_t len,
 })
 # define push(x)				\
 do {						\
+  unw_word_t _x = (x);				\
   if (tos >= MAX_EXPR_STACK_SIZE)		\
     {						\
       Debug (1, "Stack overflow\n");		\
       return -UNW_EINVAL;			\
     }						\
-  stack[tos++] = (x);				\
+  stack[tos++] = _x;				\
 } while (0)
 # define pick(n)				\
 ({						\
