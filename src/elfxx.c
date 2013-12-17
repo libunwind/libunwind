@@ -128,10 +128,11 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
 	      if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
 		  && sym->st_shndx != SHN_UNDEF)
 		{
-		  if (tdep_get_func_addr (as, sym->st_value, &val) < 0)
-		    continue;
+		  val = sym->st_value;
 		  if (sym->st_shndx != SHN_ABS)
 		    val += load_offset;
+		  if (tdep_get_func_addr (as, val, &val) < 0)
+		    continue;
 		  Debug (16, "0x%016lx info=0x%02x %s\n",
 			 (long) val, sym->st_info, strtab + sym->st_name);
 
