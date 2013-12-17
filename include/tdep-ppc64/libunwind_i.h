@@ -51,6 +51,8 @@ unw_tdep_frame_t;
 struct unw_addr_space
 {
   struct unw_accessors acc;
+  int big_endian;
+  ppc64_abi_t abi;
   unw_caching_policy_t caching_policy;
 #ifdef HAVE_ATOMIC_OPS_H
   AO_t cache_generation;
@@ -289,7 +291,7 @@ extern int tdep_fetch_proc_info_post (struct dwarf_cursor *c, unw_word_t ip,
 #define tdep_get_as(c)			((c)->dwarf.as)
 #define tdep_get_as_arg(c)		((c)->dwarf.as_arg)
 #define tdep_get_ip(c)			((c)->dwarf.ip)
-#define tdep_big_endian(as)		1
+#define tdep_big_endian(as)		((as)->big_endian)
 
 extern int tdep_init_done;
 

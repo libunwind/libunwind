@@ -210,6 +210,12 @@ HIDDEN void
 ppc64_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
+  local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
+#if _CALL_ELF == 2
+  local_addr_space.abi = UNW_PPC64_ABI_ELFv2;
+#else
+  local_addr_space.abi = UNW_PPC64_ABI_ELFv1;
+#endif
   local_addr_space.caching_policy = UNW_CACHE_GLOBAL;
   local_addr_space.acc.find_proc_info = dwarf_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;

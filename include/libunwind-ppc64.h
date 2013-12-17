@@ -222,6 +222,13 @@ typedef enum
   }
 ppc64_regnum_t;
 
+typedef enum
+  {
+    UNW_PPC64_ABI_ELFv1,
+    UNW_PPC64_ABI_ELFv2
+  }
+ppc64_abi_t;
+
 /*
  * According to David Edelsohn, GNU gcc uses R3, R4, R5, and maybe R6 for
  * passing parameters to exception handlers.

@@ -342,12 +342,12 @@ libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
 	x86_64/Gstash_frame.c x86_64/Gstep.c x86_64/Gtrace.c
 
 # The list of local files that go to Power 64 and 32:
-libunwind_la_SOURCES_ppc = ppc/Lcreate_addr_space.c 			\
+libunwind_la_SOURCES_ppc = \
 	ppc/Lget_proc_info.c ppc/Lget_save_loc.c ppc/Linit_local.c	\
 	ppc/Linit_remote.c ppc/Lis_signal_frame.c
 
 # The list of generic files that go to Power 64 and 32:
-libunwind_ppc_la_SOURCES_ppc_generic = ppc/Gcreate_addr_space.c		\
+libunwind_ppc_la_SOURCES_ppc_generic = \
 	ppc/Gget_proc_info.c ppc/Gget_save_loc.c ppc/Ginit_local.c	\
 	ppc/Ginit_remote.c ppc/Gis_signal_frame.c
 
@@ -360,6 +360,7 @@ libunwind_la_SOURCES_ppc32_common = $(libunwind_la_SOURCES_common)      \
 libunwind_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common)       \
 	$(libunwind_la_SOURCES_local)                                   \
 	$(libunwind_la_SOURCES_ppc)					\
+	ppc32/Lcreate_addr_space.c					\
 	ppc32/Lglobal.c ppc32/Linit.c					\
 	ppc32/Lregs.c ppc32/Lresume.c ppc32/Lstep.c
 
@@ -367,6 +368,7 @@ libunwind_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common)       \
 libunwind_ppc32_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common) \
 	$(libunwind_la_SOURCES_generic)                                 \
 	$(libunwind_ppc_la_SOURCES_ppc_generic)				\
+	ppc32/Gcreate_addr_space.c					\
 	ppc32/Gglobal.c ppc32/Ginit.c					\
 	ppc32/Gregs.c ppc32/Gresume.c ppc32/Gstep.c
 
@@ -379,6 +381,7 @@ libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
 libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
         $(libunwind_la_SOURCES_local)                                   \
 	$(libunwind_la_SOURCES_ppc)					\
+	ppc64/Lcreate_addr_space.c					\
 	ppc64/Lglobal.c ppc64/Linit.c					\
 	ppc64/Lregs.c ppc64/Lresume.c ppc64/Lstep.c
 
@@ -386,6 +389,7 @@ libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
 libunwind_ppc64_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common) \
         $(libunwind_la_SOURCES_generic)                                 \
 	$(libunwind_ppc_la_SOURCES_ppc_generic)				\
+	ppc64/Gcreate_addr_space.c					\
 	ppc64/Gglobal.c ppc64/Ginit.c					\
 	ppc64/Gregs.c ppc64/Gresume.c ppc64/Gstep.c
 

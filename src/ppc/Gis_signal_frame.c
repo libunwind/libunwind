@@ -31,7 +31,7 @@ PROTECTED int
 unw_is_signal_frame (unw_cursor_t * cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t w0, w1, ip;
+  unw_word_t w0, w1, i0, i1, i2, ip;
   unw_addr_space_t as;
   unw_accessors_t *a;
   void *arg;
@@ -60,7 +60,19 @@ unw_is_signal_frame (unw_cursor_t * cursor)
   if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
     return 0;
-  w1 >>= 32;
-  return (w0 == 0x38210080380000ac && w1 == 0x44000002);
 
+  if (tdep_big_endian (as))
+    {
+      i0 = w0 >> 32;
+      i1 = w0 & 0xffffffffUL;
+      i2 = w1 >> 32;
+    }
+  else
+    {
+      i0 = w0 & 0xffffffffUL;
+      i1 = w0 >> 32;
+      i2 = w1 & 0xffffffffUL;
+    }
+
+  return (i0 == 0x38210080 && i1 == 0x380000ac && i2 == 0x44000002);
 }

@@ -4,10 +4,6 @@
      Corey Ashford <cjashfor@us.ibm.com>
      Jose Flavio Aguilar Paulino <jflavio@br.ibm.com> <joseflavio@gmail.com>
 
-   Copied from libunwind-x86_64.h, modified slightly for building
-   frysk successfully on ppc64, by Wu Zhou <woodzltc@cn.ibm.com>
-   Will be replaced when libunwind is ready on ppc64 platform.
-
 This file is part of libunwind.
 
 Permission is hereby granted, free of charge, to any person obtaining
@@ -29,28 +25,32 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#ifndef dwarf_config_h
-#define dwarf_config_h
+#include <stdlib.h>
 
-/* For PPC64, 48 GPRs + 33 FPRs + 33 AltiVec + 1 SPE  */
-#define DWARF_NUM_PRESERVED_REGS	115
+#include <libunwind_i.h>
 
-#define DWARF_REGNUM_MAP_LENGTH		115
+PROTECTED unw_addr_space_t
+unw_create_addr_space (unw_accessors_t *a, int byte_order)
+{
+#ifdef UNW_LOCAL_ONLY
+  return NULL;
+#else
+  unw_addr_space_t as;
 
-/* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
-#define dwarf_is_big_endian(addr_space)	((addr_space)->big_endian)
+  /*
+   * We support only big-endian on Linux ppc32.
+   */
+  if (byte_order != 0 && byte_order != __BIG_ENDIAN)
+    return NULL;
 
-/* Convert a pointer to a dwarf_cursor structure to a pointer to
-   unw_cursor_t.  */
-#define dwarf_to_cursor(c)	((unw_cursor_t *) (c))
+  as = malloc (sizeof (*as));
+  if (!as)
+    return NULL;
 
-typedef struct dwarf_loc
-  {
-    unw_word_t val;
-#ifndef UNW_LOCAL_ONLY
-    unw_word_t type;		/* see X86_LOC_TYPE_* macros.  */
+  memset (as, 0, sizeof (*as));
+
+  as->acc = *a;
+
+  return as;
 #endif
-  }
-dwarf_loc_t;
-
-#endif /* dwarf_config_h */
+}
