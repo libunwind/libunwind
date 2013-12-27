@@ -277,7 +277,8 @@ unw_tdep_context_t;
   __asm__ __volatile__ (                                                \
     ".align 2\nbx pc\nnop\n.code 32\n"                                  \
     "stmia %[base], {r0-r15}\n"                                         \
-    "orr %[base], pc, #1\nbx %[base]"                                   \
+    "orr %[base], pc, #1\nbx %[base]\n"                                 \
+    ".code 16\n"							\
     : [base] "+r" (unw_base) : : "memory", "cc");                       \
   }), 0)
 #endif
