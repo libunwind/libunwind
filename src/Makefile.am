@@ -68,7 +68,7 @@ libunwind_coredump_la_SOURCES = \
 	coredump/_UPT_resume.c
 libunwind_coredump_la_LDFLAGS = $(COMMON_SO_LDFLAGS) \
 				-version-info $(COREDUMP_SO_VERSION)
-noinst_HEADERS += coredump/_UCD_internal.h
+noinst_HEADERS += coredump/_UCD_internal.h coredump/_UCD_lib.h
 
 ### libunwind-setjmp:
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
