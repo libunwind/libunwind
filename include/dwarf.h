@@ -165,6 +165,7 @@ typedef enum
     DW_CFA_offset_extended_sf	= 0x11,
     DW_CFA_def_cfa_sf		= 0x12,
     DW_CFA_def_cfa_offset_sf	= 0x13,
+    DW_CFA_val_expression	= 0x16,
     DW_CFA_lo_user		= 0x1c,
     DW_CFA_MIPS_advance_loc8	= 0x1d,
     DW_CFA_GNU_window_save	= 0x2d,
@@ -224,6 +225,7 @@ typedef enum
     DWARF_WHERE_CFAREL,		/* register saved at CFA-relative address */
     DWARF_WHERE_REG,		/* register saved in another register */
     DWARF_WHERE_EXPR,		/* register saved */
+    DWARF_WHERE_VAL_EXPR,	/* register has computed value */
   }
 dwarf_where_t;
 

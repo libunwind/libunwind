@@ -334,7 +334,22 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 	  *addr += len;
 	  break;
 
-	case DW_CFA_GNU_args_size:
+        case DW_CFA_val_expression:
+          if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
+            goto fail;
+
+          /* Save the address of the DW_FORM_block for later evaluation. */
+          set_reg (sr, regnum, DWARF_WHERE_VAL_EXPR, *addr);
+
+          if ((ret = dwarf_read_uleb128 (as, a, addr, &len, arg)) < 0)
+            goto fail;
+
+          Debug (15, "CFA_val_expression r%lu @ 0x%lx [%lu bytes]\n",
+                 (long) regnum, (long) addr, (long) len);
+          *addr += len;
+          break;
+
+        case DW_CFA_GNU_args_size:
 	  if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
 	    goto fail;
 	  sr->args_size = val;
@@ -785,6 +800,13 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 	  if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
 	    return ret;
 	  break;
+
+        case DWARF_WHERE_VAL_EXPR:
+          addr = rs->reg[i].val;
+          if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
+            return ret;
+          c->loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (c->loc[i]));
+          break;
 	}
     }
 

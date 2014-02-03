@@ -351,6 +351,11 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
 # define tdep_get_func_addr(as,addr,v)		(*(v) = addr, 0)
 #endif
 
+#ifndef DWARF_VAL_LOC
+# define DWARF_IS_VAL_LOC(l)	0
+# define DWARF_VAL_LOC(c,v)	DWARF_NULL_LOC
+#endif
+
 #define UNW_ALIGN(x,a) (((x)+(a)-1UL)&~((a)-1UL))
 
 #endif /* libunwind_i_h */
