@@ -68,6 +68,7 @@ libunwind_coredump_la_SOURCES = \
 	coredump/_UPT_resume.c
 libunwind_coredump_la_LDFLAGS = $(COMMON_SO_LDFLAGS) \
 				-version-info $(COREDUMP_SO_VERSION)
+libunwind_coredump_la_LIBADD = $(LIBLZMA)
 noinst_HEADERS += coredump/_UCD_internal.h coredump/_UCD_lib.h
 
 ### libunwind-setjmp:
@@ -178,6 +179,9 @@ noinst_HEADERS += elf32.h elf64.h elfxx.h
 libunwind_elf32_la_SOURCES = elf32.c
 libunwind_elf64_la_SOURCES = elf64.c
 libunwind_elfxx_la_SOURCES = elfxx.c
+libunwind_elf32_la_LIBADD  = $(LIBLZMA)
+libunwind_elf64_la_LIBADD  = $(LIBLZMA)
+libunwind_elfxx_la_LIBADD  = $(LIBLZMA)
 
 noinst_LTLIBRARIES += $(LIBUNWIND_ELF)
 libunwind_la_LIBADD += $(LIBUNWIND_ELF)
