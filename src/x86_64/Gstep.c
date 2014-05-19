@@ -173,7 +173,7 @@ unw_step (unw_cursor_t *cursor)
 		 anything about new RBP (rbp1) since it may not be a frame
 		 pointer in the frame above.  Just check we get the value. */
               if (ret < 0
-		  || rbp <= c->dwarf.cfa
+		  || rbp < c->dwarf.cfa
 		  || (rbp - c->dwarf.cfa) > 0x4000)
 	        {
                   rip_loc = DWARF_NULL_LOC;
