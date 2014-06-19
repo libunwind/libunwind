@@ -39,6 +39,13 @@ arm_exidx_step (struct cursor *c)
   uint8_t buf[32];
   int ret;
 
+  /* Before using ip to extract the next stack frame, do a minor adjustment to it.
+     We do this to ensure that the ip is within the bounds of the function it
+     refers to. This is especially important regarding function with the noreturn
+     attribute set where the 'branch with link' could very well be the last
+     instruction in the function and the resulting return value would fall outside
+     the bounds of the function it belongs to. */
+  c->dwarf.ip -= 2;
   old_ip = c->dwarf.ip;
   old_cfa = c->dwarf.cfa;
 
