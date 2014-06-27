@@ -31,6 +31,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+/* DWARF column numbers for ARM: */
+#define R7	7
+#define SP	13
+#define LR	14
+#define PC	15
+
 #define arm_lock			UNW_OBJ(lock)
 #define arm_local_resume		UNW_OBJ(local_resume)
 #define arm_local_addr_space_init	UNW_OBJ(local_addr_space_init)
@@ -38,5 +44,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern void arm_local_addr_space_init (void);
 extern int arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 			     void *arg);
+/* By-pass calls to access_mem() when known to be safe. */
+#ifdef UNW_LOCAL_ONLY
+# undef ACCESS_MEM_FAST
+# define ACCESS_MEM_FAST(ret,validate,cur,addr,to)                     \
+  do {                                                                 \
+    if (unlikely(validate))                                            \
+      (ret) = dwarf_get ((cur), DWARF_MEM_LOC ((cur), (addr)), &(to)); \
+    else                                                               \
+      (ret) = 0, (to) = *(unw_word_t *)(addr);                         \
+  } while (0)
+#endif
 
 #endif /* unwind_i_h */
