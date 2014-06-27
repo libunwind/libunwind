@@ -307,7 +307,7 @@ else
 fi
 
 if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes; then
-  LIBCRTS="-lgcc"
+  LIBCRTS="-lgcc_s"
 fi
 
 AC_MSG_CHECKING([for __builtin___clear_cache])
