@@ -144,6 +144,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
        return ret;
      }
     c->dwarf.cfa += 8;
+    c->dwarf.use_prev_instr = 1;
     return 1;
    }
   else

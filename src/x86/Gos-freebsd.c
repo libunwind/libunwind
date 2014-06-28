@@ -140,6 +140,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
     c->dwarf.loc[EIP] = DWARF_LOC (c->dwarf.cfa, 0);
     c->dwarf.loc[EAX] = DWARF_NULL_LOC;
     c->dwarf.cfa += 4;
+    c->dwarf.use_prev_instr = 1;
   } else {
     Debug (8, "Gstep: not handling frame format %d\n", c->sigcontext_format);
     abort();

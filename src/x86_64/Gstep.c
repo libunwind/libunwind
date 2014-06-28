@@ -194,6 +194,7 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[RBP] = rbp_loc;
           c->dwarf.loc[RSP] = rsp_loc;
           c->dwarf.loc[RIP] = rip_loc;
+          c->dwarf.use_prev_instr = 1;
 	}
 
       c->dwarf.ret_addr_column = RIP;
