@@ -100,7 +100,15 @@ unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
 		   unw_word_t *offp)
 {
   struct cursor *c = (struct cursor *) cursor;
+  unw_word_t ip;
+  int error;
 
-  return get_proc_name (tdep_get_as (c), tdep_get_ip (c), buf, buf_len, offp,
-			tdep_get_as_arg (c));
+  ip = tdep_get_ip (c);
+  if (c->dwarf.use_prev_instr)
+    --ip;
+  error = get_proc_name (tdep_get_as (c), ip, buf, buf_len, offp,
+			 tdep_get_as_arg (c));
+  if (c->dwarf.use_prev_instr && offp != NULL && error == 0)
+    *offp += 1;
+  return error;
 }
