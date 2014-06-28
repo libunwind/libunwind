@@ -91,6 +91,11 @@ XXX
 	w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000)
       ret = X86_SCF_FREEBSD_SIGFRAME;
   }
+
+  /* Check for syscall */
+  if (ret == X86_SCF_NONE && (*a->access_mem) (as, ip - 2, &w0, 0, arg) >= 0 &&
+      (w0 & 0xffff) == 0x80cd)
+    ret = X86_SCF_FREEBSD_SYSCALL;
   Debug (16, "returning %d\n", ret);
   c->sigcontext_format = ret;
   return (ret);
@@ -131,6 +136,10 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
     c->dwarf.loc[EFLAGS] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EFLAGS_OFF, 0);
     c->dwarf.loc[TRAPNO] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_TRAPNO_OFF, 0);
     c->dwarf.loc[ST0] = DWARF_NULL_LOC;
+  } else if (c->sigcontext_format == X86_SCF_FREEBSD_SYSCALL) {
+    c->dwarf.loc[EIP] = DWARF_LOC (c->dwarf.cfa, 0);
+    c->dwarf.loc[EAX] = DWARF_NULL_LOC;
+    c->dwarf.cfa += 4;
   } else {
     Debug (8, "Gstep: not handling frame format %d\n", c->sigcontext_format);
     abort();
