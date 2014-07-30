@@ -37,9 +37,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "mempool.h"
 #include "dwarf.h"
 
+typedef enum
+  {
+    UNW_AARCH64_FRAME_STANDARD = -2,     /* regular fp, sp +/- offset */
+    UNW_AARCH64_FRAME_SIGRETURN = -1,    /* special sigreturn frame */
+    UNW_AARCH64_FRAME_OTHER = 0,         /* not cacheable (special or unrecognised) */
+    UNW_AARCH64_FRAME_GUESSED = 1        /* guessed it was regular, but not known */
+  }
+unw_tdep_frame_type_t;
+
 typedef struct
   {
-    /* no aarch64-specific fast trace */
+    uint64_t virtual_address;
+    int64_t frame_type     : 2;  /* unw_tdep_frame_type_t classification */
+    int64_t last_frame     : 1;  /* non-zero if last frame in chain */
+    int64_t cfa_reg_sp     : 1;  /* cfa dwarf base register is sp vs. fp */
+    int64_t cfa_reg_offset : 30; /* cfa is at this offset from base register value */
+    int64_t fp_cfa_offset  : 30; /* fp saved at this offset from cfa (-1 = not saved) */
+    int64_t lr_cfa_offset  : 30; /* lr saved at this offset from cfa (-1 = not saved) */
+    int64_t sp_cfa_offset  : 30; /* sp saved at this offset from cfa (-1 = not saved) */
   }
 unw_tdep_frame_t;
 
@@ -76,6 +92,9 @@ struct unw_addr_space
 struct cursor
   {
     struct dwarf_cursor dwarf;          /* must be first */
+
+    unw_tdep_frame_t frame_info;	/* quick tracing assist info */
+
     enum
       {
         AARCH64_SCF_NONE,
@@ -85,6 +104,7 @@ struct cursor
     unw_word_t sigcontext_addr;
     unw_word_t sigcontext_sp;
     unw_word_t sigcontext_pc;
+    int validate;
   };
 
 #define DWARF_GET_LOC(l)        ((l).val)
@@ -240,7 +260,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 
 
-#define tdep_getcontext_trace           unw_getcontext
+#define tdep_getcontext_trace           UNW_ARCH_OBJ(getcontext_trace)
 #define tdep_init_done			UNW_OBJ(init_done)
 #define tdep_init			UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
@@ -254,8 +274,8 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_fetch_frame(c,ip,n)	do {} while(0)
 #define tdep_cache_frame(c,rs)		do {} while(0)
 #define tdep_reuse_frame(c,rs)		do {} while(0)
-#define tdep_stash_frame(c,rs)		do {} while(0)
-#define tdep_trace(cur,addr,n)		(-UNW_ENOINFO)
+#define tdep_stash_frame		UNW_OBJ(tdep_stash_frame)
+#define tdep_trace			UNW_OBJ(tdep_trace)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)                            \
@@ -290,5 +310,9 @@ extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 			    unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 			      unw_fpreg_t *valp, int write);
+extern int tdep_trace (unw_cursor_t *cursor, void **addresses, int *n);
+extern void tdep_stash_frame (struct dwarf_cursor *c,
+			      struct dwarf_reg_state *rs);
+extern int tdep_getcontext_trace (unw_tdep_context_t *);
 
 #endif /* AARCH64_LIBUNWIND_I_H */

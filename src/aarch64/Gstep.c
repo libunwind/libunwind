@@ -55,6 +55,8 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
     return -UNW_EUNSPEC;
 
   c->sigcontext_addr = sc_addr;
+  c->frame_info.frame_type = UNW_AARCH64_FRAME_SIGRETURN;
+  c->frame_info.cfa_reg_offset = sc_addr - sp_addr;
 
   /* Update the dwarf cursor.
      Set the location of the registers to the corresponding addresses of the
