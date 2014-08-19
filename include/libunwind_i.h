@@ -274,10 +274,6 @@ do {									\
     }									\
 } while (0)
 # define Dprintf(format...) 	    fprintf (stderr, format)
-# ifdef __GNUC__
-#  undef inline
-#  define inline	UNUSED
-# endif
 #else
 # define Debug(level,format...)
 # define Dprintf(format...)
