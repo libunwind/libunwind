@@ -111,6 +111,7 @@ x86_64_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  */
+    char unused;
   }
 unw_tdep_save_loc_t;
 
@@ -120,6 +121,7 @@ typedef ucontext_t unw_tdep_context_t;
 typedef struct
   {
     /* no x86-64-specific auxiliary proc-info */
+    char unused;
   }
 unw_tdep_proc_info_t;
 
