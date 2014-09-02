@@ -48,6 +48,9 @@ _UCD_access_reg (unw_addr_space_t as,
 #elif defined(UNW_TARGET_SH)
   if (regnum < 0 || regnum > UNW_SH_PR)
     goto badreg;
+#elif defined(UNW_TARGET_TILEGX)
+  if (regnum < 0 || regnum > UNW_TILEGX_CFA)
+    goto badreg;
 #else
 #if defined(UNW_TARGET_MIPS)
   static const uint8_t remap_regs[] =

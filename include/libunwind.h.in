@@ -23,6 +23,8 @@
 # include "libunwind-x86.h"
 #elif defined __x86_64__
 # include "libunwind-x86_64.h"
+#elif defined __tilegx__
+# include "libunwind-tilegx.h"
 #else
 # error "Unsupported arch"
 #endif
