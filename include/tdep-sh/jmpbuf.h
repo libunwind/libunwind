@@ -42,7 +42,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
  * 14. fr15
  */
 
-#define JB_SP		7
-#define JB_RP		8
-#define JB_MASK_SAVED	15
-#define JB_MASK		16
+#define JB_SP           7
+#define JB_RP           8
+#define JB_MASK_SAVED   15
+#define JB_MASK         16

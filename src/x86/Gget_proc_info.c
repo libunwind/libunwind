@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (c) 2002-2003 Hewlett-Packard Development Company, L.P.
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -33,8 +33,8 @@ unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
   if (dwarf_make_proc_info (&c->dwarf) < 0)
     {
       /* On x86, it's relatively common to be missing DWARF unwind
-	 info.  We don't want to fail in that case, because the
-	 frame-chain still would let us do a backtrace at least.  */
+         info.  We don't want to fail in that case, because the
+         frame-chain still would let us do a backtrace at least.  */
       memset (pi, 0, sizeof (*pi));
       pi->start_ip = c->dwarf.ip;
       pi->end_ip = c->dwarf.ip + 1;

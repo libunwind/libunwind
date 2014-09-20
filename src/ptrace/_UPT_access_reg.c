@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
    Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
 
 This file is part of libunwind.
@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if HAVE_DECL_PTRACE_POKEUSER || HAVE_TTRACE
 int
 _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
-		 int write, void *arg)
+                 int write, void *arg)
 {
   struct UPT_info *ui = arg;
   pid_t pid = ui->pid;
@@ -58,170 +58,170 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
       mask = ((unw_word_t) 1) << (reg - UNW_IA64_NAT);
       errno = 0;
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
       nat_bits = ptrace (PTRACE_PEEKUSER, pid, PT_NAT_BITS, 0);
       if (errno)
-	goto badreg;
+        goto badreg;
 #endif
 
       if (write)
-	{
-	  if (*val)
-	    nat_bits |= mask;
-	  else
-	    nat_bits &= ~mask;
+        {
+          if (*val)
+            nat_bits |= mask;
+          else
+            nat_bits &= ~mask;
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	  errno = 0;
-	  ptrace (PTRACE_POKEUSER, pid, PT_NAT_BITS, nat_bits);
-	  if (errno)
-	    goto badreg;
+          errno = 0;
+          ptrace (PTRACE_POKEUSER, pid, PT_NAT_BITS, nat_bits);
+          if (errno)
+            goto badreg;
 #endif
-	}
+        }
       goto out;
     }
   else
     switch (reg)
       {
       case UNW_IA64_GR + 0:
-	if (write)
-	  goto badreg;
-	*val = 0;
-	return 0;
+        if (write)
+          goto badreg;
+        *val = 0;
+        return 0;
 
       case UNW_REG_IP:
-	{
-	  unsigned long ip, psr;
+        {
+          unsigned long ip, psr;
 
-	  /* distribute bundle-addr. & slot-number across PT_IIP & PT_IPSR.  */
+          /* distribute bundle-addr. & slot-number across PT_IIP & PT_IPSR.  */
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	  errno = 0;
-	  psr = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IPSR, 0);
-	  if (errno)
-	    goto badreg;
+          errno = 0;
+          psr = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IPSR, 0);
+          if (errno)
+            goto badreg;
 #endif
-	  if (write)
-	    {
-	      ip = *val & ~0xfUL;
-	      psr = (psr & ~0x3UL << 41) | (*val & 0x3);
+          if (write)
+            {
+              ip = *val & ~0xfUL;
+              psr = (psr & ~0x3UL << 41) | (*val & 0x3);
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	      errno = 0;
-	      ptrace (PTRACE_POKEUSER, pid, PT_CR_IIP, ip);
-	      ptrace (PTRACE_POKEUSER, pid, PT_CR_IPSR, psr);
-	      if (errno)
-		goto badreg;
+              errno = 0;
+              ptrace (PTRACE_POKEUSER, pid, PT_CR_IIP, ip);
+              ptrace (PTRACE_POKEUSER, pid, PT_CR_IPSR, psr);
+              if (errno)
+                goto badreg;
 #endif
-	    }
-	  else
-	    {
+            }
+          else
+            {
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	      errno = 0;
-	      ip = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IIP, 0);
-	      if (errno)
-		goto badreg;
+              errno = 0;
+              ip = ptrace (PTRACE_PEEKUSER, pid, PT_CR_IIP, 0);
+              if (errno)
+                goto badreg;
 #endif
-	      *val = ip + ((psr >> 41) & 0x3);
-	    }
-	  goto out;
-	}
+              *val = ip + ((psr >> 41) & 0x3);
+            }
+          goto out;
+        }
 
       case UNW_IA64_AR_BSPSTORE:
-	reg = UNW_IA64_AR_BSP;
-	break;
+        reg = UNW_IA64_AR_BSP;
+        break;
 
       case UNW_IA64_AR_BSP:
       case UNW_IA64_BSP:
-	{
-	  unsigned long sof, cfm, bsp;
+        {
+          unsigned long sof, cfm, bsp;
 
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	  /* Account for the fact that ptrace() expects bsp to point
-	     _after_ the current register frame.  */
-	  errno = 0;
-	  cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
-	  if (errno)
-	    goto badreg;
+          /* Account for the fact that ptrace() expects bsp to point
+             _after_ the current register frame.  */
+          errno = 0;
+          cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
+          if (errno)
+            goto badreg;
 #endif
-	  sof = (cfm & 0x7f);
+          sof = (cfm & 0x7f);
 
-	  if (write)
-	    {
-	      bsp = rse_skip_regs (*val, sof);
+          if (write)
+            {
+              bsp = rse_skip_regs (*val, sof);
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	      errno = 0;
-	      ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, bsp);
-	      if (errno)
-		goto badreg;
+              errno = 0;
+              ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, bsp);
+              if (errno)
+                goto badreg;
 #endif
-	    }
-	  else
-	    {
+            }
+          else
+            {
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	      errno = 0;
-	      bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
-	      if (errno)
-		goto badreg;
+              errno = 0;
+              bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
+              if (errno)
+                goto badreg;
 #endif
-	      *val = rse_skip_regs (bsp, -sof);
-	    }
-	  goto out;
-	}
+              *val = rse_skip_regs (bsp, -sof);
+            }
+          goto out;
+        }
 
       case UNW_IA64_CFM:
-	/* If we change CFM, we need to adjust ptrace's notion of bsp
-	   accordingly, so that the real bsp remains unchanged.  */
-	if (write)
-	  {
-	    unsigned long new_sof, old_sof, cfm, bsp;
+        /* If we change CFM, we need to adjust ptrace's notion of bsp
+           accordingly, so that the real bsp remains unchanged.  */
+        if (write)
+          {
+            unsigned long new_sof, old_sof, cfm, bsp;
 
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	    errno = 0;
-	    bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
-	    cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
+            errno = 0;
+            bsp = ptrace (PTRACE_PEEKUSER, pid, PT_AR_BSP, 0);
+            cfm = ptrace (PTRACE_PEEKUSER, pid, PT_CFM, 0);
 #endif
-	    if (errno)
-	      goto badreg;
-	    old_sof = (cfm & 0x7f);
-	    new_sof = (*val & 0x7f);
-	    if (old_sof != new_sof)
-	      {
-		bsp = rse_skip_regs (bsp, -old_sof + new_sof);
+            if (errno)
+              goto badreg;
+            old_sof = (cfm & 0x7f);
+            new_sof = (*val & 0x7f);
+            if (old_sof != new_sof)
+              {
+                bsp = rse_skip_regs (bsp, -old_sof + new_sof);
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-		errno = 0;
-		ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, 0);
-		if (errno)
-		  goto badreg;
+                errno = 0;
+                ptrace (PTRACE_POKEUSER, pid, PT_AR_BSP, 0);
+                if (errno)
+                  goto badreg;
 #endif
-	      }
+              }
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
-	    errno = 0;
-	    ptrace (PTRACE_POKEUSER, pid, PT_CFM, *val);
-	    if (errno)
-	      goto badreg;
+            errno = 0;
+            ptrace (PTRACE_POKEUSER, pid, PT_CFM, *val);
+            if (errno)
+              goto badreg;
 #endif
-	    goto out;
-	  }
-	break;
+            goto out;
+          }
+        break;
       }
 #endif /* End of IA64 */
 
@@ -235,7 +235,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
     }
 
 #ifdef HAVE_TTRACE
-#	warning No support for ttrace() yet.
+#       warning No support for ttrace() yet.
 #else
   errno = 0;
   if (write)
@@ -271,7 +271,7 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 #elif HAVE_DECL_PT_GETREGS
 int
 _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
-		 int write, void *arg)
+                 int write, void *arg)
 {
   struct UPT_info *ui = arg;
   pid_t pid = ui->pid;

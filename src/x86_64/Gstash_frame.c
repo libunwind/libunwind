@@ -32,14 +32,14 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
   unw_tdep_frame_t *f = &c->frame_info;
 
   Debug (4, "ip=0x%lx cfa=0x%lx type %d cfa [where=%d val=%ld] cfaoff=%ld"
-	 " ra=0x%lx rbp [where=%d val=%ld @0x%lx] rsp [where=%d val=%ld @0x%lx]\n",
-	 d->ip, d->cfa, f->frame_type,
-	 rs->reg[DWARF_CFA_REG_COLUMN].where,
-	 rs->reg[DWARF_CFA_REG_COLUMN].val,
-	 rs->reg[DWARF_CFA_OFF_COLUMN].val,
-	 DWARF_GET_LOC(d->loc[d->ret_addr_column]),
-	 rs->reg[RBP].where, rs->reg[RBP].val, DWARF_GET_LOC(d->loc[RBP]),
-	 rs->reg[RSP].where, rs->reg[RSP].val, DWARF_GET_LOC(d->loc[RSP]));
+         " ra=0x%lx rbp [where=%d val=%ld @0x%lx] rsp [where=%d val=%ld @0x%lx]\n",
+         d->ip, d->cfa, f->frame_type,
+         rs->reg[DWARF_CFA_REG_COLUMN].where,
+         rs->reg[DWARF_CFA_REG_COLUMN].val,
+         rs->reg[DWARF_CFA_OFF_COLUMN].val,
+         DWARF_GET_LOC(d->loc[d->ret_addr_column]),
+         rs->reg[RBP].where, rs->reg[RBP].val, DWARF_GET_LOC(d->loc[RBP]),
+         rs->reg[RSP].where, rs->reg[RSP].val, DWARF_GET_LOC(d->loc[RSP]));
 
   /* A standard frame is defined as:
       - CFA is register-relative offset off RBP or RSP;
@@ -49,19 +49,19 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
   if (f->frame_type == UNW_X86_64_FRAME_OTHER
       && (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_REG)
       && (rs->reg[DWARF_CFA_REG_COLUMN].val == RBP
-	  || rs->reg[DWARF_CFA_REG_COLUMN].val == RSP)
+          || rs->reg[DWARF_CFA_REG_COLUMN].val == RSP)
       && rs->reg[DWARF_CFA_OFF_COLUMN].val < (1 << 29)
       && DWARF_GET_LOC(d->loc[d->ret_addr_column]) == d->cfa-8
       && (rs->reg[RBP].where == DWARF_WHERE_UNDEF
-	  || rs->reg[RBP].where == DWARF_WHERE_SAME
-	  || (rs->reg[RBP].where == DWARF_WHERE_CFAREL
-	      && rs->reg[RBP].val < (1 << 14)
-	      && rs->reg[RBP].val+1 != 0))
+          || rs->reg[RBP].where == DWARF_WHERE_SAME
+          || (rs->reg[RBP].where == DWARF_WHERE_CFAREL
+              && rs->reg[RBP].val < (1 << 14)
+              && rs->reg[RBP].val+1 != 0))
       && (rs->reg[RSP].where == DWARF_WHERE_UNDEF
-	  || rs->reg[RSP].where == DWARF_WHERE_SAME
-	  || (rs->reg[RSP].where == DWARF_WHERE_CFAREL
-	      && rs->reg[RSP].val < (1 << 14)
-	      && rs->reg[RSP].val+1 != 0)))
+          || rs->reg[RSP].where == DWARF_WHERE_SAME
+          || (rs->reg[RSP].where == DWARF_WHERE_CFAREL
+              && rs->reg[RSP].val < (1 << 14)
+              && rs->reg[RSP].val+1 != 0)))
   {
     /* Save information for a standard frame. */
     f->frame_type = UNW_X86_64_FRAME_STANDARD;

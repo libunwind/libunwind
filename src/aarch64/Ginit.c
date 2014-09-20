@@ -74,7 +74,7 @@ put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
 
 static int
 get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
-			void *arg)
+                        void *arg)
 {
   *dyn_info_list_addr = (unw_word_t) &_U_dyn_info_list;
   return 0;
@@ -82,7 +82,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
-	    void *arg)
+            void *arg)
 {
   if (write)
     {
@@ -99,7 +99,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 
 static int
 access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
-	    void *arg)
+            void *arg)
 {
   unw_word_t *addr;
   ucontext_t *uc = arg;
@@ -129,7 +129,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
 static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
-	      int write, void *arg)
+              int write, void *arg)
 {
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
@@ -143,14 +143,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (write)
     {
       Debug (12, "%s <- %08lx.%08lx.%08lx\n", unw_regname (reg),
-	     ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
+             ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
       Debug (12, "%s -> %08lx.%08lx.%08lx\n", unw_regname (reg),
-	     ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
+             ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
     }
   return 0;
 
@@ -162,8 +162,8 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
 static int
 get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
-		      char *buf, size_t buf_len, unw_word_t *offp,
-		      void *arg)
+                      char *buf, size_t buf_len, unw_word_t *offp,
+                      void *arg)
 {
   return _Uelf64_get_proc_name (as, getpid (), ip, buf, buf_len, offp);
 }

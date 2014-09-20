@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2001-2002, 2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -37,7 +37,7 @@ _U_dyn_register (unw_dyn_info_t *di)
     di->next = _U_dyn_info_list.first;
     di->prev = NULL;
     if (di->next)
-	    di->next->prev = di;
+            di->next->prev = di;
     _U_dyn_info_list.first = di;
   }
   mutex_unlock (&_U_dyn_info_list_lock);

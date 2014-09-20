@@ -54,7 +54,7 @@ common_init (struct cursor *c, unsigned use_prev_instr)
 
   /* FIXME: correct for ARM?  */
   ret = dwarf_get (&c->dwarf, DWARF_REG_LOC (&c->dwarf, UNW_ARM_R13),
-		   &c->dwarf.cfa);
+                   &c->dwarf.cfa);
   if (ret < 0)
     return ret;
 

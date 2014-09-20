@@ -90,7 +90,7 @@ get_pid_by_tid(int tid)
 
 PROTECTED int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-		    unsigned long *segbase, unsigned long *mapoff, char *path, size_t pathlen)
+                    unsigned long *segbase, unsigned long *mapoff, char *path, size_t pathlen)
 {
   int mib[4], error, ret;
   size_t len, len1;
@@ -110,7 +110,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
       if (mib[3] != -1)
         error = sysctl(mib, 4, NULL, &len, NULL, 0);
       if (error == -1)
-	return (-UNW_EUNSPEC);
+        return (-UNW_EUNSPEC);
     } else
       return (-UNW_EUNSPEC);
   }

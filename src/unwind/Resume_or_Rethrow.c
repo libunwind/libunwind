@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -34,7 +34,7 @@ _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exception_object)
   if (exception_object->private_1)
     {
       if (_Unwind_InitContext (&context, &uc) < 0)
-	return _URC_FATAL_PHASE2_ERROR;
+        return _URC_FATAL_PHASE2_ERROR;
 
       return _Unwind_Phase2 (exception_object, &context);
     }

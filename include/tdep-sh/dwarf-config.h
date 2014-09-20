@@ -26,22 +26,22 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef dwarf_config_h
 #define dwarf_config_h
 
-#define DWARF_NUM_PRESERVED_REGS	18
+#define DWARF_NUM_PRESERVED_REGS        18
 
 #define dwarf_to_unw_regnum(reg) (((reg) <= UNW_SH_PR) ? (reg) : 0)
 
 /* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
-#define dwarf_is_big_endian(addr_space)	((addr_space)->big_endian)
+#define dwarf_is_big_endian(addr_space) ((addr_space)->big_endian)
 
 /* Convert a pointer to a dwarf_cursor structure to a pointer to
    unw_cursor_t.  */
-#define dwarf_to_cursor(c)	((unw_cursor_t *) (c))
+#define dwarf_to_cursor(c)      ((unw_cursor_t *) (c))
 
 typedef struct dwarf_loc
   {
     unw_word_t val;
 #ifndef UNW_LOCAL_ONLY
-    unw_word_t type;		/* see DWARF_LOC_TYPE_* macros.  */
+    unw_word_t type;            /* see DWARF_LOC_TYPE_* macros.  */
 #endif
   }
 dwarf_loc_t;

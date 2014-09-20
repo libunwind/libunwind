@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* FIXME for AArch64  */
 
-#define JB_SP		13
-#define JB_RP		14
-#define JB_MASK_SAVED	15
-#define JB_MASK		16
+#define JB_SP           13
+#define JB_RP           14
+#define JB_MASK_SAVED   15
+#define JB_MASK         16

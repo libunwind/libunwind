@@ -130,8 +130,8 @@ _UCD_access_reg (unw_addr_space_t as,
    * image.
    */
   Debug(1, "pr_reg[%d]:%ld (0x%lx)\n", regnum,
-		(long)ui->prstatus->pr_reg[regnum],
-		(long)ui->prstatus->pr_reg[regnum]
+                (long)ui->prstatus->pr_reg[regnum],
+                (long)ui->prstatus->pr_reg[regnum]
   );
   *valp = ui->prstatus->pr_reg[regnum];
 

@@ -1,7 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2002 Hewlett-Packard Co
    Copyright (C) 2007 David Mosberger-Tang
-	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
+        Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -69,14 +69,14 @@ put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
 
 static int
 get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
-			void *arg)
+                        void *arg)
 {
   *dyn_info_list_addr = (unw_word_t) &_U_dyn_info_list;
   return 0;
 }
 
 #define PAGE_SIZE 4096
-#define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
+#define PAGE_START(a)   ((a) & ~(PAGE_SIZE-1))
 
 /* Cache of already validated addresses */
 #define NLGA 4
@@ -105,7 +105,7 @@ validate_mem (unw_word_t addr)
   for (i = 0; i < NLGA; i++)
     {
       if (last_good_addr[i] && (addr == last_good_addr[i]))
-	return 0;
+        return 0;
     }
 
 #ifdef HAVE_MINCORE
@@ -134,7 +134,7 @@ validate_mem (unw_word_t addr)
 
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
-	    void *arg)
+            void *arg)
 {
   if (write)
     {
@@ -155,7 +155,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 
 static int
 access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
-	    void *arg)
+            void *arg)
 {
   unw_word_t *addr;
   ucontext_t *uc = ((struct cursor *)arg)->uc;
@@ -185,7 +185,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
 static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
-	      int write, void *arg)
+              int write, void *arg)
 {
   ucontext_t *uc = ((struct cursor *)arg)->uc;
   unw_fpreg_t *addr;
@@ -199,14 +199,14 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   if (write)
     {
       Debug (12, "%s <- %08lx.%08lx.%08lx\n", unw_regname (reg),
-	     ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
+             ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
       Debug (12, "%s -> %08lx.%08lx.%08lx\n", unw_regname (reg),
-	     ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
+             ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
     }
   return 0;
 
@@ -218,8 +218,8 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
 static int
 get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
-		      char *buf, size_t buf_len, unw_word_t *offp,
-		      void *arg)
+                      char *buf, size_t buf_len, unw_word_t *offp,
+                      void *arg)
 {
   return _Uelf32_get_proc_name (as, getpid (), ip, buf, buf_len, offp);
 }

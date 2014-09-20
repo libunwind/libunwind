@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (c) 2004-2005 Hewlett-Packard Development Company, L.P.
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -48,7 +48,7 @@ tdep_init (void)
 #ifndef UNW_REMOTE_ONLY
     hppa_local_addr_space_init ();
 #endif
-    tdep_init_done = 1;	/* signal that we're initialized... */
+    tdep_init_done = 1; /* signal that we're initialized... */
   }
  out:
   lock_release (&hppa_lock, saved_mask);

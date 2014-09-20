@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2001-2003, 2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -49,7 +49,7 @@ set_as_arg (struct cursor *c, unw_context_t *uc)
 
 static inline int
 get_initial_stack_pointers (struct cursor *c, unw_context_t *uc,
-			    unw_word_t *sp, unw_word_t *bsp)
+                            unw_word_t *sp, unw_word_t *bsp)
 {
 #if defined(__linux)
   unw_word_t sol, bspstore;

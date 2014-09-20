@@ -34,13 +34,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    /usr/src/linux-2.6.18-1.8/arch/powerpc/kernel/ppc32.h
 */
 
-//#define NIP_IDX		32
-#define CTR_IDX		32
-#define XER_IDX		33
-#define CCR_IDX		34
-#define MSR_IDX		35
-//#define MQ_IDX		36
-#define LINK_IDX	36
+//#define NIP_IDX               32
+#define CTR_IDX         32
+#define XER_IDX         33
+#define CCR_IDX         34
+#define MSR_IDX         35
+//#define MQ_IDX                36
+#define LINK_IDX        36
 
 /* These are dummy structures used only for obtaining the offsets of the
    various structure members. */

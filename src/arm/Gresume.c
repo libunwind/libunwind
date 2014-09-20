@@ -39,7 +39,7 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   if (c->sigcontext_format == ARM_SCF_NONE)
     {
       /* Since there are no signals involved here we restore the non scratch
-	 registers only.  */
+         registers only.  */
       unsigned long regs[10];
       regs[0] = uc->regs[4];
       regs[1] = uc->regs[5];
@@ -53,21 +53,21 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       regs[9] = uc->regs[14]; /* LR */
 
       struct regs_overlay {
-	      char x[sizeof(regs)];
+              char x[sizeof(regs)];
       };
 
       asm __volatile__ (
-	"ldmia %0, {r4-r12, lr}\n"
-	"mov sp, r12\n"
-	"bx lr\n"
-	: : "r" (regs),
-	    "m" (*(struct regs_overlay *)regs)
+        "ldmia %0, {r4-r12, lr}\n"
+        "mov sp, r12\n"
+        "bx lr\n"
+        : : "r" (regs),
+            "m" (*(struct regs_overlay *)regs)
       );
     }
   else
     {
       /* In case a signal frame is involved, we're using its trampoline which
-	 calls sigreturn.  */
+         calls sigreturn.  */
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
       sc->arm_r0 = uc->regs[0];
       sc->arm_r1 = uc->regs[1];
@@ -89,11 +89,11 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       sc->arm_cpsr &= 0xf9ff03ffUL;
 
       /* Set the SP and the PC in order to continue execution at the modified
-	 trampoline which restores the signal mask and the registers.  */
+         trampoline which restores the signal mask and the registers.  */
       asm __volatile__ (
-	"mov sp, %0\n"
-	"bx %1\n"
-	: : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc)
+        "mov sp, %0\n"
+        "bx %1\n"
+        : : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc)
       );
    }
   unreachable();
@@ -120,15 +120,15 @@ establish_machine_state (struct cursor *c)
     {
       Debug (16, "copying %s %d\n", unw_regname (reg), reg);
       if (unw_is_fpreg (reg))
-	{
-	  if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
-	    as->acc.access_fpreg (as, reg, &fpval, 1, arg);
-	}
+        {
+          if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
+            as->acc.access_fpreg (as, reg, &fpval, 1, arg);
+        }
       else
-	{
-	  if (tdep_access_reg (c, reg, &val, 0) >= 0)
-	    as->acc.access_reg (as, reg, &val, 1, arg);
-	}
+        {
+          if (tdep_access_reg (c, reg, &val, 0) >= 0)
+            as->acc.access_reg (as, reg, &val, 1, arg);
+        }
     }
 }
 
@@ -142,7 +142,7 @@ unw_resume (unw_cursor_t *cursor)
   if (!c->dwarf.ip)
     {
       /* This can happen easily when the frame-chain gets truncated
-	 due to bad or missing unwind-info.  */
+         due to bad or missing unwind-info.  */
       Debug (1, "refusing to resume execution at address 0\n");
       return -UNW_EINVAL;
     }
@@ -150,5 +150,5 @@ unw_resume (unw_cursor_t *cursor)
   establish_machine_state (c);
 
   return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
-				     c->dwarf.as_arg);
+                                     c->dwarf.as_arg);
 }

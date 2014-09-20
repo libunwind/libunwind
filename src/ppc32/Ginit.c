@@ -60,22 +60,22 @@ uc_addr (ucontext_t *uc, int reg)
       unsigned gregs_idx;
 
       switch (reg)
-	{
-	case UNW_PPC32_CTR:
-	  gregs_idx = CTR_IDX;
-	  break;
-	case UNW_PPC32_LR:
-	  gregs_idx = LINK_IDX;
-	  break;
-	case UNW_PPC32_XER:
-	  gregs_idx = XER_IDX;
-	  break;
-	case UNW_PPC32_CCR:
-	  gregs_idx = CCR_IDX;
-	  break;
-	default:
-	  return NULL;
-	}
+        {
+        case UNW_PPC32_CTR:
+          gregs_idx = CTR_IDX;
+          break;
+        case UNW_PPC32_LR:
+          gregs_idx = LINK_IDX;
+          break;
+        case UNW_PPC32_XER:
+          gregs_idx = XER_IDX;
+          break;
+        case UNW_PPC32_CCR:
+          gregs_idx = CCR_IDX;
+          break;
+        default:
+          return NULL;
+        }
       addr = &uc->uc_mcontext.uc_regs->gregs[gregs_idx];
     }
   return addr;
@@ -89,7 +89,7 @@ tdep_uc_addr (ucontext_t *uc, int reg)
   return uc_addr (uc, reg);
 }
 
-# endif	/* UNW_LOCAL_ONLY */
+# endif /* UNW_LOCAL_ONLY */
 
 HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
 
@@ -102,7 +102,7 @@ put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
 
 static int
 get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
-			void *arg)
+                        void *arg)
 {
   *dyn_info_list_addr = (unw_word_t) &_U_dyn_info_list;
   return 0;
@@ -110,7 +110,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
-	    void *arg)
+            void *arg)
 {
   if (write)
     {
@@ -127,7 +127,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 
 static int
 access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
-	    int write, void *arg)
+            int write, void *arg)
 {
   unw_word_t *addr;
   ucontext_t *uc = arg;
@@ -159,7 +159,7 @@ badreg:
 
 static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
-	      int write, void *arg)
+              int write, void *arg)
 {
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
@@ -191,8 +191,8 @@ badreg:
 
 static int
 get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
-		      char *buf, size_t buf_len, unw_word_t *offp,
-		      void *arg)
+                      char *buf, size_t buf_len, unw_word_t *offp,
+                      void *arg)
 {
   return _Uelf32_get_proc_name (as, getpid (), ip, buf, buf_len, offp);
 }

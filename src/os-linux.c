@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -31,8 +31,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 PROTECTED int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-		    unsigned long *segbase, unsigned long *mapoff,
-		    char *path, size_t pathlen)
+                    unsigned long *segbase, unsigned long *mapoff,
+                    char *path, size_t pathlen)
 {
   struct map_iterator mi;
   int found = 0, rc;
@@ -44,8 +44,8 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   while (maps_next (&mi, segbase, &hi, mapoff))
     if (ip >= *segbase && ip < hi)
       {
-	found = 1;
-	break;
+        found = 1;
+        break;
       }
 
   if (!found)

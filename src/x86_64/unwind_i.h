@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2002, 2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
    Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
 
@@ -36,33 +36,33 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/ucontext.h>
 
 /* DWARF column numbers for x86_64: */
-#define RAX	0
-#define RDX	1
-#define RCX	2
-#define RBX	3
-#define RSI	4
-#define RDI	5
-#define RBP	6
-#define RSP	7
-#define R8	8
-#define R9	9
-#define R10	10
-#define R11	11
-#define R12	12
-#define R13	13
-#define R14	14
-#define R15	15
-#define RIP	16
+#define RAX     0
+#define RDX     1
+#define RCX     2
+#define RBX     3
+#define RSI     4
+#define RDI     5
+#define RBP     6
+#define RSP     7
+#define R8      8
+#define R9      9
+#define R10     10
+#define R11     11
+#define R12     12
+#define R13     13
+#define R14     14
+#define R15     15
+#define RIP     16
 
-#define x86_64_lock			UNW_OBJ(lock)
-#define x86_64_local_resume		UNW_OBJ(local_resume)
-#define x86_64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
-#define setcontext			UNW_ARCH_OBJ (setcontext)
+#define x86_64_lock                     UNW_OBJ(lock)
+#define x86_64_local_resume             UNW_OBJ(local_resume)
+#define x86_64_local_addr_space_init    UNW_OBJ(local_addr_space_init)
+#define setcontext                      UNW_ARCH_OBJ (setcontext)
 #if 0
-#define x86_64_scratch_loc		UNW_OBJ(scratch_loc)
+#define x86_64_scratch_loc              UNW_OBJ(scratch_loc)
 #endif
-#define x86_64_r_uc_addr		UNW_OBJ(r_uc_addr)
-#define x86_64_sigreturn		UNW_OBJ(sigreturn)
+#define x86_64_r_uc_addr                UNW_OBJ(r_uc_addr)
+#define x86_64_sigreturn                UNW_OBJ(sigreturn)
 
 /* By-pass calls to access_mem() when known to be safe. */
 #ifdef UNW_LOCAL_ONLY
@@ -78,7 +78,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 extern void x86_64_local_addr_space_init (void);
 extern int x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
-			     void *arg);
+                             void *arg);
 extern int setcontext (const ucontext_t *ucp);
 
 #if 0

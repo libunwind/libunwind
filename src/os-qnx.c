@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2013 Garmin International
-	Contributed by Matt Fischer <matt.fischer@garmin.com>
+        Contributed by Matt Fischer <matt.fischer@garmin.com>
 
 This file is part of libunwind.
 

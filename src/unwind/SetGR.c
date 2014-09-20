@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 PROTECTED void
 _Unwind_SetGR (struct _Unwind_Context *context, int index,
-	       unsigned long new_value)
+               unsigned long new_value)
 {
 #ifdef UNW_TARGET_X86
   index = dwarf_to_unw_regnum(index);

@@ -29,7 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 int
 tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
-		    unw_word_t *entry_point)
+                    unw_word_t *entry_point)
 {
   if (as->abi == UNW_PPC64_ABI_ELFv1)
     {
@@ -42,7 +42,7 @@ tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
          below and read the word at addr + offset: */
       ret = (*a->access_mem) (as, addr, entry_point, 0, NULL);
       if (ret < 0)
-	return ret;
+        return ret;
     }
   else
     *entry_point = addr;

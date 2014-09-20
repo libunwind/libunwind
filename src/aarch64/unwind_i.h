@@ -33,19 +33,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "libunwind_i.h"
 
 /* DWARF column numbers for AArch64: */
-#define X29	29
-#define FP	29
-#define X30	30
-#define LR	30
-#define SP	31
+#define X29     29
+#define FP      29
+#define X30     30
+#define LR      30
+#define SP      31
 
-#define aarch64_lock			UNW_OBJ(lock)
-#define aarch64_local_resume		UNW_OBJ(local_resume)
-#define aarch64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
+#define aarch64_lock                    UNW_OBJ(lock)
+#define aarch64_local_resume            UNW_OBJ(local_resume)
+#define aarch64_local_addr_space_init   UNW_OBJ(local_addr_space_init)
 
 extern void aarch64_local_addr_space_init (void);
 extern int aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
-			     void *arg);
+                             void *arg);
 
 /* By-pass calls to access_mem() when known to be safe. */
 #ifdef UNW_LOCAL_ONLY

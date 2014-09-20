@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -31,10 +31,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # undef offsetof
 #endif
 
-#define offsetof(type,field)	((char *) &((type *) 0)->field - (char *) 0)
+#define offsetof(type,field)    ((char *) &((type *) 0)->field - (char *) 0)
 
 #define OFFSET(sym, offset) \
-	asm volatile("\n->" #sym " %0" : : "i" (offset))
+        asm volatile("\n->" #sym " %0" : : "i" (offset))
 
 int
 main (void)

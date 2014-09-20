@@ -51,21 +51,21 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 
   /* Check if EIP points at sigreturn() sequence.  It can be:
 sigcode+4: from amd64 freebsd32 environment
-8d 44 24 20		lea    0x20(%esp),%eax
-50			push   %eax
-b8 a1 01 00 00		mov    $0x1a1,%eax
-50			push   %eax
-cd 80			int    $0x80
+8d 44 24 20             lea    0x20(%esp),%eax
+50                      push   %eax
+b8 a1 01 00 00          mov    $0x1a1,%eax
+50                      push   %eax
+cd 80                   int    $0x80
 
 sigcode+4: from real i386
-8d 44 24 20		lea    0x20(%esp),%eax
-50			push   %eax
-f7 40 54 00 02 00	testl  $0x20000,0x54(%eax)
-75 03			jne    sigcode+21
-8e 68 14		mov    0x14(%eax),%gs
-b8 a1 01 00 00		mov    $0x1a1,%eax
-50			push   %eax
-cd 80			int    $0x80
+8d 44 24 20             lea    0x20(%esp),%eax
+50                      push   %eax
+f7 40 54 00 02 00       testl  $0x20000,0x54(%eax)
+75 03                   jne    sigcode+21
+8e 68 14                mov    0x14(%eax),%gs
+b8 a1 01 00 00          mov    $0x1a1,%eax
+50                      push   %eax
+cd 80                   int    $0x80
 
 freebsd4_sigcode+4:
 XXX
@@ -85,10 +85,10 @@ XXX
     ret = X86_SCF_FREEBSD_SIGFRAME;
   else {
     if ((*a->access_mem) (as, ip + 16, &w4, 0, arg) < 0 ||
-	(*a->access_mem) (as, ip + 20, &w5, 0, arg) < 0)
+        (*a->access_mem) (as, ip + 20, &w5, 0, arg) < 0)
       return ret;
     if (w0 == 0x2024448d && w1 == 0x5440f750 && w2 == 0x75000200 &&
-	w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000)
+        w3 == 0x14688e03 && w4 == 0x0001a1b8 && w5 == 0x80cd5000)
       ret = X86_SCF_FREEBSD_SIGFRAME;
   }
 
@@ -120,8 +120,8 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
     ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
     if (ret < 0)
     {
-	    Debug (2, "returning 0\n");
-	    return 0;
+            Debug (2, "returning 0\n");
+            return 0;
     }
 
     c->dwarf.loc[EIP] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EIP_OFF, 0);
@@ -290,20 +290,20 @@ x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg)
   if (is_fpstate)
     {
       if ((ret = dwarf_get (&c->dwarf,
-	   DWARF_MEM_LOC (&c->dwarf, addr + FREEBSD_UC_MCONTEXT_FPSTATE_OFF),
-	   &fpstate)) < 0)
-	return DWARF_NULL_LOC;
+           DWARF_MEM_LOC (&c->dwarf, addr + FREEBSD_UC_MCONTEXT_FPSTATE_OFF),
+           &fpstate)) < 0)
+        return DWARF_NULL_LOC;
       if (fpstate == FREEBSD_UC_MCONTEXT_FPOWNED_NONE)
-	return DWARF_NULL_LOC;
+        return DWARF_NULL_LOC;
       if ((ret = dwarf_get (&c->dwarf,
-	   DWARF_MEM_LOC (&c->dwarf, addr + FREEBSD_UC_MCONTEXT_FPFORMAT_OFF),
-	   &fpformat)) < 0)
-	return DWARF_NULL_LOC;
+           DWARF_MEM_LOC (&c->dwarf, addr + FREEBSD_UC_MCONTEXT_FPFORMAT_OFF),
+           &fpformat)) < 0)
+        return DWARF_NULL_LOC;
       if (fpformat == FREEBSD_UC_MCONTEXT_FPFMT_NODEV ||
-	  (is_xmmstate && fpformat != FREEBSD_UC_MCONTEXT_FPFMT_XMM))
-	return DWARF_NULL_LOC;
+          (is_xmmstate && fpformat != FREEBSD_UC_MCONTEXT_FPFMT_XMM))
+        return DWARF_NULL_LOC;
       if (is_xmmstate)
-	off = xmm_off;
+        off = xmm_off;
     }
 
     return DWARF_MEM_LOC (c, addr + off);

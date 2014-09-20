@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (c) 2004-2005 Hewlett-Packard Development Company, L.P.
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -29,6 +29,6 @@ PROTECTED int
 unw_is_fpreg (int regnum)
 {
   return ((regnum >= UNW_X86_ST0 && regnum <= UNW_X86_ST7)
-	  || (regnum >= UNW_X86_XMM0_lo && regnum <= UNW_X86_XMM7_hi)
-	  || (regnum >= UNW_X86_XMM0 && regnum <= UNW_X86_XMM7));
+          || (regnum >= UNW_X86_XMM0_lo && regnum <= UNW_X86_XMM7_hi)
+          || (regnum >= UNW_X86_XMM0 && regnum <= UNW_X86_XMM7));
 }

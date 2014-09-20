@@ -49,12 +49,12 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   arg = c->dwarf.as_arg;
 
   /* Check if RIP points at sigreturn sequence.
-48 8d 7c 24 10		lea	SIGF_UC(%rsp),%rdi
-6a 00			pushq	$0
-48 c7 c0 a1 01 00 00	movq	$SYS_sigreturn,%rax
-0f 05			syscall
-f4		0:	hlt
-eb fd			jmp	0b
+48 8d 7c 24 10          lea     SIGF_UC(%rsp),%rdi
+6a 00                   pushq   $0
+48 c7 c0 a1 01 00 00    movq    $SYS_sigreturn,%rax
+0f 05                   syscall
+f4              0:      hlt
+eb fd                   jmp     0b
   */
 
   ip = c->dwarf.ip;
@@ -72,8 +72,8 @@ eb fd			jmp	0b
      return (c->sigcontext_format);
    }
   /* Check if RIP points at standard syscall sequence.
-49 89 ca	mov    %rcx,%r10
-0f 05		syscall
+49 89 ca        mov    %rcx,%r10
+0f 05           syscall
   */
   if ((ret = (*a->access_mem) (as, ip - 5, &b0, 0, arg)) < 0)
     return (0);
@@ -131,13 +131,13 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   else if (c->sigcontext_format == X86_64_SCF_FREEBSD_SYSCALL)
    {
     c->dwarf.loc[RCX] = c->dwarf.loc[R10];
-    /*  rsp_loc = DWARF_LOC(c->dwarf.cfa - 8, 0);	*/
-    /*	rbp_loc = c->dwarf.loc[RBP];			*/
+    /*  rsp_loc = DWARF_LOC(c->dwarf.cfa - 8, 0);       */
+    /*  rbp_loc = c->dwarf.loc[RBP];                    */
     c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
     ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
     Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
-	   (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
-	   (unsigned long long) c->dwarf.ip);
+           (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
+           (unsigned long long) c->dwarf.ip);
     if (ret < 0)
      {
        Debug (2, "returning %d\n", ret);
@@ -193,7 +193,7 @@ x86_64_sigreturn (unw_cursor_t *cursor)
     offsetof(struct sigframe, sf_uc));
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
-	     (unsigned long long) c->dwarf.ip, uc);
+             (unsigned long long) c->dwarf.ip, uc);
   sigreturn(uc);
   abort();
 }

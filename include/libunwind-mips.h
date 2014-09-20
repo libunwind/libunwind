@@ -36,10 +36,10 @@ extern "C" {
 # undef mips
 #endif
 
-#define UNW_TARGET	mips
-#define UNW_TARGET_MIPS	1
+#define UNW_TARGET      mips
+#define UNW_TARGET_MIPS 1
 
-#define _U_TDEP_QP_TRUE	0	/* see libunwind-dynamic.h  */
+#define _U_TDEP_QP_TRUE 0       /* see libunwind-dynamic.h  */
 
 /* This needs to be big enough to accommodate "struct cursor", while
    leaving some slack for future expansion.  Changing this value will
@@ -48,7 +48,7 @@ extern "C" {
    want to err on making it rather too big than too small.  */
    
 /* FIXME for MIPS. Too big?  What do other things use for similar tasks?  */
-#define UNW_TDEP_CURSOR_LEN	4096
+#define UNW_TDEP_CURSOR_LEN     4096
 
 /* The size of a "word" varies on MIPS.  This type is used for memory
    addresses and register values.  To allow a single library to support
@@ -119,7 +119,7 @@ typedef enum
   }
 mips_abi_t;
 
-#define UNW_TDEP_NUM_EH_REGS	2	/* FIXME for MIPS.  */
+#define UNW_TDEP_NUM_EH_REGS    2       /* FIXME for MIPS.  */
 
 typedef struct unw_tdep_save_loc
   {
@@ -147,7 +147,7 @@ unw_tdep_proc_info_t;
 #define unw_tdep_getcontext UNW_ARCH_OBJ(getcontext)
 extern int unw_tdep_getcontext (ucontext_t *uc);
 
-#define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
+#define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);
 
 #if defined(__cplusplus) || defined(c_plusplus)

@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -33,9 +33,9 @@ unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
   if (dwarf_make_proc_info (&c->dwarf) < 0)
     {
       /* On hppa, some key routines such as _start() and _dl_start()
-	 are missing DWARF unwind info.  We don't want to fail in that
-	 case, because those frames are uninteresting and just mark
-	 the end of the frame-chain anyhow.  */
+         are missing DWARF unwind info.  We don't want to fail in that
+         case, because those frames are uninteresting and just mark
+         the end of the frame-chain anyhow.  */
       memset (pi, 0, sizeof (*pi));
       pi->start_ip = c->dwarf.ip;
       pi->end_ip = c->dwarf.ip + 4;

@@ -39,7 +39,7 @@ aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   if (c->sigcontext_format == AARCH64_SCF_NONE)
     {
       /* Since there are no signals involved here we restore the non scratch
-	 registers only.  */
+         registers only.  */
       unsigned long regs[11];
       regs[0] = uc->uc_mcontext.regs[19];
       regs[1] = uc->uc_mcontext.regs[20];
@@ -143,15 +143,15 @@ establish_machine_state (struct cursor *c)
     {
       Debug (16, "copying %s %d\n", unw_regname (reg), reg);
       if (unw_is_fpreg (reg))
-	{
-	  if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
-	    as->acc.access_fpreg (as, reg, &fpval, 1, arg);
-	}
+        {
+          if (tdep_access_fpreg (c, reg, &fpval, 0) >= 0)
+            as->acc.access_fpreg (as, reg, &fpval, 1, arg);
+        }
       else
-	{
-	  if (tdep_access_reg (c, reg, &val, 0) >= 0)
-	    as->acc.access_reg (as, reg, &val, 1, arg);
-	}
+        {
+          if (tdep_access_reg (c, reg, &val, 0) >= 0)
+            as->acc.access_reg (as, reg, &val, 1, arg);
+        }
     }
 }
 
@@ -165,7 +165,7 @@ unw_resume (unw_cursor_t *cursor)
   if (!c->dwarf.ip)
     {
       /* This can happen easily when the frame-chain gets truncated
-	 due to bad or missing unwind-info.  */
+         due to bad or missing unwind-info.  */
       Debug (1, "refusing to resume execution at address 0\n");
       return -UNW_EINVAL;
     }
@@ -173,5 +173,5 @@ unw_resume (unw_cursor_t *cursor)
   establish_machine_state (c);
 
   return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
-				     c->dwarf.as_arg);
+                                     c->dwarf.as_arg);
 }

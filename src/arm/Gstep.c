@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <signal.h>
 
-#define arm_exidx_step	UNW_OBJ(arm_exidx_step)
+#define arm_exidx_step  UNW_OBJ(arm_exidx_step)
 
 static inline int
 arm_exidx_step (struct cursor *c)
@@ -64,7 +64,7 @@ arm_exidx_step (struct cursor *c)
   if (c->dwarf.ip == old_ip && c->dwarf.cfa == old_cfa)
     {
       Dprintf ("%s: ip and cfa unchanged; stopping here (ip=0x%lx)\n",
-	       __FUNCTION__, (long) c->dwarf.ip);
+               __FUNCTION__, (long) c->dwarf.ip);
       return -UNW_EBADFRAME;
     }
 
@@ -103,32 +103,32 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
   if (ret == 1)
     {
       /* Handle non-RT signal frames. Check if the first word on the stack
-	 is the magic number.  */
+         is the magic number.  */
       if (sp == 0x5ac3c35a)
-	{
-	  c->sigcontext_format = ARM_SCF_LINUX_SIGFRAME;
-	  sc_addr = sp_addr + LINUX_UC_MCONTEXT_OFF;
-	}
+        {
+          c->sigcontext_format = ARM_SCF_LINUX_SIGFRAME;
+          sc_addr = sp_addr + LINUX_UC_MCONTEXT_OFF;
+        }
       else
-	{
-	  c->sigcontext_format = ARM_SCF_LINUX_OLD_SIGFRAME;
-	  sc_addr = sp_addr;
-	}
+        {
+          c->sigcontext_format = ARM_SCF_LINUX_OLD_SIGFRAME;
+          sc_addr = sp_addr;
+        }
     }
   else if (ret == 2)
     {
       /* Handle RT signal frames. Check if the first word on the stack is a
-	 pointer to the siginfo structure.  */
+         pointer to the siginfo structure.  */
       if (sp == sp_addr + 8)
-	{
-	  c->sigcontext_format = ARM_SCF_LINUX_OLD_RT_SIGFRAME;
-	  sc_addr = sp_addr + 8 + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
-	}
+        {
+          c->sigcontext_format = ARM_SCF_LINUX_OLD_RT_SIGFRAME;
+          sc_addr = sp_addr + 8 + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
+        }
       else
-	{
-	  c->sigcontext_format = ARM_SCF_LINUX_RT_SIGFRAME;
-	  sc_addr = sp_addr + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
-	}
+        {
+          c->sigcontext_format = ARM_SCF_LINUX_RT_SIGFRAME;
+          sc_addr = sp_addr + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
+        }
     }
   else
     return -UNW_EUNSPEC;
@@ -186,9 +186,9 @@ unw_step (unw_cursor_t *cursor)
       Debug(1, "dwarf_step()=%d\n", ret);
 
       if (likely (ret > 0))
-	return 1;
+        return 1;
       else if (unlikely (ret == -UNW_ESTOPUNWIND))
-	return ret;
+        return ret;
 
     if (ret < 0 && ret != -UNW_ENOINFO)
       {
@@ -203,9 +203,9 @@ unw_step (unw_cursor_t *cursor)
     {
       ret = arm_exidx_step (c);
       if (ret > 0)
-	return 1;
+        return 1;
       if (ret == -UNW_ESTOPUNWIND || ret == 0)
-	return ret;
+        return ret;
     }
 
   /* Fall back on APCS frame parsing.

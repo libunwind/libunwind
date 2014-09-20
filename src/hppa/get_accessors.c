@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003 Hewlett-Packard Co
-	Contributed by ...
+        Contributed by ...
 
 This file is part of libunwind.
 

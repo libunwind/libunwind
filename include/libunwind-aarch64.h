@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2001-2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
    Copyright (C) 2013 Linaro Limited
 
 This file is part of libunwind.
@@ -35,10 +35,10 @@ extern "C" {
 #include <stddef.h>
 #include <ucontext.h>
 
-#define UNW_TARGET	aarch64
-#define UNW_TARGET_AARCH64	1
+#define UNW_TARGET      aarch64
+#define UNW_TARGET_AARCH64      1
 
-#define _U_TDEP_QP_TRUE	0	/* see libunwind-dynamic.h  */
+#define _U_TDEP_QP_TRUE 0       /* see libunwind-dynamic.h  */
 
 /* This needs to be big enough to accommodate "struct cursor", while
    leaving some slack for future expansion.  Changing this value will
@@ -46,7 +46,7 @@ extern "C" {
    relatively cheap and unwind-state copying is relatively rare, so we
    want to err on making it rather too big than too small.  */
 
-#define UNW_TDEP_CURSOR_LEN	4096
+#define UNW_TDEP_CURSOR_LEN     4096
 
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
@@ -160,7 +160,7 @@ typedef enum
 aarch64_regnum_t;
 
 /* Use R0 through R3 to pass exception handling information.  */
-#define UNW_TDEP_NUM_EH_REGS	4
+#define UNW_TDEP_NUM_EH_REGS    4
 
 typedef struct unw_tdep_save_loc
   {
@@ -176,7 +176,7 @@ typedef ucontext_t unw_tdep_context_t;
 #include "libunwind-dynamic.h"
 
 #define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
-#define unw_tdep_is_fpreg		UNW_ARCH_OBJ(is_fpreg)
+#define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 
 extern int unw_tdep_is_fpreg (int);
 

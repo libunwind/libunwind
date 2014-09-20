@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2001-2005 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
    Copyright (C) 2013 Linaro Limited
 
 This file is part of libunwind.
@@ -84,7 +84,7 @@ struct unw_addr_space
     uint32_t cache_generation;
 #endif
     unw_word_t dyn_generation;          /* see dyn-common.h */
-    unw_word_t dyn_info_list_addr;	/* (cached) dyn_info_list_addr */
+    unw_word_t dyn_info_list_addr;      /* (cached) dyn_info_list_addr */
     struct dwarf_rs_cache global_cache;
     struct unw_debug_frame_list *debug_frames;
    };
@@ -93,7 +93,7 @@ struct cursor
   {
     struct dwarf_cursor dwarf;          /* must be first */
 
-    unw_tdep_frame_t frame_info;	/* quick tracing assist info */
+    unw_tdep_frame_t frame_info;        /* quick tracing assist info */
 
     enum
       {
@@ -261,21 +261,21 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 
 #define tdep_getcontext_trace           UNW_ARCH_OBJ(getcontext_trace)
-#define tdep_init_done			UNW_OBJ(init_done)
-#define tdep_init			UNW_OBJ(init)
+#define tdep_init_done                  UNW_OBJ(init_done)
+#define tdep_init                       UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
-#define tdep_search_unwind_table	dwarf_search_unwind_table
-#define tdep_find_unwind_table	        dwarf_find_unwind_table
-#define tdep_uc_addr			UNW_OBJ(uc_addr)
-#define tdep_get_elf_image		UNW_ARCH_OBJ(get_elf_image)
-#define tdep_access_reg			UNW_OBJ(access_reg)
-#define tdep_access_fpreg		UNW_OBJ(access_fpreg)
-#define tdep_fetch_frame(c,ip,n)	do {} while(0)
-#define tdep_cache_frame(c,rs)		do {} while(0)
-#define tdep_reuse_frame(c,rs)		do {} while(0)
-#define tdep_stash_frame		UNW_OBJ(tdep_stash_frame)
-#define tdep_trace			UNW_OBJ(tdep_trace)
+#define tdep_search_unwind_table        dwarf_search_unwind_table
+#define tdep_find_unwind_table          dwarf_find_unwind_table
+#define tdep_uc_addr                    UNW_OBJ(uc_addr)
+#define tdep_get_elf_image              UNW_ARCH_OBJ(get_elf_image)
+#define tdep_access_reg                 UNW_OBJ(access_reg)
+#define tdep_access_fpreg               UNW_OBJ(access_fpreg)
+#define tdep_fetch_frame(c,ip,n)        do {} while(0)
+#define tdep_cache_frame(c,rs)          do {} while(0)
+#define tdep_reuse_frame(c,rs)          do {} while(0)
+#define tdep_stash_frame                UNW_OBJ(tdep_stash_frame)
+#define tdep_trace                      UNW_OBJ(tdep_trace)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)                            \
@@ -300,19 +300,19 @@ extern int tdep_init_done;
 
 extern void tdep_init (void);
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
-				     unw_dyn_info_t *di, unw_proc_info_t *pi,
-				     int need_unwind_info, void *arg);
+                                     unw_dyn_info_t *di, unw_proc_info_t *pi,
+                                     int need_unwind_info, void *arg);
 extern void *tdep_uc_addr (unw_tdep_context_t *uc, int reg);
 extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
-			       unsigned long *segbase, unsigned long *mapoff,
-			       char *path, size_t pathlen);
+                               unsigned long *segbase, unsigned long *mapoff,
+                               char *path, size_t pathlen);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
-			    unw_word_t *valp, int write);
+                            unw_word_t *valp, int write);
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
-			      unw_fpreg_t *valp, int write);
+                              unw_fpreg_t *valp, int write);
 extern int tdep_trace (unw_cursor_t *cursor, void **addresses, int *n);
 extern void tdep_stash_frame (struct dwarf_cursor *c,
-			      struct dwarf_reg_state *rs);
+                              struct dwarf_reg_state *rs);
 extern int tdep_getcontext_trace (unw_tdep_context_t *);
 
 #endif /* AARCH64_LIBUNWIND_I_H */

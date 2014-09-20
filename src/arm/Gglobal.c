@@ -58,7 +58,7 @@ tdep_init (void)
 #ifndef UNW_REMOTE_ONLY
     arm_local_addr_space_init ();
 #endif
-    tdep_init_done = 1;	/* signal that we're initialized... */
+    tdep_init_done = 1; /* signal that we're initialized... */
   }
  out:
   lock_release (&arm_lock, saved_mask);

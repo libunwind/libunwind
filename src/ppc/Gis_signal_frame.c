@@ -38,7 +38,7 @@ unw_is_signal_frame (unw_cursor_t * cursor)
   int ret;
 
   as = c->dwarf.as;
-  as->validate = 1;		/* Don't trust the ip */
+  as->validate = 1;             /* Don't trust the ip */
   arg = c->dwarf.as_arg;
 
   /* Check if return address points at sigreturn sequence.

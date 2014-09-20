@@ -1,7 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2010, 2011 by FERMI NATIONAL ACCELERATOR LABORATORY
    Copyright (C) 2014 CERN and Aalto University
-	Contributed by Filip Nyback
+        Contributed by Filip Nyback
 
 This file is part of libunwind.
 
@@ -33,16 +33,16 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
   unw_tdep_frame_t *f = &c->frame_info;
 
   Debug (4, "ip=0x%lx cfa=0x%lx type %d cfa [where=%d val=%ld] cfaoff=%ld"
-	 " ra=0x%lx fp [where=%d val=%ld @0x%lx] lr [where=%d val=%ld @0x%lx] "
-	 "sp [where=%d val=%ld @0x%lx]\n",
-	 d->ip, d->cfa, f->frame_type,
-	 rs->reg[DWARF_CFA_REG_COLUMN].where,
-	 rs->reg[DWARF_CFA_REG_COLUMN].val,
-	 rs->reg[DWARF_CFA_OFF_COLUMN].val,
-	 DWARF_GET_LOC(d->loc[d->ret_addr_column]),
-	 rs->reg[FP].where, rs->reg[FP].val, DWARF_GET_LOC(d->loc[FP]),
-	 rs->reg[LR].where, rs->reg[LR].val, DWARF_GET_LOC(d->loc[LR]),
-	 rs->reg[SP].where, rs->reg[SP].val, DWARF_GET_LOC(d->loc[SP]));
+         " ra=0x%lx fp [where=%d val=%ld @0x%lx] lr [where=%d val=%ld @0x%lx] "
+         "sp [where=%d val=%ld @0x%lx]\n",
+         d->ip, d->cfa, f->frame_type,
+         rs->reg[DWARF_CFA_REG_COLUMN].where,
+         rs->reg[DWARF_CFA_REG_COLUMN].val,
+         rs->reg[DWARF_CFA_OFF_COLUMN].val,
+         DWARF_GET_LOC(d->loc[d->ret_addr_column]),
+         rs->reg[FP].where, rs->reg[FP].val, DWARF_GET_LOC(d->loc[FP]),
+         rs->reg[LR].where, rs->reg[LR].val, DWARF_GET_LOC(d->loc[LR]),
+         rs->reg[SP].where, rs->reg[SP].val, DWARF_GET_LOC(d->loc[SP]));
 
   /* A standard frame is defined as:
       - CFA is register-relative offset off FP or SP;
@@ -53,24 +53,24 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
   if (f->frame_type == UNW_AARCH64_FRAME_OTHER
       && (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_REG)
       && (rs->reg[DWARF_CFA_REG_COLUMN].val == FP
-	  || rs->reg[DWARF_CFA_REG_COLUMN].val == SP)
+          || rs->reg[DWARF_CFA_REG_COLUMN].val == SP)
       && labs(rs->reg[DWARF_CFA_OFF_COLUMN].val) < (1 << 29)
       && d->ret_addr_column == LR
       && (rs->reg[FP].where == DWARF_WHERE_UNDEF
-	  || rs->reg[FP].where == DWARF_WHERE_SAME
-	  || (rs->reg[FP].where == DWARF_WHERE_CFAREL
-	      && labs(rs->reg[FP].val) < (1 << 29)
-	      && rs->reg[FP].val+1 != 0))
+          || rs->reg[FP].where == DWARF_WHERE_SAME
+          || (rs->reg[FP].where == DWARF_WHERE_CFAREL
+              && labs(rs->reg[FP].val) < (1 << 29)
+              && rs->reg[FP].val+1 != 0))
       && (rs->reg[LR].where == DWARF_WHERE_UNDEF
-	  || rs->reg[LR].where == DWARF_WHERE_SAME
-	  || (rs->reg[LR].where == DWARF_WHERE_CFAREL
-	      && labs(rs->reg[LR].val) < (1 << 29)
-	      && rs->reg[LR].val+1 != 0))
+          || rs->reg[LR].where == DWARF_WHERE_SAME
+          || (rs->reg[LR].where == DWARF_WHERE_CFAREL
+              && labs(rs->reg[LR].val) < (1 << 29)
+              && rs->reg[LR].val+1 != 0))
       && (rs->reg[SP].where == DWARF_WHERE_UNDEF
-	  || rs->reg[SP].where == DWARF_WHERE_SAME
-	  || (rs->reg[SP].where == DWARF_WHERE_CFAREL
-	      && labs(rs->reg[SP].val) < (1 << 29)
-	      && rs->reg[SP].val+1 != 0)))
+          || rs->reg[SP].where == DWARF_WHERE_SAME
+          || (rs->reg[SP].where == DWARF_WHERE_CFAREL
+              && labs(rs->reg[SP].val) < (1 << 29)
+              && rs->reg[SP].val+1 != 0)))
   {
     /* Save information for a standard frame. */
     f->frame_type = UNW_AARCH64_FRAME_STANDARD;

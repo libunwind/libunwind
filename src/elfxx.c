@@ -1,7 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2005 Hewlett-Packard Co
    Copyright (C) 2007 David Mosberger-Tang
-	Contributed by David Mosberger-Tang <dmosberger@gmail.com>
+        Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
 
@@ -43,8 +43,8 @@ elf_w (section_table) (struct elf_image *ei)
   if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
     {
       Debug (1, "section table outside of image? (%lu > %lu)\n",
-	     (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
-	     (unsigned long) ei->size);
+             (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
+             (unsigned long) ei->size);
       return NULL;
     }
 
@@ -65,8 +65,8 @@ elf_w (string_table) (struct elf_image *ei, int section)
   if (str_soff + ehdr->e_shentsize > ei->size)
     {
       Debug (1, "string shdr table outside of image? (%lu > %lu)\n",
-	     (unsigned long) (str_soff + ehdr->e_shentsize),
-	     (unsigned long) ei->size);
+             (unsigned long) (str_soff + ehdr->e_shentsize),
+             (unsigned long) ei->size);
       return NULL;
     }
   str_shdr = (Elf_W (Shdr) *) ((char *) ei->image + str_soff);
@@ -74,8 +74,8 @@ elf_w (string_table) (struct elf_image *ei, int section)
   if (str_shdr->sh_offset + str_shdr->sh_size > ei->size)
     {
       Debug (1, "string table outside of image? (%lu > %lu)\n",
-	     (unsigned long) (str_shdr->sh_offset + str_shdr->sh_size),
-	     (unsigned long) ei->size);
+             (unsigned long) (str_shdr->sh_offset + str_shdr->sh_size),
+             (unsigned long) ei->size);
       return NULL;
     }
 
@@ -85,9 +85,9 @@ elf_w (string_table) (struct elf_image *ei, int section)
 
 static int
 elf_w (lookup_symbol) (unw_addr_space_t as,
-		       unw_word_t ip, struct elf_image *ei,
-		       Elf_W (Addr) load_offset,
-		       char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
+                       unw_word_t ip, struct elf_image *ei,
+                       Elf_W (Addr) load_offset,
+                       char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
 {
   size_t syment_size;
   Elf_W (Ehdr) *ehdr = ei->image;
@@ -107,50 +107,50 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
   for (i = 0; i < ehdr->e_shnum; ++i)
     {
       switch (shdr->sh_type)
-	{
-	case SHT_SYMTAB:
-	case SHT_DYNSYM:
-	  symtab = (Elf_W (Sym) *) ((char *) ei->image + shdr->sh_offset);
-	  symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
-	  syment_size = shdr->sh_entsize;
+        {
+        case SHT_SYMTAB:
+        case SHT_DYNSYM:
+          symtab = (Elf_W (Sym) *) ((char *) ei->image + shdr->sh_offset);
+          symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
+          syment_size = shdr->sh_entsize;
 
-	  strtab = elf_w (string_table) (ei, shdr->sh_link);
-	  if (!strtab)
-	    break;
+          strtab = elf_w (string_table) (ei, shdr->sh_link);
+          if (!strtab)
+            break;
 
-	  Debug (16, "symtab=0x%lx[%d]\n",
-		 (long) shdr->sh_offset, shdr->sh_type);
+          Debug (16, "symtab=0x%lx[%d]\n",
+                 (long) shdr->sh_offset, shdr->sh_type);
 
-	  for (sym = symtab;
-	       sym < symtab_end;
-	       sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
-	    {
-	      if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
-		  && sym->st_shndx != SHN_UNDEF)
-		{
-		  val = sym->st_value;
-		  if (sym->st_shndx != SHN_ABS)
-		    val += load_offset;
-		  if (tdep_get_func_addr (as, val, &val) < 0)
-		    continue;
-		  Debug (16, "0x%016lx info=0x%02x %s\n",
-			 (long) val, sym->st_info, strtab + sym->st_name);
+          for (sym = symtab;
+               sym < symtab_end;
+               sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
+            {
+              if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
+                  && sym->st_shndx != SHN_UNDEF)
+                {
+                  val = sym->st_value;
+                  if (sym->st_shndx != SHN_ABS)
+                    val += load_offset;
+                  if (tdep_get_func_addr (as, val, &val) < 0)
+                    continue;
+                  Debug (16, "0x%016lx info=0x%02x %s\n",
+                         (long) val, sym->st_info, strtab + sym->st_name);
 
-		  if ((Elf_W (Addr)) (ip - val) < *min_dist)
-		    {
-		      *min_dist = (Elf_W (Addr)) (ip - val);
-		      strncpy (buf, strtab + sym->st_name, buf_len);
-		      buf[buf_len - 1] = '\0';
-		      ret = (strlen (strtab + sym->st_name) >= buf_len
-			     ? -UNW_ENOMEM : 0);
-		    }
-		}
-	    }
-	  break;
+                  if ((Elf_W (Addr)) (ip - val) < *min_dist)
+                    {
+                      *min_dist = (Elf_W (Addr)) (ip - val);
+                      strncpy (buf, strtab + sym->st_name, buf_len);
+                      buf[buf_len - 1] = '\0';
+                      ret = (strlen (strtab + sym->st_name) >= buf_len
+                             ? -UNW_ENOMEM : 0);
+                    }
+                }
+            }
+          break;
 
-	default:
-	  break;
-	}
+        default:
+          break;
+        }
       shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
   return ret;
@@ -158,7 +158,7 @@ elf_w (lookup_symbol) (unw_addr_space_t as,
 
 static Elf_W (Addr)
 elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
-			 unsigned long mapoff)
+                         unsigned long mapoff)
 {
   Elf_W (Addr) offset = 0;
   Elf_W (Ehdr) *ehdr;
@@ -171,8 +171,8 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD && phdr[i].p_offset == mapoff)
       {
-	offset = segbase - phdr[i].p_vaddr;
-	break;
+        offset = segbase - phdr[i].p_vaddr;
+        break;
       }
 
   return offset;
@@ -199,7 +199,7 @@ xz_uncompressed_size (uint8_t *compressed, size_t length)
 
   uint8_t *indexdata = footer - options.backward_size;
   if (lzma_index_buffer_decode (&index, &memlimit, NULL, indexdata,
-				&pos, options.backward_size) != LZMA_OK)
+                                &pos, options.backward_size) != LZMA_OK)
     return 0;
 
   if (lzma_index_size (index) == options.backward_size)
@@ -236,21 +236,21 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   for (i = 0; i < ehdr->e_shnum; ++i)
     {
       if (strcmp (strtab + shdr->sh_name, ".gnu_debugdata") == 0)
-	{
-	  if (shdr->sh_offset + shdr->sh_size > ei->size)
-	    {
-	      Debug (1, ".gnu_debugdata outside image? (0x%lu > 0x%lu)\n",
-		     (unsigned long) shdr->sh_offset + shdr->sh_size,
-		     (unsigned long) ei->size);
-	      return 0;
-	    }
+        {
+          if (shdr->sh_offset + shdr->sh_size > ei->size)
+            {
+              Debug (1, ".gnu_debugdata outside image? (0x%lu > 0x%lu)\n",
+                     (unsigned long) shdr->sh_offset + shdr->sh_size,
+                     (unsigned long) ei->size);
+              return 0;
+            }
 
-	  Debug (16, "found .gnu_debugdata at 0x%lx\n",
-		 (unsigned long) shdr->sh_offset);
-	  compressed = ((uint8_t *) ei->image) + shdr->sh_offset;
-	  compressed_len = shdr->sh_size;
-	  break;
-	}
+          Debug (16, "found .gnu_debugdata at 0x%lx\n",
+                 (unsigned long) shdr->sh_offset);
+          compressed = ((uint8_t *) ei->image) + shdr->sh_offset;
+          compressed_len = shdr->sh_size;
+          break;
+        }
 
       shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
@@ -268,7 +268,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
 
   mdi->size = uncompressed_len;
   mdi->image = mmap (NULL, uncompressed_len, PROT_READ|PROT_WRITE,
-		     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+                     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
 
   if (mdi->image == MAP_FAILED)
     return 0;
@@ -276,8 +276,8 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   size_t in_pos = 0, out_pos = 0;
   lzma_ret lret;
   lret = lzma_stream_buffer_decode (&memlimit, 0, NULL,
-				    compressed, &in_pos, compressed_len,
-				    mdi->image, &out_pos, mdi->size);
+                                    compressed, &in_pos, compressed_len,
+                                    mdi->image, &out_pos, mdi->size);
   if (lret != LZMA_OK)
     {
       Debug (1, "LZMA decompression failed: %d\n", lret);
@@ -302,10 +302,10 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
 
 HIDDEN int
 elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
-		       unsigned long segbase,
-		       unsigned long mapoff,
-		       unw_word_t ip,
-		       char *buf, size_t buf_len, unw_word_t *offp)
+                       unsigned long segbase,
+                       unsigned long mapoff,
+                       unw_word_t ip,
+                       char *buf, size_t buf_len, unw_word_t *offp)
 {
   Elf_W (Addr) load_offset;
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
@@ -320,19 +320,19 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
   if (elf_w (extract_minidebuginfo) (ei, &mdi))
     {
       int ret_mdi = elf_w (lookup_symbol) (as, ip, &mdi, load_offset, buf,
-					   buf_len, &min_dist);
+                                           buf_len, &min_dist);
 
       /* Closer symbol was found (possibly truncated). */
       if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
-	{
-	  ret = ret_mdi;
-	}
+        {
+          ret = ret_mdi;
+        }
 
       munmap (mdi.image, mdi.size);
     }
 
   if (min_dist >= ei->size)
-    return -UNW_ENOINFO;		/* not found */
+    return -UNW_ENOINFO;                /* not found */
   if (offp)
     *offp = min_dist;
   return ret;
@@ -340,7 +340,7 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
 
 HIDDEN int
 elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
-		       char *buf, size_t buf_len, unw_word_t *offp)
+                       char *buf, size_t buf_len, unw_word_t *offp)
 {
   unsigned long segbase, mapoff;
   struct elf_image ei;

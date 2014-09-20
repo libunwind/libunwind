@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2002 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
    Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
 
@@ -69,7 +69,7 @@ common_init (struct cursor *c, unsigned use_prev_instr)
     return ret;
 
   ret = dwarf_get (&c->dwarf, DWARF_REG_LOC (&c->dwarf, UNW_X86_64_RSP),
-		   &c->dwarf.cfa);
+                   &c->dwarf.cfa);
   if (ret < 0)
     return ret;
 

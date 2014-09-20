@@ -1,6 +1,6 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2009 Red Hat
-	Contributed by Jan Kratochvil <jan.kratochvil@redhat.com>
+        Contributed by Jan Kratochvil <jan.kratochvil@redhat.com>
 
 This file is part of libunwind.
 

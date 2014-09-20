@@ -63,7 +63,7 @@ common_init_ppc64 (struct cursor *c, unsigned use_prev_instr)
     return ret;
 
   ret = dwarf_get (&c->dwarf, DWARF_REG_LOC (&c->dwarf, UNW_PPC64_R1),
-		   &c->dwarf.cfa);
+                   &c->dwarf.cfa);
   if (ret < 0)
     return ret;
 

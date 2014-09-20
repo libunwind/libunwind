@@ -112,7 +112,7 @@ unw_step (unw_cursor_t *cursor)
   int ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx))\n",
-	 c, c->dwarf.ip, c->dwarf.cfa);
+         c, c->dwarf.ip, c->dwarf.cfa);
 
   /* Check if this is a signal frame. */
   if (unw_is_signal_frame (cursor))

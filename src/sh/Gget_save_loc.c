@@ -55,7 +55,7 @@ unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
       break;
 
     default:
-      loc = DWARF_NULL_LOC;	/* default to "not saved" */
+      loc = DWARF_NULL_LOC;     /* default to "not saved" */
       break;
     }
 
