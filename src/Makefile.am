@@ -198,7 +198,8 @@ libunwind_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common)	    \
 	aarch64/Lget_save_loc.c aarch64/Lglobal.c aarch64/Linit.c	    \
 	aarch64/Linit_local.c aarch64/Linit_remote.c 			    \
 	aarch64/Lis_signal_frame.c aarch64/Lregs.c aarch64/Lresume.c 	    \
-	aarch64/Lstep.c
+	aarch64/Lstash_frame.c aarch64/Lstep.c aarch64/Ltrace.c		    \
+	aarch64/getcontext.S
 
 libunwind_aarch64_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common) \
 	$(libunwind_la_SOURCES_generic)					      \
@@ -206,7 +207,7 @@ libunwind_aarch64_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common) \
 	aarch64/Gget_save_loc.c aarch64/Gglobal.c aarch64/Ginit.c 	      \
 	aarch64/Ginit_local.c aarch64/Ginit_remote.c			      \
 	aarch64/Gis_signal_frame.c aarch64/Gregs.c aarch64/Gresume.c	      \
-	aarch64/Gstep.c
+	aarch64/Gstash_frame.c aarch64/Gstep.c aarch64/Gtrace.c
 
 # The list of files that go into libunwind and libunwind-arm:
 noinst_HEADERS += arm/init.h arm/offsets.h arm/unwind_i.h
