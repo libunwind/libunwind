@@ -115,6 +115,11 @@ handler (int sig)
       if ((ret = unw_step (&c)) < 0)		/* step to kill() */
 	panic ("unw_step(2) failed: ret=%d\n", ret);
 
+#if defined(UNW_TARGET_TILEGX)
+      if ((ret = unw_step (&c)) < 0)		/* step to signal trampoline */
+	panic ("unw_step(2) failed: ret=%d\n", ret);
+#endif
+
       if ((ret = unw_get_reg (&c, UNW_REG_IP, &ip)) < 0)
 	panic ("unw_get_reg(IP) failed: ret=%d\n", ret);
       if (verbose)

@@ -14,7 +14,7 @@ several architecture/operating-system combinations:
  Linux/SuperH:	Newly added.
  FreeBSD/i386:	Newly added.
  FreeBSD/x86-64: Newly added (FreeBSD architecture is known as amd64).
-
+ Linux/Tilegx:  Newly added (64-bit mode only).
 
 * General Build Instructions
 

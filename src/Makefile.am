@@ -297,6 +297,26 @@ libunwind_mips_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)	    \
 	mips/Gglobal.c mips/Ginit.c mips/Ginit_local.c mips/Ginit_remote.c	    \
 	mips/Gis_signal_frame.c mips/Gregs.c mips/Gresume.c mips/Gstep.c
 
+# The list of files that go info libunwind and libunwind-tilegx:
+noinst_HEADERS += tilegx/init.h tilegx/offsets.h
+libunwind_la_SOURCES_tilegx_common = $(libunwind_la_SOURCES_common)	    \
+	tilegx/is_fpreg.c tilegx/regname.c
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)		    \
+	$(libunwind_la_SOURCES_local)					    \
+	tilegx/getcontext.S						\
+	tilegx/Lcreate_addr_space.c tilegx/Lget_proc_info.c tilegx/Lget_save_loc.c   \
+	tilegx/Lglobal.c tilegx/Linit.c tilegx/Linit_local.c tilegx/Linit_remote.c  \
+	tilegx/Lis_signal_frame.c tilegx/Lregs.c tilegx/Lresume.c tilegx/Lstep.c
+
+libunwind_tilegx_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)	    \
+	$(libunwind_la_SOURCES_generic)					    \
+	tilegx/Gcreate_addr_space.c tilegx/Gget_proc_info.c tilegx/Gget_save_loc.c   \
+	tilegx/Gglobal.c tilegx/Ginit.c tilegx/Ginit_local.c tilegx/Ginit_remote.c	    \
+	tilegx/Gis_signal_frame.c tilegx/Gregs.c tilegx/Gresume.c tilegx/Gstep.c
+
+
 # The list of files that go both into libunwind and libunwind-x86:
 noinst_HEADERS += x86/init.h x86/offsets.h x86/unwind_i.h
 libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
@@ -535,6 +555,18 @@ if !REMOTE_ONLY
 endif
  libunwind_setjmp_la_SOURCES += mips/siglongjmp.S
 else
+if ARCH_TILEGX
+ lib_LTLIBRARIES += libunwind-tilegx.la
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_tilegx)
+ libunwind_tilegx_la_SOURCES = $(libunwind_tilegx_la_SOURCES_tilegx)
+ libunwind_tilegx_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+ libunwind_tilegx_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_tilegx_la_LIBADD += libunwind-elfxx.la
+if !REMOTE_ONLY
+ libunwind_tilegx_la_LIBADD += libunwind.la -lc
+endif
+ libunwind_setjmp_la_SOURCES += tilegx/siglongjmp.S
+else
 if ARCH_X86
  lib_LTLIBRARIES += libunwind-x86.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86) $(libunwind_x86_la_SOURCES_os)
@@ -600,6 +632,7 @@ endif # ARCH_PPC64
 endif # ARCH_PPC32
 endif # ARCH_X86_64
 endif # ARCH_X86
+endif # ARCH_TILEGX
 endif # ARCH_MIPS
 endif # ARCH_HPPA
 endif # ARCH_IA64

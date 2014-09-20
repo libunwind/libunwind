@@ -158,6 +158,15 @@ check_local_unw_abi () {
 	    match _UL${plat}_dwarf_search_unwind_table
 	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
+        tilegx)
+            match _U${plat}_is_fpreg
+	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
+            match _UL${plat}_local_addr_space_init
+            match _U${plat}_get_elf_image
+            match ${plat}_lock     
+            ;;
+
 	*)
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
@@ -239,6 +248,14 @@ check_generic_unw_abi () {
 	    match _U${plat}_dwarf_search_unwind_table
 	    match _U${plat}_dwarf_find_unwind_table
 	    ;;
+        tilegx)
+            match _U${plat}_dwarf_search_unwind_table
+	    match _U${plat}_dwarf_find_unwind_table
+            match _U${plat}_get_elf_image
+            match _U${plat}_is_fpreg
+            match _U${plat}_local_addr_space_init
+            match ${plat}_lock
+            ;;
 	*)
 	    match _U${plat}_is_fpreg
 	    match _U${plat}_dwarf_search_unwind_table
