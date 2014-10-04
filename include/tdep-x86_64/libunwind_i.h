@@ -103,39 +103,36 @@ dwarf_get_uc(const struct dwarf_cursor *cursor)
 }
 
 #define DWARF_GET_LOC(l)        ((l).val)
+# define DWARF_LOC_TYPE_MEM     (0 << 0)
+# define DWARF_LOC_TYPE_FP      (1 << 0)
+# define DWARF_LOC_TYPE_REG     (1 << 1)
+# define DWARF_LOC_TYPE_VAL     (1 << 2)
+
+# define DWARF_IS_REG_LOC(l)    (((l).type & DWARF_LOC_TYPE_REG) != 0)
+# define DWARF_IS_FP_LOC(l)     (((l).type & DWARF_LOC_TYPE_FP) != 0)
+# define DWARF_IS_MEM_LOC(l)    ((l).type == DWARF_LOC_TYPE_MEM)
+# define DWARF_IS_VAL_LOC(l)    (((l).type & DWARF_LOC_TYPE_VAL) != 0)
+
+# define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r), .type = (t) })
+# define DWARF_VAL_LOC(c,v)     DWARF_LOC ((v), DWARF_LOC_TYPE_VAL)
+# define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), DWARF_LOC_TYPE_MEM)
 
 #ifdef UNW_LOCAL_ONLY
 # define DWARF_NULL_LOC         DWARF_LOC (0, 0)
 # define DWARF_IS_NULL_LOC(l)   (DWARF_GET_LOC (l) == 0)
-# define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r) })
-# define DWARF_IS_REG_LOC(l)    0
-# define DWARF_IS_MEM_LOC(l)    1
-# define DWARF_IS_VAL_LOC(l)    0
 # define DWARF_REG_LOC(c,r)     (DWARF_LOC((unw_word_t)                      \
                                  x86_64_r_uc_addr(dwarf_get_uc(c), (r)), 0))
-# define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)   (DWARF_LOC((unw_word_t)                      \
                                  x86_64_r_uc_addr(dwarf_get_uc(c), (r)), 0))
-# define DWARF_VAL_LOC(c,v)     DWARF_NULL_LOC
 
 #else /* !UNW_LOCAL_ONLY */
 
-# define DWARF_LOC_TYPE_FP      (1 << 0)
-# define DWARF_LOC_TYPE_REG     (1 << 1)
-# define DWARF_LOC_TYPE_VAL     (1 << 2)
 # define DWARF_NULL_LOC         DWARF_LOC (0, 0)
 # define DWARF_IS_NULL_LOC(l)                                           \
                 ({ dwarf_loc_t _l = (l); _l.val == 0 && _l.type == 0; })
-# define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r), .type = (t) })
-# define DWARF_IS_REG_LOC(l)    (((l).type & DWARF_LOC_TYPE_REG) != 0)
-# define DWARF_IS_FP_LOC(l)     (((l).type & DWARF_LOC_TYPE_FP) != 0)
-# define DWARF_IS_MEM_LOC(l)    ((l).type == 0)
-# define DWARF_IS_VAL_LOC(l)    (((l).type & DWARF_LOC_TYPE_VAL) != 0)
 # define DWARF_REG_LOC(c,r)     DWARF_LOC((r), DWARF_LOC_TYPE_REG)
-# define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)   DWARF_LOC((r), (DWARF_LOC_TYPE_REG      \
                                                 | DWARF_LOC_TYPE_FP))
-# define DWARF_VAL_LOC(c,v)     DWARF_LOC ((v), DWARF_LOC_TYPE_VAL)
 
 #endif /* !UNW_LOCAL_ONLY */
 
