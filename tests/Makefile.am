@@ -94,9 +94,16 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 
 
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
+XFAIL_TESTS =
 
 if !ARCH_IA64
-XFAIL_TESTS = Gtest-dyn1 Ltest-dyn1
+XFAIL_TESTS += Gtest-dyn1 Ltest-dyn1
+endif
+
+if ARCH_MIPS
+# MIPS kernel does not support PTRACE_SINGLESTEP
+# ptrace request used in the tests.
+XFAIL_TESTS += run-ptrace-mapper run-ptrace-misc
 endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \

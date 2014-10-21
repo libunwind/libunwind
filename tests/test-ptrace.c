@@ -303,9 +303,17 @@ main (int argc, char **argv)
 	    {
 	      do_backtrace ();
 #if HAVE_DECL_PTRACE_SINGLESTEP
-	      ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig);
+	      if (ptrace (PTRACE_SINGLESTEP, target_pid, 0, pending_sig) < 0)
+          {
+            panic ("ptrace(PTRACE_SINGLESTEP) failed (errno=%d)\n", errno);
+            killed = 1;
+          }
 #elif HAVE_DECL_PT_STEP
-	      ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig);
+	      if (ptrace (PT_STEP, target_pid, (caddr_t)1, pending_sig) < 0)
+          {
+            panic ("ptrace(PT_STEP) failed (errno=%d)\n", errno);
+            killed = 1;
+          }
 #else
 #error Singlestep me
 #endif
