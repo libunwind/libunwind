@@ -38,20 +38,24 @@ aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (c->sigcontext_format == AARCH64_SCF_NONE)
     {
-      /* Since there are no signals involved here we restore the non scratch
+      /* Since there are no signals involved here we restore EH and non scratch
          registers only.  */
-      unsigned long regs[11];
-      regs[0] = uc->uc_mcontext.regs[19];
-      regs[1] = uc->uc_mcontext.regs[20];
-      regs[2] = uc->uc_mcontext.regs[21];
-      regs[3] = uc->uc_mcontext.regs[22];
-      regs[4] = uc->uc_mcontext.regs[23];
-      regs[5] = uc->uc_mcontext.regs[24];
-      regs[6] = uc->uc_mcontext.regs[25];
-      regs[7] = uc->uc_mcontext.regs[26];
-      regs[8] = uc->uc_mcontext.regs[27];
-      regs[9] = uc->uc_mcontext.regs[28];
-      regs[10] = uc->uc_mcontext.regs[30]; /* LR */
+      unsigned long regs[15];
+      regs[0] = uc->uc_mcontext.regs[0];
+      regs[1] = uc->uc_mcontext.regs[1];
+      regs[2] = uc->uc_mcontext.regs[2];
+      regs[3] = uc->uc_mcontext.regs[3];
+      regs[4] = uc->uc_mcontext.regs[19];
+      regs[5] = uc->uc_mcontext.regs[20];
+      regs[6] = uc->uc_mcontext.regs[21];
+      regs[7] = uc->uc_mcontext.regs[22];
+      regs[8] = uc->uc_mcontext.regs[23];
+      regs[9] = uc->uc_mcontext.regs[24];
+      regs[10] = uc->uc_mcontext.regs[25];
+      regs[11] = uc->uc_mcontext.regs[26];
+      regs[12] = uc->uc_mcontext.regs[27];
+      regs[13] = uc->uc_mcontext.regs[28];
+      regs[14] = uc->uc_mcontext.regs[30]; /* LR */
       unsigned long sp = uc->uc_mcontext.sp;
 
       struct regs_overlay {
@@ -59,13 +63,17 @@ aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       };
 
       asm volatile (
-        "ldp x19, x20, [%0]\n"
-        "ldp x21, x22, [%0,16]\n"
-        "ldp x23, x24, [%0,32]\n"
-        "ldp x25, x26, [%0,48]\n"
-        "ldp x27, x28, [%0,64]\n"
-        "ldr x30, [%0,80]\n"
-        "mov sp, %1\n"
+        "mov x4, %0\n"
+        "mov x5, %1\n"
+        "ldp x0,  x1,  [x4]\n"
+        "ldp x2,  x3,  [x4,16]\n"
+        "ldp x19, x20, [x4,32]\n"
+        "ldp x21, x22, [x4,48]\n"
+        "ldp x23, x24, [x4,64]\n"
+        "ldp x25, x26, [x4,80]\n"
+        "ldp x27, x28, [x4,96]\n"
+        "ldr x30, [x4,112]\n"
+        "mov sp, x5\n"
         "ret \n"
         :
         : "r" (regs),
