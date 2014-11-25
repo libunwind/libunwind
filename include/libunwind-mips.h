@@ -50,11 +50,14 @@ extern "C" {
 /* FIXME for MIPS. Too big?  What do other things use for similar tasks?  */
 #define UNW_TDEP_CURSOR_LEN     4096
 
-/* The size of a "word" varies on MIPS.  This type is used for memory
-   addresses and register values.  To allow a single library to support
-   multiple ABIs, and to support N32 at all, we must use a 64-bit type
-   even when addresses are only 32 bits.  */
+/* The size of a "word" varies on MIPS. This type is used for memory
+   addresses and register values, which are 32-bit wide for O32 and N32 
+   ABIs, and 64-bit wide for N64 ABI. */
+#if _MIPS_SIM == _ABI64
 typedef uint64_t unw_word_t;
+#else
+typedef uint32_t unw_word_t;
+#endif
 typedef int32_t unw_sword_t;
 
 /* FIXME: MIPS ABIs.  */
