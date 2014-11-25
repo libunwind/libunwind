@@ -423,8 +423,9 @@ extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
                                              unw_accessors_t *a,
                                              unw_word_t *fde_addr,
                                              unw_proc_info_t *pi,
-                                             int need_unwind_info,
                                              unw_word_t base,
+                                             int need_unwind_info,
+                                             int is_debug_frame,
                                              void *arg);
 extern int dwarf_find_save_locs (struct dwarf_cursor *c);
 extern int dwarf_create_state_record (struct dwarf_cursor *c,

@@ -59,8 +59,9 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
   while (i++ < fde_count && addr < eh_frame_end)
     {
       fde_addr = addr;
-      if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, pi, 0, 0, arg))
-          < 0)
+      if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, pi,
+                                                   eh_frame_start,
+                                                   0, 0, arg)) < 0)
         return ret;
 
       if (ip >= pi->start_ip && ip < pi->end_ip)
@@ -69,6 +70,7 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
             return 1;
           addr = fde_addr;
           if ((ret = dwarf_extract_proc_info_from_fde (as, a, &addr, pi,
+                                                       eh_frame_start,
                                                        need_unwind_info, 0,
                                                        arg))
               < 0)
@@ -468,8 +470,8 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
                  err = dwarf_extract_proc_info_from_fde (unw_local_addr_space,
                                                          a, &fde_addr,
-                                                         &this_pi, 0,
-                                                         (uintptr_t) buf,
+                                                         &this_pi,
+                                                         (uintptr_t) buf, 0, 1,
                                                          NULL);
                  if (err == 0)
                    {
@@ -902,8 +904,10 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
             "fde_addr = %lx\n", (long) e->fde_offset, (long) segbase,
             (long) debug_frame_base, (long) fde_addr);
   if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
+                                               debug_frame_base ?
+                                               debug_frame_base : segbase,
                                                need_unwind_info,
-                                               debug_frame_base, arg)) < 0)
+                                               debug_frame_base != 0, arg)) < 0)
     return ret;
 
   /* .debug_frame uses an absolute encoding that does not know about any
