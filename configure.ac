@@ -125,6 +125,10 @@ AC_ARG_ENABLE(setjmp,
         [AS_IF([test x$target_arch == x$host_arch], [enable_setjmp=yes], [enable_setjmp=no])]
 )
 
+AC_ARG_ENABLE(documentation,
+	AS_HELP_STRING([--disable-documentation],[Disable generating the man pages]),,
+	[enable_documentation=yes])
+
 AC_MSG_CHECKING([if we should build libunwind-setjmp])
 AC_MSG_RESULT([$enable_setjmp])
 
@@ -381,8 +385,19 @@ AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
 
+AC_PATH_PROG([LATEX2MAN],[latex2man])
+if test "x$LATEX2MAN" = "x"; then
+  AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
+  enable_documentation="no";
+fi
+
+AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation = xyes])
+if test "x$enable_documentation" = "xyes"; then
+  AC_CONFIG_FILES(doc/Makefile doc/common.tex)
+fi
+
 AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
-		doc/Makefile doc/common.tex include/libunwind-common.h
+		include/libunwind-common.h
                 include/libunwind.h include/tdep/libunwind_i.h)
 AC_CONFIG_FILES(src/unwind/libunwind.pc src/coredump/libunwind-coredump.pc
                 src/ptrace/libunwind-ptrace.pc src/setjmp/libunwind-setjmp.pc
