@@ -88,6 +88,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 
 AC_DEFUN([SET_ARCH],[
     AS_CASE([$1],
+        [aarch64*],[$2=aarch64],
         [arm*],[$2=arm],
         [i?86],[$2=x86],
         [hppa*],[$2=hppa],
