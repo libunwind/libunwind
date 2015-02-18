@@ -100,10 +100,17 @@ if !ARCH_IA64
 XFAIL_TESTS += Gtest-dyn1 Ltest-dyn1
 endif
 
-if ARCH_MIPS
-# MIPS kernel does not support PTRACE_SINGLESTEP
+# Use if arch defines but does not support PTRACE_SINGLESTEP
 # ptrace request used in the tests.
-XFAIL_TESTS += run-ptrace-mapper run-ptrace-misc
+XFAIL_TESTS_PTRACE_SINGLESTEP = run-ptrace-mapper run-ptrace-misc
+
+if ARCH_MIPS
+XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
+endif
+
+if ARCH_ARM
+# ARM Linux kernel >=2.6.39 removed PTRACE_SINGLESTEP emulation
+XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
 endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
