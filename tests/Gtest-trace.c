@@ -123,7 +123,7 @@ do_backtrace (void)
       if (labs((unw_word_t) addresses[1][i] - (unw_word_t) addresses[2][i]) > 1)
 	{
           printf ("FAILURE: backtrace() and unw_backtrace() addresses differ at %d: %p vs. %p\n",
-		  i, addresses[1][n], addresses[2][n]);
+                  i, addresses[1][i], addresses[2][i]);
           ++num_errors;
 	}
 
@@ -133,7 +133,7 @@ do_backtrace (void)
       if (labs((unw_word_t) addresses[0][i] - (unw_word_t) addresses[1][i]) > 1)
 	{
           printf ("FAILURE: unw_step() loop and backtrace() addresses differ at %d: %p vs. %p\n",
-		  i, addresses[0][n], addresses[1][n]);
+                  i, addresses[0][i], addresses[1][i]);
           ++num_errors;
 	}
 }
