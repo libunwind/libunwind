@@ -72,6 +72,56 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
   return 0;
 }
 
+#define PAGE_SIZE 4096
+#define PAGE_START(a)	((a) & ~(PAGE_SIZE-1))
+
+/* Cache of already validated addresses */
+#define NLGA 4
+static unw_word_t last_good_addr[NLGA];
+static int lga_victim;
+
+static int
+validate_mem (unw_word_t addr)
+{
+  int i, victim;
+  size_t len;
+
+  if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
+    len = PAGE_SIZE;
+  else
+    len = PAGE_SIZE * 2;
+
+  addr = PAGE_START(addr);
+
+  if (addr == 0)
+    return -1;
+
+  for (i = 0; i < NLGA; i++)
+    {
+      if (last_good_addr[i] && (addr == last_good_addr[i]))
+      return 0;
+    }
+
+  if (msync ((void *) addr, len, MS_ASYNC) == -1)
+    return -1;
+
+  victim = lga_victim;
+  for (i = 0; i < NLGA; i++) {
+    if (!last_good_addr[victim]) {
+      last_good_addr[victim++] = addr;
+      return 0;
+    }
+    victim = (victim + 1) % NLGA;
+  }
+
+  /* All slots full. Evict the victim. */
+  last_good_addr[victim] = addr;
+  victim = (victim + 1) % NLGA;
+  lga_victim = victim;
+
+  return 0;
+}
+
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
             void *arg)
@@ -83,6 +133,11 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     }
   else
     {
+      /* validate address */
+      const struct cursor *c = (const struct cursor *) arg;
+      if (c && validate_mem(addr))
+        return -1;
+
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%x] -> %x\n", addr, *val);
     }
