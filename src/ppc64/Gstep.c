@@ -432,5 +432,19 @@ unw_step (unw_cursor_t * cursor)
           ret = 1;
         }
     }
+
+  // on ppc64, R2 register is used as pointer to TOC
+  // section which is used for symbol lookup in PIC code
+  // ppc64 linker generates "ld r2, 24(r1)" instruction after each
+  // @plt call. We need restore R2, but only for @plt calls
+  {
+    unsigned int *inst = (unw_word_t*)c->dwarf.ip;
+    if (*inst == (0xE8410000 + 24)) {
+      // @plt call, restoring R2 from CFA+24
+      c->dwarf.loc[UNW_PPC64_R2] = DWARF_LOC(c->dwarf.cfa + 24, 0);
+    }
+  }
+
+  Debug (2, "returning %d with last return statement\n", ret);
   return ret;
 }

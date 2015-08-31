@@ -169,7 +169,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
 
-  if ((unsigned) (reg - UNW_PPC64_F0) < 0)
+  if ((reg - UNW_PPC64_F0) < 0)
     goto badreg;
 
   if ((unsigned) (reg - UNW_PPC64_V0) >= 32)
