@@ -200,7 +200,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_get_exe_image_path         UNW_ARCH_OBJ(get_exe_image_path)
 #define tdep_access_reg                 UNW_OBJ(access_reg)
 #define tdep_access_fpreg               UNW_OBJ(access_fpreg)
-#if __linux__
+#if defined(__linux__) || defined(__sun)
 # define tdep_fetch_frame               UNW_OBJ(fetch_frame)
 # define tdep_cache_frame               UNW_OBJ(cache_frame)
 # define tdep_reuse_frame               UNW_OBJ(reuse_frame)
