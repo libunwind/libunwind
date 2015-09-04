@@ -90,6 +90,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #   else
 #     error Host has unknown byte-order.
 #   endif
+# elif defined(__sun)
+#   define __BYTE_ORDER __LITTLE_ENDIAN
 # else
 #   error Host has unknown byte-order.
 # endif
