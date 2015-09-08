@@ -252,10 +252,6 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
       *addrp = fde_end_addr = addr + u32val;
       cie_offset_addr = addr;
 
-      /* CIE must be within the segment. */
-      if (cie_offset_addr < base)
-          return -UNW_ENOINFO;
-
       if ((ret = dwarf_reads32 (as, a, &addr, &cie_offset, arg)) < 0)
         return ret;
 
@@ -283,10 +279,6 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 
       *addrp = fde_end_addr = addr + u64val;
       cie_offset_addr = addr;
-
-      /* CIE must be within the segment. */
-      if (cie_offset_addr < base)
-          return -UNW_ENOINFO;
 
       if ((ret = dwarf_reads64 (as, a, &addr, &cie_offset, arg)) < 0)
         return ret;
