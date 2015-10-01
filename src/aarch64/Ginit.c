@@ -43,8 +43,10 @@ PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
 static inline void *
 uc_addr (ucontext_t *uc, int reg)
 {
-  if (reg >= UNW_AARCH64_X0 && reg <= UNW_AARCH64_V31)
+  if (reg >= UNW_AARCH64_X0 && reg < UNW_AARCH64_V0)
     return &uc->uc_mcontext.regs[reg];
+  else if (reg >= UNW_AARCH64_V0 && reg <= UNW_AARCH64_V31)
+    return &GET_FPCTX(uc)->vregs[reg - UNW_AARCH64_V0];
   else
     return NULL;
 }

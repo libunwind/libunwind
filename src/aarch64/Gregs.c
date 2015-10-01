@@ -110,6 +110,9 @@ HIDDEN int
 tdep_access_fpreg (struct cursor *c, unw_regnum_t reg, unw_fpreg_t *valp,
                    int write)
 {
-  Debug (1, "bad register number %u\n", reg);
-  return -UNW_EBADREG;
+  dwarf_loc_t loc = c->dwarf.loc[reg];
+  if (write)
+    return dwarf_putfp (&c->dwarf, loc, *valp);
+  else
+    return dwarf_getfp (&c->dwarf, loc, valp);
 }
