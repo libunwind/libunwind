@@ -168,8 +168,10 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
       /* validate address */
       const struct cursor *c = (const struct cursor *)arg;
       if (likely (c != NULL) && unlikely (c->validate)
-          && unlikely (validate_mem (addr)))
+          && unlikely (validate_mem (addr))) {
+        Debug (16, "mem[%016lx] -> invalid\n", addr);
         return -1;
+      }
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%016lx] -> %lx\n", addr, *val);
     }

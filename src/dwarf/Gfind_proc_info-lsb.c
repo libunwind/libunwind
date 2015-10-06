@@ -819,13 +819,19 @@ remote_lookup (unw_addr_space_t as,
 
 #endif /* !UNW_LOCAL_ONLY */
 
+static int is_remote_table(int format)
+{
+  return (format == UNW_INFO_FORMAT_REMOTE_TABLE ||
+          format == UNW_INFO_FORMAT_IP_OFFSET);
+}
+
 PROTECTED int
 dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                            unw_dyn_info_t *di, unw_proc_info_t *pi,
                            int need_unwind_info, void *arg)
 {
   const struct table_entry *e = NULL, *table;
-  unw_word_t segbase = 0, fde_addr;
+  unw_word_t ip_base = 0, segbase = 0, fde_addr;
   unw_accessors_t *a;
 #ifndef UNW_LOCAL_ONLY
   struct table_entry ent;
@@ -835,14 +841,14 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   size_t table_len;
 
 #ifdef UNW_REMOTE_ONLY
-  assert (di->format == UNW_INFO_FORMAT_REMOTE_TABLE);
+  assert (is_remote_table(di->format));
 #else
-  assert (di->format == UNW_INFO_FORMAT_REMOTE_TABLE
+  assert (is_remote_table(di->format)
           || di->format == UNW_INFO_FORMAT_TABLE);
 #endif
   assert (ip >= di->start_ip && ip < di->end_ip);
 
-  if (di->format == UNW_INFO_FORMAT_REMOTE_TABLE)
+  if (is_remote_table(di->format))
     {
       table = (const struct table_entry *) (uintptr_t) di->u.rti.table_data;
       table_len = di->u.rti.table_len * sizeof (unw_word_t);
@@ -850,6 +856,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     }
   else
     {
+      assert(di->format == UNW_INFO_FORMAT_TABLE);
 #ifndef UNW_REMOTE_ONLY
       struct unw_debug_frame_list *fdesc = (void *) di->u.ti.table_data;
 
@@ -866,11 +873,17 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 
   a = unw_get_accessors (as);
 
+  segbase = di->u.rti.segbase;
+  if (di->format == UNW_INFO_FORMAT_IP_OFFSET) {
+    ip_base = di->start_ip;
+  } else {
+    ip_base = segbase;
+  }
+
 #ifndef UNW_REMOTE_ONLY
   if (as == unw_local_addr_space)
     {
-      segbase = di->u.rti.segbase;
-      e = lookup (table, table_len, ip - segbase);
+      e = lookup (table, table_len, ip - ip_base);
     }
   else
 #endif
@@ -878,7 +891,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 #ifndef UNW_LOCAL_ONLY
       segbase = di->u.rti.segbase;
       if ((ret = remote_lookup (as, (uintptr_t) table, table_len,
-                                ip - segbase, &ent, arg)) < 0)
+                                ip - ip_base, &ent, arg)) < 0)
         return ret;
       if (ret)
         e = &ent;
