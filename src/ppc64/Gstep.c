@@ -27,6 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 #include "ucontext_i.h"
+#include "remote.h"
 #include <signal.h>
 
 /* This definition originates in /usr/include/asm-ppc64/ptrace.h, but is
@@ -57,16 +58,9 @@ unw_step (unw_cursor_t * cursor)
   stack_frame_t dummy;
   unw_word_t back_chain_offset, lr_save_offset, v_regs_ptr;
   struct dwarf_loc back_chain_loc, lr_save_loc, sp_loc, ip_loc, v_regs_loc;
-  int ret;
+  int ret, i;
 
   Debug (1, "(cursor=%p, ip=0x%016lx)\n", c, (unsigned long) c->dwarf.ip);
-
-  if (c->dwarf.ip == 0)
-    {
-      /* Unless the cursor or stack is corrupt or uninitialized,
-         we've most likely hit the top of the stack */
-      return 0;
-    }
 
   /* Try DWARF-based unwinding... */
 
@@ -119,6 +113,11 @@ unw_step (unw_cursor_t * cursor)
                  ret);
               return ret;
             }
+
+          /* Mark all registers unsaved */
+          for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+            c->dwarf.loc[i] = DWARF_NULL_LOC;
+
           ret = 1;
         }
       else
@@ -433,16 +432,33 @@ unw_step (unw_cursor_t * cursor)
         }
     }
 
+  if (c->dwarf.ip == 0)
+    {
+      /* Unless the cursor or stack is corrupt or uninitialized,
+         we've most likely hit the top of the stack */
+      Debug (2, "returning 0\n");
+      return 0;
+    }
+
   // on ppc64, R2 register is used as pointer to TOC
   // section which is used for symbol lookup in PIC code
-  // ppc64 linker generates "ld r2, 24(r1)" instruction after each
+  // ppc64 linker generates "ld r2, 40(r1)" (ELFv1) or
+  // "ld r2, 24(r1)" (ELFv2) instruction after each
   // @plt call. We need restore R2, but only for @plt calls
   {
-    unsigned int *inst = (unw_word_t*)c->dwarf.ip;
-    if (*inst == (0xE8410000 + 24)) {
-      // @plt call, restoring R2 from CFA+24
-      c->dwarf.loc[UNW_PPC64_R2] = DWARF_LOC(c->dwarf.cfa + 24, 0);
-    }
+    unw_word_t ip = c->dwarf.ip;
+    unw_addr_space_t as = c->dwarf.as;
+    unw_accessors_t *a = unw_get_accessors (as);
+    void *arg = c->dwarf.as_arg;
+    uint32_t toc_save = (as->abi == UNW_PPC64_ABI_ELFv2)? 24 : 40;
+    int32_t inst;
+
+    if (fetch32 (as, a, &ip, &inst, arg) >= 0
+	&& (uint32_t)inst == (0xE8410000U + toc_save))
+      {
+	// @plt call, restoring R2 from CFA+toc_save
+	c->dwarf.loc[UNW_PPC64_R2] = DWARF_LOC(c->dwarf.cfa + toc_save, 0);
+      }
   }
 
   Debug (2, "returning %d with last return statement\n", ret);
