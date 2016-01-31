@@ -373,6 +373,10 @@ old_LIBS="$LIBS"
 LIBS=""
 AC_SEARCH_LIBS(backtrace, execinfo)
 LIBS="$old_LIBS"
+case "$ac_cv_search_backtrace" in
+  -l*) BACKTRACELIB=$ac_cv_search_backtrace;;
+  *) BACKTRACELIB="";;
+esac
 
 AC_SUBST(build_arch)
 AC_SUBST(target_os)
@@ -388,6 +392,7 @@ AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
+AC_SUBST(BACKTRACELIB)
 
 AC_PATH_PROG([LATEX2MAN],[latex2man])
 if test "x$LATEX2MAN" = "x"; then
