@@ -68,6 +68,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <endian.h>
 #elif defined(HAVE_SYS_ENDIAN_H)
 # include <sys/endian.h>
+# if defined(_LITTLE_ENDIAN) && !defined(__LITTLE_ENDIAN)
+#   define __LITTLE_ENDIAN _LITTLE_ENDIAN
+# endif
+# if defined(_BIG_ENDIAN) && !defined(__BIG_ENDIAN)
+#   define __BIG_ENDIAN _BIG_ENDIAN
+# endif
+# if defined(_BYTE_ORDER) && !defined(__BYTE_ORDER)
+#   define __BYTE_ORDER _BYTE_ORDER
+# endif
 #else
 # define __LITTLE_ENDIAN        1234
 # define __BIG_ENDIAN           4321

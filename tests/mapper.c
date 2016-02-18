@@ -55,7 +55,11 @@ main (void)
   for (n = 0; n < 30000; ++n)
     {
       if (mmap (NULL, 1, (n & 1) ? PROT_READ : PROT_WRITE,
-		MAP_PRIVATE | MAP_ANONYMOUS | MAP_NORESERVE,
+		MAP_PRIVATE | MAP_ANONYMOUS
+#ifdef MAP_NORESERVE
+		| MAP_NORESERVE
+#endif
+		,
 		-1, 0) == MAP_FAILED)
 	{
 	  printf ("Failed after %ld successful maps\n", n - 1);

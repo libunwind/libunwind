@@ -220,20 +220,23 @@ libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \
+	$(libunwind_la_SOURCES_arm_os_local)				    \
 	$(libunwind_la_SOURCES_local)					    \
 	arm/getcontext.S						    \
 	arm/Lapply_reg_state.c arm/Lreg_states_iterate.c		    \
 	arm/Lcreate_addr_space.c arm/Lget_proc_info.c arm/Lget_save_loc.c   \
 	arm/Lglobal.c arm/Linit.c arm/Linit_local.c arm/Linit_remote.c	    \
-	arm/Lis_signal_frame.c arm/Lregs.c arm/Lresume.c arm/Lstep.c	    \
+	arm/Lregs.c arm/Lresume.c arm/Lstep.c				    \
 	arm/Lex_tables.c arm/Lstash_frame.c arm/Ltrace.c
 
+# The list of files that go into libunwind-arm:
 libunwind_arm_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)	    \
+	$(libunwind_la_SOURCES_arm_os)					    \
 	$(libunwind_la_SOURCES_generic)					    \
 	arm/Gapply_reg_state.c arm/Greg_states_iterate.c		    \
 	arm/Gcreate_addr_space.c arm/Gget_proc_info.c arm/Gget_save_loc.c   \
 	arm/Gglobal.c arm/Ginit.c arm/Ginit_local.c arm/Ginit_remote.c	    \
-	arm/Gis_signal_frame.c arm/Gregs.c arm/Gresume.c arm/Gstep.c	    \
+	arm/Gregs.c arm/Gresume.c arm/Gstep.c				    \
 	arm/Gex_tables.c arm/Gstash_frame.c arm/Gtrace.c
 
 # The list of files that go both into libunwind and libunwind-ia64:
@@ -488,6 +491,7 @@ if OS_LINUX
  libunwind_la_SOURCES_x86_os_local    = x86/Los-linux.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
+ libunwind_la_SOURCES_arm_os          = arm/Gos-linux.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_linux.c
 endif
 
@@ -504,12 +508,16 @@ if OS_FREEBSD
  libunwind_la_SOURCES_x86_os_local    = x86/Los-freebsd.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-freebsd.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
+ libunwind_la_SOURCES_arm_os          = arm/Gos-freebsd.c
+ libunwind_la_SOURCES_arm_os_local    = arm/Los-freebsd.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
 endif
 
 if OS_QNX
  libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_qnx)
  libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_qnx_local)
+ libunwind_la_SOURCES_arm_os          = arm/Gos-other.c
+ libunwind_la_SOURCES_arm_os_local    = arm/Los-other.c
 endif
 
 if ARCH_AARCH64
