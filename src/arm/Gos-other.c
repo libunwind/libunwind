@@ -1,5 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2008 CodeSourcery
+   Copyright 2011 Linaro Limited
+   Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
 
 This file is part of libunwind.
 
@@ -22,42 +24,25 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <stdio.h>
+#include <signal.h>
+#include "unwind_i.h"
 #include "offsets.h"
 
-	.text
-	.arm
+PROTECTED int
+unw_handle_signal_frame (unw_cursor_t *cursor)
+{
+  return -UNW_EUNSPEC;
+}
 
-	.global _Uarm_getcontext
-	.type	_Uarm_getcontext, %function
-	@ This is a stub version of getcontext() for ARM which only stores core
-	@ registers.  It must be called in a special way, not as a regular
-	@ function -- see also the libunwind-arm.h:unw_tdep_getcontext macro.
-_Uarm_getcontext:
-	stmfd sp!, {r0, r1}
-	@ store r0
-#if defined(__linux__)
-	str r0, [r0, #LINUX_UC_MCONTEXT_OFF + LINUX_SC_R0_OFF]
-	add r0, r0, #LINUX_UC_MCONTEXT_OFF + LINUX_SC_R0_OFF
-#elif defined(__FreeBSD__)
-	str r0, [r0, #FREEBSD_UC_MCONTEXT_OFF + FREEBSD_MC_R0_OFF]
-	add r0, r0, #FREEBSD_UC_MCONTEXT_OFF + FREEBSD_MC_R0_OFF
+PROTECTED int
+unw_is_signal_frame (unw_cursor_t *cursor)
+{
+#if defined(__QNX__)
+  /* Not supported yet */
+  return 0;
 #else
-#error Fix me
+  printf ("%s: implement me\n", __FUNCTION__);
+  return -UNW_ENOINFO;
 #endif
-	@ store r1 to r12
-	stmib r0, {r1-r12}
-	@ reconstruct r13 at call site, then store
-	add r1, sp, #12
-	str r1, [r0, #13 * 4]
-	@ retrieve r14 from call site, then store
-	ldr r1, [sp, #8]
-	str r1, [r0, #14 * 4]
-	@ point lr to instruction after call site's stack adjustment
-	add r1, lr, #4
-	str r1, [r0, #15 * 4]
-	ldmfd sp!, {r0, r1}
-	bx lr
-#if defined(__linux__) || defined(__FreeBSD__)
- /* We do not need executable stack.  */
- .section  .note.GNU-stack,"",%progbits
-#endif
+}
