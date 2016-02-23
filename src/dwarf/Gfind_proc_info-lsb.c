@@ -525,6 +525,79 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
+#define EH_FRAME_LEN /* strlen(".eh_frame") + 1 */ 10
+
+static ElfW(Addr)
+dwarf_find_eh_frame_section(struct dl_phdr_info *info)
+{
+  int fd;
+  Elf_W (Ehdr) ehdr;
+  Elf_W (Half) shstrndx;
+  Elf_W (Addr) eh_frame;
+  unsigned int i;
+  const char *file = info->dlpi_name;
+  char secname[EH_FRAME_LEN];
+  static Elf_W (Shdr) sec_hdrs[100];
+
+  if (strlen(file) == 0)
+      file = "/proc/self/exe";
+
+  Debug (1, "looking for .eh_frame section in %s\n",
+         file);
+
+  fd = open(file, O_RDONLY);
+
+  if (fd == -1)
+    return 0;
+
+  if (read (fd, &ehdr, sizeof (Elf_W (Ehdr))) != sizeof (Elf_W (Ehdr)))
+    goto file_error;
+
+  if (ehdr.e_shnum > sizeof(sec_hdrs) / sizeof(Elf_W (Shdr)))
+    {
+      Debug (4, "too many sections (%d > %d)\n", (int) ehdr.e_shnum, (int) (sizeof(sec_hdrs) / sizeof(Elf_W (Shdr))));
+      goto file_error;
+    }
+
+  shstrndx = ehdr.e_shstrndx;
+
+  Debug (4, "opened file '%s'. Section header at offset %d\n",
+         file, (int) ehdr.e_shoff);
+
+  if (lseek (fd, ehdr.e_shoff, SEEK_SET) == (off_t) -1)
+    goto file_error;
+  if (read (fd, sec_hdrs, sizeof (Elf_W (Shdr)) * ehdr.e_shnum) != (ssize_t) sizeof (Elf_W (Shdr)) * ehdr.e_shnum)
+    goto file_error;
+
+  for (i = 1; i < ehdr.e_shnum; i++)
+    {
+      if (sec_hdrs[shstrndx].sh_size - sec_hdrs[i].sh_name < EH_FRAME_LEN)
+        goto file_error;
+      if (lseek (fd, sec_hdrs[shstrndx].sh_offset + sec_hdrs[i].sh_name, SEEK_SET) == (off_t) -1)
+        goto file_error;
+      if (read (fd, secname, EH_FRAME_LEN) < (ssize_t) sizeof(EH_FRAME_LEN))
+        goto file_error;
+
+      if (strncmp (secname, ".eh_frame", EH_FRAME_LEN) == 0)
+        {
+          eh_frame = sec_hdrs[i].sh_addr + info->dlpi_addr;
+          Debug (4, "found .eh_frame at address %lx\n",
+                 eh_frame);
+          break;
+        }
+    }
+
+  close (fd);
+
+  return eh_frame;
+
+/* An error reading image file. Release resources and return error code */
+file_error:
+  close(fd);
+
+  return 0;
+}
+
 /* ptr is a pointer to a dwarf_callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
    for.  */
@@ -538,10 +611,11 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   Elf_W(Addr) load_base, max_load_addr = 0;
   int ret, need_unwind_info = cb_data->need_unwind_info;
   unw_proc_info_t *pi = cb_data->pi;
-  struct dwarf_eh_frame_hdr *hdr;
+  struct dwarf_eh_frame_hdr *hdr = NULL;
   unw_accessors_t *a;
   long n;
   int found = 0;
+  struct dwarf_eh_frame_hdr synth_eh_frame_hdr;
 #ifdef CONFIG_DEBUG_FRAME
   unw_word_t start, end;
 #endif /* CONFIG_DEBUG_FRAME*/
@@ -587,6 +661,29 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
 
   if (p_eh_hdr)
     {
+      hdr = (struct dwarf_eh_frame_hdr *) (p_eh_hdr->p_vaddr + load_base);
+    }
+  else
+    {
+      ElfW(Addr) eh_frame;
+      Debug (1, "no .eh_frame_hdr section found\n");
+      eh_frame = dwarf_find_eh_frame_section (info);
+      if (eh_frame)
+        {
+          unsigned char *p = (unsigned char *) &synth_eh_frame_hdr;
+          Debug (1, "using synthetic .eh_frame_hdr section for %s\n",
+                 info->dlpi_name);
+          /* synth_eh_frame_hdr.version */ p[0] = DW_EH_VERSION;
+          /* synth_eh_frame_hdr.eh_frame_ptr_enc */ p[1] = DW_EH_PE_absptr | ((sizeof(ElfW(Addr)) == 4) ? DW_EH_PE_udata4 : DW_EH_PE_udata8);
+          /* synth_eh_frame_hdr.fde_count_enc */  p[2] = DW_EH_PE_omit;
+          /* synth_eh_frame_hdr.table_enc */  p[3] = DW_EH_PE_omit;
+          *(ElfW(Addr) *)(&p[4]) = eh_frame;
+          hdr = &synth_eh_frame_hdr;
+        }
+    }
+
+  if (hdr)
+    {
       if (p_dynamic)
         {
           /* For dynamicly linked executables and shared libraries,
@@ -609,7 +706,6 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
         di->gp = 0;
       pi->gp = di->gp;
 
-      hdr = (struct dwarf_eh_frame_hdr *) (p_eh_hdr->p_vaddr + load_base);
       if (hdr->version != DW_EH_VERSION)
         {
           Debug (1, "table `%s' has unexpected version %d\n",
@@ -649,6 +745,9 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
             fde_count = ~0UL;
           if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
             abort ();
+
+          Debug (1, "eh_frame_start = %lx eh_frame_end = %lx\n",
+                 eh_frame_start, eh_frame_end);
 
           /* XXX we know how to build a local binary search table for
              .debug_frame, so we could do that here too.  */
