@@ -58,6 +58,7 @@ SET(libunwind_la_SOURCES_generic
     mi/Gget_fpreg.c mi/Gset_fpreg.c
     mi/Gset_caching_policy.c
     mi/Gset_cache_size.c
+    mi/Gset_iterate_phdr_function.c
 )
 
 SET(libunwind_la_SOURCES_os_linux
@@ -141,6 +142,7 @@ SET(libunwind_la_SOURCES_local_nounwind
     mi/Lget_fpreg.c mi/Lset_fpreg.c
     mi/Lset_caching_policy.c
     mi/Lset_cache_size.c
+    mi/Lset_iterate_phdr_function.c
 )
 
 SET(libunwind_la_SOURCES_local

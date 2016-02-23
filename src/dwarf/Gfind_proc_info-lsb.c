@@ -804,7 +804,7 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.di_debug.format = -1;
 
   SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-  ret = dl_iterate_phdr (dwarf_callback, &cb_data);
+  ret = as->iterate_phdr_function (dwarf_callback, &cb_data);
   SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 
   if (ret > 0)

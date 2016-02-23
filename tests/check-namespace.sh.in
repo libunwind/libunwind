@@ -118,6 +118,7 @@ check_local_unw_abi () {
     match _UL${plat}_is_signal_frame
     match _UL${plat}_local_addr_space
     match _UL${plat}_resume
+    match _UL${plat}_set_iterate_phdr_function
     match _UL${plat}_set_caching_policy
     match _UL${plat}_set_cache_size
     match _UL${plat}_set_reg
@@ -240,6 +241,7 @@ check_generic_unw_abi () {
     match _U${plat}_local_addr_space
     match _U${plat}_regname
     match _U${plat}_resume
+    match _U${plat}_set_iterate_phdr_function
     match _U${plat}_set_caching_policy
     match _U${plat}_set_cache_size
     match _U${plat}_set_fpreg

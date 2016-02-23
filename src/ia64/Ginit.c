@@ -362,6 +362,11 @@ ia64_local_addr_space_init (void)
 #elif defined(__hpux)
   local_addr_space.abi = ABI_HPUX;
 #endif
+#ifndef UNW_REMOTE_ONLY
+# if defined(HAVE_DL_ITERATE_PHDR)
+  local_addr_space.iterate_phdr_function = dl_iterate_phdr;
+# endif
+#endif
   local_addr_space.caching_policy = UNWI_DEFAULT_CACHING_POLICY;
   local_addr_space.acc.find_proc_info = tdep_find_proc_info;
   local_addr_space.acc.put_unwind_info = put_unwind_info;
