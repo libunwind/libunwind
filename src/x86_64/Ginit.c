@@ -30,6 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <config.h>
 #endif
 
+#include <errno.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
@@ -81,7 +82,21 @@ static int msync_validate (void *addr, size_t len)
 static int mincore_validate (void *addr, size_t len)
 {
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
-  return mincore (addr, len, mvec);
+  size_t i;
+
+  /* mincore could fail with EAGAIN but we conservatively return -1
+     instead of looping. */
+  if (mincore (addr, len, mvec) != 0)
+    {
+      return -1;
+    }
+
+  for (i = 0; i < (len + PAGE_SIZE - 1) / PAGE_SIZE; i++)
+    {
+      if (!(mvec[i] & 1)) return -1;
+    }
+
+  return 0;
 }
 #endif
 
@@ -94,7 +109,12 @@ tdep_init_mem_validate (void)
 {
 #ifdef HAVE_MINCORE
   unsigned char present = 1;
-  if (mincore (&present, 1, &present) == 0)
+  unw_word_t addr = PAGE_START((unw_word_t)&present);
+  unsigned char mvec[1];
+  int ret;
+  while ((ret = mincore ((void*)addr, PAGE_SIZE, mvec)) == -1 &&
+         errno == EAGAIN) {}
+  if (ret == 0 && (mvec[0] & 1))
     {
       Debug(1, "using mincore to validate memory\n");
       mem_validate_func = mincore_validate;
