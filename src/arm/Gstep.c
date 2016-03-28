@@ -268,5 +268,5 @@ unw_step (unw_cursor_t *cursor)
             }
         }
     }
-  return ret == -UNW_ENOINFO ? 0 : 1;
+  return ret == -UNW_ENOINFO ? 0 : ret;
 }
