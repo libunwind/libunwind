@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf-eh.h"
 #include "dwarf_i.h"
 
+#define to_unw_word(p) ((unw_word_t) (uintptr_t) (p))
+
 int
 dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
                          char *path, unw_word_t segbase, unw_word_t mapoff,
@@ -41,7 +43,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, load_base;
   unw_word_t max_load_addr = 0;
-  unw_word_t start_ip = (unw_word_t) -1;
+  unw_word_t start_ip = to_unw_word (-1);
   unw_word_t end_ip = 0;
   struct dwarf_eh_frame_hdr *hdr;
   unw_proc_info_t pi;
@@ -137,7 +139,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
         }
 
       a = unw_get_accessors (unw_local_addr_space);
-      addr = (unw_word_t) (hdr + 1);
+      addr = to_unw_word (hdr + 1);
 
       /* Fill in a dummy proc_info structure.  We just need to fill in
          enough to ensure that dwarf_read_encoded_pointer() can do it's
@@ -193,13 +195,14 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
       /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
       edi->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
       edi->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
-                                       + (addr - (unw_word_t) edi->ei.image
+                                       + (addr - to_unw_word (edi->ei.image)
                                           - peh_hdr->p_offset));
 
       /* For the binary-search table in the eh_frame_hdr, data-relative
          means relative to the start of that section... */
       edi->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
-                                    + ((unw_word_t) hdr - (unw_word_t) edi->ei.image
+                                    + (to_unw_word (hdr) -
+                                       to_unw_word (edi->ei.image)
                                        - peh_hdr->p_offset));
       found = 1;
     }
@@ -210,7 +213,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
       edi->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
       edi->di_arm.start_ip = start_ip;
       edi->di_arm.end_ip = end_ip;
-      edi->di_arm.u.rti.name_ptr = (unw_word_t) path;
+      edi->di_arm.u.rti.name_ptr = to_unw_word (path);
       edi->di_arm.u.rti.table_data = load_base + parm_exidx->p_vaddr;
       edi->di_arm.u.rti.table_len = parm_exidx->p_memsz;
       found = 1;
