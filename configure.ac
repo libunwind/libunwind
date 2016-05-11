@@ -129,6 +129,10 @@ AC_ARG_ENABLE(documentation,
 	AS_HELP_STRING([--disable-documentation],[Disable generating the man pages]),,
 	[enable_documentation=yes])
 
+AC_ARG_ENABLE(tests,
+ AS_HELP_STRING([--disable-tests],[Disable tests build]),,
+ [enable_tests=yes])
+
 AC_MSG_CHECKING([if we should build libunwind-setjmp])
 AC_MSG_RESULT([$enable_setjmp])
 
@@ -396,8 +400,13 @@ if test "x$enable_documentation" = "xyes"; then
   AC_CONFIG_FILES(doc/Makefile doc/common.tex)
 fi
 
-AC_CONFIG_FILES(Makefile src/Makefile tests/Makefile tests/check-namespace.sh
-		include/libunwind-common.h
+AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
+if test "x$enable_tests" = "xyes"; then
+  AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
+fi
+
+AC_CONFIG_FILES(Makefile src/Makefile
+                include/libunwind-common.h
                 include/libunwind.h include/tdep/libunwind_i.h)
 AC_CONFIG_FILES(src/unwind/libunwind.pc src/coredump/libunwind-coredump.pc
                 src/ptrace/libunwind-ptrace.pc src/setjmp/libunwind-setjmp.pc
