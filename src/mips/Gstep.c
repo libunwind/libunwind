@@ -30,7 +30,7 @@ PROTECTED int
 unw_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t sc_addr, sp, sp_addr = c->dwarf.cfa;
+  unw_word_t sc_addr, sp_addr = c->dwarf.cfa;
   unw_word_t ra, fp;
   int ret;
 
