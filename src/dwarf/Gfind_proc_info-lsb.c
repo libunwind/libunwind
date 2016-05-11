@@ -246,7 +246,9 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
   int pid = getpid ();
   unsigned long segbase, mapoff, hi;
 
-  maps_init (&mi, pid);
+  if (maps_init (&mi, pid) != 0)
+    return 1;
+
   while (maps_next (&mi, &segbase, &hi, &mapoff))
     if (ip >= segbase && ip < hi)
       {
