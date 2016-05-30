@@ -67,7 +67,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "_UCD_internal.h"
 
 #define NOTE_DATA(_hdr) STRUCT_MEMBER_P((_hdr), sizeof (Elf32_Nhdr) + UNW_ALIGN((_hdr)->n_namesz, 4))
-#define NOTE_SIZE(_hdr) (sizeof (Elf32_Nhdr) + UNW_ALIGN((_hdr)->n_namesz, 4) + (_hdr)->n_descsz)
+#define NOTE_SIZE(_hdr) (sizeof (Elf32_Nhdr) + UNW_ALIGN((_hdr)->n_namesz, 4) + UNW_ALIGN((_hdr)->n_descsz, 4))
 #define NOTE_NEXT(_hdr) STRUCT_MEMBER_P((_hdr), NOTE_SIZE(_hdr))
 #define NOTE_FITS_IN(_hdr, _size) ((_size) >= sizeof (Elf32_Nhdr) && (_size) >= NOTE_SIZE (_hdr))
 #define NOTE_FITS(_hdr, _end) NOTE_FITS_IN((_hdr), (unsigned long)((char *)(_end) - (char *)(_hdr)))
