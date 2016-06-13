@@ -7,24 +7,27 @@ EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
 
 MAINTAINERCLEANFILES = Makefile.in
 
+noinst_PROGRAMS_arch =
+noinst_PROGRAMS_cdep =
 noinst_PROGRAMS_common =
+check_PROGRAMS_arch =
+check_PROGRAMS_cdep =
 check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
+check_SCRIPTS_arch =
+check_SCRIPTS_cdep =
 check_SCRIPTS_common =	run-check-namespace
 
 if REMOTE_ONLY
- check_SCRIPTS_cdep =
- check_PROGRAMS_cdep =
- noinst_PROGRAMS_cdep = $(noinst_PROGRAMS_common)
 
 perf:
 
 else
  LIBUNWIND_local = $(top_builddir)/src/libunwind.la
 if ARCH_IA64
- noinst_PROGRAMS_arch = ia64-test-dyn1
- check_SCRIPTS_arch =	run-ia64-test-dyn1
- check_PROGRAMS_arch =	Gia64-test-stack Lia64-test-stack		\
+ noinst_PROGRAMS_arch += ia64-test-dyn1
+ check_SCRIPTS_arch +=	run-ia64-test-dyn1
+ check_PROGRAMS_arch +=	Gia64-test-stack Lia64-test-stack		\
 			Gia64-test-nat Lia64-test-nat			\
 			Gia64-test-rbs Lia64-test-rbs			\
 			Gia64-test-readonly Lia64-test-readonly		\
@@ -32,12 +35,11 @@ if ARCH_IA64
 else #!ARCH_IA64
 if ARCH_PPC64
 if USE_ALTIVEC
- noinst_PROGRAMS_arch = ppc64-test-altivec
+ noinst_PROGRAMS_arch += ppc64-test-altivec
 endif #USE_ALTIVEC
 endif #ARCH_PPC64
 endif #!ARCH_IA64
- check_SCRIPTS_cdep =
- check_PROGRAMS_cdep =	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
+ check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-resume-sig Ltest-resume-sig		 \
@@ -46,7 +48,7 @@ endif #!ARCH_IA64
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem Ltest-varargs Ltest-nomalloc	 \
 			Ltest-nocalloc Lrs-race
- noinst_PROGRAMS_cdep = forker Gperf-simple Lperf-simple \
+ noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
 if BUILD_PTRACE
