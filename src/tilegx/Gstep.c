@@ -36,7 +36,7 @@ unw_step (unw_cursor_t *cursor)
          c, c->dwarf.ip, c->dwarf.cfa);
 
   /* Special handling the singal frame. */
-  if (unw_is_signal_frame (cursor))
+  if (unw_is_signal_frame (cursor) > 0)
     return unw_handle_signal_frame (cursor);
 
   /* Try DWARF-based unwinding... */

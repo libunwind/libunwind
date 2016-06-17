@@ -74,7 +74,7 @@ unw_step (unw_cursor_t * cursor)
 
   if (unlikely (ret < 0))
     {
-      if (likely (!unw_is_signal_frame (cursor)))
+      if (likely (unw_is_signal_frame (cursor) <= 0))
         {
           /* DWARF unwinding failed.  As of 09/26/2006, gcc in 64-bit mode
              produces the mandatory level of traceback record in the code, but

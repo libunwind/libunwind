@@ -175,7 +175,7 @@ unw_step (unw_cursor_t *cursor)
   Debug (1, "(cursor=%p)\n", c);
 
   /* Check if this is a signal frame. */
-  if (unw_is_signal_frame (cursor))
+  if (unw_is_signal_frame (cursor) > 0)
      return unw_handle_signal_frame (cursor);
 
 #ifdef CONFIG_DEBUG_FRAME

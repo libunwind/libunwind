@@ -114,7 +114,7 @@ unw_step (unw_cursor_t *cursor)
 
       Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
 
-      if (unw_is_signal_frame (cursor))
+      if (unw_is_signal_frame (cursor) > 0)
         {
           ret = unw_handle_signal_frame(cursor);
           if (ret < 0)
