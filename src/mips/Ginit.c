@@ -59,7 +59,7 @@ tdep_uc_addr (ucontext_t *uc, int reg)
 {
   char *addr = uc_addr (uc, reg);
 
-  if (reg >= UNW_MIPS_R0 && reg <= UNW_MIPS_R31
+  if (((reg >= UNW_MIPS_R0 && reg <= UNW_MIPS_R31) || reg == UNW_MIPS_PC)
       && tdep_big_endian (unw_local_addr_space)
       && unw_local_addr_space->abi == UNW_MIPS_ABI_O32)
     addr += 4;
