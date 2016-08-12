@@ -30,7 +30,7 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
-#include <ucontext.h>
+#include <sys/ucontext.h>
 
 #ifdef mips
 # undef mips
@@ -103,7 +103,7 @@ typedef enum
        previous frame.  */
     UNW_MIPS_CFA,
 
-    UNW_TDEP_LAST_REG = UNW_MIPS_R31,
+    UNW_TDEP_LAST_REG = UNW_MIPS_PC,
 
     UNW_TDEP_IP = UNW_MIPS_R31,
     UNW_TDEP_SP = UNW_MIPS_R29,
