@@ -238,7 +238,7 @@ HIDDEN int
 dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr, unw_word_t len,
                  unw_word_t *valp, int *is_register)
 {
-  unw_word_t operand1 = 0, operand2 = 0, tmp1, tmp2, tmp3, end_addr;
+  unw_word_t operand1 = 0, operand2 = 0, tmp1, tmp2 = 0, tmp3, end_addr;
   uint8_t opcode, operands_signature, u8;
   unw_addr_space_t as;
   unw_accessors_t *a;

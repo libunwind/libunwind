@@ -130,7 +130,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
         case DW_CFA_MIPS_advance_loc8:
 #ifdef UNW_TARGET_MIPS
           {
-            uint64_t u64;
+            uint64_t u64 = 0;
 
             if ((ret = dwarf_readu64 (as, a, addr, &u64, arg)) < 0)
               goto fail;

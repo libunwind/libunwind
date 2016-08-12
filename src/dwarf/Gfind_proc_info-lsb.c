@@ -857,7 +857,7 @@ remote_lookup (unw_addr_space_t as,
   unw_accessors_t *a = unw_get_accessors (as);
   unsigned long lo, hi, mid;
   unw_word_t e_addr = 0;
-  int32_t start;
+  int32_t start = 0;
   int ret;
 
   /* do a binary search for right entry: */

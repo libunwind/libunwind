@@ -240,7 +240,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
 
   if (u32val != 0xffffffff)
     {
-      int32_t cie_offset;
+      int32_t cie_offset = 0;
 
       /* In some configurations, an FDE with a 0 length indicates the
          end of the FDE-table.  */
@@ -270,7 +270,7 @@ dwarf_extract_proc_info_from_fde (unw_addr_space_t as, unw_accessors_t *a,
     }
   else
     {
-      int64_t cie_offset;
+      int64_t cie_offset = 0;
 
       /* the FDE is in the 64-bit DWARF format */
 
