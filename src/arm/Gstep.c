@@ -45,8 +45,14 @@ arm_exidx_step (struct cursor *c)
   /* mark PC unsaved */
   c->dwarf.loc[UNW_ARM_R15] = DWARF_NULL_LOC;
 
-  if ((ret = tdep_find_proc_info (&c->dwarf, c->dwarf.ip, 1)) < 0)
-     return ret;
+  /* check dynamic info first --- it overrides everything else */
+  ret = unwi_find_dynamic_proc_info (c->dwarf.as, c->dwarf.ip, &c->dwarf.pi, 1,
+                                     c->dwarf.as_arg);
+  if (ret == -UNW_ENOINFO)
+    {
+      if ((ret = tdep_find_proc_info (&c->dwarf, c->dwarf.ip, 1)) < 0)
+        return ret;
+    }
 
   if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
