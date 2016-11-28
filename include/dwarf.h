@@ -387,6 +387,7 @@ struct dwarf_callback_data
 #define dwarf_put_unwind_info           UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_put_unwind_info           UNW_OBJ (dwarf_put_unwind_info)
 #define dwarf_eval_expr                 UNW_OBJ (dwarf_eval_expr)
+#define dwarf_stack_aligned             UNW_OBJ (dwarf_stack_aligned)
 #define dwarf_extract_proc_info_from_fde \
                 UNW_OBJ (dwarf_extract_proc_info_from_fde)
 #define dwarf_find_save_locs            UNW_OBJ (dwarf_find_save_locs)
@@ -419,6 +420,10 @@ extern void dwarf_put_unwind_info (unw_addr_space_t as,
 extern int dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t *addr,
                             unw_word_t len, unw_word_t *valp,
                             int *is_register);
+extern int
+dwarf_stack_aligned(struct dwarf_cursor *c, unw_word_t cfa_addr,
+                    unw_word_t rbp_addr, unw_word_t *offset);
+
 extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
                                              unw_accessors_t *a,
                                              unw_word_t *fde_addr,

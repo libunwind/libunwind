@@ -506,6 +506,24 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       d->use_prev_instr = 0;
       break;
 
+    case UNW_X86_64_FRAME_ALIGNED:
+      /* Address of RIP was pushed on the stack via a simple
+       * def_cfa_expr - result stack offset stored in cfa_reg_offset */
+      cfa = (f->cfa_reg_rsp ? rsp : rbp) + f->cfa_reg_offset;
+      ACCESS_MEM_FAST(ret, c->validate, d, cfa, cfa);
+      if (likely(ret >= 0))
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa - 8, rip);
+      if (likely(ret >= 0))
+        ACCESS_MEM_FAST(ret, c->validate, d, rbp, rbp);
+
+      /* Don't bother reading RSP from DWARF, CFA becomes new RSP. */
+      rsp = cfa;
+
+      /* Next frame needs to back up for unwind info lookup. */
+      d->use_prev_instr = 1;
+
+      break;
+
     default:
       /* We cannot trace through this frame, give up and tell the
          caller we had to stop.  Data collected so far may still be

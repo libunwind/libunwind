@@ -41,6 +41,23 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
          rs->reg[RBP].where, rs->reg[RBP].val, DWARF_GET_LOC(d->loc[RBP]),
          rs->reg[RSP].where, rs->reg[RSP].val, DWARF_GET_LOC(d->loc[RSP]));
 
+  if (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_EXPR &&
+    rs->reg[RBP].where == DWARF_WHERE_EXPR) {
+    /* Check for GCC generated alignment frame for rsp.  A simple
+     * def_cfa_expr that loads a constant offset from rbp, where the
+     * addres of the rip was pushed on the stack */
+    unw_word_t cfa_addr = rs->reg[DWARF_CFA_REG_COLUMN].val;
+    unw_word_t rbp_addr = rs->reg[RBP].val;
+    unw_word_t cfa_offset;
+
+    int ret = dwarf_stack_aligned(d, cfa_addr, rbp_addr, &cfa_offset);
+    if (ret) {
+      f->frame_type = UNW_X86_64_FRAME_ALIGNED;
+      f->cfa_reg_offset = cfa_offset;
+      f->cfa_reg_rsp = 0;
+    }
+  }
+
   /* A standard frame is defined as:
       - CFA is register-relative offset off RBP or RSP;
       - Return address is saved at CFA-8;
@@ -50,7 +67,7 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
       && (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_REG)
       && (rs->reg[DWARF_CFA_REG_COLUMN].val == RBP
           || rs->reg[DWARF_CFA_REG_COLUMN].val == RSP)
-      && labs((long) rs->reg[DWARF_CFA_OFF_COLUMN].val) < (1 << 29)
+      && labs((long) rs->reg[DWARF_CFA_OFF_COLUMN].val) < (1 << 28)
       && DWARF_GET_LOC(d->loc[d->ret_addr_column]) == d->cfa-8
       && (rs->reg[RBP].where == DWARF_WHERE_UNDEF
           || rs->reg[RBP].where == DWARF_WHERE_SAME
@@ -90,6 +107,10 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
 #endif
 
     Debug (4, " sigreturn frame\n");
+  }
+
+  else if (f->frame_type == UNW_X86_64_FRAME_ALIGNED) {
+    Debug (4, " aligned frame, offset %li\n", f->cfa_reg_offset);
   }
 
   /* PLT and guessed RBP-walked frames are handled in unw_step(). */
