@@ -74,7 +74,7 @@ handler (int sig)
 #endif
 {
   unw_word_t ip;
-  sigset_t mask, oldmask;
+  sigset_t mask;
   unw_context_t uc;
   unw_cursor_t c;
   char foo;
@@ -95,17 +95,13 @@ handler (int sig)
 
       sigemptyset (&mask);
       sigaddset (&mask, SIGUSR2);
-      sigprocmask (SIG_BLOCK, &mask, &oldmask);
+      sigprocmask (SIG_BLOCK, &mask, NULL);
       kill (getpid (), SIGUSR2);	/* pend SIGUSR2 */
 
       signal (SIGUSR1, SIG_IGN);
 
       if ((ret = unw_getcontext (&uc)) < 0)
 	panic ("unw_getcontext() failed: ret=%d\n", ret);
-#if UNW_TARGET_X86_64
-      /* unw_getcontext() doesn't save signal mask to avoid a syscall */
-      uc.uc_sigmask = oldmask; 
-#endif
       if ((ret = unw_init_local (&c, &uc)) < 0)
 	panic ("unw_init_local() failed: ret=%d\n", ret);
 

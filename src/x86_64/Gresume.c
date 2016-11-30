@@ -44,7 +44,7 @@ x86_64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
      at least.  */
   dwarf_make_proc_info (&c->dwarf);
 
-  if (unlikely (c->sigcontext_format != X86_64_SCF_NONE))
+  if (unlikely (c->sigcontext_addr != X86_64_SCF_NONE))
     {
       x86_64_sigreturn(cursor);
       abort();

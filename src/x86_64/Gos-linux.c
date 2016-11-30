@@ -69,8 +69,6 @@ tdep_reuse_frame (struct dwarf_cursor *dw, struct dwarf_reg_state *rs)
     c->frame_info.cfa_reg_offset = 0;
     c->sigcontext_addr = dw->cfa;
   }
-  else
-    c->sigcontext_addr = 0;
 
   Debug(5, "reuse frame ip=0x%lx cfa=0x%lx format=%d addr=0x%lx offset=%+d\n",
         dw->ip, dw->cfa, c->sigcontext_format, c->sigcontext_addr,
@@ -140,6 +138,10 @@ x86_64_sigreturn (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+  struct mcontext_t *sc_mcontext = &((struct ucontext*)sc)->uc_mcontext;
+  /* Copy in saved uc - all preserved regs are at the start of sigcontext */
+  memcpy(sc_mcontext, &c->uc->uc_mcontext,
+         DWARF_NUM_PRESERVED_REGS * sizeof(unw_word_t));
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
              (unsigned long long) c->dwarf.ip, sc);
