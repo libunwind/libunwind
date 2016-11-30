@@ -42,7 +42,6 @@ endif #!ARCH_IA64
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
-			Gtest-dyn1 Ltest-dyn1				 \
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem Ltest-varargs Ltest-nomalloc	 \
@@ -96,8 +95,8 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
 XFAIL_TESTS =
 
-if !ARCH_IA64
-XFAIL_TESTS += Gtest-dyn1 Ltest-dyn1
+if ARCH_IA64
+ check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
 endif
 
 # Use if arch defines but does not support PTRACE_SINGLESTEP
