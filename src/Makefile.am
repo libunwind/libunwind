@@ -109,7 +109,8 @@ libunwind_la_SOURCES_generic =						\
 	mi/Gput_dynamic_unwind_info.c mi/Gdestroy_addr_space.c		\
 	mi/Gget_reg.c mi/Gset_reg.c					\
 	mi/Gget_fpreg.c mi/Gset_fpreg.c					\
-	mi/Gset_caching_policy.c
+	mi/Gset_caching_policy.c					\
+	mi/Gset_cache_size.c
 
 if SUPPORT_CXX_EXCEPTIONS
 libunwind_la_SOURCES_local_unwind =					\
@@ -137,7 +138,8 @@ libunwind_la_SOURCES_local_nounwind =					\
 	mi/Lput_dynamic_unwind_info.c mi/Ldestroy_addr_space.c		\
 	mi/Lget_reg.c   mi/Lset_reg.c					\
 	mi/Lget_fpreg.c mi/Lset_fpreg.c					\
-	mi/Lset_caching_policy.c
+	mi/Lset_caching_policy.c					\
+	mi/Lset_cache_size.c
 
 libunwind_la_SOURCES_local =						\
 	$(libunwind_la_SOURCES_local_nounwind)				\

@@ -103,6 +103,7 @@ check_local_unw_abi () {
     match _UL${plat}_local_addr_space
     match _UL${plat}_resume
     match _UL${plat}_set_caching_policy
+    match _UL${plat}_set_cache_size
     match _UL${plat}_set_reg
     match _UL${plat}_set_fpreg
     match _UL${plat}_step
@@ -199,6 +200,7 @@ check_generic_unw_abi () {
     match _U${plat}_regname
     match _U${plat}_resume
     match _U${plat}_set_caching_policy
+    match _U${plat}_set_cache_size
     match _U${plat}_set_fpreg
     match _U${plat}_set_reg
     match _U${plat}_step

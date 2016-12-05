@@ -1,10 +1,9 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2004 Hewlett-Packard Co
-	Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2014
+        Contributed by Milian Wolff <address@hidden>
+                   and Dave Watson <dade.watson@gmail.com>
 
 This file is part of libunwind.
-
-Copyright (c) 2003 Hewlett-Packard Co.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
@@ -25,50 +24,41 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include <stdio.h>
+#include "libunwind_i.h"
 
-#include <libunwind.h>
-
-extern int verbose;
-
-static void *funcs[] =
-  {
-    (void *) &unw_get_reg,
-    (void *) &unw_get_fpreg,
-    (void *) &unw_set_reg,
-    (void *) &unw_set_fpreg,
-    (void *) &unw_resume,
-    (void *) &unw_create_addr_space,
-    (void *) &unw_destroy_addr_space,
-    (void *) &unw_get_accessors,
-    (void *) &unw_flush_cache,
-    (void *) &unw_set_caching_policy,
-    (void *) &unw_set_cache_size,
-    (void *) &unw_regname,
-    (void *) &unw_get_proc_info,
-    (void *) &unw_get_save_loc,
-    (void *) &unw_is_signal_frame,
-    (void *) &unw_get_proc_name
-  };
-
-int
-test_generic (void)
+PROTECTED int
+unw_set_cache_size (unw_addr_space_t as, size_t size, int flag)
 {
-  if (verbose)
-    printf (__FILE__": funcs[0]=%p\n", funcs[0]);
+  size_t power = 1;
+  unsigned short log_size = 0;
 
-#ifndef UNW_REMOTE_ONLY
-  {
-    unw_context_t uc;
-    unw_cursor_t c;
+  if (!tdep_init_done)
+    tdep_init ();
 
-    unw_getcontext (&uc);
-    unw_init_local (&c, &uc);
-    unw_init_remote (&c, unw_local_addr_space, &uc);
+  if (flag != 0)
+    return -1;
 
-    return unw_step (&c);
-  }
-#else
+  /* Round up to next power of two, slowly but portably */
+  while(power < size)
+    {
+      power *= 2;
+      log_size++;
+      /* Largest size currently supported by rs_cache */
+      if (log_size >= 15)
+        break;
+    }
+
+  if (log_size == as->global_cache.log_size)
+    return 0;   /* no change */
+
+  as->global_cache.log_size = log_size;
+
+  /* Ensure caches are empty (and initialized).  */
+  unw_flush_cache (as, 0, 0);
+#ifdef __ia64__
   return 0;
+#else
+  /* Synchronously purge cache, to ensure memory is allocated */
+  return dwarf_flush_rs_cache(&as->global_cache);
 #endif
 }

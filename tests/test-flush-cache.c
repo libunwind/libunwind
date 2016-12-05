@@ -46,6 +46,7 @@ f257 (void)
     for (i = 0; i < n; ++i)
       printf ("[%d] ip=%p\n", i, buffer[i]);
 
+  unw_set_cache_size (unw_local_addr_space, 1023, 0);
   unw_flush_cache (unw_local_addr_space, 0, 0);
 
   if (verbose)

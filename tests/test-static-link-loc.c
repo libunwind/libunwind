@@ -61,6 +61,7 @@ static void *funcs[] =
     (void *) &unw_get_accessors,
     (void *) &unw_flush_cache,
     (void *) &unw_set_caching_policy,
+    (void *) &unw_set_cache_size,
     (void *) &unw_regname,
     (void *) &unw_get_proc_info,
     (void *) &unw_get_save_loc,

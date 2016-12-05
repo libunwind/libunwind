@@ -225,6 +225,7 @@ unw_save_loc_t;
 #define unw_handle_signal_frame	UNW_OBJ(handle_signal_frame)
 #define unw_get_proc_name	UNW_OBJ(get_proc_name)
 #define unw_set_caching_policy	UNW_OBJ(set_caching_policy)
+#define unw_set_cache_size	UNW_OBJ(set_cache_size)
 #define unw_regname		UNW_ARCH_OBJ(regname)
 #define unw_flush_cache		UNW_ARCH_OBJ(flush_cache)
 #define unw_strerror		UNW_ARCH_OBJ(strerror)
@@ -234,6 +235,7 @@ extern void unw_destroy_addr_space (unw_addr_space_t);
 extern unw_accessors_t *unw_get_accessors (unw_addr_space_t);
 extern void unw_flush_cache (unw_addr_space_t, unw_word_t, unw_word_t);
 extern int unw_set_caching_policy (unw_addr_space_t, unw_caching_policy_t);
+extern int unw_set_cache_size (unw_addr_space_t, size_t, int);
 extern const char *unw_regname (unw_regnum_t);
 
 extern int unw_init_local (unw_cursor_t *, unw_context_t *);

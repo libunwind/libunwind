@@ -23,12 +23,16 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include <stddef.h>
 #include "dwarf_i.h"
 #include "libunwind_i.h"
+#include <stddef.h>
+#include <limits.h>
 
 #define alloc_reg_state()       (mempool_alloc (&dwarf_reg_state_pool))
 #define free_reg_state(rs)      (mempool_free (&dwarf_reg_state_pool, rs))
+
+#define DWARF_UNW_CACHE_SIZE(log_size)   (1 << log_size)
+#define DWARF_UNW_HASH_SIZE(log_size)    (1 << (log_size + 1))
 
 static inline int
 read_regnum (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
@@ -508,15 +512,37 @@ parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
   return 0;
 }
 
-static inline void
-flush_rs_cache (struct dwarf_rs_cache *cache)
+HIDDEN int
+dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
 {
   int i;
 
-  cache->lru_head = DWARF_UNW_CACHE_SIZE - 1;
+  if (cache->log_size == DWARF_DEFAULT_LOG_UNW_CACHE_SIZE
+      || !cache->hash) {
+    cache->hash = cache->default_hash;
+    cache->buckets = cache->default_buckets;
+    cache->log_size = DWARF_DEFAULT_LOG_UNW_CACHE_SIZE;
+  } else {
+    if (cache->hash && cache->hash != cache->default_hash)
+      munmap(cache->hash, DWARF_UNW_HASH_SIZE(cache->prev_log_size));
+    if (cache->buckets && cache->buckets != cache->default_buckets)
+      munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size));
+    GET_MEMORY(cache->hash, DWARF_UNW_HASH_SIZE(cache->log_size)
+                             * sizeof (cache->hash[0]));
+    GET_MEMORY(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->log_size)
+                                * sizeof (cache->buckets[0]));
+    if (!cache->hash || !cache->buckets)
+      {
+        Debug (1, "Unable to allocate cache memory");
+        return -UNW_ENOMEM;
+      }
+    cache->prev_log_size = cache->log_size;
+  }
+
+  cache->lru_head = DWARF_UNW_CACHE_SIZE(cache->log_size) - 1;
   cache->lru_tail = 0;
 
-  for (i = 0; i < DWARF_UNW_CACHE_SIZE; ++i)
+  for (i = 0; i < DWARF_UNW_CACHE_SIZE(cache->log_size); ++i)
     {
       if (i > 0)
         cache->buckets[i].lru_chain = (i - 1);
@@ -524,8 +550,10 @@ flush_rs_cache (struct dwarf_rs_cache *cache)
       cache->buckets[i].ip = 0;
       cache->buckets[i].valid = 0;
     }
-  for (i = 0; i<DWARF_UNW_HASH_SIZE; ++i)
+  for (i = 0; i< DWARF_UNW_HASH_SIZE(cache->log_size); ++i)
     cache->hash[i] = -1;
+
+  return 0;
 }
 
 static inline struct dwarf_rs_cache *
@@ -543,9 +571,11 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
       lock_acquire (&cache->lock, *saved_maskp);
     }
 
-  if (atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
+  if ((atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
+       || !cache->hash)
     {
-      flush_rs_cache (cache);
+      if (dwarf_flush_rs_cache (cache) < 0)
+        return NULL;
       cache->generation = as->cache_generation;
     }
 
@@ -564,12 +594,12 @@ put_rs_cache (unw_addr_space_t as, struct dwarf_rs_cache *cache,
 }
 
 static inline unw_hash_index_t CONST_ATTR
-hash (unw_word_t ip)
+hash (unw_word_t ip, unsigned short log_size)
 {
   /* based on (sqrt(5)/2-1)*2^64 */
 # define magic  ((unw_word_t) 0x9e3779b97f4a7c16ULL)
 
-  return ip * magic >> ((sizeof(unw_word_t) * 8) - DWARF_LOG_UNW_HASH_SIZE);
+  return ip * magic >> ((sizeof(unw_word_t) * 8) - (log_size + 1));
 }
 
 static inline long
@@ -592,8 +622,8 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
   if (cache_match (rs, ip))
     return rs;
 
-  index = cache->hash[hash (ip)];
-  if (index >= DWARF_UNW_CACHE_SIZE)
+  index = cache->hash[hash (ip, cache->log_size)];
+  if (index >= DWARF_UNW_CACHE_SIZE(cache->log_size))
     return NULL;
 
   rs = cache->buckets + index;
@@ -606,7 +636,7 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
             (rs - cache->buckets);
           return rs;
         }
-      if (rs->coll_chain >= DWARF_UNW_HASH_SIZE)
+      if (rs->coll_chain >= DWARF_UNW_HASH_SIZE(cache->log_size))
         return NULL;
       rs = cache->buckets + rs->coll_chain;
     }
@@ -630,7 +660,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   /* remove the old rs from the hash table (if it's there): */
   if (rs->ip)
     {
-      index = hash (rs->ip);
+      index = hash (rs->ip, cache->log_size);
       tmp = cache->buckets + cache->hash[index];
       prev = NULL;
       while (1)
@@ -645,7 +675,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
             }
           else
             prev = tmp;
-          if (tmp->coll_chain >= DWARF_UNW_CACHE_SIZE)
+          if (tmp->coll_chain >= DWARF_UNW_CACHE_SIZE(cache->log_size))
             /* old rs wasn't in the hash-table */
             break;
           tmp = cache->buckets + tmp->coll_chain;
@@ -653,7 +683,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
     }
 
   /* enter new rs in the hash table */
-  index = hash (c->ip);
+  index = hash (c->ip, cache->log_size);
   rs->coll_chain = cache->hash[index];
   cache->hash[index] = rs - cache->buckets;
 

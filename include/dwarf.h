@@ -325,11 +325,11 @@ typedef struct dwarf_cursor
   }
 dwarf_cursor_t;
 
-#define DWARF_LOG_UNW_CACHE_SIZE        7
-#define DWARF_UNW_CACHE_SIZE    (1 << DWARF_LOG_UNW_CACHE_SIZE)
+#define DWARF_DEFAULT_LOG_UNW_CACHE_SIZE        7
+#define DWARF_DEFAULT_UNW_CACHE_SIZE    (1 << DWARF_DEFAULT_LOG_UNW_CACHE_SIZE)
 
-#define DWARF_LOG_UNW_HASH_SIZE (DWARF_LOG_UNW_CACHE_SIZE + 1)
-#define DWARF_UNW_HASH_SIZE     (1 << DWARF_LOG_UNW_HASH_SIZE)
+#define DWARF_DEFAULT_LOG_UNW_HASH_SIZE (DWARF_DEFAULT_LOG_UNW_CACHE_SIZE + 1)
+#define DWARF_DEFAULT_UNW_HASH_SIZE     (1 << DWARF_DEFAULT_LOG_UNW_HASH_SIZE)
 
 typedef unsigned char unw_hash_index_t;
 
@@ -339,13 +339,20 @@ struct dwarf_rs_cache
     unsigned short lru_head;    /* index of lead-recently used rs */
     unsigned short lru_tail;    /* index of most-recently used rs */
 
+    unsigned short log_size;
+    unsigned short prev_log_size;
+
     /* hash table that maps instruction pointer to rs index: */
-    unsigned short hash[DWARF_UNW_HASH_SIZE];
+    unsigned short *hash;
 
     uint32_t generation;        /* generation number */
 
     /* rs cache: */
-    dwarf_reg_state_t buckets[DWARF_UNW_CACHE_SIZE];
+    dwarf_reg_state_t *buckets;
+
+    /* default memory, loaded in BSS segment */
+    unsigned short default_hash[DWARF_DEFAULT_UNW_HASH_SIZE];
+    dwarf_reg_state_t default_buckets[DWARF_DEFAULT_UNW_CACHE_SIZE];
   };
 
 /* A list of descriptors for loaded .debug_frame sections.  */
@@ -395,6 +402,7 @@ struct dwarf_callback_data
 #define dwarf_make_proc_info            UNW_OBJ (dwarf_make_proc_info)
 #define dwarf_read_encoded_pointer      UNW_OBJ (dwarf_read_encoded_pointer)
 #define dwarf_step                      UNW_OBJ (dwarf_step)
+#define dwarf_flush_rs_cache            UNW_OBJ (dwarf_flush_rs_cache)
 
 extern int dwarf_init (void);
 #ifndef UNW_REMOTE_ONLY
@@ -443,5 +451,6 @@ extern int dwarf_read_encoded_pointer (unw_addr_space_t as,
                                        const unw_proc_info_t *pi,
                                        unw_word_t *valp, void *arg);
 extern int dwarf_step (struct dwarf_cursor *c);
+extern int dwarf_flush_rs_cache (struct dwarf_rs_cache *cache);
 
 #endif /* dwarf_h */
