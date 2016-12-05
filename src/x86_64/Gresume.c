@@ -95,6 +95,15 @@ establish_machine_state (struct cursor *c)
             (*access_reg) (as, reg, &val, 1, arg);
         }
     }
+
+  if (c->dwarf.args_size)
+    {
+      if (tdep_access_reg (c, RSP, &val, 0) >= 0)
+        {
+          val += c->dwarf.args_size;
+          (*access_reg) (as, RSP, &val, 1, arg);
+        }
+    }
   return 0;
 }
 

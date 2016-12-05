@@ -925,7 +925,19 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
   if (c->as->caching_policy == UNW_CACHE_NONE
       || get_cached_proc_info (c) < 0)
 #endif
-    /* Lookup it up the slow way... */
-    return fetch_proc_info (c, c->ip, 0);
+  dwarf_state_record_t sr;
+  int ret;
+
+  /* Lookup it up the slow way... */
+  if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
+    return ret;
+  /* Also need to check if current frame contains
+     args_size, and set cursor appropriatly.  Only
+     needed for unw_resume */
+  if ((ret = dwarf_create_state_record (c, &sr)) < 0)
+    return ret;
+  put_unwind_info (c, &c->pi);
+  c->args_size = sr.args_size;
+
   return 0;
 }
