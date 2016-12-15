@@ -314,7 +314,7 @@ main(int argc UNUSED, char **argv)
   while (*argv)
     {
       char *colon;
-      long vaddr = strtol(*argv, &colon, 16);
+      unsigned long vaddr = strtoul(*argv, &colon, 16);
       if (*colon != ':')
         error_msg_and_die("Bad format: '%s'", *argv);
       if (_UCD_add_backing_file_at_vaddr(ui, vaddr, colon + 1) < 0)
