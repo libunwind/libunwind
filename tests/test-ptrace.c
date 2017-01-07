@@ -182,6 +182,11 @@ main (int argc, char **argv)
 
       /* automated test case */
       argv = args;
+
+      /* Unless the args array is 'walked' the child
+         process is unable to access it and dies with a segfault */
+      fprintf(stderr, "Automated test (%s,%s,%s,%s)\n",
+              args[0],args[1],args[2],args[3]);
     }
   else if (argc > 1)
     while (argv[optind][0] == '-')
