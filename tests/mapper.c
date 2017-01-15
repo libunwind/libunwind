@@ -39,6 +39,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if !defined(MAP_ANONYMOUS) && defined(MAP_ANON)
 # define MAP_ANONYMOUS MAP_ANON
 #endif
+#if !defined(MAP_NORESERVE)
+# define MAP_NORESERVE 0
+#endif
 
 int
 main (void)

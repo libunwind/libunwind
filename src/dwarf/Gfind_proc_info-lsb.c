@@ -527,7 +527,7 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
 #define EH_FRAME_LEN /* strlen(".eh_frame") + 1 */ 10
 
-static ElfW(Addr)
+static Elf_W (Addr)
 dwarf_find_eh_frame_section(struct dl_phdr_info *info)
 {
   int fd;
@@ -665,7 +665,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
     }
   else
     {
-      ElfW(Addr) eh_frame;
+      Elf_W (Addr) eh_frame;
       Debug (1, "no .eh_frame_hdr section found\n");
       eh_frame = dwarf_find_eh_frame_section (info);
       if (eh_frame)
@@ -674,10 +674,10 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
           Debug (1, "using synthetic .eh_frame_hdr section for %s\n",
                  info->dlpi_name);
           /* synth_eh_frame_hdr.version */ p[0] = DW_EH_VERSION;
-          /* synth_eh_frame_hdr.eh_frame_ptr_enc */ p[1] = DW_EH_PE_absptr | ((sizeof(ElfW(Addr)) == 4) ? DW_EH_PE_udata4 : DW_EH_PE_udata8);
+          /* synth_eh_frame_hdr.eh_frame_ptr_enc */ p[1] = DW_EH_PE_absptr | ((sizeof(Elf_W (Addr)) == 4) ? DW_EH_PE_udata4 : DW_EH_PE_udata8);
           /* synth_eh_frame_hdr.fde_count_enc */  p[2] = DW_EH_PE_omit;
           /* synth_eh_frame_hdr.table_enc */  p[3] = DW_EH_PE_omit;
-          *(ElfW(Addr) *)(&p[4]) = eh_frame;
+          *(Elf_W (Addr) *)(&p[4]) = eh_frame;
           hdr = &synth_eh_frame_hdr;
         }
     }
