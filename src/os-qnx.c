@@ -105,3 +105,13 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 
   return ret;
 }
+
+#ifndef UNW_REMOTE_ONLY
+
+PROTECTED void
+tdep_get_exe_image_path (char *path)
+{
+  path[0] = 0; /* XXX */
+}
+
+#endif

@@ -538,9 +538,13 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
   const char *file = info->dlpi_name;
   char secname[EH_FRAME_LEN];
   static Elf_W (Shdr) sec_hdrs[100];
+  char exepath[PATH_MAX];
 
   if (strlen(file) == 0)
-      file = "/proc/self/exe";
+    {
+      tdep_get_exe_image_path(exepath);
+      file = exepath;
+    }
 
   Debug (1, "looking for .eh_frame section in %s\n",
          file);

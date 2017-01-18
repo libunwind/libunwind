@@ -212,6 +212,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_find_unwind_table          dwarf_find_unwind_table
 #define tdep_uc_addr                    UNW_ARCH_OBJ(uc_addr)
 #define tdep_get_elf_image              UNW_ARCH_OBJ(get_elf_image)
+#define tdep_get_exe_image_path         UNW_ARCH_OBJ(get_exe_image_path)
 #define tdep_access_reg                 UNW_OBJ(access_reg)
 #define tdep_access_fpreg               UNW_OBJ(access_fpreg)
 #define tdep_fetch_frame(c,ip,n)        do {} while(0)
@@ -253,6 +254,7 @@ extern int tdep_get_elf_image (struct elf_image *ei,
                                unsigned long *segbase,
                                unsigned long *mapoff,
                                char *path, size_t pathlen);
+extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c,
                             unw_regnum_t reg,
                             unw_word_t *valp,
