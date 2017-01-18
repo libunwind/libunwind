@@ -98,10 +98,10 @@ establish_machine_state (struct cursor *c)
 
   if (c->dwarf.args_size)
     {
-      if (tdep_access_reg (c, RSP, &val, 0) >= 0)
+      if (tdep_access_reg (c, UNW_X86_64_RSP, &val, 0) >= 0)
         {
           val += c->dwarf.args_size;
-          (*access_reg) (as, RSP, &val, 1, arg);
+          (*access_reg) (as, UNW_X86_64_RSP, &val, 1, arg);
         }
     }
   return 0;
