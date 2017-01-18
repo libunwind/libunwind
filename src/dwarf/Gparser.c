@@ -356,8 +356,11 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
         case DW_CFA_GNU_args_size:
           if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
             goto fail;
-          sr->args_size = val;
-          Debug (15, "CFA_GNU_args_size %lu\n", (long) val);
+          if (curr_ip < ip)
+            {
+              sr->args_size = val;
+              Debug (15, "CFA_GNU_args_size %lu\n", (long) val);
+            }
           break;
 
         case DW_CFA_GNU_negative_offset_extended:
