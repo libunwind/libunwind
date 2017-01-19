@@ -131,15 +131,15 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
     ret = tdep_search_unwind_table (as, ip, &ui->edi.di_cache,
                                     pi, need_unwind_info, arg);
 
+  if (ret == -UNW_ENOINFO && ui->edi.di_debug.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
+                                    need_unwind_info, arg);
+
 #if UNW_TARGET_ARM
   if (ret == -UNW_ENOINFO && ui->edi.di_arm.format != -1)
     ret = tdep_search_unwind_table (as, ip, &ui->edi.di_arm, pi,
                                     need_unwind_info, arg);
 #endif
-
-  if (ret == -UNW_ENOINFO && ui->edi.di_debug.format != -1)
-    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
-                                    need_unwind_info, arg);
 
   return ret;
 }
