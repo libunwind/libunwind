@@ -533,7 +533,7 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
   int fd;
   Elf_W (Ehdr) ehdr;
   Elf_W (Half) shstrndx;
-  Elf_W (Addr) eh_frame;
+  Elf_W (Addr) eh_frame = 0;
   unsigned int i;
   const char *file = info->dlpi_name;
   char secname[EH_FRAME_LEN];
