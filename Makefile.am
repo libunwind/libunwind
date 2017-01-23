@@ -1,6 +1,12 @@
-include_HEADERS = include/libunwind-dynamic.h \
-    include/libunwind-ptrace.h \
-    include/libunwind-coredump.h
+include_HEADERS = include/libunwind-dynamic.h
+
+if BUILD_PTRACE
+include_HEADERS += include/libunwind-ptrace.h
+endif BUILD_PTRACE
+
+if BUILD_COREDUMP
+include_HEADERS += include/libunwind-coredump.h
+endif BUILD_COREDUMP
 
 if ARCH_AARCH64
 include_HEADERS += include/libunwind-aarch64.h
