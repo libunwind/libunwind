@@ -1,0 +1,14 @@
+language: c
+compiler: clang
+env:
+- TARGET=x86_64-linux-gnu
+- TARGET=x86-linux-gnu
+- TARGET=arm-linux-gnueabihf
+- TARGET=aarch64-linux-gnu
+# Currently experiencing build failures here
+#- TARGET=powerpc64-linux-gnu
+script:
+- ./autogen.sh
+- ./configure --target=$TARGET --host=$HOST
+- make
+- if [ $TARGET == 'x86_64-linux-gnu' ]; then make check; fi
