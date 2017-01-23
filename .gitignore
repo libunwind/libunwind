@@ -3,6 +3,7 @@
 *.o
 *.lo
 *~
+*.pc
 
 .libs/
 .deps/
@@ -29,6 +30,8 @@ include/config.h
 include/config.h.in
 include/libunwind-common.h
 include/stamp-h1
+include/libunwind.h
+include/tdep/libunwind_i.h
 
 tests/[GL]test-bt
 tests/[GL]test-concurrent
@@ -41,6 +44,8 @@ tests/[GL]perf-simple
 tests/Ltest-nomalloc
 tests/Ltest-nocalloc
 tests/Lperf-simple
+tests/Lrs-race
+tests/Ltest-varargs
 tests/check-namespace.sh
 tests/crasher
 tests/forker
@@ -67,3 +72,5 @@ tests/[GL]ia64-test-readonly
 tests/[GL]ia64-test-stack
 tests/ia64-test-dyn1
 tests/ia64-test-sig
+tests/*.log
+tests/*.trs
