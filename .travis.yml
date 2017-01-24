@@ -11,4 +11,4 @@ script:
 - ./autogen.sh
 - ./configure --target=$TARGET --host=$HOST
 - make
-- if [ $TARGET == 'x86_64-linux-gnu' ]; then make check; fi
+#- if [ $TARGET == 'x86_64-linux-gnu' ]; then make check; fi

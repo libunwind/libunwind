@@ -1,5 +1,7 @@
 -*- mode: Outline -*-
 
+[![Build Status](https://travis-ci.org/djwatson/libunwind.svg?branch=master)](https://travis-ci.org/djwatson/libunwind)
+
 This is version 1.0 of the unwind library.  This library supports
 several architecture/operating-system combinations:
 
@@ -9,6 +11,7 @@ several architecture/operating-system combinations:
  Linux/IA-64:	Fully tested and supported.
  Linux/PARISC:	Works well, but C library missing unwind-info.
  HP-UX/IA-64:	Mostly works but known to have some serious limitations.
+ MIPS:          Newly added.
  Linux/AArch64:	Newly added.
  Linux/PPC64:	Newly added.
  Linux/SuperH:	Newly added.
@@ -125,26 +128,12 @@ Note: If you get lots of errors in Gia64-test-nat and Lia64-test-nat, it's
 
 The following tests are expected to fail on x86 Linux:
 
-	Gtest-resume-sig	(fails to get SIGUSR2)
-	Ltest-resume-sig	(likewise)
-	Gtest-dyn1		(no dynamic unwind info support yet)
-	Ltest-dyn1		(no dynamic unwind info support yet)
-	test-setjmp		(longjmp() not implemented yet)
-	run-check-namespace	(no _Ux86_getcontext yet)
 	test-ptrace
 
 ** Expected results on x86-64 Linux
 
 The following tests are expected to fail on x86-64 Linux:
 
-	Gtest-dyn1		(no dynamic unwind info support yet)
-	Ltest-dyn1		(no dynamic unwind info support yet)
-	Gtest-init (see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18743)
-	Ltest-init		(likewise)
-	test-async-sig		(crashes due to bad unwind-info?)
-	test-setjmp		(longjmp() not implemented yet)
-	run-check-namespace	(no _Ux86_64_getcontext yet)
-	run-ptrace-mapper	(??? investigate)
 	run-ptrace-misc	(see http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18748
 			 and http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18749)
 
@@ -212,3 +201,7 @@ or you can subscribe and manage your subscription via the
 web-interface at:
 
 	https://savannah.nongnu.org/mail/?group=libunwind
+
+Or interact at the gihub page:
+
+   	https://github.com/libunwind/libunwind
