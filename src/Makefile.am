@@ -280,7 +280,7 @@ libunwind_hppa_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)	\
 	hppa/Gresume.c hppa/Gstep.c
 
 # The list of files that go info libunwind and libunwind-mips:
-noinst_HEADERS += mips/init.h mips/offsets.h
+noinst_HEADERS += mips/init.h mips/offsets.h mips/unwind_i.h
 libunwind_la_SOURCES_mips_common = $(libunwind_la_SOURCES_common)	    \
 	mips/is_fpreg.c mips/regname.c
 
@@ -299,7 +299,7 @@ libunwind_mips_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)	    \
 	mips/Gis_signal_frame.c mips/Gregs.c mips/Gresume.c mips/Gstep.c
 
 # The list of files that go info libunwind and libunwind-tilegx:
-noinst_HEADERS += tilegx/init.h tilegx/offsets.h
+noinst_HEADERS += tilegx/init.h tilegx/offsets.h tilegx/unwind_i.h
 libunwind_la_SOURCES_tilegx_common = $(libunwind_la_SOURCES_common)	    \
 	tilegx/is_fpreg.c tilegx/regname.c
 
