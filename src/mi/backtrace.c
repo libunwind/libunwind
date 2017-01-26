@@ -75,7 +75,9 @@ unw_backtrace (void **buffer, int size)
   return n;
 }
 
+#ifdef CONFIG_WEAK_BACKTRACE
 extern int backtrace (void **buffer, int size)
   WEAK ALIAS(unw_backtrace);
+#endif
 
 #endif /* !UNW_REMOTE_ONLY */
