@@ -214,50 +214,17 @@ xz_uncompressed_size (uint8_t *compressed, size_t length)
 static int
 elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
 {
-  Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Shdr) *shdr;
-  char *strtab;
-  int i;
   uint8_t *compressed = NULL;
   uint64_t memlimit = UINT64_MAX; /* no memory limit */
   size_t compressed_len, uncompressed_len;
 
-  if (!elf_w (valid_object) (ei))
-    return 0;
-
-  shdr = elf_w (section_table) (ei);
+  shdr = elf_w (find_section) (ei, ".gnu_debugdata");
   if (!shdr)
     return 0;
 
-  strtab = elf_w (string_table) (ei, ehdr->e_shstrndx);
-  if (!strtab)
-    return 0;
-
-  for (i = 0; i < ehdr->e_shnum; ++i)
-    {
-      if (strcmp (strtab + shdr->sh_name, ".gnu_debugdata") == 0)
-        {
-          if (shdr->sh_offset + shdr->sh_size > ei->size)
-            {
-              Debug (1, ".gnu_debugdata outside image? (0x%lu > 0x%lu)\n",
-                     (unsigned long) shdr->sh_offset + shdr->sh_size,
-                     (unsigned long) ei->size);
-              return 0;
-            }
-
-          Debug (16, "found .gnu_debugdata at 0x%lx\n",
-                 (unsigned long) shdr->sh_offset);
-          compressed = ((uint8_t *) ei->image) + shdr->sh_offset;
-          compressed_len = shdr->sh_size;
-          break;
-        }
-
-      shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
-    }
-
-  /* not found */
-  if (!compressed)
-    return 0;
+  compressed = ((uint8_t *) ei->image) + shdr->sh_offset;
+  compressed_len = shdr->sh_size;
 
   uncompressed_len = xz_uncompressed_size (compressed, compressed_len);
   if (uncompressed_len == 0)
@@ -356,4 +323,48 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   ei.image = NULL;
 
   return ret;
+}
+
+HIDDEN Elf_W (Shdr)*
+elf_w (find_section) (struct elf_image *ei, const char* secname)
+{
+  Elf_W (Ehdr) *ehdr = ei->image;
+  Elf_W (Shdr) *shdr;
+  char *strtab;
+  int i;
+
+  if (!elf_w (valid_object) (ei))
+    return 0;
+
+  shdr = elf_w (section_table) (ei);
+  if (!shdr)
+    return 0;
+
+  strtab = elf_w (string_table) (ei, ehdr->e_shstrndx);
+  if (!strtab)
+    return 0;
+
+  for (i = 0; i < ehdr->e_shnum; ++i)
+    {
+      if (strcmp (strtab + shdr->sh_name, secname) == 0)
+        {
+          if (shdr->sh_offset + shdr->sh_size > ei->size)
+            {
+              Debug (1, "section \"%s\" outside image? (0x%lu > 0x%lu)\n",
+                     secname,
+                     (unsigned long) shdr->sh_offset + shdr->sh_size,
+                     (unsigned long) ei->size);
+              return 0;
+            }
+
+          Debug (16, "found section \"%s\" at 0x%lx\n",
+                 secname, (unsigned long) shdr->sh_offset);
+          return shdr;
+        }
+
+      shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
+    }
+
+  /* section not found */
+  return 0;
 }
