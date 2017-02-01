@@ -525,19 +525,14 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
-#define EH_FRAME_LEN /* strlen(".eh_frame") + 1 */ 10
-
 static Elf_W (Addr)
 dwarf_find_eh_frame_section(struct dl_phdr_info *info)
 {
-  int fd;
-  Elf_W (Ehdr) ehdr;
-  Elf_W (Half) shstrndx;
+  int rc;
+  struct elf_image ei;
   Elf_W (Addr) eh_frame = 0;
-  unsigned int i;
+  Elf_W (Shdr)* shdr;
   const char *file = info->dlpi_name;
-  char secname[EH_FRAME_LEN];
-  static Elf_W (Shdr) sec_hdrs[100];
   char exepath[PATH_MAX];
 
   if (strlen(file) == 0)
@@ -549,57 +544,22 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
   Debug (1, "looking for .eh_frame section in %s\n",
          file);
 
-  fd = open(file, O_RDONLY);
-
-  if (fd == -1)
+  rc = elf_map_image (&ei, file);
+  if (rc != 0)
     return 0;
 
-  if (read (fd, &ehdr, sizeof (Elf_W (Ehdr))) != sizeof (Elf_W (Ehdr)))
-    goto file_error;
+  shdr = elf_w (find_section) (&ei, ".eh_frame");
+  if (!shdr)
+    goto out;
 
-  if (ehdr.e_shnum > sizeof(sec_hdrs) / sizeof(Elf_W (Shdr)))
-    {
-      Debug (4, "too many sections (%d > %d)\n", (int) ehdr.e_shnum, (int) (sizeof(sec_hdrs) / sizeof(Elf_W (Shdr))));
-      goto file_error;
-    }
+  eh_frame = shdr->sh_addr + info->dlpi_addr;
+  Debug (4, "found .eh_frame at address %lx\n",
+         eh_frame);
 
-  shstrndx = ehdr.e_shstrndx;
-
-  Debug (4, "opened file '%s'. Section header at offset %d\n",
-         file, (int) ehdr.e_shoff);
-
-  if (lseek (fd, ehdr.e_shoff, SEEK_SET) == (off_t) -1)
-    goto file_error;
-  if (read (fd, sec_hdrs, sizeof (Elf_W (Shdr)) * ehdr.e_shnum) != (ssize_t) sizeof (Elf_W (Shdr)) * ehdr.e_shnum)
-    goto file_error;
-
-  for (i = 1; i < ehdr.e_shnum; i++)
-    {
-      if (sec_hdrs[shstrndx].sh_size - sec_hdrs[i].sh_name < EH_FRAME_LEN)
-        goto file_error;
-      if (lseek (fd, sec_hdrs[shstrndx].sh_offset + sec_hdrs[i].sh_name, SEEK_SET) == (off_t) -1)
-        goto file_error;
-      if (read (fd, secname, EH_FRAME_LEN) < (ssize_t) sizeof(EH_FRAME_LEN))
-        goto file_error;
-
-      if (strncmp (secname, ".eh_frame", EH_FRAME_LEN) == 0)
-        {
-          eh_frame = sec_hdrs[i].sh_addr + info->dlpi_addr;
-          Debug (4, "found .eh_frame at address %lx\n",
-                 eh_frame);
-          break;
-        }
-    }
-
-  close (fd);
+out:
+  munmap (ei.image, ei.size);
 
   return eh_frame;
-
-/* An error reading image file. Release resources and return error code */
-file_error:
-  close(fd);
-
-  return 0;
 }
 
 /* ptr is a pointer to a dwarf_callback_data structure and, on entry,
