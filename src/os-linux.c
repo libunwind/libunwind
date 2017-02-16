@@ -37,7 +37,6 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   struct map_iterator mi;
   int found = 0, rc;
   unsigned long hi;
-  char debug_path[PATH_MAX];
 
   if (maps_init (&mi, pid) < 0)
     return -1;
@@ -58,12 +57,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
     {
       strncpy(path, mi.path, pathlen);
     }
-  snprintf (debug_path, sizeof (debug_path), "/usr/lib/debug%s", mi.path);
-  rc = elf_map_image (ei, debug_path);
-  if (rc != 0)
-    {
-      rc = elf_map_image (ei, mi.path);
-    }
+  rc = elf_map_image (ei, mi.path);
   maps_close (&mi);
   return rc;
 }

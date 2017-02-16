@@ -312,8 +312,13 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   unsigned long segbase, mapoff;
   struct elf_image ei;
   int ret;
+  char file[PATH_MAX];
 
-  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, NULL, 0);
+  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, file, PATH_MAX);
+  if (ret < 0)
+    return ret;
+
+  ret = elf_w (load_debuglink) (file, &ei, 1);
   if (ret < 0)
     return ret;
 
@@ -366,5 +371,94 @@ elf_w (find_section) (struct elf_image *ei, const char* secname)
     }
 
   /* section not found */
+  return 0;
+}
+
+/* Load a debug section, following .gnu_debuglink if appropriate
+ * Loads ei from file if not already mapped.
+ * If is_local, will also search sys directories /usr/local/dbg
+ *
+ * Returns 0 on success, failure otherwise.
+ * ei will be mapped to file or the located .gnu_debuglink from file
+ */
+HIDDEN int
+elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
+{
+  int ret;
+  Elf_W (Shdr) *shdr;
+
+  if (!ei->image)
+    {
+      ret = elf_map_image(ei, file);
+      if (ret)
+	return ret;
+    }
+
+  /* Ignore separate debug files which contain a .gnu_debuglink section. */
+  if (is_local == -1) {
+    return 0;
+  }
+
+  shdr = elf_w (find_section) (ei, ".gnu_debuglink");
+  if (shdr) {
+    if (shdr->sh_size >= PATH_MAX ||
+	(shdr->sh_offset + shdr->sh_size > ei->size))
+      {
+	return 0;
+      }
+
+    {
+      char linkbuf[shdr->sh_size];
+      char *link = ((char *) ei->image) + shdr->sh_offset;
+      char *p;
+      static const char *debugdir = "/usr/lib/debug";
+      char basedir[strlen(file) + 1];
+      char newname[shdr->sh_size + strlen (debugdir) + strlen (file) + 9];
+
+      memcpy(linkbuf, link, shdr->sh_size);
+
+      if (memchr (linkbuf, 0, shdr->sh_size) == NULL)
+	return 0;
+
+      munmap (ei->image, ei->size);
+      ei->image = NULL;
+
+      Debug(1, "Found debuglink section, following %s\n", linkbuf);
+
+      p = strrchr (file, '/');
+      if (p != NULL)
+	{
+	  memcpy (basedir, file, p - file);
+	  basedir[p - file] = '\0';
+	}
+      else
+	basedir[0] = 0;
+
+      strcpy (newname, basedir);
+      strcat (newname, "/");
+      strcat (newname, linkbuf);
+      ret = elf_w (load_debuglink) (newname, ei, -1);
+
+      if (ret == -1)
+	{
+	  strcpy (newname, basedir);
+	  strcat (newname, "/.debug/");
+	  strcat (newname, linkbuf);
+	  ret = elf_w (load_debuglink) (newname, ei, -1);
+	}
+
+      if (ret == -1 && is_local == 1)
+	{
+	  strcpy (newname, debugdir);
+	  strcat (newname, basedir);
+	  strcat (newname, "/");
+	  strcat (newname, linkbuf);
+	  ret = elf_w (load_debuglink) (newname, ei, -1);
+	}
+
+      return ret;
+    }
+  }
+
   return 0;
 }

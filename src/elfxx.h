@@ -55,6 +55,7 @@ extern int elf_w (get_proc_name_in_image) (unw_addr_space_t as,
                                            char *buf, size_t buf_len, unw_word_t *offp);
 
 extern Elf_W (Shdr)* elf_w (find_section) (struct elf_image *ei, const char* secname);
+extern int elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local);
 
 static inline int
 elf_w (valid_object) (struct elf_image *ei)

@@ -86,151 +86,42 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
 /* Load .debug_frame section from FILE.  Allocates and returns space
    in *BUF, and sets *BUFSIZE to its size.  IS_LOCAL is 1 if using the
    local process, in which case we can search the system debug file
-   directory; 0 for other address spaces, in which case we do not; or
-   -1 for recursive calls following .gnu_debuglink.  Returns 0 on
-   success, 1 on error.  Succeeds even if the file contains no
-   .debug_frame.  */
+   directory; 0 for other address spaces, in which case we do
+   not. Returns 0 on success, 1 on error.  Succeeds even if the file
+   contains no .debug_frame.  */
 /* XXX: Could use mmap; but elf_map_image keeps tons mapped in.  */
 
 static int
 load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 {
-  FILE *f;
-  Elf_W (Ehdr) ehdr;
-  Elf_W (Half) shstrndx;
-  Elf_W (Shdr) *sec_hdrs = NULL;
-  char *stringtab = NULL;
-  unsigned int i;
-  size_t linksize = 0;
-  char *linkbuf = NULL;
-  
-  *buf = NULL;
-  *bufsize = 0;
-  
-  f = fopen (file, "r");
-  
-  if (!f)
-    return 1;
-  
-  if (fread (&ehdr, sizeof (Elf_W (Ehdr)), 1, f) != 1)
-    goto file_error;
-  
-  shstrndx = ehdr.e_shstrndx;
-  
-  Debug (4, "opened file '%s'. Section header at offset %d\n",
-         file, (int) ehdr.e_shoff);
+  struct elf_image ei;
+  Elf_W (Shdr) *shdr;
+  int ret;
 
-  fseek (f, ehdr.e_shoff, SEEK_SET);
-  sec_hdrs = calloc (ehdr.e_shnum, sizeof (Elf_W (Shdr)));
-  if (fread (sec_hdrs, sizeof (Elf_W (Shdr)), ehdr.e_shnum, f) != ehdr.e_shnum)
-    goto file_error;
-  
-  Debug (4, "loading string table of size %zd\n",
-           sec_hdrs[shstrndx].sh_size);
-  stringtab = malloc (sec_hdrs[shstrndx].sh_size);
-  fseek (f, sec_hdrs[shstrndx].sh_offset, SEEK_SET);
-  if (fread (stringtab, 1, sec_hdrs[shstrndx].sh_size, f) != sec_hdrs[shstrndx].sh_size)
-    goto file_error;
-  
-  for (i = 1; i < ehdr.e_shnum && *buf == NULL; i++)
+  ei.image = NULL;
+
+  ret = elf_w (load_debuglink) (file, &ei, is_local);
+  if (ret != 0)
+    return ret;
+
+  shdr = elf_w (find_section) (&ei, ".debug_frame");
+  if (!shdr ||
+      (shdr->sh_offset + shdr->sh_size > ei.size))
     {
-      char *secname = &stringtab[sec_hdrs[i].sh_name];
-
-      if (strcmp (secname, ".debug_frame") == 0)
-        {
-          *bufsize = sec_hdrs[i].sh_size;
-          *buf = malloc (*bufsize);
-
-          fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
-          if (fread (*buf, 1, *bufsize, f) != *bufsize)
-            goto file_error;
-
-          Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
-                 *bufsize, sec_hdrs[i].sh_offset);
-        }
-      else if (strcmp (secname, ".gnu_debuglink") == 0)
-        {
-          linksize = sec_hdrs[i].sh_size;
-          linkbuf = malloc (linksize);
-
-          fseek (f, sec_hdrs[i].sh_offset, SEEK_SET);
-          if (fread (linkbuf, 1, linksize, f) != linksize)
-            goto file_error;
-
-          Debug (4, "read %zd bytes of .gnu_debuglink from offset %zd\n",
-                 linksize, sec_hdrs[i].sh_offset);
-        }
-    }
-
-  free (stringtab);
-  free (sec_hdrs);
-
-  fclose (f);
-
-  /* Ignore separate debug files which contain a .gnu_debuglink section. */
-  if (linkbuf && is_local == -1)
-    {
-      free (linkbuf);
+      munmap(ei.image, ei.size);
       return 1;
     }
 
-  if (*buf == NULL && linkbuf != NULL && memchr (linkbuf, 0, linksize) != NULL)
-    {
-      char *newname, *basedir, *p;
-      static const char *debugdir = "/usr/lib/debug";
-      int ret;
+  *bufsize = shdr->sh_size;
+  *buf = malloc (*bufsize);
 
-      /* XXX: Don't bother with the checksum; just search for the file.  */
-      basedir = malloc (strlen (file) + 1);
-      newname = malloc (strlen (linkbuf) + strlen (debugdir)
-                        + strlen (file) + 9);
+  memcpy(*buf, shdr->sh_offset + ei.image, *bufsize);
 
-      p = strrchr (file, '/');
-      if (p != NULL)
-        {
-          memcpy (basedir, file, p - file);
-          basedir[p - file] = '\0';
-        }
-      else
-        basedir[0] = 0;
+  Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
+	 *bufsize, shdr->sh_offset);
 
-      strcpy (newname, basedir);
-      strcat (newname, "/");
-      strcat (newname, linkbuf);
-      ret = load_debug_frame (newname, buf, bufsize, -1);
-
-      if (ret == 1)
-        {
-          strcpy (newname, basedir);
-          strcat (newname, "/.debug/");
-          strcat (newname, linkbuf);
-          ret = load_debug_frame (newname, buf, bufsize, -1);
-        }
-
-      if (ret == 1 && is_local == 1)
-        {
-          strcpy (newname, debugdir);
-          strcat (newname, basedir);
-          strcat (newname, "/");
-          strcat (newname, linkbuf);
-          ret = load_debug_frame (newname, buf, bufsize, -1);
-        }
-
-      free (basedir);
-      free (newname);
-    }
-  free (linkbuf);
-
+  munmap(ei.image, ei.size);
   return 0;
-
-/* An error reading image file. Release resources and return error code */
-file_error:
-  free(stringtab);
-  free(sec_hdrs);
-  free(linkbuf);
-  fclose(f);
-
-  return 1;
 }
 
 /* Locate the binary which originated the contents of address ADDR. Return
