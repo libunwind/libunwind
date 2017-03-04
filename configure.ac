@@ -105,6 +105,19 @@ SET_ARCH([$build_cpu],[build_arch])
 SET_ARCH([$host_cpu],[host_arch])
 SET_ARCH([$target_cpu],[target_arch])
 
+# Check for Android
+AC_MSG_CHECKING([for Android])
+android="no"
+case "$host_os" in
+  *android*)
+    android="yes"
+    AC_MSG_RESULT([yes])
+    ;;
+  *)
+    AC_MSG_RESULT([no])
+    ;;
+esac
+
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
         [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*], [enable_coredump=yes], [enable_coredump=no])]
@@ -319,7 +332,7 @@ else
     LDFLAGS_NOSTARTFILES="-XCClinker -nostartfiles"
 fi
 
-if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes; then
+if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes -a x$android != xyes; then
   LIBCRTS="-lgcc_s"
 fi
 
