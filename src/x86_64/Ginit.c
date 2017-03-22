@@ -72,10 +72,44 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 #define PAGE_SIZE 4096
 #define PAGE_START(a)   ((a) & ~(PAGE_SIZE-1))
 
+static int null_fd[2];
+
+ALWAYS_INLINE
+static int
+write_validate (void *addr)
+{
+  ssize_t bytes_written = write (null_fd[1], addr, 1);
+
+  if (bytes_written == -1 && errno == EPIPE)
+    {
+      /* pipe was closed */
+      while (pipe2 (null_fd, O_CLOEXEC) == -1) {}
+      bytes_written = write (null_fd[1], addr, 1);
+    }
+
+  if (bytes_written == -1)
+    {
+      return -1;
+    }
+  else
+    {
+      /* Remove written byte from the pipe buffer. */
+      char buf[1];
+      read (null_fd[0], buf, 1);
+    }
+
+  return 0;
+}
+
 static int (*mem_validate_func) (void *addr, size_t len);
 static int msync_validate (void *addr, size_t len)
 {
-  return msync (addr, len, MS_ASYNC);
+  if (msync (addr, len, MS_ASYNC) != 0)
+    {
+      return -1;
+    }
+
+  return write_validate (addr);
 }
 
 #ifdef HAVE_MINCORE
@@ -96,7 +130,7 @@ static int mincore_validate (void *addr, size_t len)
       if (!(mvec[i] & 1)) return -1;
     }
 
-  return 0;
+  return write_validate (addr);
 }
 #endif
 
@@ -107,6 +141,9 @@ static int mincore_validate (void *addr, size_t len)
 HIDDEN void
 tdep_init_mem_validate (void)
 {
+  while (pipe2 (null_fd, O_CLOEXEC) == -1) {}
+  signal (SIGPIPE, SIG_IGN);
+
 #ifdef HAVE_MINCORE
   unsigned char present = 1;
   unw_word_t addr = PAGE_START((unw_word_t)&present);
