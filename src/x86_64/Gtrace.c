@@ -68,7 +68,7 @@ trace_cache_free (void *arg)
   }
   tls_cache_destroyed = 1;
   tls_cache = NULL;
-  munmap (cache->frames, (1u << cache->log_size) * sizeof(unw_tdep_frame_t));
+  mi_munmap (cache->frames, (1u << cache->log_size) * sizeof(unw_tdep_frame_t));
   mempool_free (&trace_cache_pool, cache);
   Debug(5, "freed cache %p\n", cache);
 }
@@ -150,7 +150,7 @@ trace_cache_expand (unw_trace_cache_t *cache)
   }
 
   Debug(5, "expanded cache from 2^%lu to 2^%lu buckets\n", cache->log_size, new_log_size);
-  munmap(cache->frames, old_size * sizeof(unw_tdep_frame_t));
+  mi_munmap(cache->frames, old_size * sizeof(unw_tdep_frame_t));
   cache->frames = new_frames;
   cache->log_size = new_log_size;
   cache->used = 0;

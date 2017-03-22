@@ -49,7 +49,7 @@ CD_elf_map_image(struct UCD_info *ui, coredump_phdr_t *phdr)
       if (remainder_len > 0)
         {
           void *remainder_base = (char*) ei->image + phdr->p_filesz;
-          munmap(remainder_base, remainder_len);
+          mi_munmap(remainder_base, remainder_len);
         }
     } else {
       /* We have a backing file for this segment.
@@ -72,7 +72,7 @@ CD_elf_map_image(struct UCD_info *ui, coredump_phdr_t *phdr)
   /* Check ELF header for sanity */
   if (!elf_w(valid_object)(ei))
     {
-      munmap(ei->image, ei->size);
+      mi_munmap(ei->image, ei->size);
       ei->image = NULL;
       ei->size = 0;
       return NULL;

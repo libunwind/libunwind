@@ -46,7 +46,7 @@ get_mem(size_t sz)
 static void
 free_mem(void *ptr, size_t sz)
 {
-  munmap(ptr, sz);
+  mi_munmap(ptr, sz);
 }
 
 static int

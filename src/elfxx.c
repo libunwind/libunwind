@@ -248,7 +248,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   if (lret != LZMA_OK)
     {
       Debug (1, "LZMA decompression failed: %d\n", lret);
-      munmap (mdi->image, mdi->size);
+      mi_munmap (mdi->image, mdi->size);
       return 0;
     }
 
@@ -295,7 +295,7 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
           ret = ret_mdi;
         }
 
-      munmap (mdi.image, mdi.size);
+      mi_munmap (mdi.image, mdi.size);
     }
 
   if (min_dist >= ei->size)
@@ -324,7 +324,7 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
 
   ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, mapoff, ip, buf, buf_len, offp);
 
-  munmap (ei.image, ei.size);
+  mi_munmap (ei.image, ei.size);
   ei.image = NULL;
 
   return ret;
@@ -420,7 +420,7 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
       if (memchr (linkbuf, 0, shdr->sh_size) == NULL)
 	return 0;
 
-      munmap (ei->image, ei->size);
+      mi_munmap (ei->image, ei->size);
       ei->image = NULL;
 
       Debug(1, "Found debuglink section, following %s\n", linkbuf);
