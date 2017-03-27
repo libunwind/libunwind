@@ -235,6 +235,8 @@ main (int argc, char **argv)
 
   measure_init ();
 
+  doit ("default         ");
+
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_NONE);
   doit ("no cache        ");
 

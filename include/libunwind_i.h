@@ -37,11 +37,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "compiler.h"
 
-#ifdef HAVE___THREAD
-  /* For now, turn off per-thread caching.  It uses up too much TLS
-     memory per thread even when the thread never uses libunwind at
-     all.  */
-# undef HAVE___THREAD
+#if defined(HAVE___THREAD) && HAVE___THREAD
+#define UNWI_DEFAULT_CACHING_POLICY UNW_CACHE_PER_THREAD
+#else
+#define UNWI_DEFAULT_CACHING_POLICY UNW_CACHE_GLOBAL
 #endif
 
 /* Platform-independent libunwind-internal declarations.  */
