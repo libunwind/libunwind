@@ -309,6 +309,13 @@ AS_IF([test x$enable_per_thread_cache = xyes], [
   ])
 ])
 
+AC_LANG_PUSH([C])
+unw_cflags_save=${CFLAGS}
+CFLAGS=""
+AC_OPENMP
+CFLAGS=${unw_cflags_save}
+AC_LANG_POP([C])
+
 AC_MSG_CHECKING([for Intel compiler])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[#ifndef __INTEL_COMPILER
 #error choke me
