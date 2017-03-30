@@ -43,8 +43,8 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 
 #else /* !UNW_REMOTE_ONLY */
 
-PROTECTED int
-unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
+static int
+unw_init_local_common(unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_instr)
 {
   struct cursor *c = (struct cursor *) cursor;
 
@@ -56,10 +56,22 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = uc;
   #ifdef UNW_TARGET_PPC64
-    return common_init_ppc64 (c, 1);
+    return common_init_ppc64 (c, use_prev_instr);
   #else
-    return common_init_ppc32 (c, 1);
+    return common_init_ppc32 (c, use_prev_instr);
   #endif
+}
+
+PROTECTED int
+unw_init_local(unw_cursor_t *cursor, ucontext_t *uc)
+{
+  return unw_init_local_common(cursor, uc, 1);
+}
+
+PROTECTED int
+unw_init_local_signal(unw_cursor_t *cursor, ucontext_t *uc)
+{
+  return unw_init_local_common(cursor, uc, 0);
 }
 
 #endif /* !UNW_REMOTE_ONLY */
