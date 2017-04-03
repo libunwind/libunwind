@@ -45,6 +45,7 @@ endif #!ARCH_IA64
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
 			Gtest-trace Ltest-trace				 \
+			Ltest-init-local-signal				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem Ltest-varargs Ltest-nomalloc	 \
 			Ltest-nocalloc Lrs-race
@@ -134,6 +135,8 @@ Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
 
+Ltest_init_local_signal_SOURCES = Ltest-init-local-signal.c Ltest-init-local-signal-lib.c
+
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S flush-cache.h
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S flush-cache.h
 test_static_link_SOURCES = test-static-link-loc.c test-static-link-gen.c
@@ -174,6 +177,7 @@ test_static_link_LDADD = $(LIBUNWIND)
 test_strerror_LDADD = $(LIBUNWIND)
 Lrs_race_LDADD = $(LIBUNWIND_local) -lpthread
 Ltest_varargs_LDADD = $(LIBUNWIND_local)
+Ltest_init_local_signal_LDADD = $(LIBUNWIND)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_concurrent_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) -lpthread
