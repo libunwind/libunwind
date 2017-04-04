@@ -177,7 +177,7 @@ test_static_link_LDADD = $(LIBUNWIND)
 test_strerror_LDADD = $(LIBUNWIND)
 Lrs_race_LDADD = $(LIBUNWIND_local) -lpthread
 Ltest_varargs_LDADD = $(LIBUNWIND_local)
-Ltest_init_local_signal_LDADD = $(LIBUNWIND)
+Ltest_init_local_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_concurrent_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) -lpthread

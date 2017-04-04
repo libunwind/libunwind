@@ -1,5 +1,6 @@
+sudo: required
 language: c
-compiler: clang
+compiler: gcc
 env:
 - TARGET=x86_64-linux-gnu
 - TARGET=x86-linux-gnu
@@ -11,5 +12,7 @@ env:
 script:
 - ./autogen.sh
 - ./configure --target=$TARGET --host=$HOST
-- make
-#- if [ $TARGET == 'x86_64-linux-gnu' ]; then make check; fi
+- make -j32
+- sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+- ulimit -c unlimited
+- if [ $TARGET == 'x86_64-linux-gnu' ]; then make check -j32; fi
