@@ -430,18 +430,15 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
   if (c->use_prev_instr)
     --ip;
 
-  if (c->pi_valid && !need_unwind_info)
-    return 0;
-
   memset (&c->pi, 0, sizeof (c->pi));
 
   /* check dynamic info first --- it overrides everything else */
-  ret = unwi_find_dynamic_proc_info (c->as, ip, &c->pi, need_unwind_info,
+  ret = unwi_find_dynamic_proc_info (c->as, ip, &c->pi, 1,
                                      c->as_arg);
   if (ret == -UNW_ENOINFO)
     {
       dynamic = 0;
-      if ((ret = tdep_find_proc_info (c, ip, need_unwind_info)) < 0)
+      if ((ret = tdep_find_proc_info (c, ip, 1)) < 0)
         return ret;
     }
 
@@ -455,7 +452,7 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip, int need_unwind_info)
 
   /* Let system/machine-dependent code determine frame-specific attributes. */
   if (ret >= 0)
-    tdep_fetch_frame (c, ip, need_unwind_info);
+    tdep_fetch_frame (c, ip, 1);
 
   /* Update use_prev_instr for the next frame. */
   if (need_unwind_info)
@@ -962,7 +959,7 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
   int ret;
 
   /* Lookup it up the slow way... */
-  if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
+  if ((ret = fetch_proc_info (c, c->ip, 0)) < 0)
     return ret;
   /* Also need to check if current frame contains
      args_size, and set cursor appropriatly.  Only
