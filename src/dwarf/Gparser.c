@@ -613,33 +613,27 @@ cache_match (dwarf_reg_state_t *rs, unw_word_t ip)
 static dwarf_reg_state_t *
 rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 {
-  dwarf_reg_state_t *rs = cache->buckets + c->hint;
+  dwarf_reg_state_t *rs;
   unsigned short index;
-  unw_word_t ip;
+  unw_word_t ip = c->ip;
 
-  ip = c->ip;
-
-  if (cache_match (rs, ip))
-    return rs;
-
-  index = cache->hash[hash (ip, cache->log_size)];
-  if (index >= DWARF_UNW_CACHE_SIZE(cache->log_size))
-    return NULL;
-
-  rs = cache->buckets + index;
-  while (1)
+  if (c->hint > 0)
     {
+      index = c->hint - 1;
+      rs = cache->buckets + index;
       if (cache_match (rs, ip))
-        {
-          /* update hint; no locking needed: single-word writes are atomic */
-          c->hint = cache->buckets[c->prev_rs].hint =
-            (rs - cache->buckets);
-          return rs;
-        }
-      if (rs->coll_chain >= DWARF_UNW_HASH_SIZE(cache->log_size))
-        return NULL;
-      rs = cache->buckets + rs->coll_chain;
+	return rs;
     }
+
+  for (index = cache->hash[hash (ip, cache->log_size)];
+       index < DWARF_UNW_CACHE_SIZE(cache->log_size);
+       index = rs->coll_chain)
+    {
+      rs = cache->buckets + index;
+      if (cache_match (rs, ip))
+	return rs;
+    }
+  return NULL;
 }
 
 static inline dwarf_reg_state_t *
@@ -687,7 +681,6 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   rs->coll_chain = cache->hash[index];
   cache->hash[index] = rs - cache->buckets;
 
-  rs->hint = 0;
   rs->ip = c->ip;
   rs->valid = 1;
   rs->ret_addr_column = c->ret_addr_column;
@@ -907,6 +900,10 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
 
   if (rs)
     {
+      /* update hint; no locking needed: single-word writes are atomic */
+      cache->buckets[c->prev_rs].hint = rs - cache->buckets + 1;
+      c->prev_rs = rs - cache->buckets;
+      c->hint = rs->hint;
       c->ret_addr_column = rs->ret_addr_column;
       c->use_prev_instr = ! rs->signal_frame;
     }
@@ -923,9 +920,8 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       rs = rs_new (cache, c);
       memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
       cache->buckets[c->prev_rs].hint = rs - cache->buckets;
-
-      c->hint = rs->hint;
       c->prev_rs = rs - cache->buckets;
+      c->hint = rs->hint = 0;
 
       put_unwind_info (c, &c->pi);
     }
