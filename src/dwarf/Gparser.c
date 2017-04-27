@@ -874,46 +874,19 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   return 0;
 }
 
-static int
-uncached_dwarf_find_save_locs (struct dwarf_cursor *c)
-{
-  dwarf_state_record_t sr;
-  int ret;
-
-  if ((ret = fetch_proc_info (c, c->ip, 1)) < 0)
-    {
-      put_unwind_info (c, &c->pi);
-      return ret;
-    }
-
-  if ((ret = create_state_record_for (c, &sr, c->ip)) < 0)
-    return ret;
-
-  if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
-    return ret;
-
-  put_unwind_info (c, &c->pi);
-  return 0;
-}
-
 /* The function finds the saved locations and applies the register
    state as well. */
 HIDDEN int
 dwarf_find_save_locs (struct dwarf_cursor *c)
 {
   dwarf_state_record_t sr;
-  dwarf_reg_state_t *rs, rs_copy;
+  dwarf_reg_state_t *rs;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
 
-  if (c->as->caching_policy == UNW_CACHE_NONE)
-    return uncached_dwarf_find_save_locs (c);
-
-  cache = get_rs_cache(c->as, &saved_mask);
-  rs = rs_lookup(cache, c);
-
-  if (rs)
+  if ((cache = get_rs_cache(c->as, &saved_mask)) && 
+      (rs = rs_lookup(cache, c)))
     {
       /* update hint; no locking needed: single-word writes are atomic */
       cache->buckets[c->prev_rs].hint = rs - cache->buckets + 1;
@@ -921,31 +894,32 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       c->hint = rs->hint;
       c->ret_addr_column = rs->ret_addr_column;
       c->use_prev_instr = ! rs->signal_frame;
+      memcpy (&sr.rs_current, rs, sizeof (*rs));
     }
   else
     {
-      if ((ret = fetch_proc_info (c, c->ip, 1)) < 0 ||
-          (ret = create_state_record_for (c, &sr, c->ip)) < 0)
-        {
-          put_rs_cache (c->as, cache, &saved_mask);
-          put_unwind_info (c, &c->pi);
-          return ret;
-        }
-
-      rs = rs_new (cache, c);
-      memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
-      cache->buckets[c->prev_rs].hint = rs - cache->buckets;
-      c->prev_rs = rs - cache->buckets;
-      c->hint = rs->hint = 0;
-
+      ret = fetch_proc_info (c, c->ip, 1);
+      if (ret >= 0)
+	ret = create_state_record_for (c, &sr, c->ip);
       put_unwind_info (c, &c->pi);
+
+      if (cache && ret >= 0)
+	{
+	  rs = rs_new (cache, c);
+	  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
+	  cache->buckets[c->prev_rs].hint = rs - cache->buckets;
+	  c->prev_rs = rs - cache->buckets;
+	  c->hint = rs->hint = 0;
+	}
     }
 
-  memcpy (&rs_copy, rs, sizeof (rs_copy));
-  put_rs_cache (c->as, cache, &saved_mask);
-
-  tdep_reuse_frame (c, &rs_copy);
-  if ((ret = apply_reg_state (c, &rs_copy)) < 0)
+  if (cache)
+    put_rs_cache (c->as, cache, &saved_mask);
+  if (ret < 0)
+      return ret;
+  if (cache)
+    tdep_reuse_frame (c, rs);
+  if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
   return 0;
