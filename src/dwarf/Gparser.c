@@ -880,7 +880,7 @@ HIDDEN int
 dwarf_find_save_locs (struct dwarf_cursor *c)
 {
   dwarf_state_record_t sr;
-  dwarf_reg_state_t *rs, rs_copy;
+  dwarf_reg_state_t *rs;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
@@ -894,8 +894,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       c->hint = rs->hint;
       c->ret_addr_column = rs->ret_addr_column;
       c->use_prev_instr = ! rs->signal_frame;
-      memcpy (&rs_copy, rs, sizeof (rs_copy));
-      rs = &rs_copy;
+      memcpy (&sr.rs_current, rs, sizeof (*rs));
     }
   else
     {
@@ -912,7 +911,6 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
 	  c->prev_rs = rs - cache->buckets;
 	  c->hint = rs->hint = 0;
 	}
-      rs = &sr.rs_current;
     }
 
   if (cache)
@@ -921,7 +919,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       return ret;
   if (cache)
     tdep_reuse_frame (c, rs);
-  if ((ret = apply_reg_state (c, rs)) < 0)
+  if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
   return 0;
