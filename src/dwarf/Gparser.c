@@ -925,14 +925,6 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   return 0;
 }
 
-/* The proc-info must be valid for IP before this routine can be
-   called.  */
-HIDDEN int
-dwarf_create_state_record (struct dwarf_cursor *c, dwarf_state_record_t *sr)
-{
-  return create_state_record_for (c, sr, c->ip);
-}
-
 HIDDEN int
 dwarf_make_proc_info (struct dwarf_cursor *c)
 {
@@ -940,18 +932,19 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
   if (c->as->caching_policy == UNW_CACHE_NONE
       || get_cached_proc_info (c) < 0)
 #endif
+  /* Need to check if current frame contains
+     args_size, and set cursor appropriately.  Only
+     needed for unw_resume */
   dwarf_state_record_t sr;
   int ret;
-
+  
   /* Lookup it up the slow way... */
-  if ((ret = fetch_proc_info (c, c->ip, 0)) < 0)
-    return ret;
-  /* Also need to check if current frame contains
-     args_size, and set cursor appropriatly.  Only
-     needed for unw_resume */
-  if ((ret = dwarf_create_state_record (c, &sr)) < 0)
-    return ret;
+  ret = fetch_proc_info (c, c->ip, 0);
+  if (ret >= 0)
+      ret = create_state_record_for (c, &sr, c->ip);
   put_unwind_info (c, &c->pi);
+  if (ret < 0)
+    return ret;
   c->args_size = sr.args_size;
 
   return 0;
