@@ -742,7 +742,7 @@ lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
 static int
 remote_lookup (unw_addr_space_t as,
                unw_word_t table, size_t table_size, int32_t rel_ip,
-               struct table_entry *e, void *arg)
+               struct table_entry *e, int32_t *last_ip_offset, void *arg)
 {
   unsigned long table_len = table_size / sizeof (struct table_entry);
   unw_accessors_t *a = unw_get_accessors (as);
@@ -768,7 +768,9 @@ remote_lookup (unw_addr_space_t as,
     return 0;
   e_addr = table + (hi - 1) * sizeof (struct table_entry);
   if ((ret = dwarf_reads32 (as, a, &e_addr, &e->start_ip_offset, arg)) < 0
-   || (ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0)
+   || (ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0
+   || (hi < table_len &&
+       (ret = dwarf_reads32 (as, a, &e_addr, last_ip_offset, arg)) < 0))
     return ret;
   return 1;
 }
@@ -787,7 +789,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                            int need_unwind_info, void *arg)
 {
   const struct table_entry *e = NULL, *table;
-  unw_word_t ip_base = 0, segbase = 0, fde_addr;
+  unw_word_t ip_base = 0, segbase = 0, last_ip, fde_addr;
   unw_accessors_t *a;
 #ifndef UNW_LOCAL_ONLY
   struct table_entry ent;
@@ -840,17 +842,25 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   if (as == unw_local_addr_space)
     {
       e = lookup (table, table_len, ip - ip_base);
+      if (e && &e[1] < &table[table_len])
+	last_ip = e[1].start_ip_offset + ip_base;
+      else
+	last_ip = di->end_ip;
     }
   else
 #endif
     {
 #ifndef UNW_LOCAL_ONLY
+      int32_t last_ip_offset = di->end_ip - ip_base;
       segbase = di->u.rti.segbase;
       if ((ret = remote_lookup (as, (uintptr_t) table, table_len,
-                                ip - ip_base, &ent, arg)) < 0)
+                                ip - ip_base, &ent, &last_ip_offset, arg)) < 0)
         return ret;
       if (ret)
-        e = &ent;
+	{
+	  e = &ent;
+	  last_ip = last_ip_offset + ip_base;
+	}
       else
         e = NULL;       /* no info found */
 #endif
@@ -888,6 +898,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       pi->flags = UNW_PI_FLAG_DEBUG_FRAME;
     }
 
+  pi->last_ip = last_ip;
   if (ip < pi->start_ip || ip >= pi->end_ip)
     return -UNW_ENOINFO;
 
