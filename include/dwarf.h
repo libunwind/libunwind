@@ -260,15 +260,20 @@ typedef struct dwarf_reg_state
   {
     struct dwarf_reg_state *next;       /* for rs_stack */
     dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
-    unw_word_t ip;                        /* ip this rs is for */
     unw_word_t ret_addr_column;           /* indicates which column in the rule table represents return address */
+    unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
+  }
+dwarf_reg_state_t;
+
+typedef struct dwarf_reg_cache_entry
+  {
+    unw_word_t ip;                        /* ip this rs is for */
     unsigned short lru_chain;     /* used for least-recently-used chain */
     unsigned short coll_chain;  /* used for hash collisions */
     unsigned short hint;              /* hint for next rs to try (or -1) */
     unsigned short valid : 1;         /* optional machine-dependent signal info */
-    unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
   }
-dwarf_reg_state_t;
+dwarf_reg_cache_entry_t;
 
 typedef struct dwarf_cie_info
   {
@@ -349,10 +354,12 @@ struct dwarf_rs_cache
 
     /* rs cache: */
     dwarf_reg_state_t *buckets;
+    dwarf_reg_cache_entry_t *links;
 
     /* default memory, loaded in BSS segment */
     unsigned short default_hash[DWARF_DEFAULT_UNW_HASH_SIZE];
     dwarf_reg_state_t default_buckets[DWARF_DEFAULT_UNW_CACHE_SIZE];
+    dwarf_reg_cache_entry_t default_links[DWARF_DEFAULT_UNW_CACHE_SIZE];
   };
 
 /* A list of descriptors for loaded .debug_frame sections.  */
