@@ -83,10 +83,10 @@ pop_rstate_stack(dwarf_reg_state_t **rs_stack)
 /* Run a CFI program to update the register state.  */
 static int
 run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
-                 unw_word_t ip, unw_word_t *addr, unw_word_t end_addr,
+                 unw_word_t *ip, unw_word_t end_ip,
+		 unw_word_t *addr, unw_word_t end_addr,
                  struct dwarf_cie_info *dci)
 {
-  unw_word_t curr_ip = c->pi.start_ip;
   dwarf_reg_state_t *rs_stack = NULL;
   unw_addr_space_t as;
   void *arg;
@@ -105,10 +105,10 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
   unw_accessors_t *a = unw_get_accessors (as);
   int ret = 0;
 
-  /* Process everything up to and including the current 'ip',
+  /* Process everything up to and including the current 'end_ip',
      including all the DW_CFA_advance_loc instructions.  See
      'c->use_prev_instr' use in 'fetch_proc_info' for details. */
-  while (curr_ip <= ip && *addr < end_addr && ret >= 0)
+  while (*ip <= end_ip && *addr < end_addr && ret >= 0)
     {
       unw_word_t operand = 0, regnum, val, len;
       uint8_t u8, op;
@@ -126,29 +126,29 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
       switch ((dwarf_cfa_t) op)
         {
         case DW_CFA_advance_loc:
-          curr_ip += operand * dci->code_align;
-          Debug (15, "CFA_advance_loc to 0x%lx\n", (long) curr_ip);
+          *ip += operand * dci->code_align;
+          Debug (15, "CFA_advance_loc to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_advance_loc1:
           if ((ret = dwarf_readu8 (as, a, addr, &u8, arg)) < 0)
             break;
-          curr_ip += u8 * dci->code_align;
-          Debug (15, "CFA_advance_loc1 to 0x%lx\n", (long) curr_ip);
+          *ip += u8 * dci->code_align;
+          Debug (15, "CFA_advance_loc1 to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_advance_loc2:
           if ((ret = dwarf_readu16 (as, a, addr, &u16, arg)) < 0)
             break;
-          curr_ip += u16 * dci->code_align;
-          Debug (15, "CFA_advance_loc2 to 0x%lx\n", (long) curr_ip);
+          *ip += u16 * dci->code_align;
+          Debug (15, "CFA_advance_loc2 to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_advance_loc4:
           if ((ret = dwarf_readu32 (as, a, addr, &u32, arg)) < 0)
             break;
-          curr_ip += u32 * dci->code_align;
-          Debug (15, "CFA_advance_loc4 to 0x%lx\n", (long) curr_ip);
+          *ip += u32 * dci->code_align;
+          Debug (15, "CFA_advance_loc4 to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_MIPS_advance_loc8:
@@ -158,7 +158,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
             if ((ret = dwarf_readu64 (as, a, addr, &u64, arg)) < 0)
               break;
-            curr_ip += u64 * dci->code_align;
+            *ip += u64 * dci->code_align;
             Debug (15, "CFA_MIPS_advance_loc8\n");
             break;
           }
@@ -234,10 +234,10 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
         case DW_CFA_set_loc:
           if ((ret = dwarf_read_encoded_pointer (as, a, addr, dci->fde_encoding,
-                                                 &c->pi, &curr_ip,
+                                                 &c->pi, ip,
                                                  arg)) < 0)
             break;
-          Debug (15, "CFA_set_loc to 0x%lx\n", (long) curr_ip);
+          Debug (15, "CFA_set_loc to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_undefined:
@@ -373,7 +373,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
         case DW_CFA_GNU_args_size:
           if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
             break;
-          if (curr_ip < ip)
+          if (*ip < end_ip)
             {
               sr->args_size = val;
               Debug (15, "CFA_GNU_args_size %lu\n", (long) val);
@@ -515,7 +515,8 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   struct dwarf_cie_info *dci = c->pi.unwind_info;
   c->ret_addr_column = dci->ret_addr_column;
   unw_word_t addr = dci->cie_instr_start;
-  if ((ret = run_cfi_program (c, sr, ~(unw_word_t) 0, &addr,
+  unw_word_t curr_ip = 0;
+  if ((ret = run_cfi_program (c, sr, &curr_ip, ~(unw_word_t) 0, &addr,
                               dci->cie_instr_end, dci)) < 0)
     return ret;
 
@@ -529,7 +530,8 @@ parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
   int ret;
   struct dwarf_cie_info *dci = c->pi.unwind_info;
   unw_word_t addr = dci->fde_instr_start;
-  if ((ret = run_cfi_program (c, sr, ip, &addr, dci->fde_instr_end, dci)) < 0)
+  unw_word_t curr_ip = c->pi.start_ip;
+  if ((ret = run_cfi_program (c, sr, &curr_ip, ip, &addr, dci->fde_instr_end, dci)) < 0)
     return ret;
 
   return 0;
