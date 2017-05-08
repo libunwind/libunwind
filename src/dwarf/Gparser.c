@@ -502,23 +502,33 @@ put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
 }
 
 static inline int
-parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
+setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 {
-  struct dwarf_cie_info *dci;
-  unw_word_t addr;
-  int ret;
+  int i, ret;
 
-  dci = c->pi.unwind_info;
+  assert (c->pi_valid);
+
+  memset (sr, 0, sizeof (*sr));
+  for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
+    set_reg (sr, i, DWARF_WHERE_SAME, 0);
+
+  struct dwarf_cie_info *dci = c->pi.unwind_info;
   c->ret_addr_column = dci->ret_addr_column;
-
-  addr = dci->cie_instr_start;
+  unw_word_t addr = dci->cie_instr_start;
   if ((ret = run_cfi_program (c, sr, ~(unw_word_t) 0, &addr,
                               dci->cie_instr_end, dci)) < 0)
     return ret;
 
   memcpy (&sr->rs_initial, &sr->rs_current, sizeof (sr->rs_initial));
+  return 0;
+}
 
-  addr = dci->fde_instr_start;
+static inline int
+parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
+{
+  int ret;
+  struct dwarf_cie_info *dci = c->pi.unwind_info;
+  unw_word_t addr = dci->fde_instr_start;
   if ((ret = run_cfi_program (c, sr, ip, &addr, dci->fde_instr_end, dci)) < 0)
     return ret;
 
@@ -701,18 +711,13 @@ static int
 create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
                          unw_word_t ip)
 {
-  int i, ret;
-
-  assert (c->pi_valid);
-
-  memset (sr, 0, sizeof (*sr));
-  for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
-    set_reg (sr, i, DWARF_WHERE_SAME, 0);
-
+  int ret;
   switch (c->pi.format)
     {
     case UNW_INFO_FORMAT_TABLE:
     case UNW_INFO_FORMAT_REMOTE_TABLE:
+      if ((ret = setup_fde(c, sr)) < 0)
+	return ret;
       ret = parse_fde (c, ip, sr);
       break;
 
