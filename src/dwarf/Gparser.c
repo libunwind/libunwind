@@ -534,6 +534,7 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
       || !cache->hash) {
     cache->hash = cache->default_hash;
     cache->buckets = cache->default_buckets;
+    cache->links = cache->default_links;
     cache->log_size = DWARF_DEFAULT_LOG_UNW_CACHE_SIZE;
   } else {
     if (cache->hash && cache->hash != cache->default_hash)
@@ -542,11 +543,16 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
     if (cache->buckets && cache->buckets != cache->default_buckets)
       munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
 	                      * sizeof (cache->buckets[0]));
+    if (cache->links && cache->links != cache->default_links)
+      munmap(cache->links, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
+	                      * sizeof (cache->links[0]));
     GET_MEMORY(cache->hash, DWARF_UNW_HASH_SIZE(cache->log_size)
                              * sizeof (cache->hash[0]));
     GET_MEMORY(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->log_size)
                                 * sizeof (cache->buckets[0]));
-    if (!cache->hash || !cache->buckets)
+    GET_MEMORY(cache->links, DWARF_UNW_CACHE_SIZE(cache->log_size)
+                                * sizeof (cache->links[0]));
+    if (!cache->hash || !cache->buckets || !cache->links)
       {
         Debug (1, "Unable to allocate cache memory");
         return -UNW_ENOMEM;
@@ -560,10 +566,10 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
   for (i = 0; i < DWARF_UNW_CACHE_SIZE(cache->log_size); ++i)
     {
       if (i > 0)
-        cache->buckets[i].lru_chain = (i - 1);
-      cache->buckets[i].coll_chain = -1;
-      cache->buckets[i].ip = 0;
-      cache->buckets[i].valid = 0;
+        cache->links[i].lru_chain = (i - 1);
+      cache->links[i].coll_chain = -1;
+      cache->links[i].ip = 0;
+      cache->links[i].valid = 0;
     }
   for (i = 0; i< DWARF_UNW_HASH_SIZE(cache->log_size); ++i)
     cache->hash[i] = -1;
@@ -618,35 +624,30 @@ hash (unw_word_t ip, unsigned short log_size)
 }
 
 static inline long
-cache_match (dwarf_reg_state_t *rs, unw_word_t ip)
+cache_match (struct dwarf_rs_cache *cache, unsigned short index, unw_word_t ip)
 {
-  if (rs->valid && (ip == rs->ip))
-    return 1;
-  return 0;
+  return (cache->links[index].valid && (ip == cache->links[index].ip));
 }
 
 static dwarf_reg_state_t *
 rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 {
-  dwarf_reg_state_t *rs;
   unsigned short index;
   unw_word_t ip = c->ip;
 
   if (c->hint > 0)
     {
       index = c->hint - 1;
-      rs = cache->buckets + index;
-      if (cache_match (rs, ip))
-	return rs;
+      if (cache_match (cache, index, ip))
+	return &cache->buckets[index];
     }
 
   for (index = cache->hash[hash (ip, cache->log_size)];
        index < DWARF_UNW_CACHE_SIZE(cache->log_size);
-       index = rs->coll_chain)
+       index = cache->links[index].coll_chain)
     {
-      rs = cache->buckets + index;
-      if (cache_match (rs, ip))
-	return rs;
+      if (cache_match (cache, index, ip))
+	return &cache->buckets[index];
     }
   return NULL;
 }
@@ -654,50 +655,41 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 static inline dwarf_reg_state_t *
 rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 {
-  dwarf_reg_state_t *rs, *prev, *tmp;
+  dwarf_reg_state_t *rs;
   unw_hash_index_t index;
   unsigned short head;
 
   head = cache->lru_head;
-  rs = cache->buckets + head;
-  cache->lru_head = rs->lru_chain;
+  cache->lru_head = cache->links[head].lru_chain;
 
   /* re-insert rs at the tail of the LRU chain: */
-  cache->buckets[cache->lru_tail].lru_chain = head;
+  cache->links[cache->lru_tail].lru_chain = head;
   cache->lru_tail = head;
 
   /* remove the old rs from the hash table (if it's there): */
-  if (rs->ip)
+  if (cache->links[head].ip)
     {
-      index = hash (rs->ip, cache->log_size);
-      tmp = cache->buckets + cache->hash[index];
-      prev = NULL;
-      while (1)
-        {
-          if (tmp == rs)
-            {
-              if (prev)
-                prev->coll_chain = tmp->coll_chain;
-              else
-                cache->hash[index] = tmp->coll_chain;
-              break;
-            }
-          else
-            prev = tmp;
-          if (tmp->coll_chain >= DWARF_UNW_CACHE_SIZE(cache->log_size))
-            /* old rs wasn't in the hash-table */
-            break;
-          tmp = cache->buckets + tmp->coll_chain;
-        }
+      unsigned short *pindex;
+      for (pindex = &cache->hash[hash (cache->links[head].ip, cache->log_size)];
+	   *pindex < DWARF_UNW_CACHE_SIZE(cache->log_size);
+	   pindex = &cache->links[*pindex].coll_chain)
+	{
+	  if (*pindex == head)
+	    {
+	      *pindex = cache->links[*pindex].coll_chain;
+	      break;
+	    }
+	}
     }
 
   /* enter new rs in the hash table */
   index = hash (c->ip, cache->log_size);
-  rs->coll_chain = cache->hash[index];
-  cache->hash[index] = rs - cache->buckets;
+  cache->links[head].coll_chain = cache->hash[index];
+  cache->hash[index] = head;
 
-  rs->ip = c->ip;
-  rs->valid = 1;
+  cache->links[head].ip = c->ip;
+  cache->links[head].valid = 1;
+  rs = cache->buckets + head;
   rs->ret_addr_column = c->ret_addr_column;
   rs->signal_frame = 0;
   tdep_cache_frame (c, rs);
@@ -889,9 +881,6 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       (rs = rs_lookup(cache, c)))
     {
       /* update hint; no locking needed: single-word writes are atomic */
-      cache->buckets[c->prev_rs].hint = rs - cache->buckets + 1;
-      c->prev_rs = rs - cache->buckets;
-      c->hint = rs->hint;
       c->ret_addr_column = rs->ret_addr_column;
       c->use_prev_instr = ! rs->signal_frame;
       memcpy (&sr.rs_current, rs, sizeof (*rs));
@@ -906,15 +895,22 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       if (cache && ret >= 0)
 	{
 	  rs = rs_new (cache, c);
-	  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
-	  cache->buckets[c->prev_rs].hint = rs - cache->buckets;
-	  c->prev_rs = rs - cache->buckets;
-	  c->hint = rs->hint = 0;
+	  cache->links[rs - cache->buckets].hint = 0;
+	  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ret_addr_column));
 	}
     }
 
   if (cache)
-    put_rs_cache (c->as, cache, &saved_mask);
+    {
+      put_rs_cache (c->as, cache, &saved_mask);
+      if (rs)
+	{
+	  unsigned short index = rs - cache->buckets;
+	  c->hint = cache->links[index].hint;
+	  cache->links[c->prev_rs].hint = index + 1;
+	  c->prev_rs = index;
+	}
+    }
   if (ret < 0)
       return ret;
   if (cache)
