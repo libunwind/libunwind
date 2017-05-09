@@ -874,12 +874,10 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   return 0;
 }
 
-/* The function finds the saved locations and applies the register
-   state as well. */
-HIDDEN int
-dwarf_find_save_locs (struct dwarf_cursor *c)
+/* Find the saved locations. */
+static int
+find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 {
-  dwarf_state_record_t sr;
   dwarf_reg_state_t *rs;
   struct dwarf_rs_cache *cache;
   int ret = 0;
@@ -891,20 +889,20 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       /* update hint; no locking needed: single-word writes are atomic */
       c->ret_addr_column = rs->ret_addr_column;
       c->use_prev_instr = ! rs->signal_frame;
-      memcpy (&sr.rs_current, rs, sizeof (*rs));
+      memcpy (&sr->rs_current, rs, sizeof (*rs));
     }
   else
     {
       ret = fetch_proc_info (c, c->ip, 1);
       if (ret >= 0)
-	ret = create_state_record_for (c, &sr, c->ip);
+	ret = create_state_record_for (c, sr, c->ip);
       put_unwind_info (c, &c->pi);
 
       if (cache && ret >= 0)
 	{
 	  rs = rs_new (cache, c);
 	  cache->links[rs - cache->buckets].hint = 0;
-	  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ret_addr_column));
+	  memcpy(rs, &sr->rs_current, offsetof(struct dwarf_reg_state, ret_addr_column));
 	}
     }
 
@@ -923,6 +921,18 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       return ret;
   if (cache)
     tdep_reuse_frame (c, rs);
+  return 0;
+}
+
+/* The function finds the saved locations and applies the register
+   state as well. */
+HIDDEN int
+dwarf_find_save_locs (struct dwarf_cursor *c)
+{
+  int ret;
+  dwarf_state_record_t sr;
+  if ((ret = find_reg_state (c, &sr)) < 0)
+    return ret;
   if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
