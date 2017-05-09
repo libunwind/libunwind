@@ -759,8 +759,8 @@ eval_location_expr (struct dwarf_cursor *c, unw_addr_space_t as,
   return 0;
 }
 
-HIDDEN int
-dwarf_apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
+static int
+apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 {
   unw_word_t regnum, addr, cfa, ip;
   unw_word_t prev_ip, prev_cfa;
@@ -933,7 +933,7 @@ dwarf_step (struct dwarf_cursor *c)
   dwarf_state_record_t sr;
   if ((ret = find_reg_state (c, &sr)) < 0)
     return ret;
-  if ((ret = dwarf_apply_reg_state (c, &sr.rs_current)) < 0)
+  if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
   return 1;
@@ -1024,4 +1024,10 @@ dwarf_reg_states_iterate(struct dwarf_cursor *c,
       }
   put_unwind_info (c, &c->pi);
   return ret;
+}
+
+HIDDEN int
+dwarf_apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
+{
+  return apply_reg_state(c, rs);
 }
