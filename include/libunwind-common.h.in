@@ -139,6 +139,11 @@ typedef struct unw_proc_info
   }
 unw_proc_info_t;
 
+typedef int (*unw_reg_states_callback)(void *token,
+				       void *reg_states_data,
+				       size_t reg_states_data_size,
+				       unw_word_t start_ip, unw_word_t end_ip);
+
 /* These are backend callback routines that provide access to the
    state of a "remote" process.  This can be used, for example, to
    unwind another process through the ptrace() interface.  */
@@ -218,6 +223,8 @@ unw_save_loc_t;
 #define unw_resume		UNW_OBJ(resume)
 #define unw_get_proc_info	UNW_OBJ(get_proc_info)
 #define unw_get_proc_info_by_ip	UNW_OBJ(get_proc_info_by_ip)
+#define unw_reg_states_iterate  UNW_OBJ(reg_states_iterate)
+#define unw_apply_reg_state     UNW_OBJ(apply_reg_state)
 #define unw_get_reg		UNW_OBJ(get_reg)
 #define unw_set_reg		UNW_OBJ(set_reg)
 #define unw_get_fpreg		UNW_OBJ(get_fpreg)
@@ -248,6 +255,8 @@ extern int unw_resume (unw_cursor_t *);
 extern int unw_get_proc_info (unw_cursor_t *, unw_proc_info_t *);
 extern int unw_get_proc_info_by_ip (unw_addr_space_t, unw_word_t,
 				    unw_proc_info_t *, void *);
+extern int unw_reg_states_iterate (unw_cursor_t *, unw_reg_states_callback, void *);
+extern int unw_apply_reg_state (unw_cursor_t *, void *);
 extern int unw_get_reg (unw_cursor_t *, int, unw_word_t *);
 extern int unw_set_reg (unw_cursor_t *, int, unw_word_t);
 extern int unw_get_fpreg (unw_cursor_t *, int, unw_fpreg_t *);
