@@ -88,6 +88,8 @@ filter_misc () {
 }
 
 check_local_unw_abi () {
+    match _UL${plat}_apply_reg_state
+    match _UL${plat}_reg_states_iterate
     match _UL${plat}_create_addr_space
     match _UL${plat}_destroy_addr_space
     match _UL${plat}_get_fpreg
@@ -190,6 +192,8 @@ check_local_unw_abi () {
 }
 
 check_generic_unw_abi () {
+    match _U${plat}_apply_reg_state
+    match _U${plat}_reg_states_iterate
     match _U${plat}_create_addr_space
     match _U${plat}_destroy_addr_space
     match _U${plat}_flush_cache
