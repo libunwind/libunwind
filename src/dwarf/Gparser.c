@@ -927,7 +927,7 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 /* The function finds the saved locations and applies the register
    state as well. */
 HIDDEN int
-dwarf_find_save_locs (struct dwarf_cursor *c)
+dwarf_step (struct dwarf_cursor *c)
 {
   int ret;
   dwarf_state_record_t sr;
@@ -936,7 +936,7 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
   if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
-  return 0;
+  return 1;
 }
 
 HIDDEN int
