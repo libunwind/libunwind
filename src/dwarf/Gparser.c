@@ -499,6 +499,7 @@ put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
       mempool_free (&dwarf_cie_info_pool, pi->unwind_info);
       pi->unwind_info = NULL;
     }
+  c->pi_valid = 0;
 }
 
 static inline int
