@@ -759,8 +759,8 @@ eval_location_expr (struct dwarf_cursor *c, unw_addr_space_t as,
   return 0;
 }
 
-static int
-apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
+HIDDEN int
+dwarf_apply_reg_state (struct dwarf_cursor *c, dwarf_reg_state_t *rs)
 {
   unw_word_t regnum, addr, cfa, ip;
   unw_word_t prev_ip, prev_cfa;
@@ -933,7 +933,7 @@ dwarf_step (struct dwarf_cursor *c)
   dwarf_state_record_t sr;
   if ((ret = find_reg_state (c, &sr)) < 0)
     return ret;
-  if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
+  if ((ret = dwarf_apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
   return 1;
@@ -962,4 +962,66 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
   c->args_size = sr.args_size;
 
   return 0;
+}
+
+static int
+dwarf_reg_states_dynamic_iterate(struct dwarf_cursor *c,
+				 unw_reg_states_callback cb,
+				 void *token)
+{
+  Debug (1, "Not yet implemented\n");
+#if 0
+  /* Don't forget to set the ret_addr_column!  */
+  c->ret_addr_column = XXX;
+#endif
+  return -UNW_ENOINFO;
+}
+
+static int
+dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
+			       unw_reg_states_callback cb,
+			       void *token)
+{
+  dwarf_state_record_t sr;
+  int ret = setup_fde(c, &sr);
+  struct dwarf_cie_info *dci = c->pi.unwind_info;
+  unw_word_t addr = dci->fde_instr_start;
+  unw_word_t curr_ip = c->pi.start_ip;
+  while (ret >= 0 && curr_ip < c->pi.end_ip && addr < dci->fde_instr_end)
+    {
+      unw_word_t prev_ip = curr_ip;
+      ret = run_cfi_program (c, &sr, &curr_ip, prev_ip, &addr, dci->fde_instr_end, dci);
+      if (ret >= 0 && prev_ip < curr_ip)
+	ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), prev_ip, curr_ip);
+    }
+  if (ret >= 0 && curr_ip < c->pi.last_ip)
+    /* report the dead zone after the procedure ends */
+    ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), curr_ip, c->pi.last_ip);
+  return ret;
+}
+
+HIDDEN int
+dwarf_reg_states_iterate(struct dwarf_cursor *c,
+			 unw_reg_states_callback cb,
+			 void *token)
+{
+  int ret = fetch_proc_info (c, c->ip, 1);
+  if (ret >= 0)
+    switch (c->pi.format)
+      {
+      case UNW_INFO_FORMAT_TABLE:
+      case UNW_INFO_FORMAT_REMOTE_TABLE:
+	ret = dwarf_reg_states_table_iterate(c, cb, token);
+	break;
+	  
+      case UNW_INFO_FORMAT_DYNAMIC:
+	ret = dwarf_reg_states_dynamic_iterate (c, cb, token);
+	break;
+	  
+      default:
+	Debug (1, "Unexpected unwind-info format %d\n", c->pi.format);
+	ret = -UNW_EINVAL;
+      }
+  put_unwind_info (c, &c->pi);
+  return ret;
 }
