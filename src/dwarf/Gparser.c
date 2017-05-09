@@ -760,7 +760,7 @@ eval_location_expr (struct dwarf_cursor *c, unw_addr_space_t as,
 }
 
 HIDDEN int
-dwarf_apply_reg_state (struct dwarf_cursor *c, dwarf_reg_state_t *rs)
+dwarf_apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 {
   unw_word_t regnum, addr, cfa, ip;
   unw_word_t prev_ip, prev_cfa;
