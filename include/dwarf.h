@@ -406,6 +406,8 @@ struct dwarf_callback_data
                 UNW_OBJ (dwarf_extract_proc_info_from_fde)
 #define dwarf_find_save_locs            UNW_OBJ (dwarf_find_save_locs)
 #define dwarf_make_proc_info            UNW_OBJ (dwarf_make_proc_info)
+#define dwarf_apply_reg_state           UNW_OBJ (dwarf_apply_reg_state)
+#define dwarf_reg_states_iterate        UNW_OBJ (dwarf_reg_states_iterate)
 #define dwarf_read_encoded_pointer      UNW_OBJ (dwarf_read_encoded_pointer)
 #define dwarf_step                      UNW_OBJ (dwarf_step)
 #define dwarf_flush_rs_cache            UNW_OBJ (dwarf_flush_rs_cache)
@@ -448,6 +450,8 @@ extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
                                              void *arg);
 extern int dwarf_find_save_locs (struct dwarf_cursor *c);
 extern int dwarf_make_proc_info (struct dwarf_cursor *c);
+extern int dwarf_apply_reg_state (struct dwarf_cursor *c, dwarf_reg_state_t *rs);
+extern int dwarf_reg_states_iterate (struct dwarf_cursor *c, unw_reg_states_callback cb, void *token);
 extern int dwarf_read_encoded_pointer (unw_addr_space_t as,
                                        unw_accessors_t *a,
                                        unw_word_t *addr,
