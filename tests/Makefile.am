@@ -186,8 +186,10 @@ Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) @BACKTRACELIB@
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Gperf_simple_CFLAGS = $(AM_CFLAGS) $(OPENMP_CFLAGS)
 Gperf_simple_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_trace_LDADD=$(LIBUNWIND) $(LIBUNWIND_local)
+Gperf_trace_CFLAGS = $(AM_CFLAGS) $(OPENMP_CFLAGS)
 Gperf_trace_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Ltest_bt_LDADD = $(LIBUNWIND_local)
@@ -199,8 +201,10 @@ Ltest_nomalloc_LDADD = $(LIBUNWIND_local) @DLLIB@
 Ltest_nocalloc_LDADD = $(LIBUNWIND_local) @DLLIB@ -lpthread
 Ltest_resume_sig_LDADD = $(LIBUNWIND_local)
 Ltest_resume_sig_rt_LDADD = $(LIBUNWIND_local)
+Lperf_simple_CFLAGS = $(AM_CFLAGS) $(OPENMP_CFLAGS)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
+Lperf_trace_CFLAGS = $(AM_CFLAGS) $(OPENMP_CFLAGS)
 Lperf_trace_LDADD = $(LIBUNWIND_local)
 
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)

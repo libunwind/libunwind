@@ -537,11 +537,11 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
     cache->log_size = DWARF_DEFAULT_LOG_UNW_CACHE_SIZE;
   } else {
     if (cache->hash && cache->hash != cache->default_hash)
-      munmap(cache->hash, DWARF_UNW_HASH_SIZE(cache->prev_log_size)
-                           * sizeof (cache->hash[0]));
+      mi_munmap(cache->hash, DWARF_UNW_HASH_SIZE(cache->prev_log_size)
+                              * sizeof (cache->hash[0]));
     if (cache->buckets && cache->buckets != cache->default_buckets)
-      munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
-	                      * sizeof (cache->buckets[0]));
+      mi_munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
+	                         * sizeof (cache->buckets[0]));
     GET_MEMORY(cache->hash, DWARF_UNW_HASH_SIZE(cache->log_size)
                              * sizeof (cache->hash[0]));
     GET_MEMORY(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->log_size)
@@ -580,7 +580,17 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (caching == UNW_CACHE_NONE)
     return NULL;
 
+#if defined(HAVE___THREAD) && HAVE___THREAD
+  if (likely (caching == UNW_CACHE_PER_THREAD))
+    {
+      static __thread struct dwarf_rs_cache tls_cache __attribute__((tls_model("initial-exec")));
+      Debug (16, "using TLS cache\n");
+      cache = &tls_cache;
+    }
+  else
+#else
   if (likely (caching == UNW_CACHE_GLOBAL))
+#endif
     {
       Debug (16, "acquiring lock\n");
       lock_acquire (&cache->lock, *saved_maskp);
@@ -589,6 +599,8 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if ((atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
        || !cache->hash)
     {
+      /* cache_size is only set in the global_cache, copy it over before flushing */
+      cache->log_size = as->global_cache.log_size;
       if (dwarf_flush_rs_cache (cache) < 0)
         return NULL;
       cache->generation = as->cache_generation;

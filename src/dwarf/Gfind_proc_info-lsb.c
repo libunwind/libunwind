@@ -108,7 +108,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   if (!shdr ||
       (shdr->sh_offset + shdr->sh_size > ei.size))
     {
-      munmap(ei.image, ei.size);
+      mi_munmap(ei.image, ei.size);
       return 1;
     }
 
@@ -120,7 +120,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
   Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
 	 *bufsize, shdr->sh_offset);
 
-  munmap(ei.image, ei.size);
+  mi_munmap(ei.image, ei.size);
   return 0;
 }
 
@@ -448,7 +448,7 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
          eh_frame);
 
 out:
-  munmap (ei.image, ei.size);
+  mi_munmap (ei.image, ei.size);
 
   return eh_frame;
 }

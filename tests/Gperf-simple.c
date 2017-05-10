@@ -129,6 +129,7 @@ doit (const char *label)
       if (i == 0)
 	first_step = step;
     }
+  #pragma omp single
   printf ("%s: unw_step : 1st=%9.3f min=%9.3f avg=%9.3f nsec\n", label,
 	  1e9*first_step, 1e9*min_step, 1e9*sum_step/iterations);
 }
@@ -249,13 +250,19 @@ main (int argc, char **argv)
 
   measure_init ();
 
+  #pragma omp parallel
+  doit ("default         ");
+
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_NONE);
+  #pragma omp parallel
   doit ("no cache        ");
 
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_GLOBAL);
+  #pragma omp parallel
   doit ("global cache    ");
 
   unw_set_caching_policy (unw_local_addr_space, UNW_CACHE_PER_THREAD);
+  #pragma omp parallel
   doit ("per-thread cache");
 
   return 0;

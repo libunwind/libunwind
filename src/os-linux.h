@@ -289,7 +289,7 @@ maps_close (struct map_iterator *mi)
   mi->fd = -1;
   if (mi->buf)
     {
-      munmap (mi->buf_end - mi->buf_size, mi->buf_size);
+      mi_munmap (mi->buf_end - mi->buf_size, mi->buf_size);
       mi->buf = mi->buf_end = NULL;
     }
 }
