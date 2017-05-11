@@ -60,9 +60,9 @@ set_reg (dwarf_state_record_t *sr, unw_word_t regnum, dwarf_where_t where,
 }
 
 static inline int
-push_rstate_stack(dwarf_reg_state_t **rs_stack)
+push_rstate_stack(dwarf_stackable_reg_state_t **rs_stack)
 {
-  dwarf_reg_state_t *old_rs = *rs_stack;
+  dwarf_stackable_reg_state_t *old_rs = *rs_stack;
   if (NULL == (*rs_stack = alloc_reg_state ()))
     {
       *rs_stack = old_rs;
@@ -73,9 +73,9 @@ push_rstate_stack(dwarf_reg_state_t **rs_stack)
 }
 
 static inline void
-pop_rstate_stack(dwarf_reg_state_t **rs_stack)
+pop_rstate_stack(dwarf_stackable_reg_state_t **rs_stack)
 {
-  dwarf_reg_state_t *old_rs = *rs_stack;
+  dwarf_stackable_reg_state_t *old_rs = *rs_stack;
   *rs_stack = old_rs->next;
   free_reg_state (old_rs);
 }
@@ -87,7 +87,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 		 unw_word_t *addr, unw_word_t end_addr,
                  struct dwarf_cie_info *dci)
 {
-  dwarf_reg_state_t *rs_stack = NULL;
+  dwarf_stackable_reg_state_t *rs_stack = NULL;
   unw_addr_space_t as;
   void *arg;
 
@@ -269,7 +269,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
               ret = -UNW_ENOMEM;
               break;
 	    }
-          memcpy (rs_stack->reg, sr->rs_current.reg, sizeof (rs_stack->reg));
+          memcpy (rs_stack->state.reg, sr->rs_current.reg, sizeof (rs_stack->state.reg));
           Debug (15, "CFA_remember_state\n");
           break;
 
@@ -280,7 +280,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
               ret = -UNW_EINVAL;
               break;
             }
-          memcpy (&sr->rs_current.reg, &rs_stack->reg, sizeof (rs_stack->reg));
+          memcpy (&sr->rs_current.reg, &rs_stack->state.reg, sizeof (rs_stack->state.reg));
 	  pop_rstate_stack(&rs_stack);
           Debug (15, "CFA_restore_state\n");
           break;
