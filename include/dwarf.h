@@ -258,12 +258,18 @@ dwarf_save_loc_t;
 
 typedef struct dwarf_reg_state
   {
-    struct dwarf_reg_state *next;       /* for rs_stack */
     dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
     unw_word_t ret_addr_column;           /* indicates which column in the rule table represents return address */
     unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
   }
 dwarf_reg_state_t;
+
+typedef struct dwarf_stackable_reg_state
+  {
+    struct dwarf_stackable_reg_state *next;       /* for rs_stack */
+    dwarf_reg_state_t state;
+  }
+dwarf_stackable_reg_state_t;
 
 typedef struct dwarf_reg_cache_entry
   {
