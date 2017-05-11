@@ -206,8 +206,8 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 # define tdep_reuse_frame               UNW_OBJ(reuse_frame)
 #else
 # define tdep_fetch_frame(c,ip,n)       do {} while(0)
-# define tdep_cache_frame(c,rs)         do {} while(0)
-# define tdep_reuse_frame(c,rs)         do {} while(0)
+# define tdep_cache_frame(c)            0
+# define tdep_reuse_frame(c,frame)      do {} while(0)
 #endif
 #define tdep_stash_frame                UNW_OBJ(stash_frame)
 #define tdep_trace                      UNW_OBJ(tdep_trace)
@@ -251,10 +251,9 @@ extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
 #if __linux__
 extern void tdep_fetch_frame (struct dwarf_cursor *c, unw_word_t ip,
                               int need_unwind_info);
-extern void tdep_cache_frame (struct dwarf_cursor *c,
-                              struct dwarf_reg_state *rs);
+extern int tdep_cache_frame (struct dwarf_cursor *c);
 extern void tdep_reuse_frame (struct dwarf_cursor *c,
-                              struct dwarf_reg_state *rs);
+                              int frame);
 extern void tdep_stash_frame (struct dwarf_cursor *c,
                               struct dwarf_reg_state *rs);
 #endif
