@@ -259,8 +259,6 @@ dwarf_save_loc_t;
 typedef struct dwarf_reg_state
   {
     dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
-    unw_word_t ret_addr_column;           /* indicates which column in the rule table represents return address */
-    unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
   }
 dwarf_reg_state_t;
 
@@ -277,7 +275,9 @@ typedef struct dwarf_reg_cache_entry
     unsigned short lru_chain;     /* used for least-recently-used chain */
     unsigned short coll_chain;  /* used for hash collisions */
     unsigned short hint;              /* hint for next rs to try (or -1) */
+    unw_word_t ret_addr_column;           /* indicates which column in the rule table represents return address */
     unsigned short valid : 1;         /* optional machine-dependent signal info */
+    unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
   }
 dwarf_reg_cache_entry_t;
 

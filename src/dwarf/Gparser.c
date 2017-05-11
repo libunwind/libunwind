@@ -668,7 +668,6 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 static inline dwarf_reg_state_t *
 rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 {
-  dwarf_reg_state_t *rs;
   unw_hash_index_t index;
   unsigned short head;
 
@@ -702,12 +701,9 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 
   cache->links[head].ip = c->ip;
   cache->links[head].valid = 1;
-  rs = cache->buckets + head;
-  rs->ret_addr_column = c->ret_addr_column;
-  rs->signal_frame = 0;
-  tdep_cache_frame (c, rs);
-
-  return rs;
+  cache->links[head].ret_addr_column = c->ret_addr_column;
+  cache->links[head].signal_frame = tdep_cache_frame(c);
+  return cache->buckets + head;
 }
 
 static int
@@ -887,8 +883,9 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
       (rs = rs_lookup(cache, c)))
     {
       /* update hint; no locking needed: single-word writes are atomic */
-      c->ret_addr_column = rs->ret_addr_column;
-      c->use_prev_instr = ! rs->signal_frame;
+      unsigned short index = rs - cache->buckets;
+      c->ret_addr_column = cache->links[index].ret_addr_column;
+      c->use_prev_instr = ! cache->links[index].signal_frame;
       memcpy (&sr->rs_current, rs, sizeof (*rs));
     }
   else
@@ -902,16 +899,17 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 	{
 	  rs = rs_new (cache, c);
 	  cache->links[rs - cache->buckets].hint = 0;
-	  memcpy(rs, &sr->rs_current, offsetof(struct dwarf_reg_state, ret_addr_column));
+	  memcpy(rs, &sr->rs_current, sizeof(*rs));
 	}
     }
 
+  unsigned short index = -1;
   if (cache)
     {
       put_rs_cache (c->as, cache, &saved_mask);
       if (rs)
 	{
-	  unsigned short index = rs - cache->buckets;
+	  index = rs - cache->buckets;
 	  c->hint = cache->links[index].hint;
 	  cache->links[c->prev_rs].hint = index + 1;
 	  c->prev_rs = index;
@@ -920,7 +918,7 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   if (ret < 0)
       return ret;
   if (cache)
-    tdep_reuse_frame (c, rs);
+    tdep_reuse_frame (c, cache->links[index].signal_frame);
   return 0;
 }
 
