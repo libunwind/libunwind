@@ -898,7 +898,11 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       pi->flags = UNW_PI_FLAG_DEBUG_FRAME;
     }
 
+#if defined(NEED_LAST_IP)
   pi->last_ip = last_ip;
+#else
+  (void)last_ip;
+#endif
   if (ip < pi->start_ip || ip >= pi->end_ip)
     return -UNW_ENOINFO;
 

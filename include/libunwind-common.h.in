@@ -126,7 +126,9 @@ typedef struct unw_proc_info
   {
     unw_word_t start_ip;	/* first IP covered by this procedure */
     unw_word_t end_ip;		/* first IP NOT covered by this procedure */
+#if defined(NEED_LAST_IP)
     unw_word_t last_ip;		/* first IP that could begin another procedure */
+#endif
     unw_word_t lsda;		/* address of lang.-spec. data area (if any) */
     unw_word_t handler;		/* optional personality routine */
     unw_word_t gp;		/* global-pointer value for this procedure */

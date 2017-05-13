@@ -992,9 +992,15 @@ dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
       if (ret >= 0 && prev_ip < curr_ip)
 	ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), prev_ip, curr_ip);
     }
+#if defined(NEED_LAST_IP)
   if (ret >= 0 && curr_ip < c->pi.last_ip)
     /* report the dead zone after the procedure ends */
     ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), curr_ip, c->pi.last_ip);
+#else
+  if (ret >= 0 && curr_ip < c->pi.end_ip)
+    /* report for whatever is left before procedure end */
+    ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), curr_ip, c->pi.end_ip);
+#endif
   return ret;
 }
 
