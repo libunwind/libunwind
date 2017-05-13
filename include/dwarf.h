@@ -456,7 +456,7 @@ extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
                                              void *arg);
 extern int dwarf_find_save_locs (struct dwarf_cursor *c);
 extern int dwarf_make_proc_info (struct dwarf_cursor *c);
-extern int dwarf_apply_reg_state (struct dwarf_cursor *c, dwarf_reg_state_t *rs);
+extern int dwarf_apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs);
 extern int dwarf_reg_states_iterate (struct dwarf_cursor *c, unw_reg_states_callback cb, void *token);
 extern int dwarf_read_encoded_pointer (unw_addr_space_t as,
                                        unw_accessors_t *a,
