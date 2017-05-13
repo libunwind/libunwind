@@ -1,6 +1,8 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (c) 2003-2004 Hewlett-Packard Development Company, L.P.
+   Copyright (c) 2002-2003 Hewlett-Packard Development Company, L.P.
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+
+   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
 
 This file is part of libunwind.
 
@@ -23,15 +25,13 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "dwarf_i.h"
+#include "unwind_i.h"
 
-HIDDEN struct mempool dwarf_reg_state_pool;
-HIDDEN struct mempool dwarf_cie_info_pool;
-
-HIDDEN int
-dwarf_init (void)
+PROTECTED int
+unw_apply_reg_state (unw_cursor_t *cursor,
+		     void *reg_states_data)
 {
-  mempool_init (&dwarf_reg_state_pool, sizeof (dwarf_stackable_reg_state_t), 0);
-  mempool_init (&dwarf_cie_info_pool, sizeof (struct dwarf_cie_info), 0);
-  return 0;
+  struct cursor *c = (struct cursor *) cursor;
+
+  return dwarf_apply_reg_state (&c->dwarf, (dwarf_reg_state_t *)reg_states_data);
 }
