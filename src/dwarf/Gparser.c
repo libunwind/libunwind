@@ -80,14 +80,21 @@ pop_rstate_stack(dwarf_stackable_reg_state_t **rs_stack)
   free_reg_state (old_rs);
 }
 
+static inline void
+empty_rstate_stack(dwarf_stackable_reg_state_t **rs_stack)
+{
+  while (*rs_stack)
+    pop_rstate_stack(rs_stack);
+}
+
 /* Run a CFI program to update the register state.  */
 static int
 run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
                  unw_word_t *ip, unw_word_t end_ip,
 		 unw_word_t *addr, unw_word_t end_addr,
+		 dwarf_stackable_reg_state_t **rs_stack,
                  struct dwarf_cie_info *dci)
 {
-  dwarf_stackable_reg_state_t *rs_stack = NULL;
   unw_addr_space_t as;
   void *arg;
 
@@ -263,25 +270,27 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           break;
 
         case DW_CFA_remember_state:
-	  if (push_rstate_stack(&rs_stack) < 0)
+	  if (push_rstate_stack(rs_stack) < 0)
 	    {
               Debug (1, "Out of memory in DW_CFA_remember_state\n");
               ret = -UNW_ENOMEM;
               break;
 	    }
-          memcpy (rs_stack->state.reg, sr->rs_current.reg, sizeof (rs_stack->state.reg));
+          memcpy ((*rs_stack)->state.reg, sr->rs_current.reg,
+		  sizeof (dwarf_reg_state_t))
           Debug (15, "CFA_remember_state\n");
           break;
 
         case DW_CFA_restore_state:
-          if (!rs_stack)
+          if (!*rs_stack)
             {
               Debug (1, "register-state stack underflow\n");
               ret = -UNW_EINVAL;
               break;
             }
-          memcpy (&sr->rs_current.reg, &rs_stack->state.reg, sizeof (rs_stack->state.reg));
-	  pop_rstate_stack(&rs_stack);
+          memcpy (&sr->rs_current.reg, &(*rs_stack)->state.reg,
+		  sizeof (dwarf_reg_state_t));
+	  pop_rstate_stack(rs_stack);
           Debug (15, "CFA_restore_state\n");
           break;
 
@@ -412,9 +421,6 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
         }
     }
 
-  /* Free the register-state stack, if not empty already.  */
-  while (rs_stack)
-    pop_rstate_stack(&rs_stack);
   if (ret > 0)
     ret = 0;
   return ret;
@@ -517,8 +523,12 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   c->ret_addr_column = dci->ret_addr_column;
   unw_word_t addr = dci->cie_instr_start;
   unw_word_t curr_ip = 0;
-  if ((ret = run_cfi_program (c, sr, &curr_ip, ~(unw_word_t) 0, &addr,
-                              dci->cie_instr_end, dci)) < 0)
+  dwarf_stackable_reg_state_t *rs_stack = NULL;
+  ret = run_cfi_program (c, sr, &curr_ip, ~(unw_word_t) 0, &addr,
+			 dci->cie_instr_end,
+			 &rs_stack, dci);
+  empty_rstate_stack(&rs_stack);
+  if (ret < 0)
     return ret;
 
   memcpy (&sr->rs_initial, &sr->rs_current, sizeof (sr->rs_initial));
@@ -532,7 +542,11 @@ parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
   struct dwarf_cie_info *dci = c->pi.unwind_info;
   unw_word_t addr = dci->fde_instr_start;
   unw_word_t curr_ip = c->pi.start_ip;
-  if ((ret = run_cfi_program (c, sr, &curr_ip, ip, &addr, dci->fde_instr_end, dci)) < 0)
+  dwarf_stackable_reg_state_t *rs_stack = NULL;
+  ret = run_cfi_program (c, sr, &curr_ip, ip, &addr, dci->fde_instr_end,
+			 &rs_stack, dci);
+  empty_rstate_stack(&rs_stack);
+  if (ret < 0)
     return ret;
 
   return 0;
@@ -985,13 +999,16 @@ dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
   struct dwarf_cie_info *dci = c->pi.unwind_info;
   unw_word_t addr = dci->fde_instr_start;
   unw_word_t curr_ip = c->pi.start_ip;
+  dwarf_stackable_reg_state_t *rs_stack = NULL;
   while (ret >= 0 && curr_ip < c->pi.end_ip && addr < dci->fde_instr_end)
     {
       unw_word_t prev_ip = curr_ip;
-      ret = run_cfi_program (c, &sr, &curr_ip, prev_ip, &addr, dci->fde_instr_end, dci);
+      ret = run_cfi_program (c, &sr, &curr_ip, prev_ip, &addr, dci->fde_instr_end,
+			     &rs_stack, dci);
       if (ret >= 0 && prev_ip < curr_ip)
 	ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), prev_ip, curr_ip);
     }
+  empty_rstate_stack(&rs_stack);
 #if defined(NEED_LAST_IP)
   if (ret >= 0 && curr_ip < c->pi.last_ip)
     /* report the dead zone after the procedure ends */
