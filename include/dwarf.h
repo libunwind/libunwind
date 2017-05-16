@@ -236,13 +236,6 @@ typedef enum
   }
 dwarf_where_t;
 
-typedef struct
-  {
-    dwarf_where_t where;        /* how is the register saved? */
-    unw_word_t val;             /* where it's saved */
-  }
-dwarf_save_loc_t;
-
 /* For uniformity, we'd like to treat the CFA save-location like any
    other register save-location, but this doesn't quite work, because
    the CFA can be expressed as a (REGISTER,OFFSET) pair.  To handle
@@ -258,7 +251,8 @@ dwarf_save_loc_t;
 
 typedef struct dwarf_reg_state
   {
-    dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
+    char where[DWARF_NUM_PRESERVED_REGS + 2];        /* how is the register saved? */
+    unw_word_t val[DWARF_NUM_PRESERVED_REGS + 2];             /* where it's saved */
   }
 dwarf_reg_state_t;
 

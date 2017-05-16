@@ -34,20 +34,20 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
   Debug (4, "ip=0x%lx cfa=0x%lx type %d cfa [where=%d val=%ld] cfaoff=%ld"
          " ra=0x%lx rbp [where=%d val=%ld @0x%lx] rsp [where=%d val=%ld @0x%lx]\n",
          d->ip, d->cfa, f->frame_type,
-         rs->reg[DWARF_CFA_REG_COLUMN].where,
-         rs->reg[DWARF_CFA_REG_COLUMN].val,
-         rs->reg[DWARF_CFA_OFF_COLUMN].val,
+         rs->where[DWARF_CFA_REG_COLUMN],
+         rs->val[DWARF_CFA_REG_COLUMN],
+         rs->val[DWARF_CFA_OFF_COLUMN],
          DWARF_GET_LOC(d->loc[d->ret_addr_column]),
-         rs->reg[RBP].where, rs->reg[RBP].val, DWARF_GET_LOC(d->loc[RBP]),
-         rs->reg[RSP].where, rs->reg[RSP].val, DWARF_GET_LOC(d->loc[RSP]));
+         rs->where[RBP], rs->val[RBP], DWARF_GET_LOC(d->loc[RBP]),
+         rs->where[RSP], rs->val[RSP], DWARF_GET_LOC(d->loc[RSP]));
 
-  if (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_EXPR &&
-    rs->reg[RBP].where == DWARF_WHERE_EXPR) {
+  if (rs->where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_EXPR &&
+    rs->where[RBP] == DWARF_WHERE_EXPR) {
     /* Check for GCC generated alignment frame for rsp.  A simple
      * def_cfa_expr that loads a constant offset from rbp, where the
      * addres of the rip was pushed on the stack */
-    unw_word_t cfa_addr = rs->reg[DWARF_CFA_REG_COLUMN].val;
-    unw_word_t rbp_addr = rs->reg[RBP].val;
+    unw_word_t cfa_addr = rs->val[DWARF_CFA_REG_COLUMN];
+    unw_word_t rbp_addr = rs->val[RBP];
     unw_word_t cfa_offset;
 
     int ret = dwarf_stack_aligned(d, cfa_addr, rbp_addr, &cfa_offset);
@@ -64,30 +64,30 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
       - RBP is unsaved or saved at CFA+offset, offset != -1;
       - RSP is unsaved or saved at CFA+offset, offset != -1.  */
   if (f->frame_type == UNW_X86_64_FRAME_OTHER
-      && (rs->reg[DWARF_CFA_REG_COLUMN].where == DWARF_WHERE_REG)
-      && (rs->reg[DWARF_CFA_REG_COLUMN].val == RBP
-          || rs->reg[DWARF_CFA_REG_COLUMN].val == RSP)
-      && labs((long) rs->reg[DWARF_CFA_OFF_COLUMN].val) < (1 << 28)
+      && (rs->where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
+      && (rs->val[DWARF_CFA_REG_COLUMN] == RBP
+          || rs->val[DWARF_CFA_REG_COLUMN] == RSP)
+      && labs((long) rs->val[DWARF_CFA_OFF_COLUMN]) < (1 << 28)
       && DWARF_GET_LOC(d->loc[d->ret_addr_column]) == d->cfa-8
-      && (rs->reg[RBP].where == DWARF_WHERE_UNDEF
-          || rs->reg[RBP].where == DWARF_WHERE_SAME
-          || (rs->reg[RBP].where == DWARF_WHERE_CFAREL
-              && labs((long) rs->reg[RBP].val) < (1 << 14)
-              && rs->reg[RBP].val+1 != 0))
-      && (rs->reg[RSP].where == DWARF_WHERE_UNDEF
-          || rs->reg[RSP].where == DWARF_WHERE_SAME
-          || (rs->reg[RSP].where == DWARF_WHERE_CFAREL
-              && labs((long) rs->reg[RSP].val) < (1 << 14)
-              && rs->reg[RSP].val+1 != 0)))
+      && (rs->where[RBP] == DWARF_WHERE_UNDEF
+          || rs->where[RBP] == DWARF_WHERE_SAME
+          || (rs->where[RBP] == DWARF_WHERE_CFAREL
+              && labs((long) rs->val[RBP]) < (1 << 14)
+              && rs->val[RBP]+1 != 0))
+      && (rs->where[RSP] == DWARF_WHERE_UNDEF
+          || rs->where[RSP] == DWARF_WHERE_SAME
+          || (rs->where[RSP] == DWARF_WHERE_CFAREL
+              && labs((long) rs->val[RSP]) < (1 << 14)
+              && rs->val[RSP]+1 != 0)))
   {
     /* Save information for a standard frame. */
     f->frame_type = UNW_X86_64_FRAME_STANDARD;
-    f->cfa_reg_rsp = (rs->reg[DWARF_CFA_REG_COLUMN].val == RSP);
-    f->cfa_reg_offset = rs->reg[DWARF_CFA_OFF_COLUMN].val;
-    if (rs->reg[RBP].where == DWARF_WHERE_CFAREL)
-      f->rbp_cfa_offset = rs->reg[RBP].val;
-    if (rs->reg[RSP].where == DWARF_WHERE_CFAREL)
-      f->rsp_cfa_offset = rs->reg[RSP].val;
+    f->cfa_reg_rsp = (rs->val[DWARF_CFA_REG_COLUMN] == RSP);
+    f->cfa_reg_offset = rs->val[DWARF_CFA_OFF_COLUMN];
+    if (rs->where[RBP] == DWARF_WHERE_CFAREL)
+      f->rbp_cfa_offset = rs->val[RBP];
+    if (rs->where[RSP] == DWARF_WHERE_CFAREL)
+      f->rsp_cfa_offset = rs->val[RSP];
     Debug (4, " standard frame\n");
   }
 
