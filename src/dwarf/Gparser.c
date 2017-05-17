@@ -488,10 +488,6 @@ static int
 parse_dynamic (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
 {
   Debug (1, "Not yet implemented\n");
-#if 0
-  /* Don't forget to set the ret_addr_column!  */
-  c->ret_addr_column = XXX;
-#endif
   return -UNW_ENOINFO;
 }
 
@@ -521,6 +517,7 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 
   struct dwarf_cie_info *dci = c->pi.unwind_info;
   c->ret_addr_column = dci->ret_addr_column;
+  sr->rs_current.ret_addr_column  = dci->ret_addr_column;
   unw_word_t addr = dci->cie_instr_start;
   unw_word_t curr_ip = 0;
   dwarf_stackable_reg_state_t *rs_stack = NULL;
@@ -715,7 +712,6 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 
   cache->links[head].ip = c->ip;
   cache->links[head].valid = 1;
-  cache->links[head].ret_addr_column = c->ret_addr_column;
   cache->links[head].signal_frame = tdep_cache_frame(c);
   return cache->buckets + head;
 }
@@ -860,11 +856,11 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 
   c->cfa = cfa;
   /* DWARF spec says undefined return address location means end of stack. */
-  if (DWARF_IS_NULL_LOC (c->loc[c->ret_addr_column]))
+  if (DWARF_IS_NULL_LOC (c->loc[rs->ret_addr_column]))
     c->ip = 0;
   else
   {
-    ret = dwarf_get (c, c->loc[c->ret_addr_column], &ip);
+    ret = dwarf_get (c, c->loc[rs->ret_addr_column], &ip);
     if (ret < 0)
       return ret;
     c->ip = ip;
@@ -898,7 +894,6 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
     {
       /* update hint; no locking needed: single-word writes are atomic */
       unsigned short index = rs - cache->buckets;
-      c->ret_addr_column = cache->links[index].ret_addr_column;
       c->use_prev_instr = ! cache->links[index].signal_frame;
       memcpy (&sr->rs_current, rs, sizeof (*rs));
     }
@@ -982,10 +977,6 @@ dwarf_reg_states_dynamic_iterate(struct dwarf_cursor *c,
 				 void *token)
 {
   Debug (1, "Not yet implemented\n");
-#if 0
-  /* Don't forget to set the ret_addr_column!  */
-  c->ret_addr_column = XXX;
-#endif
   return -UNW_ENOINFO;
 }
 
