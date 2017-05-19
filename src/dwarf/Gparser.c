@@ -856,13 +856,17 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   c->cfa = cfa;
   /* DWARF spec says undefined return address location means end of stack. */
   if (DWARF_IS_NULL_LOC (c->loc[rs->ret_addr_column]))
-    c->ip = 0;
+    {
+      c->ip = 0;
+      ret = 0;
+    }
   else
   {
     ret = dwarf_get (c, c->loc[rs->ret_addr_column], &ip);
     if (ret < 0)
       return ret;
     c->ip = ip;
+    ret = 1;
   }
 
   /* XXX: check for ip to be code_aligned */
@@ -876,7 +880,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   if (c->stash_frames)
     tdep_stash_frame (c, rs);
 
-  return 0;
+  return ret;
 }
 
 /* Find the saved locations. */
@@ -943,7 +947,7 @@ dwarf_step (struct dwarf_cursor *c)
     return ret;
   c->ret_addr_column = sr.rs_current.ret_addr_column;
 
-  return 1;
+  return ret;
 }
 
 HIDDEN int
