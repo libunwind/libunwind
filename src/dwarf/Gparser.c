@@ -516,7 +516,6 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
     set_reg (sr, i, DWARF_WHERE_SAME, 0);
 
   struct dwarf_cie_info *dci = c->pi.unwind_info;
-  c->ret_addr_column = dci->ret_addr_column;
   sr->rs_current.ret_addr_column  = dci->ret_addr_column;
   unw_word_t addr = dci->cie_instr_start;
   unw_word_t curr_ip = 0;
@@ -942,6 +941,7 @@ dwarf_step (struct dwarf_cursor *c)
     return ret;
   if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
+  c->ret_addr_column = sr.rs_current.ret_addr_column;
 
   return 1;
 }
