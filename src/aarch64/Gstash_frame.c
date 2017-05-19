@@ -39,7 +39,7 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
          rs->where[DWARF_CFA_REG_COLUMN],
          rs->val[DWARF_CFA_REG_COLUMN],
          rs->val[DWARF_CFA_OFF_COLUMN],
-         DWARF_GET_LOC(d->loc[d->ret_addr_column]),
+         DWARF_GET_LOC(d->loc[rs->ret_addr_column]),
          rs->where[FP], rs->val[FP], DWARF_GET_LOC(d->loc[FP]),
          rs->where[LR], rs->val[LR], DWARF_GET_LOC(d->loc[LR]),
          rs->where[SP], rs->val[SP], DWARF_GET_LOC(d->loc[SP]));
@@ -55,7 +55,7 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
       && (rs->val[DWARF_CFA_REG_COLUMN] == FP
           || rs->val[DWARF_CFA_REG_COLUMN] == SP)
       && labs(rs->val[DWARF_CFA_OFF_COLUMN]) < (1 << 29)
-      && d->ret_addr_column == LR
+      && rs->ret_addr_column == LR
       && (rs->where[FP] == DWARF_WHERE_UNDEF
           || rs->where[FP] == DWARF_WHERE_SAME
           || (rs->where[FP] == DWARF_WHERE_CFAREL
