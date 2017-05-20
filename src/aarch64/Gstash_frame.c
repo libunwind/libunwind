@@ -36,13 +36,13 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
          " ra=0x%lx fp [where=%d val=%ld @0x%lx] lr [where=%d val=%ld @0x%lx] "
          "sp [where=%d val=%ld @0x%lx]\n",
          d->ip, d->cfa, f->frame_type,
-         rs->where[DWARF_CFA_REG_COLUMN],
-         rs->val[DWARF_CFA_REG_COLUMN],
-         rs->val[DWARF_CFA_OFF_COLUMN],
+         rs->reg.where[DWARF_CFA_REG_COLUMN],
+         rs->reg.val[DWARF_CFA_REG_COLUMN],
+         rs->reg.val[DWARF_CFA_OFF_COLUMN],
          DWARF_GET_LOC(d->loc[rs->ret_addr_column]),
-         rs->where[FP], rs->val[FP], DWARF_GET_LOC(d->loc[FP]),
-         rs->where[LR], rs->val[LR], DWARF_GET_LOC(d->loc[LR]),
-         rs->where[SP], rs->val[SP], DWARF_GET_LOC(d->loc[SP]));
+         rs->reg.where[FP], rs->reg.val[FP], DWARF_GET_LOC(d->loc[FP]),
+         rs->reg.where[LR], rs->reg.val[LR], DWARF_GET_LOC(d->loc[LR]),
+         rs->reg.where[SP], rs->reg.val[SP], DWARF_GET_LOC(d->loc[SP]));
 
   /* A standard frame is defined as:
       - CFA is register-relative offset off FP or SP;
@@ -51,37 +51,37 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
       - LR is unsaved or saved at CFA+offset, offset != -1;
       - SP is unsaved or saved at CFA+offset, offset != -1.  */
   if (f->frame_type == UNW_AARCH64_FRAME_OTHER
-      && (rs->where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
-      && (rs->val[DWARF_CFA_REG_COLUMN] == FP
-          || rs->val[DWARF_CFA_REG_COLUMN] == SP)
-      && labs(rs->val[DWARF_CFA_OFF_COLUMN]) < (1 << 29)
+      && (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
+      && (rs->reg.val[DWARF_CFA_REG_COLUMN] == FP
+          || rs->reg.val[DWARF_CFA_REG_COLUMN] == SP)
+      && labs(rs->reg.val[DWARF_CFA_OFF_COLUMN]) < (1 << 29)
       && rs->ret_addr_column == LR
-      && (rs->where[FP] == DWARF_WHERE_UNDEF
-          || rs->where[FP] == DWARF_WHERE_SAME
-          || (rs->where[FP] == DWARF_WHERE_CFAREL
-              && labs(rs->val[FP]) < (1 << 29)
-              && rs->val[FP]+1 != 0))
-      && (rs->where[LR] == DWARF_WHERE_UNDEF
-          || rs->where[LR] == DWARF_WHERE_SAME
-          || (rs->where[LR] == DWARF_WHERE_CFAREL
-              && labs(rs->val[LR]) < (1 << 29)
-              && rs->val[LR]+1 != 0))
-      && (rs->where[SP] == DWARF_WHERE_UNDEF
-          || rs->where[SP] == DWARF_WHERE_SAME
-          || (rs->where[SP] == DWARF_WHERE_CFAREL
-              && labs(rs->val[SP]) < (1 << 29)
-              && rs->val[SP]+1 != 0)))
+      && (rs->reg.where[FP] == DWARF_WHERE_UNDEF
+          || rs->reg.where[FP] == DWARF_WHERE_SAME
+          || (rs->reg.where[FP] == DWARF_WHERE_CFAREL
+              && labs(rs->reg.val[FP]) < (1 << 29)
+              && rs->reg.val[FP]+1 != 0))
+      && (rs->reg.where[LR] == DWARF_WHERE_UNDEF
+          || rs->reg.where[LR] == DWARF_WHERE_SAME
+          || (rs->reg.where[LR] == DWARF_WHERE_CFAREL
+              && labs(rs->reg.val[LR]) < (1 << 29)
+              && rs->reg.val[LR]+1 != 0))
+      && (rs->reg.where[SP] == DWARF_WHERE_UNDEF
+          || rs->reg.where[SP] == DWARF_WHERE_SAME
+          || (rs->reg.where[SP] == DWARF_WHERE_CFAREL
+              && labs(rs->reg.val[SP]) < (1 << 29)
+              && rs->reg.val[SP]+1 != 0)))
   {
     /* Save information for a standard frame. */
     f->frame_type = UNW_AARCH64_FRAME_STANDARD;
-    f->cfa_reg_sp = (rs->val[DWARF_CFA_REG_COLUMN] == SP);
-    f->cfa_reg_offset = rs->val[DWARF_CFA_OFF_COLUMN];
-    if (rs->where[FP] == DWARF_WHERE_CFAREL)
-      f->fp_cfa_offset = rs->val[FP];
-    if (rs->where[LR] == DWARF_WHERE_CFAREL)
-      f->lr_cfa_offset = rs->val[LR];
-    if (rs->where[SP] == DWARF_WHERE_CFAREL)
-      f->sp_cfa_offset = rs->val[SP];
+    f->cfa_reg_sp = (rs->reg.val[DWARF_CFA_REG_COLUMN] == SP);
+    f->cfa_reg_offset = rs->reg.val[DWARF_CFA_OFF_COLUMN];
+    if (rs->reg.where[FP] == DWARF_WHERE_CFAREL)
+      f->fp_cfa_offset = rs->reg.val[FP];
+    if (rs->reg.where[LR] == DWARF_WHERE_CFAREL)
+      f->lr_cfa_offset = rs->reg.val[LR];
+    if (rs->reg.where[SP] == DWARF_WHERE_CFAREL)
+      f->sp_cfa_offset = rs->reg.val[SP];
     Debug (4, " standard frame\n");
   }
   else

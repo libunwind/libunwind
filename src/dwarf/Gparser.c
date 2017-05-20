@@ -55,8 +55,8 @@ static inline void
 set_reg (dwarf_state_record_t *sr, unw_word_t regnum, dwarf_where_t where,
          unw_word_t val)
 {
-  sr->rs_current.where[regnum] = where;
-  sr->rs_current.val[regnum] = val;
+  sr->rs_current.reg.where[regnum] = where;
+  sr->rs_current.reg.val[regnum] = val;
 }
 
 static inline int
@@ -218,8 +218,8 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
               ret = -UNW_EINVAL;
               break;
             }
-          sr->rs_current.where[regnum] = sr->rs_initial.where[regnum];
-          sr->rs_current.val[regnum] = sr->rs_initial.val[regnum];
+          sr->rs_current.reg.where[regnum] = sr->rs_initial.reg.where[regnum];
+          sr->rs_current.reg.val[regnum] = sr->rs_initial.reg.val[regnum];
           Debug (15, "CFA_restore r%lu\n", (long) regnum);
           break;
 
@@ -233,8 +233,8 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
               ret = -UNW_EINVAL;
               break;
             }
-          sr->rs_current.where[regnum] = sr->rs_initial.where[regnum];
-          sr->rs_current.val[regnum] = sr->rs_initial.val[regnum];
+          sr->rs_current.reg.where[regnum] = sr->rs_initial.reg.where[regnum];
+          sr->rs_current.reg.val[regnum] = sr->rs_initial.reg.val[regnum];
           Debug (15, "CFA_restore_extended r%lu\n", (long) regnum);
           break;
 
@@ -785,32 +785,32 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   /* Evaluate the CFA first, because it may be referred to by other
      expressions.  */
 
-  if (rs->where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
+  if (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
     {
       /* CFA is equal to [reg] + offset: */
 
       /* As a special-case, if the stack-pointer is the CFA and the
          stack-pointer wasn't saved, popping the CFA implicitly pops
          the stack-pointer as well.  */
-      if ((rs->val[DWARF_CFA_REG_COLUMN] == UNW_TDEP_SP)
-          && (UNW_TDEP_SP < ARRAY_SIZE(rs->val))
-          && (rs->where[UNW_TDEP_SP] == DWARF_WHERE_SAME))
+      if ((rs->reg.val[DWARF_CFA_REG_COLUMN] == UNW_TDEP_SP)
+          && (UNW_TDEP_SP < ARRAY_SIZE(rs->reg.val))
+          && (rs->reg.where[UNW_TDEP_SP] == DWARF_WHERE_SAME))
           cfa = c->cfa;
       else
         {
-          regnum = dwarf_to_unw_regnum (rs->val[DWARF_CFA_REG_COLUMN]);
+          regnum = dwarf_to_unw_regnum (rs->reg.val[DWARF_CFA_REG_COLUMN]);
           if ((ret = unw_get_reg ((unw_cursor_t *) c, regnum, &cfa)) < 0)
             return ret;
         }
-      cfa += rs->val[DWARF_CFA_OFF_COLUMN];
+      cfa += rs->reg.val[DWARF_CFA_OFF_COLUMN];
     }
   else
     {
       /* CFA is equal to EXPR: */
 
-      assert (rs->where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_EXPR);
+      assert (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_EXPR);
 
-      addr = rs->val[DWARF_CFA_REG_COLUMN];
+      addr = rs->reg.val[DWARF_CFA_REG_COLUMN];
       if ((ret = eval_location_expr (c, as, a, addr, &cfa_loc, arg)) < 0)
         return ret;
       /* the returned location better be a memory location... */
@@ -821,7 +821,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
     {
-      switch ((dwarf_where_t) rs->where[i])
+      switch ((dwarf_where_t) rs->reg.where[i])
         {
         case DWARF_WHERE_UNDEF:
           c->loc[i] = DWARF_NULL_LOC;
@@ -831,21 +831,21 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
           break;
 
         case DWARF_WHERE_CFAREL:
-          c->loc[i] = DWARF_MEM_LOC (c, cfa + rs->val[i]);
+          c->loc[i] = DWARF_MEM_LOC (c, cfa + rs->reg.val[i]);
           break;
 
         case DWARF_WHERE_REG:
-          c->loc[i] = DWARF_REG_LOC (c, dwarf_to_unw_regnum (rs->val[i]));
+          c->loc[i] = DWARF_REG_LOC (c, dwarf_to_unw_regnum (rs->reg.val[i]));
           break;
 
         case DWARF_WHERE_EXPR:
-          addr = rs->val[i];
+          addr = rs->reg.val[i];
           if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
             return ret;
           break;
 
         case DWARF_WHERE_VAL_EXPR:
-          addr = rs->val[i];
+          addr = rs->reg.val[i];
           if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
             return ret;
           c->loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (c->loc[i]));

@@ -249,18 +249,24 @@ dwarf_where_t;
 #define DWARF_CFA_REG_COLUMN    DWARF_NUM_PRESERVED_REGS
 #define DWARF_CFA_OFF_COLUMN    (DWARF_NUM_PRESERVED_REGS + 1)
 
+typedef struct dwarf_reg_only_state
+  {
+    char where[DWARF_NUM_PRESERVED_REGS + 2];        /* how is the register saved? */
+    unw_word_t val[DWARF_NUM_PRESERVED_REGS + 2];             /* where it's saved */
+  }
+dwarf_reg_only_state_t;
+
 typedef struct dwarf_reg_state
   {
     unw_word_t ret_addr_column;	/* which column in rule table represents return address */
-    char where[DWARF_NUM_PRESERVED_REGS + 2];        /* how is the register saved? */
-    unw_word_t val[DWARF_NUM_PRESERVED_REGS + 2];             /* where it's saved */
+    dwarf_reg_only_state_t reg;
   }
 dwarf_reg_state_t;
 
 typedef struct dwarf_stackable_reg_state
   {
     struct dwarf_stackable_reg_state *next;       /* for rs_stack */
-    dwarf_reg_state_t state;
+    dwarf_reg_only_state_t state;
   }
 dwarf_stackable_reg_state_t;
 

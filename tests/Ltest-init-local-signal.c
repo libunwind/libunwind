@@ -35,6 +35,7 @@ void handler(int num, siginfo_t* info, void* ucontext) {
   int ucontext_steps = stepper(&c);
 
   ret = unw_init_local(&c, &context);
+  (void)ret;
   assert(!ret);
   int getcontext_steps = stepper(&c);
   if (ucontext_steps == getcontext_steps - 2) {
@@ -54,4 +55,5 @@ int main(){
   sigaction(SIGSEGV, &a, NULL);
 
   foo(NULL);
+  return 0;
 }
