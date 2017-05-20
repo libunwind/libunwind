@@ -313,7 +313,6 @@ typedef struct dwarf_cursor
     unw_word_t cfa;     /* canonical frame address; aka frame-/stack-pointer */
     unw_word_t ip;              /* instruction pointer */
     unw_word_t args_size;       /* size of arguments */
-    unw_word_t ret_addr_column; /* column for return-address */
     unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
     unsigned int eh_valid_mask;
 

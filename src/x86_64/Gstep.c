@@ -197,8 +197,6 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.use_prev_instr = 1;
         }
 
-      c->dwarf.ret_addr_column = RIP;
-
       if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
         {
           ret = 0;

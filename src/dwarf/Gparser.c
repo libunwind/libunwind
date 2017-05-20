@@ -943,11 +943,7 @@ dwarf_step (struct dwarf_cursor *c)
   dwarf_state_record_t sr;
   if ((ret = find_reg_state (c, &sr)) < 0)
     return ret;
-  if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
-    return ret;
-  c->ret_addr_column = sr.rs_current.ret_addr_column;
-
-  return ret;
+  return apply_reg_state (c, &sr.rs_current);
 }
 
 HIDDEN int

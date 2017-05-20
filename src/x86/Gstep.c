@@ -90,7 +90,6 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[EIP] = eip_loc;
           c->dwarf.use_prev_instr = 1;
         }
-      c->dwarf.ret_addr_column = EIP;
 
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[EBP]))
         {
