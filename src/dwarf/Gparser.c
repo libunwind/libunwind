@@ -83,10 +83,10 @@ pop_rstate_stack(dwarf_reg_state_t **rs_stack)
 /* Run a CFI program to update the register state.  */
 static int
 run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
-                 unw_word_t ip, unw_word_t *addr, unw_word_t end_addr,
+                 unw_word_t *ip, unw_word_t end_ip,
+		 unw_word_t *addr, unw_word_t end_addr,
                  struct dwarf_cie_info *dci)
 {
-  unw_word_t curr_ip = c->pi.start_ip;
   dwarf_reg_state_t *rs_stack = NULL;
   unw_addr_space_t as;
   void *arg;
@@ -105,10 +105,10 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
   unw_accessors_t *a = unw_get_accessors (as);
   int ret = 0;
 
-  /* Process everything up to and including the current 'ip',
+  /* Process everything up to and including the current 'end_ip',
      including all the DW_CFA_advance_loc instructions.  See
      'c->use_prev_instr' use in 'fetch_proc_info' for details. */
-  while (curr_ip <= ip && *addr < end_addr && ret >= 0)
+  while (*ip <= end_ip && *addr < end_addr && ret >= 0)
     {
       unw_word_t operand = 0, regnum, val, len;
       uint8_t u8, op;
@@ -126,29 +126,29 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
       switch ((dwarf_cfa_t) op)
         {
         case DW_CFA_advance_loc:
-          curr_ip += operand * dci->code_align;
-          Debug (15, "CFA_advance_loc to 0x%lx\n", (long) curr_ip);
+          *ip += operand * dci->code_align;
+          Debug (15, "CFA_advance_loc to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_advance_loc1:
           if ((ret = dwarf_readu8 (as, a, addr, &u8, arg)) < 0)
             break;
-          curr_ip += u8 * dci->code_align;
-          Debug (15, "CFA_advance_loc1 to 0x%lx\n", (long) curr_ip);
+          *ip += u8 * dci->code_align;
+          Debug (15, "CFA_advance_loc1 to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_advance_loc2:
           if ((ret = dwarf_readu16 (as, a, addr, &u16, arg)) < 0)
             break;
-          curr_ip += u16 * dci->code_align;
-          Debug (15, "CFA_advance_loc2 to 0x%lx\n", (long) curr_ip);
+          *ip += u16 * dci->code_align;
+          Debug (15, "CFA_advance_loc2 to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_advance_loc4:
           if ((ret = dwarf_readu32 (as, a, addr, &u32, arg)) < 0)
             break;
-          curr_ip += u32 * dci->code_align;
-          Debug (15, "CFA_advance_loc4 to 0x%lx\n", (long) curr_ip);
+          *ip += u32 * dci->code_align;
+          Debug (15, "CFA_advance_loc4 to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_MIPS_advance_loc8:
@@ -158,7 +158,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
             if ((ret = dwarf_readu64 (as, a, addr, &u64, arg)) < 0)
               break;
-            curr_ip += u64 * dci->code_align;
+            *ip += u64 * dci->code_align;
             Debug (15, "CFA_MIPS_advance_loc8\n");
             break;
           }
@@ -234,10 +234,10 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
         case DW_CFA_set_loc:
           if ((ret = dwarf_read_encoded_pointer (as, a, addr, dci->fde_encoding,
-                                                 &c->pi, &curr_ip,
+                                                 &c->pi, ip,
                                                  arg)) < 0)
             break;
-          Debug (15, "CFA_set_loc to 0x%lx\n", (long) curr_ip);
+          Debug (15, "CFA_set_loc to 0x%lx\n", (long) *ip);
           break;
 
         case DW_CFA_undefined:
@@ -373,7 +373,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
         case DW_CFA_GNU_args_size:
           if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
             break;
-          if (curr_ip < ip)
+          if (*ip < end_ip)
             {
               sr->args_size = val;
               Debug (15, "CFA_GNU_args_size %lu\n", (long) val);
@@ -499,27 +499,40 @@ put_unwind_info (struct dwarf_cursor *c, unw_proc_info_t *pi)
       mempool_free (&dwarf_cie_info_pool, pi->unwind_info);
       pi->unwind_info = NULL;
     }
+  c->pi_valid = 0;
+}
+
+static inline int
+setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
+{
+  int i, ret;
+
+  assert (c->pi_valid);
+
+  memset (sr, 0, sizeof (*sr));
+  for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
+    set_reg (sr, i, DWARF_WHERE_SAME, 0);
+
+  struct dwarf_cie_info *dci = c->pi.unwind_info;
+  c->ret_addr_column = dci->ret_addr_column;
+  unw_word_t addr = dci->cie_instr_start;
+  unw_word_t curr_ip = 0;
+  if ((ret = run_cfi_program (c, sr, &curr_ip, ~(unw_word_t) 0, &addr,
+                              dci->cie_instr_end, dci)) < 0)
+    return ret;
+
+  memcpy (&sr->rs_initial, &sr->rs_current, sizeof (sr->rs_initial));
+  return 0;
 }
 
 static inline int
 parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
 {
-  struct dwarf_cie_info *dci;
-  unw_word_t addr;
   int ret;
-
-  dci = c->pi.unwind_info;
-  c->ret_addr_column = dci->ret_addr_column;
-
-  addr = dci->cie_instr_start;
-  if ((ret = run_cfi_program (c, sr, ~(unw_word_t) 0, &addr,
-                              dci->cie_instr_end, dci)) < 0)
-    return ret;
-
-  memcpy (&sr->rs_initial, &sr->rs_current, sizeof (sr->rs_initial));
-
-  addr = dci->fde_instr_start;
-  if ((ret = run_cfi_program (c, sr, ip, &addr, dci->fde_instr_end, dci)) < 0)
+  struct dwarf_cie_info *dci = c->pi.unwind_info;
+  unw_word_t addr = dci->fde_instr_start;
+  unw_word_t curr_ip = c->pi.start_ip;
+  if ((ret = run_cfi_program (c, sr, &curr_ip, ip, &addr, dci->fde_instr_end, dci)) < 0)
     return ret;
 
   return 0;
@@ -534,6 +547,7 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
       || !cache->hash) {
     cache->hash = cache->default_hash;
     cache->buckets = cache->default_buckets;
+    cache->links = cache->default_links;
     cache->log_size = DWARF_DEFAULT_LOG_UNW_CACHE_SIZE;
   } else {
     if (cache->hash && cache->hash != cache->default_hash)
@@ -542,11 +556,16 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
     if (cache->buckets && cache->buckets != cache->default_buckets)
       munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
 	                      * sizeof (cache->buckets[0]));
+    if (cache->links && cache->links != cache->default_links)
+      munmap(cache->links, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
+	                      * sizeof (cache->links[0]));
     GET_MEMORY(cache->hash, DWARF_UNW_HASH_SIZE(cache->log_size)
                              * sizeof (cache->hash[0]));
     GET_MEMORY(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->log_size)
                                 * sizeof (cache->buckets[0]));
-    if (!cache->hash || !cache->buckets)
+    GET_MEMORY(cache->links, DWARF_UNW_CACHE_SIZE(cache->log_size)
+                                * sizeof (cache->links[0]));
+    if (!cache->hash || !cache->buckets || !cache->links)
       {
         Debug (1, "Unable to allocate cache memory");
         return -UNW_ENOMEM;
@@ -560,10 +579,10 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
   for (i = 0; i < DWARF_UNW_CACHE_SIZE(cache->log_size); ++i)
     {
       if (i > 0)
-        cache->buckets[i].lru_chain = (i - 1);
-      cache->buckets[i].coll_chain = -1;
-      cache->buckets[i].ip = 0;
-      cache->buckets[i].valid = 0;
+        cache->links[i].lru_chain = (i - 1);
+      cache->links[i].coll_chain = -1;
+      cache->links[i].ip = 0;
+      cache->links[i].valid = 0;
     }
   for (i = 0; i< DWARF_UNW_HASH_SIZE(cache->log_size); ++i)
     cache->hash[i] = -1;
@@ -618,35 +637,30 @@ hash (unw_word_t ip, unsigned short log_size)
 }
 
 static inline long
-cache_match (dwarf_reg_state_t *rs, unw_word_t ip)
+cache_match (struct dwarf_rs_cache *cache, unsigned short index, unw_word_t ip)
 {
-  if (rs->valid && (ip == rs->ip))
-    return 1;
-  return 0;
+  return (cache->links[index].valid && (ip == cache->links[index].ip));
 }
 
 static dwarf_reg_state_t *
 rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 {
-  dwarf_reg_state_t *rs;
   unsigned short index;
   unw_word_t ip = c->ip;
 
   if (c->hint > 0)
     {
       index = c->hint - 1;
-      rs = cache->buckets + index;
-      if (cache_match (rs, ip))
-	return rs;
+      if (cache_match (cache, index, ip))
+	return &cache->buckets[index];
     }
 
   for (index = cache->hash[hash (ip, cache->log_size)];
        index < DWARF_UNW_CACHE_SIZE(cache->log_size);
-       index = rs->coll_chain)
+       index = cache->links[index].coll_chain)
     {
-      rs = cache->buckets + index;
-      if (cache_match (rs, ip))
-	return rs;
+      if (cache_match (cache, index, ip))
+	return &cache->buckets[index];
     }
   return NULL;
 }
@@ -654,50 +668,41 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
 static inline dwarf_reg_state_t *
 rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
 {
-  dwarf_reg_state_t *rs, *prev, *tmp;
+  dwarf_reg_state_t *rs;
   unw_hash_index_t index;
   unsigned short head;
 
   head = cache->lru_head;
-  rs = cache->buckets + head;
-  cache->lru_head = rs->lru_chain;
+  cache->lru_head = cache->links[head].lru_chain;
 
   /* re-insert rs at the tail of the LRU chain: */
-  cache->buckets[cache->lru_tail].lru_chain = head;
+  cache->links[cache->lru_tail].lru_chain = head;
   cache->lru_tail = head;
 
   /* remove the old rs from the hash table (if it's there): */
-  if (rs->ip)
+  if (cache->links[head].ip)
     {
-      index = hash (rs->ip, cache->log_size);
-      tmp = cache->buckets + cache->hash[index];
-      prev = NULL;
-      while (1)
-        {
-          if (tmp == rs)
-            {
-              if (prev)
-                prev->coll_chain = tmp->coll_chain;
-              else
-                cache->hash[index] = tmp->coll_chain;
-              break;
-            }
-          else
-            prev = tmp;
-          if (tmp->coll_chain >= DWARF_UNW_CACHE_SIZE(cache->log_size))
-            /* old rs wasn't in the hash-table */
-            break;
-          tmp = cache->buckets + tmp->coll_chain;
-        }
+      unsigned short *pindex;
+      for (pindex = &cache->hash[hash (cache->links[head].ip, cache->log_size)];
+	   *pindex < DWARF_UNW_CACHE_SIZE(cache->log_size);
+	   pindex = &cache->links[*pindex].coll_chain)
+	{
+	  if (*pindex == head)
+	    {
+	      *pindex = cache->links[*pindex].coll_chain;
+	      break;
+	    }
+	}
     }
 
   /* enter new rs in the hash table */
   index = hash (c->ip, cache->log_size);
-  rs->coll_chain = cache->hash[index];
-  cache->hash[index] = rs - cache->buckets;
+  cache->links[head].coll_chain = cache->hash[index];
+  cache->hash[index] = head;
 
-  rs->ip = c->ip;
-  rs->valid = 1;
+  cache->links[head].ip = c->ip;
+  cache->links[head].valid = 1;
+  rs = cache->buckets + head;
   rs->ret_addr_column = c->ret_addr_column;
   rs->signal_frame = 0;
   tdep_cache_frame (c, rs);
@@ -709,18 +714,13 @@ static int
 create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
                          unw_word_t ip)
 {
-  int i, ret;
-
-  assert (c->pi_valid);
-
-  memset (sr, 0, sizeof (*sr));
-  for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
-    set_reg (sr, i, DWARF_WHERE_SAME, 0);
-
+  int ret;
   switch (c->pi.format)
     {
     case UNW_INFO_FORMAT_TABLE:
     case UNW_INFO_FORMAT_REMOTE_TABLE:
+      if ((ret = setup_fde(c, sr)) < 0)
+	return ret;
       ret = parse_fde (c, ip, sr);
       break;
 
@@ -874,12 +874,10 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   return 0;
 }
 
-/* The function finds the saved locations and applies the register
-   state as well. */
-HIDDEN int
-dwarf_find_save_locs (struct dwarf_cursor *c)
+/* Find the saved locations. */
+static int
+find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 {
-  dwarf_state_record_t sr;
   dwarf_reg_state_t *rs;
   struct dwarf_rs_cache *cache;
   int ret = 0;
@@ -889,40 +887,56 @@ dwarf_find_save_locs (struct dwarf_cursor *c)
       (rs = rs_lookup(cache, c)))
     {
       /* update hint; no locking needed: single-word writes are atomic */
-      cache->buckets[c->prev_rs].hint = rs - cache->buckets + 1;
-      c->prev_rs = rs - cache->buckets;
-      c->hint = rs->hint;
       c->ret_addr_column = rs->ret_addr_column;
       c->use_prev_instr = ! rs->signal_frame;
-      memcpy (&sr.rs_current, rs, sizeof (*rs));
+      memcpy (&sr->rs_current, rs, sizeof (*rs));
     }
   else
     {
       ret = fetch_proc_info (c, c->ip, 1);
       if (ret >= 0)
-	ret = create_state_record_for (c, &sr, c->ip);
+	ret = create_state_record_for (c, sr, c->ip);
       put_unwind_info (c, &c->pi);
 
       if (cache && ret >= 0)
 	{
 	  rs = rs_new (cache, c);
-	  memcpy(rs, &sr.rs_current, offsetof(struct dwarf_reg_state, ip));
-	  cache->buckets[c->prev_rs].hint = rs - cache->buckets;
-	  c->prev_rs = rs - cache->buckets;
-	  c->hint = rs->hint = 0;
+	  cache->links[rs - cache->buckets].hint = 0;
+	  memcpy(rs, &sr->rs_current, offsetof(struct dwarf_reg_state, ret_addr_column));
 	}
     }
 
   if (cache)
-    put_rs_cache (c->as, cache, &saved_mask);
+    {
+      put_rs_cache (c->as, cache, &saved_mask);
+      if (rs)
+	{
+	  unsigned short index = rs - cache->buckets;
+	  c->hint = cache->links[index].hint;
+	  cache->links[c->prev_rs].hint = index + 1;
+	  c->prev_rs = index;
+	}
+    }
   if (ret < 0)
       return ret;
   if (cache)
     tdep_reuse_frame (c, rs);
+  return 0;
+}
+
+/* The function finds the saved locations and applies the register
+   state as well. */
+HIDDEN int
+dwarf_step (struct dwarf_cursor *c)
+{
+  int ret;
+  dwarf_state_record_t sr;
+  if ((ret = find_reg_state (c, &sr)) < 0)
+    return ret;
   if ((ret = apply_reg_state (c, &sr.rs_current)) < 0)
     return ret;
 
-  return 0;
+  return 1;
 }
 
 HIDDEN int
@@ -948,4 +962,72 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
   c->args_size = sr.args_size;
 
   return 0;
+}
+
+static int
+dwarf_reg_states_dynamic_iterate(struct dwarf_cursor *c,
+				 unw_reg_states_callback cb,
+				 void *token)
+{
+  Debug (1, "Not yet implemented\n");
+#if 0
+  /* Don't forget to set the ret_addr_column!  */
+  c->ret_addr_column = XXX;
+#endif
+  return -UNW_ENOINFO;
+}
+
+static int
+dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
+			       unw_reg_states_callback cb,
+			       void *token)
+{
+  dwarf_state_record_t sr;
+  int ret = setup_fde(c, &sr);
+  struct dwarf_cie_info *dci = c->pi.unwind_info;
+  unw_word_t addr = dci->fde_instr_start;
+  unw_word_t curr_ip = c->pi.start_ip;
+  while (ret >= 0 && curr_ip < c->pi.end_ip && addr < dci->fde_instr_end)
+    {
+      unw_word_t prev_ip = curr_ip;
+      ret = run_cfi_program (c, &sr, &curr_ip, prev_ip, &addr, dci->fde_instr_end, dci);
+      if (ret >= 0 && prev_ip < curr_ip)
+	ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), prev_ip, curr_ip);
+    }
+  if (ret >= 0 && curr_ip < c->pi.last_ip)
+    /* report the dead zone after the procedure ends */
+    ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), curr_ip, c->pi.last_ip);
+  return ret;
+}
+
+HIDDEN int
+dwarf_reg_states_iterate(struct dwarf_cursor *c,
+			 unw_reg_states_callback cb,
+			 void *token)
+{
+  int ret = fetch_proc_info (c, c->ip, 1);
+  if (ret >= 0)
+    switch (c->pi.format)
+      {
+      case UNW_INFO_FORMAT_TABLE:
+      case UNW_INFO_FORMAT_REMOTE_TABLE:
+	ret = dwarf_reg_states_table_iterate(c, cb, token);
+	break;
+	  
+      case UNW_INFO_FORMAT_DYNAMIC:
+	ret = dwarf_reg_states_dynamic_iterate (c, cb, token);
+	break;
+	  
+      default:
+	Debug (1, "Unexpected unwind-info format %d\n", c->pi.format);
+	ret = -UNW_EINVAL;
+      }
+  put_unwind_info (c, &c->pi);
+  return ret;
+}
+
+HIDDEN int
+dwarf_apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
+{
+  return apply_reg_state(c, rs);
 }

@@ -31,6 +31,12 @@ following members:
   instruction \emph{beyond} the end of the procedure.  If this address
   cannot be determined (e.g., due to lack of unwind information),
   the \Var{end\_ip} member is cleared to 0.  \\
+\item[\Type{unw\_word\_t} \Var{last\_ip}] The address of the first
+  instruction that could begin another procedure.  Addresses from
+  end\_ip up to last\_ip are addresses where there are no
+  instructions.  If this address cannot be determined (e.g., due to
+  lack of unwind information), the \Var{end\_ip} member is cleared to
+  0.  \\
 \item[\Type{unw\_word\_t} \Var{lsda}] The address of the
   language-specific data-area (LSDA).  This area normally contains
   language-specific information needed during exception handling.  If
