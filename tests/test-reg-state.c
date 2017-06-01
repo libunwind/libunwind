@@ -46,6 +46,7 @@ struct cb_data
 {
   unw_word_t ip;
   void* reg_state;
+  size_t len;
 };
 
 static int
@@ -60,6 +61,7 @@ dwarf_reg_states_callback(void *token,
       data->reg_state = mmap(NULL, size, PROT_READ | PROT_WRITE,
 			     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       memcpy(data->reg_state, rs, size);
+      data->len = size;
     }
   return 0;
 }
@@ -87,7 +89,10 @@ do_backtrace (void)
       struct cb_data data = {.ip = ip, .reg_state = NULL};
       unw_reg_states_iterate(&cursor, dwarf_reg_states_callback, &data);
       if (data.reg_state)
-	ret = unw_apply_reg_state (&cursor, data.reg_state);
+	{
+	  ret = unw_apply_reg_state (&cursor, data.reg_state);
+	  munmap(data.reg_state, data.len);
+	}
       else
 	ret = 0;
       if (ret < 0)
