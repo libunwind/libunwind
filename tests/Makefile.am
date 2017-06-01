@@ -47,8 +47,8 @@ endif #!ARCH_IA64
 			Gtest-trace Ltest-trace				 \
 			Ltest-init-local-signal				 \
 			test-async-sig test-flush-cache test-init-remote \
-			test-mem Ltest-varargs Ltest-nomalloc	 \
-			Ltest-nocalloc Lrs-race
+			test-mem test-reg-state Ltest-varargs		 \
+			Ltest-nomalloc Ltest-nocalloc Lrs-race
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
@@ -171,6 +171,7 @@ test_async_sig_LDADD = $(LIBUNWIND_local) -lpthread
 test_flush_cache_LDADD = $(LIBUNWIND_local)
 test_init_remote_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_mem_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+test_reg_state_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_ptrace_LDADD = $(LIBUNWIND_ptrace) $(LIBUNWIND)
 test_proc_info_LDADD = $(LIBUNWIND)
 test_static_link_LDADD = $(LIBUNWIND)
