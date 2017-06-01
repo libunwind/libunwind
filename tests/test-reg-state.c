@@ -35,7 +35,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/mman.h>
 #include <sys/resource.h>
-#include <assert.h>
 
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
@@ -87,14 +86,12 @@ do_backtrace (void)
 	printf ("%016lx (sp=%016lx)\n", (long) ip, (long) sp);
 
       struct cb_data data = {.ip = ip, .reg_state = NULL};
-      unw_reg_states_iterate(&cursor, dwarf_reg_states_callback, &data);
-      if (data.reg_state)
+      ret = unw_reg_states_iterate(&cursor, dwarf_reg_states_callback, &data);
+      if (ret > 0)
 	{
 	  ret = unw_apply_reg_state (&cursor, data.reg_state);
 	  munmap(data.reg_state, data.len);
 	}
-      else
-	ret = 0;
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
