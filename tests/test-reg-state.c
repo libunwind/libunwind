@@ -46,7 +46,7 @@ int verbose;
 struct cb_data
 {
   unw_word_t ip;
-  char reg_state[1000];
+  char reg_state[10000];
 };
 
 static int
