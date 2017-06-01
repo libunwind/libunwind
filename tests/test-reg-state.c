@@ -42,11 +42,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 int verbose;
 
-#define USE_MMAP
 struct cb_data
 {
   unw_word_t ip;
-  char reg_state[10000];
+  void* reg_state;
 };
 
 static int
@@ -58,7 +57,8 @@ dwarf_reg_states_callback(void *token,
   struct cb_data *data = token;
   if (start_ip <= data->ip && data->ip < end_ip)
     {
-      assert(size <= sizeof(data->reg_state));
+      data->reg_state = mmap(NULL, size, PROT_READ | PROT_WRITE,
+			     MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);
       memcpy(data->reg_state, rs, size);
     }
   return 0;
@@ -84,9 +84,12 @@ do_backtrace (void)
       if (verbose)
 	printf ("%016lx (sp=%016lx)\n", (long) ip, (long) sp);
 
-      struct cb_data data = {.ip = ip};
+      struct cb_data data = {.ip = ip, .reg_state = NULL};
       unw_reg_states_iterate(&cursor, dwarf_reg_states_callback, &data);
-      ret = unw_apply_reg_state (&cursor, data.reg_state);
+      if (data.reg_state)
+	ret = unw_apply_reg_state (&cursor, data.reg_state);
+      else
+	ret = 0;
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
@@ -122,7 +125,6 @@ main (int argc, char **argv UNUSED)
   rlim.rlim_cur = 0;
   rlim.rlim_max = RLIM_INFINITY;
   setrlimit (RLIMIT_DATA, &rlim);
-  setrlimit (RLIMIT_AS, &rlim);
 
   do_backtrace ();
   return 0;
