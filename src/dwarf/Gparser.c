@@ -583,13 +583,10 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
     cache->prev_log_size = cache->log_size;
   }
 
-  cache->lru_head = DWARF_UNW_CACHE_SIZE(cache->log_size) - 1;
-  cache->lru_tail = 0;
+  cache->lru_head = 0;
 
   for (i = 0; i < DWARF_UNW_CACHE_SIZE(cache->log_size); ++i)
     {
-      if (i > 0)
-        cache->links[i].lru_chain = (i - 1);
       cache->links[i].coll_chain = -1;
       cache->links[i].ip = 0;
       cache->links[i].valid = 0;
@@ -682,11 +679,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   unsigned short head;
 
   head = cache->lru_head;
-  cache->lru_head = cache->links[head].lru_chain;
-
-  /* re-insert rs at the tail of the LRU chain: */
-  cache->links[cache->lru_tail].lru_chain = head;
-  cache->lru_tail = head;
+  cache->lru_head = (head + 1) % DWARF_UNW_CACHE_SIZE(cache->log_size);
 
   /* remove the old rs from the hash table (if it's there): */
   if (cache->links[head].ip)
