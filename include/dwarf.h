@@ -273,7 +273,6 @@ dwarf_stackable_reg_state_t;
 typedef struct dwarf_reg_cache_entry
   {
     unw_word_t ip;                        /* ip this rs is for */
-    unsigned short lru_chain;     /* used for least-recently-used chain */
     unsigned short coll_chain;  /* used for hash collisions */
     unsigned short hint;              /* hint for next rs to try (or -1) */
     unsigned short valid : 1;         /* optional machine-dependent signal info */
@@ -346,8 +345,7 @@ typedef unsigned char unw_hash_index_t;
 struct dwarf_rs_cache
   {
     pthread_mutex_t lock;
-    unsigned short lru_head;    /* index of lead-recently used rs */
-    unsigned short lru_tail;    /* index of most-recently used rs */
+    unsigned short rr_head;    /* index of least-recently allocated rs */
 
     unsigned short log_size;
     unsigned short prev_log_size;
