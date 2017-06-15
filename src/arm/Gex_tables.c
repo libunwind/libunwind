@@ -523,6 +523,12 @@ arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
       ret = dl_iterate_phdr (dwarf_callback, &cb_data);
       SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 
+      if (ret <= 0)
+	{
+	  Debug (14, "IP=0x%lx not found\n", (long) ip);
+	  return -UNW_ENOINFO;
+	}
+
       if (cb_data.single_fde)
         /* already got the result in *pi */
         return 0;
