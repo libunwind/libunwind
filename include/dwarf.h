@@ -345,7 +345,7 @@ typedef unsigned char unw_hash_index_t;
 struct dwarf_rs_cache
   {
     pthread_mutex_t lock;
-    unsigned short lru_head;    /* index of least-recently allocated rs */
+    unsigned short rr_head;    /* index of least-recently allocated rs */
 
     unsigned short log_size;
     unsigned short prev_log_size;
