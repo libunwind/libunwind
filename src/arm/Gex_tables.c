@@ -382,70 +382,76 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
 }
 
 PROTECTED int
+arm_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
+			 unw_dyn_info_t *di, unw_proc_info_t *pi,
+			 int need_unwind_info, void *arg)
+{
+  /* The .ARM.exidx section contains a sorted list of key-value pairs -
+     the unwind entries.  The 'key' is a prel31 offset to the start of a
+     function.  We binary search this section in order to find the
+     appropriate unwind entry.  */
+  unw_word_t first = di->u.rti.table_data;
+  unw_word_t last = di->u.rti.table_data + di->u.rti.table_len - 8;
+  unw_word_t entry, val;
+
+  if (prel31_to_addr (as, arg, first, &val) < 0 || ip < val)
+    return -UNW_ENOINFO;
+
+  if (prel31_to_addr (as, arg, last, &val) < 0)
+    return -UNW_EINVAL;
+
+  if (ip >= val)
+    {
+      entry = last;
+
+      if (prel31_to_addr (as, arg, last, &pi->start_ip) < 0)
+	return -UNW_EINVAL;
+
+      pi->end_ip = di->end_ip -1;
+    }
+  else
+    {
+      while (first < last - 8)
+	{
+	  entry = first + (((last - first) / 8 + 1) >> 1) * 8;
+
+	  if (prel31_to_addr (as, arg, entry, &val) < 0)
+	    return -UNW_EINVAL;
+
+	  if (ip < val)
+	    last = entry;
+	  else
+	    first = entry;
+	}
+
+      entry = first;
+
+      if (prel31_to_addr (as, arg, entry, &pi->start_ip) < 0)
+	return -UNW_EINVAL;
+
+      if (prel31_to_addr (as, arg, entry + 8, &pi->end_ip) < 0)
+	return -UNW_EINVAL;
+
+      pi->end_ip--;
+    }
+
+  if (need_unwind_info)
+    {
+      pi->unwind_info_size = 8;
+      pi->unwind_info = (void *) entry;
+      pi->format = UNW_INFO_FORMAT_ARM_EXIDX;
+    }
+  return 0;
+}
+
+PROTECTED int
 tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                              unw_dyn_info_t *di, unw_proc_info_t *pi,
                              int need_unwind_info, void *arg)
 {
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX)
       && di->format == UNW_INFO_FORMAT_ARM_EXIDX)
-    {
-      /* The .ARM.exidx section contains a sorted list of key-value pairs -
-         the unwind entries.  The 'key' is a prel31 offset to the start of a
-         function.  We binary search this section in order to find the
-         appropriate unwind entry.  */
-      unw_word_t first = di->u.rti.table_data;
-      unw_word_t last = di->u.rti.table_data + di->u.rti.table_len - 8;
-      unw_word_t entry, val;
-
-      if (prel31_to_addr (as, arg, first, &val) < 0 || ip < val)
-        return -UNW_ENOINFO;
-
-      if (prel31_to_addr (as, arg, last, &val) < 0)
-        return -UNW_EINVAL;
-
-      if (ip >= val)
-        {
-          entry = last;
-
-          if (prel31_to_addr (as, arg, last, &pi->start_ip) < 0)
-            return -UNW_EINVAL;
-
-          pi->end_ip = di->end_ip -1;
-        }
-      else
-        {
-          while (first < last - 8)
-            {
-              entry = first + (((last - first) / 8 + 1) >> 1) * 8;
-
-              if (prel31_to_addr (as, arg, entry, &val) < 0)
-                return -UNW_EINVAL;
-
-              if (ip < val)
-                last = entry;
-              else
-                first = entry;
-            }
-
-          entry = first;
-
-          if (prel31_to_addr (as, arg, entry, &pi->start_ip) < 0)
-            return -UNW_EINVAL;
-
-          if (prel31_to_addr (as, arg, entry + 8, &pi->end_ip) < 0)
-            return -UNW_EINVAL;
-
-          pi->end_ip--;
-        }
-
-      if (need_unwind_info)
-        {
-          pi->unwind_info_size = 8;
-          pi->unwind_info = (void *) entry;
-          pi->format = UNW_INFO_FORMAT_ARM_EXIDX;
-        }
-      return 0;
-    }
+    return arm_search_unwind_table (as, ip, di, pi, need_unwind_info, arg);
   else if (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF)
            && di->format != UNW_INFO_FORMAT_ARM_EXIDX)
     return dwarf_search_unwind_table (as, ip, di, pi, need_unwind_info, arg);
@@ -509,33 +515,7 @@ arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
 
   if (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF))
-    {
-      struct dwarf_callback_data cb_data;
-
-      memset (&cb_data, 0, sizeof (cb_data));
-      cb_data.ip = ip;
-      cb_data.pi = pi;
-      cb_data.need_unwind_info = need_unwind_info;
-      cb_data.di.format = -1;
-      cb_data.di_debug.format = -1;
-
-      SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-      ret = dl_iterate_phdr (dwarf_callback, &cb_data);
-      SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
-
-      if (ret > 0)
-	{
-	  if (cb_data.single_fde)
-	    /* already got the result in *pi */
-	    return 0;
-
-	  if (cb_data.di_debug.format != -1)
-	    ret = tdep_search_unwind_table (as, ip, &cb_data.di_debug, pi,
-					    need_unwind_info, arg);
-	  else
-	    ret = -UNW_ENOINFO;
-	}
-    }
+    ret = dwarf_find_proc_info (as, ip, pi, need_unwind_info, arg);
 
   if (ret < 0 && UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
     {
@@ -551,14 +531,11 @@ arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
       SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 
       if (cb_data.di.format != -1)
-        ret = tdep_search_unwind_table (as, ip, &cb_data.di, pi,
-                                        need_unwind_info, arg);
+        ret = arm_search_unwind_table (as, ip, &cb_data.di, pi,
+				       need_unwind_info, arg);
       else
         ret = -UNW_ENOINFO;
     }
-
-  if (ret < 0)
-    Debug (14, "IP=0x%lx not found\n", (long) ip);
 
   return ret;
 }
