@@ -382,18 +382,6 @@ struct unw_debug_frame_list
     struct unw_debug_frame_list *next;
   };
 
-struct dwarf_callback_data
-  {
-    /* in: */
-    unw_word_t ip;              /* instruction-pointer we're looking for */
-    unw_proc_info_t *pi;        /* proc-info pointer */
-    int need_unwind_info;
-    /* out: */
-    int single_fde;             /* did we find a single FDE? (vs. a table) */
-    unw_dyn_info_t di;          /* table info (if single_fde is false) */
-    unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
-  };
-
 /* Convenience macros: */
 #define dwarf_init                      UNW_ARCH_OBJ (dwarf_init)
 #define dwarf_callback                  UNW_OBJ (dwarf_callback)

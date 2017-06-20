@@ -453,6 +453,18 @@ out:
   return eh_frame;
 }
 
+struct dwarf_callback_data
+  {
+    /* in: */
+    unw_word_t ip;              /* instruction-pointer we're looking for */
+    unw_proc_info_t *pi;        /* proc-info pointer */
+    int need_unwind_info;
+    /* out: */
+    int single_fde;             /* did we find a single FDE? (vs. a table) */
+    unw_dyn_info_t di;          /* table info (if single_fde is false) */
+    unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
+  };
+
 /* ptr is a pointer to a dwarf_callback_data structure and, on entry,
    member ip contains the instruction-pointer we're looking
    for.  */
@@ -685,26 +697,26 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   ret = dl_iterate_phdr (dwarf_callback, &cb_data);
   SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 
-  if (ret <= 0)
+  if (ret > 0)
     {
-      Debug (14, "IP=0x%lx not found\n", (long) ip);
-      return -UNW_ENOINFO;
+      if (cb_data.single_fde)
+	/* already got the result in *pi */
+	return 0;
+
+      /* search the table: */
+      if (cb_data.di.format != -1)
+	ret = dwarf_search_unwind_table (as, ip, &cb_data.di,
+					 pi, need_unwind_info, arg);
+      else
+	ret = -UNW_ENOINFO;
+
+      if (ret == -UNW_ENOINFO && cb_data.di_debug.format != -1)
+	ret = dwarf_search_unwind_table (as, ip, &cb_data.di_debug, pi,
+					 need_unwind_info, arg);
     }
-
-  if (cb_data.single_fde)
-    /* already got the result in *pi */
-    return 0;
-
-  /* search the table: */
-  if (cb_data.di.format != -1)
-    ret = dwarf_search_unwind_table (as, ip, &cb_data.di,
-                                      pi, need_unwind_info, arg);
   else
     ret = -UNW_ENOINFO;
 
-  if (ret == -UNW_ENOINFO && cb_data.di_debug.format != -1)
-    ret = dwarf_search_unwind_table (as, ip, &cb_data.di_debug, pi,
-                                     need_unwind_info, arg);
   return ret;
 }
 
