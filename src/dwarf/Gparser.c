@@ -278,7 +278,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
               ret = -UNW_ENOMEM;
               break;
 	    }
-          memcpy (&(*rs_stack)->state, &sr->rs_current, sizeof (sr->rs_current))
+          memcpy (&(*rs_stack)->state, &sr->rs_current, sizeof (sr->rs_current));
           Debug (15, "CFA_remember_state\n");
           break;
 
