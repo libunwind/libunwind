@@ -265,7 +265,7 @@ unw_tdep_context_t;
 #ifndef __thumb__
 #define unw_tdep_getcontext(uc) (({                                     \
   unw_tdep_context_t *unw_ctx = (uc);                                   \
-  register unsigned long *unw_base asm ("r0") = unw_ctx->regs;          \
+  register unsigned long *unw_base __asm__ ("r0") = unw_ctx->regs;      \
   __asm__ __volatile__ (                                                \
     "stmia %[base], {r0-r15}"                                           \
     : : [base] "r" (unw_base) : "memory");                              \
@@ -273,7 +273,7 @@ unw_tdep_context_t;
 #else /* __thumb__ */
 #define unw_tdep_getcontext(uc) (({                                     \
   unw_tdep_context_t *unw_ctx = (uc);                                   \
-  register unsigned long *unw_base asm ("r0") = unw_ctx->regs;          \
+  register unsigned long *unw_base __asm__ ("r0") = unw_ctx->regs;      \
   __asm__ __volatile__ (                                                \
     ".align 2\nbx pc\nnop\n.code 32\n"                                  \
     "stmia %[base], {r0-r15}\n"                                         \
