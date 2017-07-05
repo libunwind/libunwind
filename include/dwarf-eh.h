@@ -112,6 +112,7 @@ struct dwarf_eh_frame_hdr
     unsigned char eh_frame_ptr_enc;
     unsigned char fde_count_enc;
     unsigned char table_enc;
+    unw_word_t rest[1];
     /* The rest of the header is variable-length and consists of the
        following members:
 
