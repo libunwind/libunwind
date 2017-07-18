@@ -48,10 +48,12 @@ unw_set_cache_size (unw_addr_space_t as, size_t size, int flag)
         break;
     }
 
+#if !defined(__ia64__)
   if (log_size == as->global_cache.log_size)
     return 0;   /* no change */
 
   as->global_cache.log_size = log_size;
+#endif
 
   /* Ensure caches are empty (and initialized).  */
   unw_flush_cache (as, 0, 0);
