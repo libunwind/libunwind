@@ -53,8 +53,14 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
   
   if (write)
     {
-      if (reg == UNW_TILEGX_PC)
-	c->dwarf.ip = *valp;            /* update the IP cache */
+      if (ci->dwarf.use_prev_instr == 0) {
+	if (reg == UNW_TILEGX_PC)
+	  c->dwarf.ip = *valp;            /* update the IP cache */
+       }
+      else {
+	if (reg == UNW_TILEGX_R55)
+	  c->dwarf.ip = *valp;            /* update the IP cache */
+      }
       return dwarf_put (&c->dwarf, loc, *valp);
     }
   else
