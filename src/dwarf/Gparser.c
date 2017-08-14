@@ -679,7 +679,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   unsigned short head;
 
   head = cache->rr_head;
-  cache->rr_head = (head + 1) & (cache->log_size - 1);
+  cache->rr_head = (head + 1) & (DWARF_UNW_CACHE_SIZE(cache->log_size) - 1);
 
   /* remove the old rs from the hash table (if it's there): */
   if (cache->links[head].ip)
