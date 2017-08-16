@@ -1,5 +1,5 @@
 '\" t
-.\" Manual page created with latex2man on Thu Mar 30 16:13:10 PDT 2017
+.\" Manual page created with latex2man on Wed Aug 16 12:11:05 PDT 2017
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -10,7 +10,7 @@
 
 .fi
 ..
-.TH "UNW\\_INIT\\_LOCAL" "3" "30 March 2017" "Programming Library " "Programming Library "
+.TH "UNW\\_INIT\\_LOCAL" "3" "16 August 2017" "Programming Library " "Programming Library "
 .SH NAME
 unw_init_local
 \-\- initialize cursor for local unwinding 
@@ -26,8 +26,10 @@ unw_init_local(unw_cursor_t *c,
 unw_context_t *ctxt);
 .br
 int
-unw_init_local_signal(unw_cursor_t *c,
-unw_context_t *ctxt);
+unw_init_local2(unw_cursor_t *c,
+unw_context_t *ctxt,
+int
+flag);
 .br
 .PP
 .SH DESCRIPTION
@@ -66,9 +68,9 @@ is not.
 .PP
 If the unw_context_t is known to be a signal frame (i.e., from the 
 third argument in a sigaction handler on linux), 
-unw_init_local_signal()
-should be used for correct 
-initialization on some platforms. 
+unw_init_local2()
+should be used for correct initialization 
+on some platforms, passing the UNW_INIT_SIGNAL_FRAME flag. 
 .PP
 .SH RETURN VALUE
 

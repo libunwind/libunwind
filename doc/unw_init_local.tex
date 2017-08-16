@@ -13,7 +13,7 @@
 \File{\#include $<$libunwind.h$>$}\\
 
 \Type{int} \Func{unw\_init\_local}(\Type{unw\_cursor\_t~*}\Var{c}, \Type{unw\_context\_t~*}\Var{ctxt});\\
-\Type{int} \Func{unw\_init\_local_signal}(\Type{unw\_cursor\_t~*}\Var{c}, \Type{unw\_context\_t~*}\Var{ctxt});\\
+\Type{int} \Func{unw\_init\_local2}(\Type{unw\_cursor\_t~*}\Var{c}, \Type{unw\_context\_t~*}\Var{ctxt}, \Type{int} \Var{flag});\\
 
 \section{Description}
 
@@ -39,8 +39,8 @@ is not.
 
 If the unw_context_t is known to be a signal frame (i.e., from the
 third argument in a sigaction handler on linux),
-\Func{unw\_init\_local\_signal}() should be used for correct
-initialization on some platforms.
+\Func{unw\_init\_local2}() should be used for correct initialization
+on some platforms, passing the UNW_INIT_SIGNAL_FRAME flag.
 
 \section{Return Value}
 

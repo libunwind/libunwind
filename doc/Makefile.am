@@ -12,7 +12,7 @@ man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 	unw_get_reg.man							\
 	unw_getcontext.man						\
 	unw_init_local.man unw_init_remote.man				\
-	unw_init_local_signal.man					\
+	unw_init_local2.man						\
 	unw_is_fpreg.man						\
 	unw_is_signal_frame.man						\
 	unw_create_addr_space.man					\
