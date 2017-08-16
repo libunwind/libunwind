@@ -471,7 +471,9 @@ else
 # to be there if the user configured with --disable-shared.
 #
 install-exec-hook:
-	cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).a libunwind-generic.a
+	if test -f $(DESTDIR)$(libdir)/libunwind-$(arch).a; then \
+		cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).a libunwind-generic.a; \
+	fi
 	if test -f $(DESTDIR)$(libdir)/libunwind-$(arch).so; then \
 		cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).so \
 		libunwind-generic.so; \
