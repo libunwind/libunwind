@@ -25,12 +25,12 @@ int stepper(unw_cursor_t* c) {
 
 /* Verify that we can step from both ucontext, and from getcontext()
  * roughly the same.  This tests that the IP from ucontext is used
- * correctly (see impl of unw_init_local_signal) */
+ * correctly (see impl of unw_init_local2) */
 void handler(int num, siginfo_t* info, void* ucontext) {
   unw_cursor_t c;
   unw_context_t context;
   unw_getcontext(&context);
-  int ret = unw_init_local_signal(&c, ucontext);
+  int ret = unw_init_local2(&c, ucontext, UNW_INIT_SIGNAL_FRAME);
   assert(!ret);
   int ucontext_steps = stepper(&c);
 
