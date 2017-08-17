@@ -289,8 +289,10 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
               ret = -UNW_EINVAL;
               break;
             }
-          memcpy (&sr->rs_current, &(*rs_stack)->state, sizeof (sr->rs_current));
-	  pop_rstate_stack(rs_stack);
+          if (*ip < end_ip) {
+            memcpy (&sr->rs_current, &(*rs_stack)->state, sizeof (sr->rs_current));
+            pop_rstate_stack(rs_stack);
+          }
           Debug (15, "CFA_restore_state\n");
           break;
 
