@@ -116,6 +116,13 @@ if ARCH_ARM
 XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
 endif
 
+# This is meant for multilib binaries, -m32.
+# ptrace gives EBADREG when testing,
+# but generally everything else works.
+if NO_PTRACE_TEST
+ XFAIL_TESTS += run-ptrace-mapper test-ptrace Ltest-init-local-signal
+endif
+
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 

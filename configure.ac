@@ -162,6 +162,7 @@ AC_MSG_RESULT([$target_os])
 AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
 AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
+AM_CONDITIONAL(NO_PTRACE_TEST, test x$build_arch != x$host_arch)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
@@ -400,6 +401,7 @@ case "$ac_cv_search_backtrace" in
   -l*) BACKTRACELIB=$ac_cv_search_backtrace;;
   *) BACKTRACELIB="";;
 esac
+
 
 AC_SUBST(build_arch)
 AC_SUBST(target_os)
