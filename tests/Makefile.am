@@ -45,6 +45,7 @@ endif #!ARCH_IA64
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
 			Gtest-trace Ltest-trace				 \
+			Ltest-mem-validate				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem Ltest-varargs Ltest-nomalloc	 \
 			Ltest-nocalloc Lrs-race
@@ -146,6 +147,7 @@ Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
 Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
+Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.la
@@ -198,6 +200,7 @@ Ltest_resume_sig_rt_LDADD = $(LIBUNWIND_local)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
 Lperf_trace_LDADD = $(LIBUNWIND_local)
+Ltest_mem_validate_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
