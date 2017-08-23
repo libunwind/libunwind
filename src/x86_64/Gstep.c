@@ -84,8 +84,7 @@ unw_step (unw_cursor_t *cursor)
     {
       /* x86_64 ABI specifies that end of call-chain is marked with a
          NULL RBP or undefined return address  */
-        if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP])
-            || DWARF_IS_NULL_LOC(c->dwarf.loc[c->dwarf.ret_addr_column]))
+      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
           {
             c->dwarf.ip = 0;
             ret = 0;
@@ -197,8 +196,6 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[RIP] = rip_loc;
           c->dwarf.use_prev_instr = 1;
         }
-
-      c->dwarf.ret_addr_column = RIP;
 
       if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
         {

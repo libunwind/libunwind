@@ -56,7 +56,7 @@ AC_CHECK_TYPES([struct elf_prstatus, struct prstatus], [], [],
 #endif
 ])
 
-AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA,
+AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA, PTRACE_SETREGSET,
 PTRACE_TRACEME, PTRACE_CONT, PTRACE_SINGLESTEP,
 PTRACE_SYSCALL, PT_IO, PT_GETREGS,
 PT_GETFPREGS, PT_CONTINUE, PT_TRACE_ME,
@@ -298,7 +298,16 @@ fi
 AC_SUBST([LIBLZMA])
 AM_CONDITIONAL(HAVE_LZMA, test x$enable_minidebuginfo = xyes)
 
-LIBUNWIND___THREAD
+AC_MSG_CHECKING([whether to support UNW_CACHE_PER_THREAD])
+AC_ARG_ENABLE([per-thread-cache],
+AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a hight TLS memory usage) (default: disabled)]))
+AC_MSG_RESULT([$enable_per_thread_cache])
+AS_IF([test x$enable_per_thread_cache = xyes], [
+  LIBUNWIND___THREAD
+  AS_IF([test x$libc_cv_gcc___thread = xno], [
+    AC_MSG_FAILURE([UNW_CACHE_PER_THREAD requires __thread])
+  ])
+])
 
 AC_MSG_CHECKING([for Intel compiler])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[#ifndef __INTEL_COMPILER

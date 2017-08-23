@@ -157,13 +157,13 @@ libunwind_la_SOURCES_os_qnx = os-qnx.c
 libunwind_dwarf_common_la_SOURCES = dwarf/global.c
 
 libunwind_dwarf_local_la_SOURCES = \
-	dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c dwarf/Lpe.c dwarf/Lstep.c \
+	dwarf/Lexpr.c dwarf/Lfde.c dwarf/Lparser.c dwarf/Lpe.c \
 	dwarf/Lfind_proc_info-lsb.c \
 	dwarf/Lfind_unwind_table.c
 libunwind_dwarf_local_la_LIBADD = libunwind-dwarf-common.la
 
 libunwind_dwarf_generic_la_SOURCES = \
-	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c dwarf/Gstep.c \
+	dwarf/Gexpr.c dwarf/Gfde.c dwarf/Gparser.c dwarf/Gpe.c \
 	dwarf/Gfind_proc_info-lsb.c \
 	dwarf/Gfind_unwind_table.c
 libunwind_dwarf_generic_la_LIBADD = libunwind-dwarf-common.la
@@ -196,6 +196,7 @@ libunwind_la_SOURCES_aarch64_common = $(libunwind_la_SOURCES_common)	    \
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common)	    \
 	$(libunwind_la_SOURCES_local)					    \
+	aarch64/Lapply_reg_state.c aarch64/Lreg_states_iterate.c	    \
 	aarch64/Lcreate_addr_space.c aarch64/Lget_proc_info.c 		    \
 	aarch64/Lget_save_loc.c aarch64/Lglobal.c aarch64/Linit.c	    \
 	aarch64/Linit_local.c aarch64/Linit_remote.c 			    \
@@ -205,6 +206,7 @@ libunwind_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common)	    \
 
 libunwind_aarch64_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common) \
 	$(libunwind_la_SOURCES_generic)					      \
+	aarch64/Gapply_reg_state.c aarch64/Greg_states_iterate.c	      \
 	aarch64/Gcreate_addr_space.c aarch64/Gget_proc_info.c 		      \
 	aarch64/Gget_save_loc.c aarch64/Gglobal.c aarch64/Ginit.c 	      \
 	aarch64/Ginit_local.c aarch64/Ginit_remote.c			      \
@@ -220,6 +222,7 @@ libunwind_la_SOURCES_arm_common = $(libunwind_la_SOURCES_common)	    \
 libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \
 	$(libunwind_la_SOURCES_local)					    \
 	arm/getcontext.S						    \
+	arm/Lapply_reg_state.c arm/Lreg_states_iterate.c		    \
 	arm/Lcreate_addr_space.c arm/Lget_proc_info.c arm/Lget_save_loc.c   \
 	arm/Lglobal.c arm/Linit.c arm/Linit_local.c arm/Linit_remote.c	    \
 	arm/Lis_signal_frame.c arm/Lregs.c arm/Lresume.c arm/Lstep.c	    \
@@ -227,6 +230,7 @@ libunwind_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)		    \
 
 libunwind_arm_la_SOURCES_arm = $(libunwind_la_SOURCES_arm_common)	    \
 	$(libunwind_la_SOURCES_generic)					    \
+	arm/Gapply_reg_state.c arm/Greg_states_iterate.c		    \
 	arm/Gcreate_addr_space.c arm/Gget_proc_info.c arm/Gget_save_loc.c   \
 	arm/Gglobal.c arm/Ginit.c arm/Ginit_local.c arm/Ginit_remote.c	    \
 	arm/Gis_signal_frame.c arm/Gregs.c arm/Gresume.c arm/Gstep.c	    \
@@ -244,6 +248,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
 									     \
 	ia64/dyn_info_list.S ia64/getcontext.S				     \
 									     \
+	ia64/Lapply_reg_state.c ia64/Lreg_states_iterate.c		     \
 	ia64/Lcreate_addr_space.c ia64/Lget_proc_info.c ia64/Lget_save_loc.c \
 	ia64/Lglobal.c ia64/Linit.c ia64/Linit_local.c ia64/Linit_remote.c   \
 	ia64/Linstall_cursor.S ia64/Lis_signal_frame.c ia64/Lparser.c	     \
@@ -253,6 +258,7 @@ libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
 # The list of files that go into libunwind-ia64:
 libunwind_ia64_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)	     \
 	$(libunwind_la_SOURCES_generic)					     \
+	ia64/Gapply_reg_state.c ia64/Greg_states_iterate.c		     \
 	ia64/Gcreate_addr_space.c ia64/Gget_proc_info.c ia64/Gget_save_loc.c \
 	ia64/Gglobal.c ia64/Ginit.c ia64/Ginit_local.c ia64/Ginit_remote.c   \
 	ia64/Ginstall_cursor.S ia64/Gis_signal_frame.c ia64/Gparser.c	     \
@@ -268,6 +274,7 @@ libunwind_la_SOURCES_hppa_common = $(libunwind_la_SOURCES_common)	\
 libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)		\
 	$(libunwind_la_SOURCES_local)					\
 	hppa/getcontext.S hppa/setcontext.S				\
+	hppa/Lapply_reg_state.c hppa/Lreg_states_iterate.c		\
 	hppa/Lcreate_addr_space.c hppa/Lget_save_loc.c hppa/Lglobal.c	\
 	hppa/Linit.c hppa/Linit_local.c hppa/Linit_remote.c		\
 	hppa/Lis_signal_frame.c hppa/Lget_proc_info.c hppa/Lregs.c	\
@@ -276,6 +283,7 @@ libunwind_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)		\
 # The list of files that go into libunwind-hppa:
 libunwind_hppa_la_SOURCES_hppa = $(libunwind_la_SOURCES_hppa_common)	\
 	$(libunwind_la_SOURCES_generic)					\
+	hppa/Gapply_reg_state.c hppa/Greg_states_iterate.c		\
 	hppa/Gcreate_addr_space.c hppa/Gget_save_loc.c hppa/Gglobal.c	\
 	hppa/Ginit.c hppa/Ginit_local.c hppa/Ginit_remote.c		\
 	hppa/Gis_signal_frame.c hppa/Gget_proc_info.c hppa/Gregs.c	\
@@ -290,12 +298,14 @@ libunwind_la_SOURCES_mips_common = $(libunwind_la_SOURCES_common)	    \
 libunwind_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)		    \
 	$(libunwind_la_SOURCES_local)					    \
 	mips/getcontext.S						    \
+	mips/Lapply_reg_state.c mips/Lreg_states_iterate.c		    \
 	mips/Lcreate_addr_space.c mips/Lget_proc_info.c mips/Lget_save_loc.c   \
 	mips/Lglobal.c mips/Linit.c mips/Linit_local.c mips/Linit_remote.c  \
 	mips/Lis_signal_frame.c mips/Lregs.c mips/Lresume.c mips/Lstep.c
 
 libunwind_mips_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)	    \
 	$(libunwind_la_SOURCES_generic)					    \
+	mips/Gapply_reg_state.c mips/Greg_states_iterate.c		    \
 	mips/Gcreate_addr_space.c mips/Gget_proc_info.c mips/Gget_save_loc.c   \
 	mips/Gglobal.c mips/Ginit.c mips/Ginit_local.c mips/Ginit_remote.c	    \
 	mips/Gis_signal_frame.c mips/Gregs.c mips/Gresume.c mips/Gstep.c
@@ -309,12 +319,14 @@ libunwind_la_SOURCES_tilegx_common = $(libunwind_la_SOURCES_common)	    \
 libunwind_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)		    \
 	$(libunwind_la_SOURCES_local)					    \
 	tilegx/getcontext.S						\
+	tilegx/Lapply_reg_state.c tilegx/Lreg_states_iterate.c		    \
 	tilegx/Lcreate_addr_space.c tilegx/Lget_proc_info.c tilegx/Lget_save_loc.c   \
 	tilegx/Lglobal.c tilegx/Linit.c tilegx/Linit_local.c tilegx/Linit_remote.c  \
 	tilegx/Lis_signal_frame.c tilegx/Lregs.c tilegx/Lresume.c tilegx/Lstep.c
 
 libunwind_tilegx_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)	    \
 	$(libunwind_la_SOURCES_generic)					    \
+	tilegx/Gapply_reg_state.c tilegx/Greg_states_iterate.c			     \
 	tilegx/Gcreate_addr_space.c tilegx/Gget_proc_info.c tilegx/Gget_save_loc.c   \
 	tilegx/Gglobal.c tilegx/Ginit.c tilegx/Ginit_local.c tilegx/Ginit_remote.c	    \
 	tilegx/Gis_signal_frame.c tilegx/Gregs.c tilegx/Gresume.c tilegx/Gstep.c
@@ -329,6 +341,7 @@ libunwind_la_SOURCES_x86_common = $(libunwind_la_SOURCES_common)	\
 libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
         $(libunwind_la_SOURCES_x86_os_local)				\
 	$(libunwind_la_SOURCES_local)					\
+	x86/Lapply_reg_state.c x86/Lreg_states_iterate.c		\
 	x86/Lcreate_addr_space.c x86/Lget_save_loc.c x86/Lglobal.c	\
 	x86/Linit.c x86/Linit_local.c x86/Linit_remote.c		\
 	x86/Lget_proc_info.c x86/Lregs.c				\
@@ -338,6 +351,7 @@ libunwind_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)		\
 libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
         $(libunwind_la_SOURCES_x86_os)					\
 	$(libunwind_la_SOURCES_generic)					\
+	x86/Gapply_reg_state.c x86/Greg_states_iterate.c		\
 	x86/Gcreate_addr_space.c x86/Gget_save_loc.c x86/Gglobal.c	\
 	x86/Ginit.c x86/Ginit_local.c x86/Ginit_remote.c		\
 	x86/Gget_proc_info.c x86/Gregs.c				\
@@ -354,6 +368,7 @@ libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
         $(libunwind_la_SOURCES_x86_64_os_local)			    	    \
 	$(libunwind_la_SOURCES_local)					    \
 	x86_64/setcontext.S						    \
+	x86_64/Lapply_reg_state.c x86_64/Lreg_states_iterate.c		    \
 	x86_64/Lcreate_addr_space.c x86_64/Lget_save_loc.c x86_64/Lglobal.c \
 	x86_64/Linit.c x86_64/Linit_local.c x86_64/Linit_remote.c	    \
 	x86_64/Lget_proc_info.c x86_64/Lregs.c x86_64/Lresume.c		    \
@@ -363,6 +378,7 @@ libunwind_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)	    \
 libunwind_x86_64_la_SOURCES_x86_64 = $(libunwind_la_SOURCES_x86_64_common)  \
         $(libunwind_la_SOURCES_x86_64_os)			    	    \
 	$(libunwind_la_SOURCES_generic)					    \
+	x86_64/Gapply_reg_state.c x86_64/Greg_states_iterate.c		    \
 	x86_64/Gcreate_addr_space.c x86_64/Gget_save_loc.c x86_64/Gglobal.c \
 	x86_64/Ginit.c x86_64/Ginit_local.c x86_64/Ginit_remote.c	    \
 	x86_64/Gget_proc_info.c x86_64/Gregs.c x86_64/Gresume.c		    \
@@ -387,6 +403,7 @@ libunwind_la_SOURCES_ppc32_common = $(libunwind_la_SOURCES_common)      \
 libunwind_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common)       \
 	$(libunwind_la_SOURCES_local)                                   \
 	$(libunwind_la_SOURCES_ppc)					\
+	ppc32/Lapply_reg_state.c ppc32/Lreg_states_iterate.c		\
 	ppc32/Lcreate_addr_space.c					\
 	ppc32/Lglobal.c ppc32/Linit.c					\
 	ppc32/Lregs.c ppc32/Lresume.c ppc32/Lstep.c
@@ -395,6 +412,7 @@ libunwind_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common)       \
 libunwind_ppc32_la_SOURCES_ppc32 = $(libunwind_la_SOURCES_ppc32_common) \
 	$(libunwind_la_SOURCES_generic)                                 \
 	$(libunwind_ppc_la_SOURCES_ppc_generic)				\
+	ppc32/Gapply_reg_state.c ppc32/Greg_states_iterate.c		\
 	ppc32/Gcreate_addr_space.c					\
 	ppc32/Gglobal.c ppc32/Ginit.c					\
 	ppc32/Gregs.c ppc32/Gresume.c ppc32/Gstep.c
@@ -408,6 +426,7 @@ libunwind_la_SOURCES_ppc64_common = $(libunwind_la_SOURCES_common)      \
 libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
         $(libunwind_la_SOURCES_local)                                   \
 	$(libunwind_la_SOURCES_ppc)					\
+	ppc64/Lapply_reg_state.c ppc64/Lreg_states_iterate.c		\
 	ppc64/Lcreate_addr_space.c					\
 	ppc64/Lglobal.c ppc64/Linit.c					\
 	ppc64/Lregs.c ppc64/Lresume.c ppc64/Lstep.c
@@ -416,6 +435,7 @@ libunwind_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common)       \
 libunwind_ppc64_la_SOURCES_ppc64 = $(libunwind_la_SOURCES_ppc64_common) \
         $(libunwind_la_SOURCES_generic)                                 \
 	$(libunwind_ppc_la_SOURCES_ppc_generic)				\
+	ppc64/Gapply_reg_state.c ppc64/Greg_states_iterate.c		\
 	ppc64/Gcreate_addr_space.c					\
 	ppc64/Gglobal.c ppc64/Ginit.c					\
 	ppc64/Gregs.c ppc64/Gresume.c ppc64/Gstep.c
@@ -428,12 +448,14 @@ libunwind_la_SOURCES_sh_common = $(libunwind_la_SOURCES_common)		\
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_sh = $(libunwind_la_SOURCES_sh_common)		\
 	$(libunwind_la_SOURCES_local)					\
+	sh/Lapply_reg_state.c sh/Lreg_states_iterate.c			\
 	sh/Lcreate_addr_space.c sh/Lget_proc_info.c sh/Lget_save_loc.c	\
 	sh/Lglobal.c sh/Linit.c sh/Linit_local.c sh/Linit_remote.c	\
 	sh/Lis_signal_frame.c sh/Lregs.c sh/Lresume.c sh/Lstep.c
 
 libunwind_sh_la_SOURCES_sh = $(libunwind_la_SOURCES_sh_common)		\
 	$(libunwind_la_SOURCES_generic)					\
+	sh/Gapply_reg_state.c sh/Greg_states_iterate.c			\
 	sh/Gcreate_addr_space.c sh/Gget_proc_info.c sh/Gget_save_loc.c	\
 	sh/Gglobal.c sh/Ginit.c sh/Ginit_local.c sh/Ginit_remote.c	\
 	sh/Gis_signal_frame.c sh/Gregs.c sh/Gresume.c sh/Gstep.c
@@ -449,7 +471,9 @@ else
 # to be there if the user configured with --disable-shared.
 #
 install-exec-hook:
-	cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).a libunwind-generic.a
+	if test -f $(DESTDIR)$(libdir)/libunwind-$(arch).a; then \
+		cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).a libunwind-generic.a; \
+	fi
 	if test -f $(DESTDIR)$(libdir)/libunwind-$(arch).so; then \
 		cd $(DESTDIR)$(libdir) && $(LN_S) -f libunwind-$(arch).so \
 		libunwind-generic.so; \

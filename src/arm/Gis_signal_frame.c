@@ -44,6 +44,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* Thumb sigreturn (two insns, syscall number is loaded into r7) */
 #define THUMB_SIGRETURN (0xdf00UL << 16 | 0x2700 | ARM_NR_sigreturn)
 #define THUMB_RT_SIGRETURN (0xdf00UL << 16 | 0x2700 | ARM_NR_rt_sigreturn)
+
+/* Thumb2 sigreturn (mov.w r7, $SYS_ify(rt_sigreturn/sigreturn)) */
+#define THUMB2_SIGRETURN (((0x0700 | ARM_NR_sigreturn) << 16) | \
+                                       0xf04f)
+#define THUMB2_RT_SIGRETURN (((0x0700 | ARM_NR_rt_sigreturn) << 16) | \
+                                       0xf04f)
+/* TODO: with different toolchains, there are a lot more possibilities */
 #endif /* __linux__ */
 
 /* Returns 1 in case of a non-RT signal frame and 2 in case of a RT signal
@@ -63,17 +70,19 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   a = unw_get_accessors (as);
   arg = c->dwarf.as_arg;
 
-  ip = c->dwarf.ip;
+  /* The least bit denotes thumb/arm mode. Do not read there. */
+  ip = c->dwarf.ip & ~0x1;
 
   if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0)
     return ret;
 
   /* Return 1 if the IP points to a non-RT sigreturn sequence.  */
-  if (w0 == MOV_R7_SIGRETURN || w0 == ARM_SIGRETURN || w0 == THUMB_SIGRETURN)
+  if (w0 == MOV_R7_SIGRETURN || w0 == ARM_SIGRETURN || w0 == THUMB_SIGRETURN
+           || w0 == THUMB2_SIGRETURN)
     return 1;
   /* Return 2 if the IP points to a RT sigreturn sequence.  */
   else if (w0 == MOV_R7_RT_SIGRETURN || w0 == ARM_RT_SIGRETURN
-           || w0 == THUMB_RT_SIGRETURN)
+           || w0 == THUMB_RT_SIGRETURN || w0 == THUMB2_RT_SIGRETURN)
     return 2;
 
   return 0;

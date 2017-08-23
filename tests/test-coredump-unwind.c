@@ -137,7 +137,7 @@ static void verror_msg_helper(const char *s,
   if (flags & LOGMODE_STDIO)
     {
       fflush(stdout);
-      used += write(STDERR_FILENO, msg, used + msgeol_len);
+      write(STDERR_FILENO, msg, used + msgeol_len);
     }
   msg[used] = '\0'; /* remove msg_eol (usually "\n") */
   if (flags & LOGMODE_SYSLOG)

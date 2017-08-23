@@ -74,7 +74,8 @@ fetch16 (unw_addr_space_t as, unw_accessors_t *a,
   unw_word_t val, aligned_addr = *addr & -WSIZE, off = *addr - aligned_addr;
   int ret;
 
-  assert ((off & 0x1) == 0);
+  if ((off & 0x1) != 0)
+    return -UNW_EINVAL;
 
   *addr += 2;
 
@@ -96,7 +97,8 @@ fetch32 (unw_addr_space_t as, unw_accessors_t *a,
   unw_word_t val, aligned_addr = *addr & -WSIZE, off = *addr - aligned_addr;
   int ret;
 
-  assert ((off & 0x3) == 0);
+  if ((off & 0x3) != 0)
+    return -UNW_EINVAL;
 
   *addr += 4;
 

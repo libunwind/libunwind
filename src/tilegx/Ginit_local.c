@@ -36,8 +36,8 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 
 #else /* !UNW_REMOTE_ONLY */
 
-PROTECTED int
-unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
+static int
+unw_init_local_common(unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_instr)
 {
   struct cursor *c = (struct cursor *) cursor;
 
@@ -51,7 +51,30 @@ unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
   c->dwarf.as = unw_local_addr_space;
 
   c->dwarf.as_arg = uc;
-  return common_init (c, 1);
+  return common_init (c, use_prev_instr);
+}
+
+PROTECTED int
+unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
+{
+  return unw_init_local_common(cursor, uc, 1);
+}
+
+PROTECTED int
+unw_init_local2 (unw_cursor_t *cursor, ucontext_t *uc, int flag)
+{
+  if (!flag)
+    {
+      return unw_init_local_common(cursor, uc, 1);
+    }
+  else if (flag == UNW_INIT_SIGNAL_FRAME)
+    {
+      return unw_init_local_common(cursor, uc, 0);
+    }
+  else
+    {
+      return -UNW_EINVAL;
+    }
 }
 
 #endif /* !UNW_REMOTE_ONLY */

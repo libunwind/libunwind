@@ -37,13 +37,6 @@ struct elf_dyn_info;
 # include "config.h"
 #endif
 
-#ifdef HAVE___THREAD
-  /* For now, turn off per-thread caching.  It uses up too much TLS
-     memory per thread even when the thread never uses libunwind at
-     all.  */
-# undef HAVE___THREAD
-#endif
-
 #ifndef UNW_REMOTE_ONLY
   #if defined(HAVE_LINK_H)
     #include <link.h>
@@ -236,13 +229,6 @@ typedef enum
   }
 dwarf_where_t;
 
-typedef struct
-  {
-    dwarf_where_t where;        /* how is the register saved? */
-    unw_word_t val;             /* where it's saved */
-  }
-dwarf_save_loc_t;
-
 /* For uniformity, we'd like to treat the CFA save-location like any
    other register save-location, but this doesn't quite work, because
    the CFA can be expressed as a (REGISTER,OFFSET) pair.  To handle
@@ -256,19 +242,36 @@ dwarf_save_loc_t;
 #define DWARF_CFA_REG_COLUMN    DWARF_NUM_PRESERVED_REGS
 #define DWARF_CFA_OFF_COLUMN    (DWARF_NUM_PRESERVED_REGS + 1)
 
+typedef struct dwarf_reg_only_state
+  {
+    char where[DWARF_NUM_PRESERVED_REGS + 2];        /* how is the register saved? */
+    unw_word_t val[DWARF_NUM_PRESERVED_REGS + 2];             /* where it's saved */
+  }
+dwarf_reg_only_state_t;
+
 typedef struct dwarf_reg_state
   {
-    struct dwarf_reg_state *next;       /* for rs_stack */
-    dwarf_save_loc_t reg[DWARF_NUM_PRESERVED_REGS + 2];
+    unw_word_t ret_addr_column;	/* which column in rule table represents return address */
+    dwarf_reg_only_state_t reg;
+  }
+dwarf_reg_state_t;
+
+typedef struct dwarf_stackable_reg_state
+  {
+    struct dwarf_stackable_reg_state *next;       /* for rs_stack */
+    dwarf_reg_only_state_t state;
+  }
+dwarf_stackable_reg_state_t;
+
+typedef struct dwarf_reg_cache_entry
+  {
     unw_word_t ip;                        /* ip this rs is for */
-    unw_word_t ret_addr_column;           /* indicates which column in the rule table represents return address */
-    unsigned short lru_chain;     /* used for least-recently-used chain */
     unsigned short coll_chain;  /* used for hash collisions */
     unsigned short hint;              /* hint for next rs to try (or -1) */
     unsigned short valid : 1;         /* optional machine-dependent signal info */
     unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
   }
-dwarf_reg_state_t;
+dwarf_reg_cache_entry_t;
 
 typedef struct dwarf_cie_info
   {
@@ -308,7 +311,6 @@ typedef struct dwarf_cursor
     unw_word_t cfa;     /* canonical frame address; aka frame-/stack-pointer */
     unw_word_t ip;              /* instruction pointer */
     unw_word_t args_size;       /* size of arguments */
-    unw_word_t ret_addr_column; /* column for return-address */
     unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
     unsigned int eh_valid_mask;
 
@@ -336,8 +338,7 @@ typedef unsigned char unw_hash_index_t;
 struct dwarf_rs_cache
   {
     pthread_mutex_t lock;
-    unsigned short lru_head;    /* index of lead-recently used rs */
-    unsigned short lru_tail;    /* index of most-recently used rs */
+    unsigned short rr_head;    /* index of least-recently allocated rs */
 
     unsigned short log_size;
     unsigned short prev_log_size;
@@ -349,10 +350,12 @@ struct dwarf_rs_cache
 
     /* rs cache: */
     dwarf_reg_state_t *buckets;
+    dwarf_reg_cache_entry_t *links;
 
     /* default memory, loaded in BSS segment */
     unsigned short default_hash[DWARF_DEFAULT_UNW_HASH_SIZE];
     dwarf_reg_state_t default_buckets[DWARF_DEFAULT_UNW_CACHE_SIZE];
+    dwarf_reg_cache_entry_t default_links[DWARF_DEFAULT_UNW_CACHE_SIZE];
   };
 
 /* A list of descriptors for loaded .debug_frame sections.  */
@@ -372,18 +375,6 @@ struct unw_debug_frame_list
     struct unw_debug_frame_list *next;
   };
 
-struct dwarf_callback_data
-  {
-    /* in: */
-    unw_word_t ip;              /* instruction-pointer we're looking for */
-    unw_proc_info_t *pi;        /* proc-info pointer */
-    int need_unwind_info;
-    /* out: */
-    int single_fde;             /* did we find a single FDE? (vs. a table) */
-    unw_dyn_info_t di;          /* table info (if single_fde is false) */
-    unw_dyn_info_t di_debug;    /* additional table info for .debug_frame */
-  };
-
 /* Convenience macros: */
 #define dwarf_init                      UNW_ARCH_OBJ (dwarf_init)
 #define dwarf_callback                  UNW_OBJ (dwarf_callback)
@@ -398,8 +389,9 @@ struct dwarf_callback_data
 #define dwarf_extract_proc_info_from_fde \
                 UNW_OBJ (dwarf_extract_proc_info_from_fde)
 #define dwarf_find_save_locs            UNW_OBJ (dwarf_find_save_locs)
-#define dwarf_create_state_record       UNW_OBJ (dwarf_create_state_record)
 #define dwarf_make_proc_info            UNW_OBJ (dwarf_make_proc_info)
+#define dwarf_apply_reg_state           UNW_OBJ (dwarf_apply_reg_state)
+#define dwarf_reg_states_iterate        UNW_OBJ (dwarf_reg_states_iterate)
 #define dwarf_read_encoded_pointer      UNW_OBJ (dwarf_read_encoded_pointer)
 #define dwarf_step                      UNW_OBJ (dwarf_step)
 #define dwarf_flush_rs_cache            UNW_OBJ (dwarf_flush_rs_cache)
@@ -441,9 +433,9 @@ extern int dwarf_extract_proc_info_from_fde (unw_addr_space_t as,
                                              int is_debug_frame,
                                              void *arg);
 extern int dwarf_find_save_locs (struct dwarf_cursor *c);
-extern int dwarf_create_state_record (struct dwarf_cursor *c,
-                                      dwarf_state_record_t *sr);
 extern int dwarf_make_proc_info (struct dwarf_cursor *c);
+extern int dwarf_apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs);
+extern int dwarf_reg_states_iterate (struct dwarf_cursor *c, unw_reg_states_callback cb, void *token);
 extern int dwarf_read_encoded_pointer (unw_addr_space_t as,
                                        unw_accessors_t *a,
                                        unw_word_t *addr,

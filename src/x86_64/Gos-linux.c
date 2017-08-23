@@ -47,21 +47,21 @@ tdep_fetch_frame (struct dwarf_cursor *dw, unw_word_t ip, int need_unwind_info)
         dw->ip, dw->cfa, c->sigcontext_format);
 }
 
-HIDDEN void
-tdep_cache_frame (struct dwarf_cursor *dw, struct dwarf_reg_state *rs)
+HIDDEN int
+tdep_cache_frame (struct dwarf_cursor *dw)
 {
   struct cursor *c = (struct cursor *) dw;
-  rs->signal_frame = c->sigcontext_format;
 
   Debug(5, "cache frame ip=0x%lx cfa=0x%lx format=%d\n",
         dw->ip, dw->cfa, c->sigcontext_format);
+  return c->sigcontext_format;
 }
 
 HIDDEN void
-tdep_reuse_frame (struct dwarf_cursor *dw, struct dwarf_reg_state *rs)
+tdep_reuse_frame (struct dwarf_cursor *dw, int frame)
 {
   struct cursor *c = (struct cursor *) dw;
-  c->sigcontext_format = rs->signal_frame;
+  c->sigcontext_format = frame;
   if (c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME)
   {
     c->frame_info.frame_type = UNW_X86_64_FRAME_SIGRETURN;
@@ -138,7 +138,7 @@ x86_64_sigreturn (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
-  mcontext_t *sc_mcontext = &((struct ucontext*)sc)->uc_mcontext;
+  mcontext_t *sc_mcontext = &((ucontext_t*)sc)->uc_mcontext;
   /* Copy in saved uc - all preserved regs are at the start of sigcontext */
   memcpy(sc_mcontext, &c->uc->uc_mcontext,
          DWARF_NUM_PRESERVED_REGS * sizeof(unw_word_t));

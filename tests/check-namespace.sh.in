@@ -88,6 +88,8 @@ filter_misc () {
 }
 
 check_local_unw_abi () {
+    match _UL${plat}_apply_reg_state
+    match _UL${plat}_reg_states_iterate
     match _UL${plat}_create_addr_space
     match _UL${plat}_destroy_addr_space
     match _UL${plat}_get_fpreg
@@ -97,6 +99,7 @@ check_local_unw_abi () {
     match _UL${plat}_get_reg
     match _UL${plat}_get_save_loc
     match _UL${plat}_init_local
+    match _UL${plat}_init_local2
     match _UL${plat}_init_remote
     match _UL${plat}_is_signal_frame
     match _UL${plat}_handle_signal_frame
@@ -172,7 +175,7 @@ check_local_unw_abi () {
             match _UL${plat}_local_addr_space_init
             match _U${plat}_get_elf_image
 	    match _U${plat}_get_exe_image_path
-            match ${plat}_lock     
+            match ${plat}_lock
             ;;
 
 	*)
@@ -189,6 +192,8 @@ check_local_unw_abi () {
 }
 
 check_generic_unw_abi () {
+    match _U${plat}_apply_reg_state
+    match _U${plat}_reg_states_iterate
     match _U${plat}_create_addr_space
     match _U${plat}_destroy_addr_space
     match _U${plat}_flush_cache
@@ -200,6 +205,7 @@ check_generic_unw_abi () {
     match _U${plat}_get_reg
     match _U${plat}_get_save_loc
     match _U${plat}_init_local
+    match _U${plat}_init_local2
     match _U${plat}_init_remote
     match _U${plat}_is_signal_frame
     match _U${plat}_handle_signal_frame
