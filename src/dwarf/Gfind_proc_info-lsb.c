@@ -128,7 +128,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
   if (!shdr ||
       (shdr->sh_offset + shdr->sh_size > ei.size))
     {
-      munmap(ei.image, ei.size);
+      mi_munmap(ei.image, ei.size);
       return 1;
     }
 
@@ -146,7 +146,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
 	  if (!*buf)
 	    {
 	      Debug (2, "failed to allocate zlib .debug_frame buffer, skipping\n");
-	      munmap(ei.image, ei.size);
+	      mi_munmap(ei.image, ei.size);
 	      return 1;
 	    }
 
@@ -156,8 +156,8 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
 	  if (ret != Z_OK)
 	    {
 	      Debug (2, "failed to decompress zlib .debug_frame, skipping\n");
-	      munmap(*buf, *bufsize);
-	      munmap(ei.image, ei.size);
+	      mi_munmap(*buf, *bufsize);
+	      mi_munmap(ei.image, ei.size);
 	      return 1;
 	    }
 
@@ -169,7 +169,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
 	{
 	  Debug (2, "unknown compression type %d, skipping\n",
 		 chdr->ch_type);
-          munmap(ei.image, ei.size);
+          mi_munmap(ei.image, ei.size);
 	  return 1;
         }
     }
@@ -182,7 +182,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
       if (!*buf)
         {
           Debug (2, "failed to allocate .debug_frame buffer, skipping\n");
-          munmap(ei.image, ei.size);
+          mi_munmap(ei.image, ei.size);
           return 1;
         }
 
@@ -207,7 +207,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
         break;
       }
 
-  munmap(ei.image, ei.size);
+  mi_munmap(ei.image, ei.size);
   return 0;
 }
 
@@ -549,7 +549,7 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
          eh_frame);
 
 out:
-  munmap (ei.image, ei.size);
+  mi_munmap (ei.image, ei.size);
 
   return eh_frame;
 }

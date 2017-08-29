@@ -571,14 +571,14 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
     cache->log_size = DWARF_DEFAULT_LOG_UNW_CACHE_SIZE;
   } else {
     if (cache->hash && cache->hash != cache->default_hash)
-      munmap(cache->hash, DWARF_UNW_HASH_SIZE(cache->prev_log_size)
-                           * sizeof (cache->hash[0]));
+      mi_munmap(cache->hash, DWARF_UNW_HASH_SIZE(cache->prev_log_size)
+                              * sizeof (cache->hash[0]));
     if (cache->buckets && cache->buckets != cache->default_buckets)
-      munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
-	                      * sizeof (cache->buckets[0]));
+      mi_munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
+                              * sizeof (cache->buckets[0]));
     if (cache->links && cache->links != cache->default_links)
-      munmap(cache->links, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
-	                      * sizeof (cache->links[0]));
+      mi_munmap(cache->links, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
+                              * sizeof (cache->links[0]));
     GET_MEMORY(cache->hash, DWARF_UNW_HASH_SIZE(cache->log_size)
                              * sizeof (cache->hash[0]));
     GET_MEMORY(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->log_size)

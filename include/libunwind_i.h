@@ -58,6 +58,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <errno.h>
 #include <stdio.h>
 
+#if defined(HAVE_SYS_SYSCALL_H)
+# include <sys/syscall.h>   /* For SYS_xxx definitions */
+#endif
+
 #if defined(HAVE_ELF_H)
 # include <elf.h>
 #elif defined(HAVE_SYS_ELF_H)
@@ -213,6 +217,17 @@ do {                                            \
 
 #define SOS_MEMORY_SIZE 16384   /* see src/mi/mempool.c */
 
+/* Provide an internal syscall version of munmap to improve signal safety. */
+static ALWAYS_INLINE int
+mi_munmap (void *addr, size_t len)
+{
+#ifdef SYS_munmap
+  return syscall (SYS_munmap, addr, len);
+#else
+  return munmap (addr, len);
+#endif
+}
+
 #ifndef MAP_ANONYMOUS
 # define MAP_ANONYMOUS MAP_ANON
 #endif
@@ -326,7 +341,7 @@ struct elf_dyn_info
 static inline void invalidate_edi (struct elf_dyn_info *edi)
 {
   if (edi->ei.image)
-    munmap (edi->ei.image, edi->ei.size);
+    mi_munmap (edi->ei.image, edi->ei.size);
   memset (edi, 0, sizeof (*edi));
   edi->di_cache.format = -1;
   edi->di_debug.format = -1;
