@@ -826,39 +826,44 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
       cfa = DWARF_GET_LOC (cfa_loc);
     }
 
+  dwarf_loc_t new_loc[DWARF_NUM_PRESERVED_REGS];
+  memcpy(new_loc, c->loc, sizeof(new_loc));
+
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
     {
       switch ((dwarf_where_t) rs->reg.where[i])
         {
         case DWARF_WHERE_UNDEF:
-          c->loc[i] = DWARF_NULL_LOC;
+          new_loc[i] = DWARF_NULL_LOC;
           break;
 
         case DWARF_WHERE_SAME:
           break;
 
         case DWARF_WHERE_CFAREL:
-          c->loc[i] = DWARF_MEM_LOC (c, cfa + rs->reg.val[i]);
+          new_loc[i] = DWARF_MEM_LOC (c, cfa + rs->reg.val[i]);
           break;
 
         case DWARF_WHERE_REG:
-          c->loc[i] = DWARF_REG_LOC (c, dwarf_to_unw_regnum (rs->reg.val[i]));
+          new_loc[i] = DWARF_REG_LOC (c, dwarf_to_unw_regnum (rs->reg.val[i]));
           break;
 
         case DWARF_WHERE_EXPR:
           addr = rs->reg.val[i];
-          if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
+          if ((ret = eval_location_expr (c, as, a, addr, new_loc + i, arg)) < 0)
             return ret;
           break;
 
         case DWARF_WHERE_VAL_EXPR:
           addr = rs->reg.val[i];
-          if ((ret = eval_location_expr (c, as, a, addr, c->loc + i, arg)) < 0)
+          if ((ret = eval_location_expr (c, as, a, addr, new_loc + i, arg)) < 0)
             return ret;
-          c->loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (c->loc[i]));
+          new_loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (new_loc[i]));
           break;
         }
     }
+
+  memcpy(c->loc, new_loc, sizeof(new_loc));
 
   c->cfa = cfa;
   /* DWARF spec says undefined return address location means end of stack. */
