@@ -26,6 +26,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
+#include <sys/syscall.h>
+
 PROTECTED int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
