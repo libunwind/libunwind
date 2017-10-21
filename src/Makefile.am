@@ -492,6 +492,7 @@ if OS_LINUX
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-linux.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
  libunwind_la_SOURCES_arm_os          = arm/Gos-linux.c
+ libunwind_la_SOURCES_arm_os_local    = arm/Los-linux.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_linux.c
 endif
 
