@@ -1,6 +1,6 @@
 #include <stdio.h>
 
 /* To prevent inlining and optimizing away */
-int foo(int* f) {
+int foo(volatile int* f) {
   return *f;
 }
