@@ -79,6 +79,14 @@ handler (int sig)
   unw_cursor_t c;
   char foo;
   int ret;
+  // The test rely on SIGUSR2 mask to be cleared when the handler returns.
+  // For local context from the signal handler, there doesn't seem to be a way
+  // currently to set it so just clear the whole struct to make sure the signal mask is cleared.
+  // This should probably be fixed to avoid signal mask being set to random values
+  // by `unw_resume` if the context was not pre-zeroed.,
+  // Using the signal ucontext direction should also work automatically but currently doesn't
+  // on ARM/AArch64 (or any other archs that doesn't have a proper sigreturn implementation)
+  memset(&uc, 0x0, sizeof(uc));
 
 #if UNW_TARGET_IA64
   if (verbose)
