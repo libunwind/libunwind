@@ -46,12 +46,13 @@ void handler(int num, siginfo_t* info, void* ucontext) {
   exit(-1);
 }
 
-int foo(int* f);
+int foo(volatile int* f);
 
 int main(){
   struct sigaction a;
   memset(&a, 0, sizeof(struct sigaction));
   a.sa_sigaction = &handler;
+  a.sa_flags = SA_SIGINFO;
   sigaction(SIGSEGV, &a, NULL);
 
   foo(NULL);
