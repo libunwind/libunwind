@@ -68,6 +68,7 @@ tests/[GL]test-trace
 tests/[GL]perf-trace
 tests/Ltest-cxx-exceptions
 tests/Ltest-init-local-signal
+tests/Ltest-mem-validate
 tests/[GL]ia64-test-nat
 tests/[GL]ia64-test-rbs
 tests/[GL]ia64-test-readonly
