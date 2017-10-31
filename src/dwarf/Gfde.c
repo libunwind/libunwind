@@ -116,10 +116,11 @@ parse_cie (unw_addr_space_t as, unw_accessors_t *a, unw_word_t addr,
   if ((ret = dwarf_readu8 (as, a, &addr, &version, arg)) < 0)
     return ret;
 
-  if (version != 1 && version != DWARF_CIE_VERSION)
+  /* GCC emits version 1??? */
+  if (version != 1 && (version < DWARF_CIE_VERSION || version > DWARF_CIE_VERSION_MAX))
     {
-      Debug (1, "Got CIE version %u, expected version 1 or "
-             STR (DWARF_CIE_VERSION) "\n", version);
+      Debug (1, "Got CIE version %u, expected version 1 or between "
+             STR (DWARF_CIE_VERSION) " and " STR (DWARF_CIE_VERSION_MAX) "\n", version);
       return -UNW_EBADVERSION;
     }
 
