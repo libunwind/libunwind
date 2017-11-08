@@ -386,8 +386,8 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
 {
   int ret;
   Elf_W (Shdr) *shdr;
-  Elf_W (Ehdr) *prev_image = ei->image;
-  off_t prev_size = ei->size;
+  Elf_W (Ehdr) *prev_image;
+  off_t prev_size;
 
   if (!ei->image)
     {
@@ -395,6 +395,9 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
       if (ret)
 	return ret;
     }
+
+  prev_image = ei->image;
+  prev_size = ei->size;
 
   /* Ignore separate debug files which contain a .gnu_debuglink section. */
   if (is_local == -1) {
