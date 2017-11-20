@@ -248,6 +248,7 @@ AC_ARG_ENABLE(debug_frame,
 AS_HELP_STRING([--enable-debug-frame],[Load the ".debug_frame" section if available]),, [
 case "${target_arch}" in
   (arm) enable_debug_frame=yes;;
+  (aarch64) enable_debug_frame=yes;;
   (*)   enable_debug_frame=no;;
 esac])
 if test x$enable_debug_frame = xyes; then
