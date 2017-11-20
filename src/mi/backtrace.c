@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
-#define UNW_LOCAL_ONLY
+#define UNW_REMOTE_ONLY
 #include <libunwind.h>
 #include <libunwind_i.h>
 #include <string.h>
