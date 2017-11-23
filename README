@@ -2,20 +2,20 @@
 
 [![Build Status](https://travis-ci.org/libunwind/libunwind.svg?branch=master)](https://travis-ci.org/libunwind/libunwind)
 
-This is version 1.0 of the unwind library.  This library supports
+This is version 1.3 of the unwind library.  This library supports
 several architecture/operating-system combinations:
 
  Linux/x86-64:	Works well.
  Linux/x86:	Works well.
  Linux/ARM:	Works well.
- Linux/IA-64:	Fully tested and supported.
+ Linux/IA-64:	Works well.
  Linux/PARISC:	Works well, but C library missing unwind-info.
  HP-UX/IA-64:	Mostly works but known to have some serious limitations.
  MIPS:          Newly added.
- Linux/AArch64:	Newly added.
+ Linux/AArch64:	Works well.
  Linux/PPC64:	Newly added.
  Linux/SuperH:	Newly added.
- FreeBSD/i386:	Newly added.
+ FreeBSD/i386:	Works well.
  FreeBSD/x86-64: Newly added (FreeBSD architecture is known as amd64).
  Linux/Tilegx:  Newly added (64-bit mode only).
 
