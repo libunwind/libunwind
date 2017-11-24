@@ -260,7 +260,7 @@ dwarf_reg_state_t;
 typedef struct dwarf_stackable_reg_state
   {
     struct dwarf_stackable_reg_state *next;       /* for rs_stack */
-    dwarf_reg_only_state_t state;
+    dwarf_reg_state_t state;
   }
 dwarf_stackable_reg_state_t;
 
