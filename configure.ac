@@ -175,6 +175,7 @@ AM_CONDITIONAL(ARCH_PPC32, test x$target_arch = xppc32)
 AM_CONDITIONAL(ARCH_PPC64, test x$target_arch = xppc64)
 AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
 AM_CONDITIONAL(ARCH_TILEGX, test x$target_arch = xtilegx)
+AM_CONDITIONAL(ARCH_S390X, test x$target_arch = xs390x)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
@@ -183,7 +184,7 @@ AM_CONDITIONAL(OS_QNX, expr x$target_os : xnto-qnx >/dev/null)
 AC_MSG_CHECKING([for ELF helper width])
 case "${target_arch}" in
 (arm|hppa|ppc32|x86|sh) use_elf32=yes; AC_MSG_RESULT([32]);;
-(aarch64|ia64|ppc64|x86_64|tilegx)  use_elf64=yes; AC_MSG_RESULT([64]);;
+(aarch64|ia64|ppc64|x86_64|s390x|tilegx)  use_elf64=yes; AC_MSG_RESULT([64]);;
 (mips)                 use_elfxx=yes; AC_MSG_RESULT([xx]);;
 *)                     AC_MSG_ERROR([Unknown ELF target: ${target_arch}])
 esac
