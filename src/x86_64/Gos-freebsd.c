@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "ucontext_i.h"
 
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   /* XXXKIB */
@@ -87,7 +87,7 @@ eb fd                   jmp     0b
   return (X86_64_SCF_NONE);
 }
 
-PROTECTED int
+int
 unw_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

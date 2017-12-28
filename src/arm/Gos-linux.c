@@ -29,7 +29,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-PROTECTED int
+int
 unw_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
@@ -149,7 +149,7 @@ unw_handle_signal_frame (unw_cursor_t *cursor)
 
 /* Returns 1 in case of a non-RT signal frame and 2 in case of a RT signal
    frame. */
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

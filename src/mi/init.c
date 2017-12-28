@@ -32,7 +32,7 @@ static const char rcsid[] UNUSED =
 
 #if UNW_DEBUG
 
-/* Must not be declared HIDDEN/PROTECTED because libunwind.so and
+/* Must not be declared HIDDEN because libunwind.so and
    libunwind-PLATFORM.so will both define their own copies of this
    variable and we want to use only one or the other when both
    libraries are loaded.  */

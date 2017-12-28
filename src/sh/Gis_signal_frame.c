@@ -63,7 +63,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
   3e:   09 00           nop
 */
 
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
 #ifdef __linux__

@@ -143,7 +143,7 @@ establish_machine_state (struct cursor *c)
     }
 }
 
-PROTECTED int
+int
 unw_resume (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

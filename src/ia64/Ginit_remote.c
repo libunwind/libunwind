@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "init.h"
 #include "unwind_i.h"
 
-PROTECTED int
+int
 unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 {
 #ifdef UNW_LOCAL_ONLY

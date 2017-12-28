@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-PROTECTED void
+void
 unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
 {
 #if !UNW_TARGET_IA64

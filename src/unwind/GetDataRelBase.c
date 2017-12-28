@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-PROTECTED unsigned long
+unsigned long
 _Unwind_GetDataRelBase (struct _Unwind_Context *context)
 {
   unw_proc_info_t pi;

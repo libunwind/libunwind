@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-PROTECTED _Unwind_Reason_Code
+_Unwind_Reason_Code
 _Unwind_Backtrace (_Unwind_Trace_Fn trace, void *trace_parameter)
 {
   struct _Unwind_Context context;

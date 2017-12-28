@@ -31,7 +31,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    d4000001        svc     #0x0
 */
 
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
 #ifdef __linux__

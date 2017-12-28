@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-PROTECTED void *
+void *
 _Unwind_FindEnclosingFunction (void *ip)
 {
   unw_proc_info_t pi;

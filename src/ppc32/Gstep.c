@@ -49,7 +49,7 @@ typedef struct
 } stack_frame_t;
 
 
-PROTECTED int
+int
 unw_step (unw_cursor_t * cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

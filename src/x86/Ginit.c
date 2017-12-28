@@ -36,13 +36,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
-PROTECTED unw_addr_space_t unw_local_addr_space;
+unw_addr_space_t unw_local_addr_space;
 
 #else /* !UNW_REMOTE_ONLY */
 
 static struct unw_addr_space local_addr_space;
 
-PROTECTED unw_addr_space_t unw_local_addr_space = &local_addr_space;
+unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 # ifdef UNW_LOCAL_ONLY
 

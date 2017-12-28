@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-PROTECTED unw_accessors_t *
+unw_accessors_t *
 unw_get_accessors (unw_addr_space_t as)
 {
   if (!tdep_init_done)

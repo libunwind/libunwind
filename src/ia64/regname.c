@@ -179,7 +179,7 @@ purpose.  */
 
 #define NREGS   ((int) (sizeof (regname_str) - 1) / regname_len)
 
-PROTECTED const char *
+const char *
 unw_regname (unw_regnum_t reg)
 {
   if (reg < NREGS)
