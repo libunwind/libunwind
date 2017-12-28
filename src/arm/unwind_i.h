@@ -44,6 +44,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern void arm_local_addr_space_init (void);
 extern int arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
                              void *arg);
+#define arm_handle_signal_frame UNW_OBJ(handle_signal_frame)
+extern int arm_handle_signal_frame(unw_cursor_t *cursor);
+
 /* By-pass calls to access_mem() when known to be safe. */
 #ifdef UNW_LOCAL_ONLY
 # undef ACCESS_MEM_FAST

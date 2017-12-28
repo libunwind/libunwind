@@ -51,8 +51,8 @@ is_plt_entry (struct dwarf_cursor *c)
   return ret;
 }
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+static int
+aarch64_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret;
@@ -141,7 +141,7 @@ unw_step (unw_cursor_t *cursor)
 
   /* Check if this is a signal frame. */
   if (unw_is_signal_frame (cursor) > 0)
-    return unw_handle_signal_frame (cursor);
+    return aarch64_handle_signal_frame (cursor);
 
   ret = dwarf_step (&c->dwarf);
   Debug(1, "dwarf_step()=%d\n", ret);

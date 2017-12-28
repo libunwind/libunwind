@@ -34,8 +34,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "offsets.h"
 #include "ex_tables.h"
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+arm_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret, fmt;

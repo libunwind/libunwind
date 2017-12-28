@@ -38,6 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern int tilegx_local_resume (unw_addr_space_t as,
                                 unw_cursor_t *cursor,
                                 void *arg);
+#define tilegx_handle_signal_frame UNW_OBJ(handle_signal_frame)
+extern int tilegx_handle_signal_frame(unw_cursor_t *cursor);
 
 extern void tilegx_local_addr_space_init (void);
 

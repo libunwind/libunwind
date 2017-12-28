@@ -69,8 +69,8 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   return ret;
 }
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+x86_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret;
