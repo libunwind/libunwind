@@ -29,8 +29,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+arm_handle_signal_frame (unw_cursor_t *cursor)
 {
   return -UNW_EUNSPEC;
 }

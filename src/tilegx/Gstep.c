@@ -37,7 +37,7 @@ unw_step (unw_cursor_t *cursor)
 
   /* Special handling the singal frame. */
   if (unw_is_signal_frame (cursor) > 0)
-    return unw_handle_signal_frame (cursor);
+    return tilegx_handle_signal_frame (cursor);
 
   /* Try DWARF-based unwinding... */
   ret = dwarf_step (&c->dwarf);

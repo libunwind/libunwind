@@ -87,8 +87,8 @@ eb fd                   jmp     0b
   return (X86_64_SCF_NONE);
 }
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+x86_64_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t ucontext;

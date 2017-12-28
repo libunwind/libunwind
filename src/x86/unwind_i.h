@@ -62,5 +62,7 @@ extern dwarf_loc_t x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg);
 extern void *x86_r_uc_addr (ucontext_t *uc, int reg);
 
 extern void x86_sigreturn (unw_cursor_t *cursor);
+#define x86_handle_signal_frame UNW_OBJ(handle_signal_frame)
+extern int x86_handle_signal_frame(unw_cursor_t *cursor);
 
 #endif /* unwind_i_h */

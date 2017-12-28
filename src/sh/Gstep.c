@@ -27,8 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "offsets.h"
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+static int
+sh_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret;
@@ -103,7 +103,7 @@ unw_step (unw_cursor_t *cursor)
   Debug (1, "(cursor=%p)\n", c);
 
   if (unw_is_signal_frame (cursor) > 0)
-    return unw_handle_signal_frame (cursor);
+    return sh_handle_signal_frame (cursor);
 
   ret = dwarf_step (&c->dwarf);
 

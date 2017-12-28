@@ -75,8 +75,8 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 }
 
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+HIDDEN int
+tilegx_handle_signal_frame (unw_cursor_t *cursor)
 {
   int i;
   struct cursor *c = (struct cursor *) cursor;
