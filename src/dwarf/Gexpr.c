@@ -196,7 +196,7 @@ dwarf_stack_aligned(struct dwarf_cursor *c, unw_word_t cfa_addr,
   uint8_t opcode;
   unw_word_t operand1;
 
-  a = unw_get_accessors (c->as);
+  a = unw_get_accessors_int (c->as);
   arg = c->as_arg;
 
   ret = dwarf_read_uleb128(c->as, a, &rbp_addr, &len, arg);
@@ -281,7 +281,7 @@ do {                                            \
 
   as = c->as;
   arg = c->as_arg;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   end_addr = *addr + len;
   *is_register = 0;
 

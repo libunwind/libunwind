@@ -37,7 +37,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   int ret;
 
   as = c->dwarf.as;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   arg = c->dwarf.as_arg;
 
   /* Check if IP points at sigreturn() sequence.  On Linux, this normally is:

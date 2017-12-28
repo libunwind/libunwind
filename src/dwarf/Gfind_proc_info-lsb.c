@@ -58,7 +58,7 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
                unw_word_t fde_count,
                unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
-  unw_accessors_t *a = unw_get_accessors (unw_local_addr_space);
+  unw_accessors_t *a = unw_get_accessors_int (unw_local_addr_space);
   unw_word_t i = 0, fde_addr, addr = eh_frame_start;
   int ret;
 
@@ -316,7 +316,7 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
        {
          addr = (unw_word_t) (uintptr_t) buf;
 
-         a = unw_get_accessors (unw_local_addr_space);
+         a = unw_get_accessors_int (unw_local_addr_space);
 
          /* Find all FDE entries in debug_frame, and make into a sorted
             index.  */
@@ -586,7 +586,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
           return 0;
         }
 
-      a = unw_get_accessors (unw_local_addr_space);
+      a = unw_get_accessors_int (unw_local_addr_space);
       addr = (unw_word_t) (uintptr_t) (&hdr->eh_frame);
 
       /* (Optionally) read eh_frame_ptr: */
@@ -764,7 +764,7 @@ remote_lookup (unw_addr_space_t as,
                struct table_entry *e, int32_t *last_ip_offset, void *arg)
 {
   unsigned long table_len = table_size / sizeof (struct table_entry);
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   unsigned long lo, hi, mid;
   unw_word_t e_addr = 0;
   int32_t start = 0;
@@ -848,7 +848,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 #endif
     }
 
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
 
   segbase = di->u.rti.segbase;
   if (di->format == UNW_INFO_FORMAT_IP_OFFSET) {

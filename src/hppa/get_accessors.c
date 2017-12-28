@@ -25,6 +25,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
+HIDDEN ALIAS(unw_get_accessors) unw_accessors_t *
+unw_get_accessors_int (unw_addr_space_t as);
+
 unw_accessors_t *
 unw_get_accessors (unw_addr_space_t as)
 {

@@ -109,7 +109,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
       as = c->as;
       arg = c->as_arg;
     }
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   int ret = 0;
 
   while (*ip <= end_ip && *addr < end_addr && ret >= 0)
@@ -773,7 +773,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 
   as = c->as;
   arg = c->as_arg;
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
 
   /* Evaluate the CFA first, because it may be referred to by other
      expressions.  */
