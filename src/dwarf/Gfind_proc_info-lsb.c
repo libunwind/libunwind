@@ -46,6 +46,12 @@ struct table_entry
 #include "os-linux.h"
 #endif
 
+static ALIAS(dwarf_search_unwind_table) int
+dwarf_search_unwind_table_int (unw_addr_space_t as,
+                               unw_word_t ip,
+                               unw_dyn_info_t *di,
+                               unw_proc_info_t *pi,
+                               int need_unwind_info, void *arg);
 static int
 linear_search (unw_addr_space_t as, unw_word_t ip,
                unw_word_t eh_frame_start, unw_word_t eh_frame_end,
@@ -265,7 +271,7 @@ debug_frame_tab_compare (const void *a, const void *b)
     return 0;
 }
 
-int
+HIDDEN int
 dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
                         unw_word_t segbase, const char* obj_name,
                         unw_word_t start, unw_word_t end)
@@ -706,14 +712,14 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 
       /* search the table: */
       if (cb_data.di.format != -1)
-	ret = dwarf_search_unwind_table (as, ip, &cb_data.di,
-					 pi, need_unwind_info, arg);
+	ret = dwarf_search_unwind_table_int (as, ip, &cb_data.di,
+					     pi, need_unwind_info, arg);
       else
 	ret = -UNW_ENOINFO;
 
       if (ret == -UNW_ENOINFO && cb_data.di_debug.format != -1)
-	ret = dwarf_search_unwind_table (as, ip, &cb_data.di_debug, pi,
-					 need_unwind_info, arg);
+	ret = dwarf_search_unwind_table_int (as, ip, &cb_data.di_debug, pi,
+					     need_unwind_info, arg);
     }
   else
     ret = -UNW_ENOINFO;
