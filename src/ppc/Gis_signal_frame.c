@@ -56,7 +56,7 @@ unw_is_signal_frame (unw_cursor_t * cursor)
      consecutive 32-bit words, so the second 8-byte word needs to be
      shifted right by 32 bits (think big-endian) */
 
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
     return 0;

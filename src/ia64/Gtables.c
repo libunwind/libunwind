@@ -68,7 +68,7 @@ is_local_addr_space (unw_addr_space_t as)
 static inline int
 read_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *valp, void *arg)
 {
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
 
   return (*a->access_mem) (as, addr, valp, 0, arg);
 }
@@ -87,7 +87,7 @@ remote_lookup (unw_addr_space_t as,
                struct ia64_table_entry *e, void *arg)
 {
   unw_word_t e_addr = 0, start_offset, end_offset, info_offset;
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   unsigned long lo, hi, mid;
   int ret;
 
@@ -165,7 +165,7 @@ _Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
 
     case UNW_INFO_FORMAT_REMOTE_TABLE:
       {
-        unw_accessors_t *a = unw_get_accessors (as);
+        unw_accessors_t *a = unw_get_accessors_int (as);
         unw_word_t e_addr = di->u.rti.table_data;
 
         table_size = di->u.rti.table_len * sizeof (unw_word_t);

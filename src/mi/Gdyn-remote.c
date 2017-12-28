@@ -205,7 +205,7 @@ unwi_dyn_remote_find_proc_info (unw_addr_space_t as, unw_word_t ip,
                                 unw_proc_info_t *pi,
                                 int need_unwind_info, void *arg)
 {
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   unw_word_t dyn_list_addr, addr, next_addr, gen1, gen2, start_ip, end_ip;
   unw_dyn_info_t *di = NULL;
   int ret;
@@ -311,7 +311,7 @@ unwi_dyn_validate_cache (unw_addr_space_t as, void *arg)
        in the cache.  */
     return 0;
 
-  a = unw_get_accessors (as);
+  a = unw_get_accessors_int (as);
   addr = as->dyn_info_list_addr;
 
   if (fetchw (as, a, &addr, &gen, arg) < 0)

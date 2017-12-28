@@ -224,6 +224,7 @@ unw_save_loc_t;
 #define unw_create_addr_space	UNW_OBJ(create_addr_space)
 #define unw_destroy_addr_space	UNW_OBJ(destroy_addr_space)
 #define unw_get_accessors	UNW_ARCH_OBJ(get_accessors)
+#define unw_get_accessors_int	UNW_ARCH_OBJ(get_accessors_int)
 #define unw_init_local		UNW_OBJ(init_local)
 #define unw_init_local2	        UNW_OBJ(init_local2)
 #define unw_init_remote		UNW_OBJ(init_remote)
@@ -250,6 +251,7 @@ unw_save_loc_t;
 extern unw_addr_space_t unw_create_addr_space (unw_accessors_t *, int);
 extern void unw_destroy_addr_space (unw_addr_space_t);
 extern unw_accessors_t *unw_get_accessors (unw_addr_space_t);
+extern unw_accessors_t *unw_get_accessors_int (unw_addr_space_t);
 extern void unw_flush_cache (unw_addr_space_t, unw_word_t, unw_word_t);
 extern int unw_set_caching_policy (unw_addr_space_t, unw_caching_policy_t);
 extern int unw_set_cache_size (unw_addr_space_t, size_t, int);

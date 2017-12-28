@@ -49,7 +49,7 @@ static inline int
 get_proc_name (unw_addr_space_t as, unw_word_t ip,
                char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
-  unw_accessors_t *a = unw_get_accessors (as);
+  unw_accessors_t *a = unw_get_accessors_int (as);
   unw_proc_info_t pi;
   int ret;
 

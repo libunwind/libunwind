@@ -138,7 +138,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
           return -UNW_ENOINFO;
         }
 
-      a = unw_get_accessors (unw_local_addr_space);
+      a = unw_get_accessors_int (unw_local_addr_space);
       addr = to_unw_word (&hdr->eh_frame);
 
       /* Fill in a dummy proc_info structure.  We just need to fill in

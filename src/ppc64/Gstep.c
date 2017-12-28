@@ -448,7 +448,7 @@ unw_step (unw_cursor_t * cursor)
   {
     unw_word_t ip = c->dwarf.ip;
     unw_addr_space_t as = c->dwarf.as;
-    unw_accessors_t *a = unw_get_accessors (as);
+    unw_accessors_t *a = unw_get_accessors_int (as);
     void *arg = c->dwarf.as_arg;
     uint32_t toc_save = (as->abi == UNW_PPC64_ABI_ELFv2)? 24 : 40;
     int32_t inst;
