@@ -40,11 +40,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # if (__GNUC__ > 3) || (__GNUC__ == 3 && __GNUC_MINOR__ > 2)
 #  define ALWAYS_INLINE inline __attribute__((always_inline))
 #  define HIDDEN        __attribute__((visibility ("hidden")))
-#  define PROTECTED     __attribute__((visibility ("protected")))
 # else
 #  define ALWAYS_INLINE
 #  define HIDDEN
-#  define PROTECTED
 # endif
 # define WEAK           __attribute__((weak))
 # if (__GNUC__ >= 3)
@@ -63,7 +61,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define NORETURN
 # define ALIAS(name)
 # define HIDDEN
-# define PROTECTED
 # define WEAK
 # define likely(x)      (x)
 # define unlikely(x)    (x)

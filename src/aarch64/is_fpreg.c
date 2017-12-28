@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-PROTECTED int
+int
 unw_is_fpreg (int regnum)
 {
   return (regnum >= UNW_AARCH64_V0 && regnum <= UNW_AARCH64_V31);

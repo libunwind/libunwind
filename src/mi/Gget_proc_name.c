@@ -95,7 +95,7 @@ get_proc_name (unw_addr_space_t as, unw_word_t ip,
   return -UNW_ENOINFO;
 }
 
-PROTECTED int
+int
 unw_get_proc_name (unw_cursor_t *cursor, char *buf, size_t buf_len,
                    unw_word_t *offp)
 {

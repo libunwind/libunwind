@@ -88,7 +88,7 @@ get_pid_by_tid(int tid)
   return (pid);
 }
 
-PROTECTED int
+int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                     unsigned long *segbase, unsigned long *mapoff, char *path, size_t pathlen)
 {
@@ -146,7 +146,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
-PROTECTED void
+void
 tdep_get_exe_image_path (char *path)
 {
   int mib[4], error;

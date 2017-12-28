@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifdef UNW_REMOTE_ONLY
 
-PROTECTED int
+int
 unw_init_local (unw_cursor_t *cursor, unw_context_t *uc)
 {
   return -UNW_EINVAL;
@@ -76,7 +76,7 @@ get_initial_stack_pointers (struct cursor *c, unw_context_t *uc,
   return 0;
 }
 
-PROTECTED int
+int
 unw_init_local (unw_cursor_t *cursor, unw_context_t *uc)
 {
   struct cursor *c = (struct cursor *) cursor;

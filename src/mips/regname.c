@@ -36,7 +36,7 @@ static const char *regname[] =
     "$24",  "$25",  "$26", "$27",  "$28",  "$29",  "$30",  "$31",
   };
 
-PROTECTED const char *
+const char *
 unw_regname (unw_regnum_t reg)
 {
   if (reg < (unw_regnum_t) ARRAY_SIZE (regname))

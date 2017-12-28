@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-PROTECTED _Unwind_Reason_Code
+_Unwind_Reason_Code
 _Unwind_Resume_or_Rethrow (struct _Unwind_Exception *exception_object)
 {
   struct _Unwind_Context context;

@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 #endif
 
-PROTECTED void
+void
 _Unwind_SetGR (struct _Unwind_Context *context, int index,
                unsigned long new_value)
 {

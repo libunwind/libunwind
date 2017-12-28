@@ -265,7 +265,7 @@ debug_frame_tab_compare (const void *a, const void *b)
     return 0;
 }
 
-PROTECTED int
+int
 dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
                         unw_word_t segbase, const char* obj_name,
                         unw_word_t start, unw_word_t end)
@@ -796,7 +796,7 @@ static int is_remote_table(int format)
           format == UNW_INFO_FORMAT_IP_OFFSET);
 }
 
-PROTECTED int
+int
 dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                            unw_dyn_info_t *di, unw_proc_info_t *pi,
                            int need_unwind_info, void *arg)

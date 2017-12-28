@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-PROTECTED int
+int
 unw_apply_reg_state (unw_cursor_t *cursor,
 		     void *reg_states_data)
 {

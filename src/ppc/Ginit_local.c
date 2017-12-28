@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifdef UNW_REMOTE_ONLY
 
-PROTECTED int
+int
 unw_init_local (unw_cursor_t *cursor, ucontext_t *uc)
 {
   /* XXX: empty stub.  */
@@ -62,13 +62,13 @@ unw_init_local_common(unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_in
   #endif
 }
 
-PROTECTED int
+int
 unw_init_local(unw_cursor_t *cursor, ucontext_t *uc)
 {
   return unw_init_local_common(cursor, uc, 1);
 }
 
-PROTECTED int
+int
 unw_init_local2 (unw_cursor_t *cursor, ucontext_t *uc, int flag)
 {
   if (!flag)

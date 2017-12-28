@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* FIXME: I'm not sure if libunwind's GP/FP register distinction is very useful
    on ARM.  Count all the FP or coprocessor registers we know about for now.  */
 
-PROTECTED int
+int
 unw_is_fpreg (int regnum)
 {
   return ((regnum >= UNW_ARM_S0 && regnum <= UNW_ARM_S31)

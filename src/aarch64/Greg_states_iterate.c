@@ -27,7 +27,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-PROTECTED int
+int
 unw_reg_states_iterate (unw_cursor_t *cursor,
 			unw_reg_states_callback cb, void *token)
 {

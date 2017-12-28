@@ -246,7 +246,7 @@ struct ia64_global_unwind_state
 /* This can't be an UNW_ARCH_OBJ() because we need separate
    unw.initialized flags for the local-only and generic versions of
    the library.  Also, if we wanted to have a single, shared global
-   data structure, we couldn't declare "unw" as HIDDEN/PROTECTED.  */
+   data structure, we couldn't declare "unw" as HIDDEN.  */
 #define unw                             UNW_OBJ(data)
 
 extern void tdep_init (void);

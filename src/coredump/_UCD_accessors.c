@@ -23,7 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UCD_internal.h"
 
-PROTECTED unw_accessors_t _UCD_accessors =
+unw_accessors_t _UCD_accessors =
   {
     .find_proc_info             = _UCD_find_proc_info,
     .put_unwind_info            = _UCD_put_unwind_info,

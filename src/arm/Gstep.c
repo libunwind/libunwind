@@ -82,7 +82,7 @@ arm_exidx_step (struct cursor *c)
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
 
-PROTECTED int
+int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;

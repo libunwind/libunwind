@@ -40,7 +40,7 @@ static const char *regname[] =
     "cfa"
   };
 
-PROTECTED const char *
+const char *
 unw_regname (unw_regnum_t reg)
 {
   if (reg < (unw_regnum_t) ARRAY_SIZE (regname))

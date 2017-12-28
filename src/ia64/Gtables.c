@@ -136,7 +136,7 @@ tdep_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
     }
 }
 
-PROTECTED unw_word_t
+unw_word_t
 _Uia64_find_dyn_list (unw_addr_space_t as, unw_dyn_info_t *di, void *arg)
 {
   unw_word_t hdr_addr, info_addr, hdr, directives, pers, cookie, off;
@@ -247,7 +247,7 @@ lookup (struct ia64_table_entry *table, size_t table_size, unw_word_t rel_ip)
   return e;
 }
 
-PROTECTED int
+int
 unw_search_ia64_unwind_table (unw_addr_space_t as, unw_word_t ip,
                               unw_dyn_info_t *di, unw_proc_info_t *pi,
                               int need_unwind_info, void *arg)
@@ -440,7 +440,7 @@ get_kernel_table (unw_dyn_info_t *di)
 #  ifndef UNW_LOCAL_ONLY
 
 /* This is exported for the benefit of libunwind-ptrace.a.  */
-PROTECTED int
+int
 _Uia64_get_kernel_table (unw_dyn_info_t *di)
 {
   int ret;

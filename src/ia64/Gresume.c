@@ -259,7 +259,7 @@ remote_install_cursor (struct cursor *c)
 
 #endif /* !UNW_LOCAL_ONLY */
 
-PROTECTED int
+int
 unw_resume (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
