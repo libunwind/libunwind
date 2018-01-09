@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    - sigreturn:    svc 119 (0x0a77)
 */
 
-PROTECTED int
+int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
 #ifdef __linux__

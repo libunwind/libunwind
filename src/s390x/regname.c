@@ -47,7 +47,7 @@ static const char *regname[] =
     [UNW_S390X_IP]="IP"
    };
 
-PROTECTED const char *
+const char *
 unw_regname (unw_regnum_t reg)
 {
   if (reg < (unw_regnum_t) ARRAY_SIZE (regname))
