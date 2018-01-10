@@ -29,8 +29,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include <signal.h>
 
-int
-unw_handle_signal_frame (unw_cursor_t *cursor)
+static int
+s390x_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret, i;
@@ -127,7 +127,7 @@ unw_step (unw_cursor_t *cursor)
       if (sig > 0)
         {
           c->sigcontext_format = sig;
-          ret = unw_handle_signal_frame (cursor);
+          ret = s390x_handle_signal_frame (cursor);
         }
       else
         {
