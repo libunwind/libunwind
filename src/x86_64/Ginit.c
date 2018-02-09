@@ -140,11 +140,6 @@ static int mincore_validate (void *addr, size_t len)
       return -1;
     }
 
-  for (i = 0; i < (len + PAGE_SIZE - 1) / PAGE_SIZE; i++)
-    {
-      if (!(mvec[i] & 1)) return -1;
-    }
-
   return write_validate (addr);
 }
 #endif
@@ -165,7 +160,7 @@ tdep_init_mem_validate (void)
   int ret;
   while ((ret = mincore ((void*)addr, PAGE_SIZE, mvec)) == -1 &&
          errno == EAGAIN) {}
-  if (ret == 0 && (mvec[0] & 1))
+  if (ret == 0)
     {
       Debug(1, "using mincore to validate memory\n");
       mem_validate_func = mincore_validate;
