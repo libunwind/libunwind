@@ -41,7 +41,7 @@ static struct unw_addr_space local_addr_space;
 unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
 static inline void *
-uc_addr (ucontext_t *uc, int reg)
+uc_addr (unw_tdep_context_t *uc, int reg)
 {
   if (reg >= UNW_AARCH64_X0 && reg < UNW_AARCH64_V0)
     return &uc->uc_mcontext.regs[reg];
@@ -54,7 +54,7 @@ uc_addr (ucontext_t *uc, int reg)
 # ifdef UNW_LOCAL_ONLY
 
 HIDDEN void *
-tdep_uc_addr (ucontext_t *uc, int reg)
+tdep_uc_addr (unw_tdep_context_t *uc, int reg)
 {
   return uc_addr (uc, reg);
 }
@@ -104,7 +104,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
             void *arg)
 {
   unw_word_t *addr;
-  ucontext_t *uc = arg;
+  unw_tdep_context_t *uc = arg;
 
   if (unw_is_fpreg (reg))
     goto badreg;
@@ -133,7 +133,7 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
               int write, void *arg)
 {
-  ucontext_t *uc = arg;
+  unw_tdep_context_t *uc = arg;
   unw_fpreg_t *addr;
 
   if (!unw_is_fpreg (reg))
