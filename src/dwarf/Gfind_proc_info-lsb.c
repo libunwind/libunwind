@@ -119,7 +119,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
     }
 
   *bufsize = shdr->sh_size;
-  *buf = malloc (*bufsize);
+  GET_MEMORY(*buf, *bufsize);
 
   memcpy(*buf, shdr->sh_offset + ei.image, *bufsize);
 
@@ -208,7 +208,7 @@ locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
 
   if (!err)
     {
-      fdesc = malloc (sizeof (struct unw_debug_frame_list));
+      GET_MEMORY(fdesc, sizeof (struct unw_debug_frame_list));
 
       fdesc->start = start;
       fdesc->end = end;
