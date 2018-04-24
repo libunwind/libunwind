@@ -132,7 +132,6 @@ static int msync_validate (void *addr, size_t len)
 static int mincore_validate (void *addr, size_t len)
 {
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
-  size_t i;
 
   /* mincore could fail with EAGAIN but we conservatively return -1
      instead of looping. */
