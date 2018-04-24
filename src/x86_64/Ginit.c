@@ -78,9 +78,10 @@ static int mem_validate_pipe[2] = {-1, -1};
 static inline void
 open_pipe (void)
 {
-  /* ignore errors for closing invalid fd's */
-  close (mem_validate_pipe[0]);
-  close (mem_validate_pipe[1]);
+  if (mem_validate_pipe[0] != -1)
+    close (mem_validate_pipe[0]);
+  if (mem_validate_pipe[1] != -1)
+    close (mem_validate_pipe[1]);
 
   pipe2 (mem_validate_pipe, O_CLOEXEC | O_NONBLOCK);
 }
