@@ -932,7 +932,6 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   unsigned short index = -1;
   if (cache)
     {
-      put_rs_cache (c->as, cache, &saved_mask);
       if (rs)
 	{
 	  index = rs - cache->buckets;
@@ -940,6 +939,7 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 	  cache->links[c->prev_rs].hint = index + 1;
 	  c->prev_rs = index;
 	}
+      put_rs_cache (c->as, cache, &saved_mask);
     }
   if (ret < 0)
       return ret;
