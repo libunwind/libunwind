@@ -174,14 +174,56 @@ tdep_init_mem_validate (void)
 }
 
 /* Cache of already validated addresses */
+#if HAVE_ATOMIC_OPS_H
 #define NLGA 4
-static unw_word_t last_good_addr[NLGA];
-static int lga_victim;
+static AO_T last_good_addr[NLGA];
+static AO_T lga_victim;
+
+static int
+is_cached_valid_mem(unw_word_t addr)
+{
+  int i;
+  for (i = 0; i < NLGA; i++)
+    {
+      if (addr == AO_load(&last_good_addr[i]))
+        return 1;
+    }
+  return 0;
+}
+
+static void
+cache_valid_mem(unw_word_t addr)
+{
+  int i, victim;
+  victim = AO_load(&lga_victim);
+  for (i = 0; i < NLGA; i++) {
+    if (AO_compare_and_swap(&last_good_addr[victim], 0, addr)) {
+      return;
+    }
+    victim = (victim + 1) % NLGA;
+  }
+
+  /* All slots full. Evict the victim. */
+  AO_store(&last_good_addr[victim], addr);
+  victim = (victim + 1) % NLGA;
+  AO_store(&lga_victim, victim);
+}
+#else
+static int
+is_cached_valid_mem(unw_word_t addr UNUSED)
+{
+  return 0;
+}
+
+static void
+cache_valid_mem(unw_word_t addr UNUSED)
+{
+}
+#endif
 
 static int
 validate_mem (unw_word_t addr)
 {
-  int i, victim;
   size_t len;
 
   if (PAGE_START(addr + sizeof (unw_word_t) - 1) == PAGE_START(addr))
@@ -194,28 +236,13 @@ validate_mem (unw_word_t addr)
   if (addr == 0)
     return -1;
 
-  for (i = 0; i < NLGA; i++)
-    {
-      if (last_good_addr[i] && (addr == last_good_addr[i]))
-        return 0;
-    }
+  if (is_cached_valid_mem(addr))
+    return 0;
 
   if (mem_validate_func ((void *) addr, len) == -1)
     return -1;
 
-  victim = lga_victim;
-  for (i = 0; i < NLGA; i++) {
-    if (!last_good_addr[victim]) {
-      last_good_addr[victim++] = addr;
-      return 0;
-    }
-    victim = (victim + 1) % NLGA;
-  }
-
-  /* All slots full. Evict the victim. */
-  last_good_addr[victim] = addr;
-  victim = (victim + 1) % NLGA;
-  lga_victim = victim;
+  cache_valid_mem(addr);
 
   return 0;
 }
@@ -330,8 +357,10 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
 
+#if NLGA > 0
   memset (last_good_addr, 0, sizeof (unw_word_t) * NLGA);
   lga_victim = 0;
+#endif
 }
 
 #endif /* !UNW_REMOTE_ONLY */
