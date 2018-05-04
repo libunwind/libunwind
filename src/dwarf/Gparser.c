@@ -541,8 +541,7 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
 {
   int i;
 
-  if (cache->log_size == DWARF_DEFAULT_LOG_UNW_CACHE_SIZE
-      || !cache->hash) {
+  if (cache->log_size == DWARF_DEFAULT_LOG_UNW_CACHE_SIZE) {
     cache->hash = cache->default_hash;
     cache->buckets = cache->default_buckets;
     cache->links = cache->default_links;
