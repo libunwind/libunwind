@@ -174,8 +174,45 @@ tdep_init_mem_validate (void)
 }
 
 /* Cache of already validated addresses */
-#if HAVE_ATOMIC_OPS_H
+#if defined(HAVE___THREAD) && HAVE___THREAD
 #define NLGA 4
+// thread-local variant
+static __thread unw_word_t last_good_addr[NLGA];
+static __thread int lga_victim;
+
+static int
+is_cached_valid_mem(unw_word_t addr)
+{
+  int i;
+  for (i = 0; i < NLGA; i++)
+    {
+      if (addr == &last_good_addr[i])
+        return 1;
+    }
+  return 0;
+}
+
+static void
+cache_valid_mem(unw_word_t addr)
+{
+  int i, victim;
+  victim = lga_victim;
+  for (i = 0; i < NLGA; i++) {
+    if (last_good_addr[victim] == 0) {
+      last_good_addr[victim] = addr;
+      return;
+    }
+    victim = (victim + 1) % NLGA;
+  }
+
+  /* All slots full. Evict the victim. */
+  last_good_addr[victim] = addr;
+  victim = (victim + 1) % NLGA;
+  lga_victim = victim;
+}
+
+#elif HAVE_ATOMIC_OPS_H
+// global, thread safe variant
 static AO_T last_good_addr[NLGA];
 static AO_T lga_victim;
 
@@ -209,6 +246,7 @@ cache_valid_mem(unw_word_t addr)
   AO_store(&lga_victim, victim);
 }
 #else
+// disabled, no cache
 static int
 is_cached_valid_mem(unw_word_t addr UNUSED)
 {
