@@ -174,8 +174,8 @@ tdep_init_mem_validate (void)
 }
 
 /* Cache of already validated addresses */
-#if defined(HAVE___THREAD) && HAVE___THREAD
 #define NLGA 4
+#if defined(HAVE___THREAD) && HAVE___THREAD
 // thread-local variant
 static __thread unw_word_t last_good_addr[NLGA];
 static __thread int lga_victim;
@@ -394,11 +394,6 @@ x86_64_local_addr_space_init (void)
   local_addr_space.acc.resume = x86_64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
   unw_flush_cache (&local_addr_space, 0, 0);
-
-#if NLGA > 0
-  memset (last_good_addr, 0, sizeof (unw_word_t) * NLGA);
-  lga_victim = 0;
-#endif
 }
 
 #endif /* !UNW_REMOTE_ONLY */
