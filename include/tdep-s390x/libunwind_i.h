@@ -117,7 +117,7 @@ dwarf_get_uc(const struct dwarf_cursor *cursor)
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 {
-  assert(sizeof unw_fpreg_t == sizeof unw_word_t);
+  assert(sizeof(unw_fpreg_t) == sizeof(unw_word_t));
 
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
@@ -140,7 +140,7 @@ dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 static inline int
 dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 {
-  assert(sizeof unw_fpreg_t == sizeof unw_word_t);
+  assert(sizeof(unw_fpreg_t) == sizeof(unw_word_t));
   assert(!DWARF_IS_VAL_LOC (loc));
 
   if (DWARF_IS_NULL_LOC (loc))
@@ -162,7 +162,7 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 static inline int
 dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
-  assert(sizeof unw_fpreg_t == sizeof unw_word_t);
+  assert(sizeof(unw_fpreg_t) == sizeof(unw_word_t));
 
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
@@ -185,7 +185,7 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 static inline int
 dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 {
-  assert(sizeof unw_fpreg_t == sizeof unw_word_t);
+  assert(sizeof(unw_fpreg_t) == sizeof(unw_word_t));
   assert(!DWARF_IS_VAL_LOC (loc));
 
   if (DWARF_IS_NULL_LOC (loc))
