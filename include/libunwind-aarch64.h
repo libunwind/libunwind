@@ -196,6 +196,17 @@ typedef struct
 	struct unw_sigcontext uc_mcontext;
   } unw_tdep_context_t;
 
+typedef struct
+  {
+	uint32_t _ctx_magic;
+	uint32_t _ctx_size;
+	uint32_t fpsr;
+	uint32_t fpcr;
+	uint64_t vregs[64];
+  } unw_fpsimd_context_t;
+
+
+
 #include "libunwind-common.h"
 #include "libunwind-dynamic.h"
 
