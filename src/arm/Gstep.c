@@ -106,17 +106,20 @@ unw_step (unw_cursor_t *cursor)
       else if (unlikely (ret == -UNW_ESTOPUNWIND))
         return ret;
 
-    if (ret < 0 && ret != -UNW_ENOINFO)
-      {
-        Debug (2, "returning %d\n", ret);
-        return ret;
-      }
+      if (ret < 0 && ret != -UNW_ENOINFO)
+        {
+          Debug (2, "returning %d\n", ret);
+          return ret;
+        }
     }
 #endif /* CONFIG_DEBUG_FRAME */
 
   /* Next, try extbl-based unwinding. */
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
     {
+      Debug (13, "%s(ret=%d), trying extbl\n",
+             UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF) ? "dwarf_step() failed " : "",
+             ret);
       ret = arm_exidx_step (c);
       if (ret > 0)
         return 1;
@@ -134,7 +137,12 @@ unw_step (unw_cursor_t *cursor)
     {
       if (UNW_TRY_METHOD(UNW_ARM_METHOD_FRAME))
         {
-          Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
+          Debug (13, "%s%s%s%s(ret=%d), trying frame-chain\n",
+                 UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF) ? "dwarf_step() " : "",
+                 (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF) && UNW_TRY_METHOD(UNW_ARM_METHOD_EXIDX)) ? "and " : "",
+                 UNW_TRY_METHOD(UNW_ARM_METHOD_EXIDX) ? "arm_exidx_step() " : "",
+                 (UNW_TRY_METHOD(UNW_ARM_METHOD_DWARF) || UNW_TRY_METHOD(UNW_ARM_METHOD_EXIDX)) ? "failed " : "",
+                 ret);
           ret = UNW_ESUCCESS;
           /* DWARF unwinding failed, try to follow APCS/optimized APCS frame chain */
           unw_word_t instr, i;
