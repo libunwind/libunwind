@@ -36,7 +36,7 @@ unw_flush_cache (unw_addr_space_t as, unw_word_t lo, unw_word_t hi)
       struct unw_debug_frame_list *n = w->next;
 
       if (w->index)
-        free (w->index);
+        munmap (w->index, w->index_size);
 
       munmap (w->debug_frame, w->debug_frame_size);
       munmap (w, sizeof (*w));
