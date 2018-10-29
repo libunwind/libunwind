@@ -20,13 +20,13 @@ extern int64_t DW_CFA_expression_testcase(int64_t regnum, int64_t height);
 extern int64_t recover_register(int64_t regnum, int64_t height)
 {
   // Initialize cursor to current frame
-  int rc;
+  int rc, i;
   unw_cursor_t cursor;
   unw_context_t context;
   unw_getcontext(&context);
   unw_init_local(&cursor, &context);
   // Unwind frames until required height from inner-most frame (i.e. this one)
-  for (int i = 0; i < height; ++i)
+  for (i = 0; i < height; ++i)
     {
       rc = unw_step(&cursor);
       if (rc < 0)
