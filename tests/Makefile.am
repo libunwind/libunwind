@@ -37,7 +37,11 @@ if ARCH_PPC64
 if USE_ALTIVEC
  noinst_PROGRAMS_arch += ppc64-test-altivec
 endif #USE_ALTIVEC
-endif #ARCH_PPC64
+else  #!ARCH_PPC64
+if ARCH_X86_64
+ check_PROGRAMS_arch +=	Gx64-test-dwarf-expressions Lx64-test-dwarf-expressions
+endif #ARCH X86_64
+endif #!ARCH_PPC64
 endif #!ARCH_IA64
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
@@ -139,6 +143,14 @@ Gia64_test_nat_SOURCES = Gia64-test-nat.c ia64-test-nat-asm.S
 ia64_test_dyn1_SOURCES = ia64-test-dyn1.c ia64-dyn-asm.S flush-cache.S \
 				flush-cache.h
 ppc64_test_altivec_SOURCES = ppc64-test-altivec.c  ppc64-test-altivec-utils.c
+
+
+Gx64_test_dwarf_expressions_SOURCES =  Gx64-test-dwarf-expressions.c \
+																			 x64-test-dwarf-expressions.S
+Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
+																			 x64-test-dwarf-expressions.S
+
+
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
 Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
@@ -232,3 +244,6 @@ Lia64_test_readonly_LDADD = $(LIBUNWIND_local)
 ia64_test_dyn1_LDADD = $(LIBUNWIND)
 ia64_test_sig_LDADD = $(LIBUNWIND)
 ppc64_test_altivec_LDADD = $(LIBUNWIND)
+
+Gx64_test_dwarf_expressions_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
