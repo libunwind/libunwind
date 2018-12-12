@@ -110,6 +110,90 @@ mips_handle_signal_frame (unw_cursor_t *cursor)
   return 1;
 }
 
+
+int _step_n64(struct cursor *c)
+{
+  //TODO:handle plt entry
+  struct dwarf_loc fp_loc, pc_loc;
+  int ret;
+  unw_word_t fp = 0;
+  unw_word_t ra = 0;
+
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_MIPS_R30], &fp);
+  if (ret < 0)
+    {
+      Debug (2, "returning %d [FP=0x%lx]\n", ret,
+             DWARF_GET_LOC (c->dwarf.loc[UNW_MIPS_R30]));
+      return ret;
+    }
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_MIPS_R31], &ra);
+  if (ret < 0)
+    {
+      Debug (2, "returning %d [RA=0x%lx]\n", ret,
+             DWARF_GET_LOC (c->dwarf.loc[UNW_MIPS_R31]));
+      return ret;
+    }
+
+  if (!fp) {
+    fp_loc = DWARF_NULL_LOC;
+    pc_loc = DWARF_NULL_LOC;
+  } else {
+    fp_loc = DWARF_LOC(fp+16, 0);
+    pc_loc = DWARF_LOC (fp+24, 0);
+#if UNW_DEBUG
+    unw_word_t fp1 = 0;
+    ret = dwarf_get (&c->dwarf, fp_loc, &fp1);
+    Debug (1, "RET:%d [FP=0x%lx] = 0x%lx (cfa = 0x%lx) -> 0x%lx. SAVED PC:0x%lx\n",
+           ret,
+           (unsigned long) DWARF_GET_LOC (c->dwarf.loc[UNW_MIPS_R30]),
+           fp, c->dwarf.cfa, fp1, ra);
+#endif
+    /* Heuristic to determine incorrect guess.  For FP to be a
+       valid frame it needs to be above current CFA, but don't
+       let it go more than a little.  Note that we can't deduce
+       anything about new FP (fp1) since it may not be a frame
+       pointer in the frame above.  Just check we get the value. */
+    if (ret < 0
+        || fp < c->dwarf.cfa
+        || (fp - c->dwarf.cfa) > 0x4000)
+      {
+        pc_loc = DWARF_NULL_LOC;
+        fp_loc = DWARF_NULL_LOC;
+      }
+  }
+
+  c->dwarf.loc[UNW_MIPS_R30] = fp_loc;
+
+  c->dwarf.loc[UNW_MIPS_PC] = c->dwarf.loc[UNW_MIPS_R31];
+  c->dwarf.loc[UNW_MIPS_R31] = pc_loc;
+  c->dwarf.use_prev_instr = 1;
+
+  if (DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_MIPS_R30]))
+    {
+      ret = 0;
+      Debug (2, "NULL %%fp loc, returning %d\n", ret);
+      return ret;
+    }
+
+  if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_MIPS_PC]))
+    {
+      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_MIPS_PC], &c->dwarf.ip);
+      Debug (1, "Frame Chain [IP=0x%Lx] = 0x%Lx\n",
+             (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[UNW_MIPS_PC]),
+             (unsigned long long) c->dwarf.ip);
+      if (ret < 0)
+        {
+          Debug (2, "returning %d\n", ret);
+          return ret;
+        }
+      ret = 1;
+    }
+  else {
+    c->dwarf.ip = 0;
+  }
+  return (c->dwarf.ip == 0) ? 0 : 1;
+}
+
 int
 unw_step (unw_cursor_t *cursor)
 {
@@ -124,9 +208,11 @@ unw_step (unw_cursor_t *cursor)
   if (unlikely (ret == -UNW_ESTOPUNWIND))
     return ret;
 
-  /* Dwarf unwinding didn't work, stop.  */
+#if _MIPS_SIM == _ABI64
   if (unlikely (ret < 0))
-    return 0;
-
+    {
+      return _step_n64(c);
+    }
+#endif
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
