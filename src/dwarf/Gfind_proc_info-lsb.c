@@ -46,12 +46,17 @@ struct table_entry
 #include "os-linux.h"
 #endif
 
+#ifndef __clang__
 static ALIAS(dwarf_search_unwind_table) int
 dwarf_search_unwind_table_int (unw_addr_space_t as,
                                unw_word_t ip,
                                unw_dyn_info_t *di,
                                unw_proc_info_t *pi,
                                int need_unwind_info, void *arg);
+#else
+#define dwarf_search_unwind_table_int dwarf_search_unwind_table
+#endif
+
 static int
 linear_search (unw_addr_space_t as, unw_word_t ip,
                unw_word_t eh_frame_start, unw_word_t eh_frame_end,
