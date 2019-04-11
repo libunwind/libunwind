@@ -30,7 +30,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 
 HIDDEN define_lock (x86_64_lock);
-HIDDEN sig_atomic_t tdep_init_done;
+#ifdef HAVE_ATOMIC_OPS_H
+    HIDDEN AO_t tdep_init_done;
+#else
+    HIDDEN int tdep_init_done;
+#endif
 
 /* See comments for svr4_dbx_register_map[] in gcc/config/i386/i386.c.  */
 
