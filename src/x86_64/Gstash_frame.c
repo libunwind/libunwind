@@ -112,8 +112,8 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
   else if (f->frame_type == UNW_X86_64_FRAME_ALIGNED) {
     Debug (4, " aligned frame, offset %li\n", f->cfa_reg_offset);
   }
-
   /* PLT and guessed RBP-walked frames are handled in unw_step(). */
-  else
+  else {
     Debug (4, " unusual frame\n");
+  }
 }
