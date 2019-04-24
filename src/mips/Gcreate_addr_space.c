@@ -67,7 +67,6 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
 #else
 # error Unsupported ABI
 #endif
-  as->addr_size = 4;
 
   return as;
 #endif
