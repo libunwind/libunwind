@@ -615,11 +615,15 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
           /* If there is no search table or it has an unsupported
              encoding, fall back on linear search.  */
           if (hdr->table_enc == DW_EH_PE_omit)
-            Debug (4, "table `%s' lacks search table; doing linear search\n",
-                   info->dlpi_name);
+            {
+              Debug (4, "table `%s' lacks search table; doing linear search\n",
+                     info->dlpi_name);
+            }
           else
-            Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
-                   info->dlpi_name, hdr->table_enc);
+            {
+              Debug (4, "table `%s' has encoding 0x%x; doing linear search\n",
+                     info->dlpi_name, hdr->table_enc);
+            }
 
           eh_frame_end = max_load_addr; /* XXX can we do better? */
 
