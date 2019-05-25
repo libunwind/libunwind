@@ -24,6 +24,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <alloca.h>
 
 #include <sys/time.h>
 #include <sys/types.h>
