@@ -1,5 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2004 Hewlett-Packard Co
+   Copyright (C) 2003-2005 Hewlett-Packard Co
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
@@ -23,22 +23,51 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#if defined __linux__ || defined __sun
+#include <limits.h>
+#include <stdio.h>
 
-/* Use glibc's jump-buffer indices; NPTL peeks at SP:
-   https://sourceware.org/git/gitweb.cgi?p=glibc.git;a=blob;f=sysdeps/x86_64/jmpbuf-offsets.h;h=ea94a1f90554deecceaf995ca5ee485ae8bffab7;hb=HEAD */
+#include "libunwind_i.h"
+#include "os-linux.h" // using linux header for map_iterator implementation
 
-#define JB_SP           6
-#define JB_RP           7
-#define JB_MASK_SAVED   8
-#define JB_MASK         9
+int
+tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
+                    unsigned long *segbase, unsigned long *mapoff,
+                    char *path, size_t pathlen)
+{
+  struct map_iterator mi;
+  int found = 0, rc;
+  unsigned long hi;
 
-#elif defined __FreeBSD__
+  if (maps_init (&mi, pid) < 0)
+    return -1;
 
-#define JB_SP           2
-#define JB_RP           0
-/* Pretend the ip cannot be 0 and mask is always saved */
-#define JB_MASK_SAVED   0
-#define JB_MASK         9
+  while (maps_next (&mi, segbase, &hi, mapoff))
+    if (ip >= *segbase && ip < hi)
+      {
+        found = 1;
+        break;
+      }
 
-#endif
+  if (!found)
+    {
+      maps_close (&mi);
+      return -1;
+    }
+  if (path)
+    {
+      strncpy(path, mi.path, pathlen);
+    }
+  rc = elf_map_image (ei, mi.path);
+  maps_close (&mi);
+  return rc;
+}
+
+#ifndef UNW_REMOTE_ONLY
+
+void
+tdep_get_exe_image_path (char *path)
+{
+  strcpy(path, getexecname());
+}
+
+#endif /* !UNW_REMOTE_ONLY */

@@ -21,6 +21,7 @@ several architecture/operating-system combinations:
 | FreeBSD | x86-64       | ✓      |
 | FreeBSD | x86          | ✓      |
 | FreeBSD | AArch64      | ✓      |
+| Solaris | x86-64       | Initial support |
 
 ## General Build Instructions
 
@@ -179,6 +180,20 @@ only test programs that are known to work at this time are:
 
 `make check` should run with no more than 10 out of 24 tests failed.
 
+### Expected results on Solaris x86-64
+
+`make check` is passing 23 out of 32 tests. The following nine tests are consistently
+failing:
+
+* `Gtest-resume-sig`
+* `Ltest-resume-sig`
+* `Gtest-resume-sig-rt`
+* `Ltest-resume-sig-rt`
+* `Gtest-trace`
+* `Ltest-trace`
+* `Ltest-init-local-signal`
+* `test-setjmp`
+* `run-check-namespace`
 
 ## Performance Testing
 

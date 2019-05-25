@@ -154,6 +154,8 @@ libunwind_la_SOURCES_os_freebsd = os-freebsd.c
 
 libunwind_la_SOURCES_os_qnx = os-qnx.c
 
+libunwind_la_SOURCES_os_solaris = os-solaris.c
+
 libunwind_dwarf_common_la_SOURCES = dwarf/global.c
 
 libunwind_dwarf_local_la_SOURCES = \
@@ -538,6 +540,12 @@ if OS_FREEBSD
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
 endif
 
+if OS_SOLARIS
+ libunwind_la_SOURCES_os              = $(libunwind_la_SOURCES_os_solaris)
+ libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-solaris.c
+ libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-solaris.c
+endif
+
 if OS_QNX
  libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_qnx)
  libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_qnx_local)
@@ -741,6 +749,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_aarch64)			\
 		$(libunwind_la_SOURCES_os_linux)		\
 		$(libunwind_la_SOURCES_os_hpux)			\
 		$(libunwind_la_SOURCES_os_qnx)			\
+		$(libunwind_la_SOURCES_os_solaris)		\
 		$(libunwind_la_SOURCES_common)			\
 		$(libunwind_la_SOURCES_local)			\
 		$(libunwind_la_SOURCES_generic)			\

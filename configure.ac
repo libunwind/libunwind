@@ -180,6 +180,7 @@ AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
 AM_CONDITIONAL(OS_QNX, expr x$target_os : xnto-qnx >/dev/null)
+AM_CONDITIONAL(OS_SOLARIS, expr x$target_os : xsolaris >/dev/null)
 
 AC_MSG_CHECKING([for ELF helper width])
 case "${target_arch}" in
@@ -321,6 +322,14 @@ if test x$GCC = xyes -a x$intel_compiler != xyes; then
   CFLAGS="${CFLAGS} -fexceptions -Wall -Wsign-compare"
 fi
 AC_MSG_RESULT([$intel_compiler])
+
+AC_MSG_CHECKING([if building on Solaris then define __EXTENSIONS__ macro])
+if $OS_SOLARIS; then
+  CFLAGS="${CFLAGS} -D__EXTENSIONS__"
+  AC_MSG_RESULT([yes])
+else
+  AC_MSG_RESULT([no])
+fi
 
 AC_MSG_CHECKING([for QCC compiler])
 AS_CASE([$CC], [qcc*|QCC*], [qcc_compiler=yes], [qcc_compiler=no])
