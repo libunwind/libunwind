@@ -49,17 +49,19 @@ void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
 			memset(name, 0, sizeof(char) * 1000);
 			unw_get_proc_name(&cursor, name, sizeof(char) * 1000, &offset);
 			printf("ip = %lx, sp = %lx offset = %lx name = %s\n", (long) ip, (long) sp, (long) offset, name);
-			if(strcmp(names[i], name) != 0) {
-				test_status = 1;
-				printf("frame %s doesn't match expected frame %s\n", name, names[i]);
-			} else {
-				i += 1;
+			if(i < names_count) {
+				if(strcmp(names[i], name) != 0) {
+					test_status = 1;
+					printf("frame %s doesn't match expected frame %s\n", name, names[i]);
+				} else {
+					i += 1;
+				}
 			}
 		}
 	}
 
 	if(i != names_count) { //Make sure we found all the frames!
-		printf("Failed to find all frames\n");
+		printf("Failed to find all frames i:%d != names_count:%d\n", i, names_count);
 		test_status = 1;
 	}
 
