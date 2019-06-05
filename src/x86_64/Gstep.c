@@ -104,6 +104,7 @@ unw_step (unw_cursor_t *cursor)
               via CALLQ.  Try this for all non-signal trampoline
               code.  */
 
+      unw_word_t invalid_prev_rip = 0;
       unw_word_t prev_ip = c->dwarf.ip, prev_cfa = c->dwarf.cfa;
       struct dwarf_loc rbp_loc, rsp_loc, rip_loc;
 
@@ -149,7 +150,6 @@ unw_step (unw_cursor_t *cursor)
               return ret;
             }
 
-          unw_word_t invalid_prev_rip = 0;
           unw_word_t not_used;
           invalid_prev_rip = dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, prev_ip), &not_used);
 
@@ -253,7 +253,7 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.use_prev_instr = 1;
         }
 
-      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]) && invalid_prev_rip == 0)
         {
           ret = 0;
           Debug (2, "NULL %%rbp loc, returning %d\n", ret);
