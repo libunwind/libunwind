@@ -149,7 +149,11 @@ unw_step (unw_cursor_t *cursor)
               return ret;
             }
 
-          if (!rbp)
+          unw_word_t invalid_prev_rip = 0;
+          unw_word_t not_used;
+          invalid_prev_rip = dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, prev_ip), &not_used);
+
+          if (!rbp && invalid_prev_rip == 0)
             {
               /* Looks like we may have reached the end of the call-chain.  */
               rbp_loc = DWARF_NULL_LOC;
@@ -164,9 +168,8 @@ unw_step (unw_cursor_t *cursor)
                * followed and so the stack wasn't updated by the
                * preamble
                */
-              unw_word_t not_used = 0;
               int rip_fixup_success = 0;
-              if (dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, prev_ip), &not_used) != 0)
+              if (invalid_prev_rip != 0)
                 {
                     Debug (2, "Previous RIP 0x%lx was invalid, attempting fixup\n", prev_ip);
                     unw_word_t rsp;
