@@ -33,8 +33,6 @@ void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
 	char *names[] = {
 		"",
 		"main",
-		"__libc_start_main",
-		"_start"
 	};
 	int names_count = sizeof(names) / sizeof(*names);
 
