@@ -75,6 +75,35 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 
 static int mem_validate_pipe[2] = {-1, -1};
 
+#ifdef HAVE_PIPE2
+static inline void
+do_pipe2 (int pipefd[2])
+{
+  pipe2 (pipefd, O_CLOEXEC | O_NONBLOCK);
+}
+#else
+static inline void
+set_pipe_flags (int fd)
+{
+  int fd_flags = fcntl (fd, F_GETFD, 0);
+  int status_flags = fcntl (fd, F_GETFL, 0);
+
+  fd_flags |= FD_CLOEXEC;
+  fcntl (fd, F_SETFD, fd_flags);
+
+  status_flags |= O_NONBLOCK;
+  fcntl (fd, F_SETFL, status_flags);
+}
+
+static inline void
+do_pipe2 (int pipefd[2])
+{
+  pipe (pipefd);
+  set_pipe_flags(pipefd[0]);
+  set_pipe_flags(pipefd[1]);
+}
+#endif
+
 static inline void
 open_pipe (void)
 {
@@ -83,7 +112,7 @@ open_pipe (void)
   if (mem_validate_pipe[1] != -1)
     close (mem_validate_pipe[1]);
 
-  pipe2 (mem_validate_pipe, O_CLOEXEC | O_NONBLOCK);
+  do_pipe2 (mem_validate_pipe);
 }
 
 ALWAYS_INLINE
