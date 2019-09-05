@@ -302,6 +302,23 @@ fi
 AC_SUBST([LIBLZMA])
 AM_CONDITIONAL(HAVE_LZMA, test x$enable_minidebuginfo = xyes)
 
+LIBZ=
+AC_MSG_CHECKING([whether to support ZLIB-compressed symbol tables])
+AC_ARG_ENABLE(zlibdebuginfo,
+AS_HELP_STRING([--enable-zlibdebuginfo], [Enables support for ZLIB-compressed symbol tables]),, [enable_zlibdebuginfo=auto])
+AC_MSG_RESULT([$enable_zlibdebuginfo])
+if test x$enable_zlibdebuginfo != xno; then
+   AC_CHECK_LIB([z], [uncompress],
+   [LIBZ=-lz
+    AC_DEFINE([HAVE_ZLIB], [1], [Define if you have libz])
+    enable_zlibdebuginfo=yes],
+   [if test x$enable_zlibdebuginfo = xyes; then
+      AC_MSG_FAILURE([libz not found])
+    fi])
+fi
+AC_SUBST([LIBZ])
+AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlibdebuginfo = xyes)
+
 AC_MSG_CHECKING([whether to support UNW_CACHE_PER_THREAD])
 AC_ARG_ENABLE([per-thread-cache],
 AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a hight TLS memory usage) (default: disabled)]))
