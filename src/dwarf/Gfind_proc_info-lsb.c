@@ -34,6 +34,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf-eh.h"
 #include "libunwind_i.h"
 
+#ifdef HAVE_ZLIB
+#include <zlib.h>
+#endif /* HAVE_ZLIB */
+
 struct table_entry
   {
     int32_t start_ip_offset;
@@ -123,14 +127,48 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
       return 1;
     }
 
-  *bufsize = shdr->sh_size;
-  GET_MEMORY(*buf, *bufsize);
+  if (shdr->sh_flags & SHF_COMPRESSED)
+    {
+      unsigned long destSize;
+      Elf_W (Chdr) *chdr = (shdr->sh_offset + ei.image);
+#ifdef HAVE_ZLIB
+      if (chdr->ch_type == ELFCOMPRESS_ZLIB)
+	{
+	  *bufsize = destSize = chdr->ch_size;
+	  GET_MEMORY(*buf, *bufsize);
+	  ret = uncompress((unsigned char *)*buf, &destSize,
+			   shdr->sh_offset + ei.image + sizeof(*chdr),
+			   shdr->sh_size - sizeof(*chdr));
+	  if (ret != Z_OK)
+	    {
+	      Debug (2, "failed to decompress zlib .debug_frame, skipping\n");
+	      munmap(*buf, *bufsize);
+	      munmap(ei.image, ei.size);
+	      return 1;
+	    }
 
-  memcpy(*buf, shdr->sh_offset + ei.image, *bufsize);
+	  Debug (4, "read %zd->%zd bytes of .debug_frame from offset %zd\n",
+		 shdr->sh_size, *bufsize, shdr->sh_offset);
+	}
+      else
+#endif /* HAVE_ZLIB */
+	{
+	  Debug (2, "unknown compression type %d, skipping\n",
+		 chdr->ch_type);
+          munmap(ei.image, ei.size);
+	  return 1;
+        }
+    }
+  else
+    {
+      *bufsize = shdr->sh_size;
+      GET_MEMORY(*buf, *bufsize);
 
-  Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
-	 *bufsize, shdr->sh_offset);
+      memcpy(*buf, shdr->sh_offset + ei.image, *bufsize);
 
+      Debug (4, "read %zd bytes of .debug_frame from offset %zd\n",
+	     *bufsize, shdr->sh_offset);
+    }
   munmap(ei.image, ei.size);
   return 0;
 }
