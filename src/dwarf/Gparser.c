@@ -91,8 +91,8 @@ empty_rstate_stack(dwarf_stackable_reg_state_t **rs_stack)
 static int
 run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
                  unw_word_t *ip, unw_word_t end_ip,
-		 unw_word_t *addr, unw_word_t end_addr,
-		 dwarf_stackable_reg_state_t **rs_stack,
+                 unw_word_t *addr, unw_word_t end_addr,
+                 dwarf_stackable_reg_state_t **rs_stack,
                  struct dwarf_cie_info *dci)
 {
   unw_addr_space_t as;
@@ -269,12 +269,12 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           break;
 
         case DW_CFA_remember_state:
-	  if (push_rstate_stack(rs_stack) < 0)
-	    {
+          if (push_rstate_stack(rs_stack) < 0)
+            {
               Debug (1, "Out of memory in DW_CFA_remember_state\n");
               ret = -UNW_ENOMEM;
               break;
-	    }
+            }
           (*rs_stack)->state = sr->rs_current;
           Debug (15, "CFA_remember_state\n");
           break;
@@ -507,8 +507,8 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   unw_word_t curr_ip = 0;
   dwarf_stackable_reg_state_t *rs_stack = NULL;
   ret = run_cfi_program (c, sr, &curr_ip, ~(unw_word_t) 0, &addr,
-			 dci->cie_instr_end,
-			 &rs_stack, dci);
+                         dci->cie_instr_end,
+                         &rs_stack, dci);
   empty_rstate_stack(&rs_stack);
   if (ret < 0)
     return ret;
@@ -528,7 +528,7 @@ parse_fde (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
   /* Process up to current `ip` for signal frame and `ip - 1` for normal call frame
      See `c->use_prev_instr` use in `fetch_proc_info` for details. */
   ret = run_cfi_program (c, sr, &curr_ip, ip - c->use_prev_instr, &addr, dci->fde_instr_end,
-			 &rs_stack, dci);
+                         &rs_stack, dci);
   empty_rstate_stack(&rs_stack);
   if (ret < 0)
     return ret;
@@ -553,10 +553,10 @@ dwarf_flush_rs_cache (struct dwarf_rs_cache *cache)
                            * sizeof (cache->hash[0]));
     if (cache->buckets && cache->buckets != cache->default_buckets)
       munmap(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
-	                      * sizeof (cache->buckets[0]));
+                              * sizeof (cache->buckets[0]));
     if (cache->links && cache->links != cache->default_links)
       munmap(cache->links, DWARF_UNW_CACHE_SIZE(cache->prev_log_size)
-	                      * sizeof (cache->links[0]));
+                              * sizeof (cache->links[0]));
     GET_MEMORY(cache->hash, DWARF_UNW_HASH_SIZE(cache->log_size)
                              * sizeof (cache->hash[0]));
     GET_MEMORY(cache->buckets, DWARF_UNW_CACHE_SIZE(cache->log_size)
@@ -659,7 +659,7 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
     {
       index = c->hint - 1;
       if (cache_match (cache, index, ip))
-	return &cache->buckets[index];
+        return &cache->buckets[index];
     }
 
   for (index = cache->hash[hash (ip, cache->log_size)];
@@ -667,7 +667,7 @@ rs_lookup (struct dwarf_rs_cache *cache, struct dwarf_cursor *c)
        index = cache->links[index].coll_chain)
     {
       if (cache_match (cache, index, ip))
-	return &cache->buckets[index];
+        return &cache->buckets[index];
     }
   return NULL;
 }
@@ -686,15 +686,15 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
     {
       unsigned short *pindex;
       for (pindex = &cache->hash[hash (cache->links[head].ip, cache->log_size)];
-	   *pindex < DWARF_UNW_CACHE_SIZE(cache->log_size);
-	   pindex = &cache->links[*pindex].coll_chain)
-	{
-	  if (*pindex == head)
-	    {
-	      *pindex = cache->links[*pindex].coll_chain;
-	      break;
-	    }
-	}
+           *pindex < DWARF_UNW_CACHE_SIZE(cache->log_size);
+           pindex = &cache->links[*pindex].coll_chain)
+        {
+          if (*pindex == head)
+            {
+              *pindex = cache->links[*pindex].coll_chain;
+              break;
+            }
+        }
     }
 
   /* enter new rs in the hash table */
@@ -718,7 +718,7 @@ create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
     case UNW_INFO_FORMAT_TABLE:
     case UNW_INFO_FORMAT_REMOTE_TABLE:
       if ((ret = setup_fde(c, sr)) < 0)
-	return ret;
+        return ret;
       ret = parse_fde (c, ip, sr);
       break;
 
@@ -918,34 +918,34 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
       ret = fetch_proc_info (c, c->ip);
       int next_use_prev_instr = c->use_prev_instr;
       if (ret >= 0)
-	{
-	  /* Update use_prev_instr for the next frame. */
-	  assert(c->pi.unwind_info);
-	  struct dwarf_cie_info *dci = c->pi.unwind_info;
-	  next_use_prev_instr = ! dci->signal_frame;
-	  ret = create_state_record_for (c, sr, c->ip);
-	}
+        {
+          /* Update use_prev_instr for the next frame. */
+          assert(c->pi.unwind_info);
+          struct dwarf_cie_info *dci = c->pi.unwind_info;
+          next_use_prev_instr = ! dci->signal_frame;
+          ret = create_state_record_for (c, sr, c->ip);
+        }
       put_unwind_info (c, &c->pi);
       c->use_prev_instr = next_use_prev_instr;
 
       if (cache && ret >= 0)
-	{
-	  rs = rs_new (cache, c);
-	  cache->links[rs - cache->buckets].hint = 0;
-	  memcpy(rs, &sr->rs_current, sizeof(*rs));
-	}
+        {
+          rs = rs_new (cache, c);
+          cache->links[rs - cache->buckets].hint = 0;
+          memcpy(rs, &sr->rs_current, sizeof(*rs));
+        }
     }
 
   unsigned short index = -1;
   if (cache)
     {
       if (rs)
-	{
-	  index = rs - cache->buckets;
-	  c->hint = cache->links[index].hint;
-	  cache->links[c->prev_rs].hint = index + 1;
-	  c->prev_rs = index;
-	}
+        {
+          index = rs - cache->buckets;
+          c->hint = cache->links[index].hint;
+          cache->links[c->prev_rs].hint = index + 1;
+          c->prev_rs = index;
+        }
       put_rs_cache (c->as, cache, &saved_mask);
     }
   if (ret < 0)
@@ -994,8 +994,8 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
 
 static int
 dwarf_reg_states_dynamic_iterate(struct dwarf_cursor *c,
-				 unw_reg_states_callback cb,
-				 void *token)
+                                 unw_reg_states_callback cb,
+                                 void *token)
 {
   Debug (1, "Not yet implemented\n");
   return -UNW_ENOINFO;
@@ -1003,8 +1003,8 @@ dwarf_reg_states_dynamic_iterate(struct dwarf_cursor *c,
 
 static int
 dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
-			       unw_reg_states_callback cb,
-			       void *token)
+                               unw_reg_states_callback cb,
+                               void *token)
 {
   dwarf_state_record_t sr;
   int ret = setup_fde(c, &sr);
@@ -1016,9 +1016,9 @@ dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
     {
       unw_word_t prev_ip = curr_ip;
       ret = run_cfi_program (c, &sr, &curr_ip, prev_ip, &addr, dci->fde_instr_end,
-			     &rs_stack, dci);
+                             &rs_stack, dci);
       if (ret >= 0 && prev_ip < curr_ip)
-	ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), prev_ip, curr_ip);
+        ret = cb(token, &sr.rs_current, sizeof(sr.rs_current), prev_ip, curr_ip);
     }
   empty_rstate_stack(&rs_stack);
 #if defined(NEED_LAST_IP)
@@ -1035,8 +1035,8 @@ dwarf_reg_states_table_iterate(struct dwarf_cursor *c,
 
 HIDDEN int
 dwarf_reg_states_iterate(struct dwarf_cursor *c,
-			 unw_reg_states_callback cb,
-			 void *token)
+                         unw_reg_states_callback cb,
+                         void *token)
 {
   int ret = fetch_proc_info (c, c->ip);
   int next_use_prev_instr = c->use_prev_instr;
@@ -1047,20 +1047,20 @@ dwarf_reg_states_iterate(struct dwarf_cursor *c,
       struct dwarf_cie_info *dci = c->pi.unwind_info;
       next_use_prev_instr = ! dci->signal_frame;
       switch (c->pi.format)
-	{
-	case UNW_INFO_FORMAT_TABLE:
-	case UNW_INFO_FORMAT_REMOTE_TABLE:
-	  ret = dwarf_reg_states_table_iterate(c, cb, token);
-	  break;
+        {
+        case UNW_INFO_FORMAT_TABLE:
+        case UNW_INFO_FORMAT_REMOTE_TABLE:
+          ret = dwarf_reg_states_table_iterate(c, cb, token);
+          break;
 
-	case UNW_INFO_FORMAT_DYNAMIC:
-	  ret = dwarf_reg_states_dynamic_iterate (c, cb, token);
-	  break;
+        case UNW_INFO_FORMAT_DYNAMIC:
+          ret = dwarf_reg_states_dynamic_iterate (c, cb, token);
+          break;
 
-	default:
-	  Debug (1, "Unexpected unwind-info format %d\n", c->pi.format);
-	  ret = -UNW_EINVAL;
-	}
+        default:
+          Debug (1, "Unexpected unwind-info format %d\n", c->pi.format);
+          ret = -UNW_EINVAL;
+        }
     }
   put_unwind_info (c, &c->pi);
   c->use_prev_instr = next_use_prev_instr;
