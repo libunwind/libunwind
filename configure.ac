@@ -147,6 +147,10 @@ AC_ARG_ENABLE(tests,
  AS_HELP_STRING([--disable-tests],[Disable tests build]),,
  [enable_tests=yes])
 
+AC_ARG_ENABLE(weak-backtrace,
+ AS_HELP_STRING([--disable-weak-backtrace],[Do not provide the weak 'backtrace' symbol.]),,
+ [enable_weak_backtrace=yes])
+
 AC_MSG_CHECKING([if we should build libunwind-setjmp])
 AC_MSG_RESULT([$enable_setjmp])
 
@@ -462,6 +466,11 @@ AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
 if test "x$enable_tests" = "xyes"; then
   AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
 fi
+
+AM_CONDITIONAL([CONFIG_WEAK_BACKTRACE], [test "x$enable_weak_backtrace" = xyes])
+AM_COND_IF([CONFIG_WEAK_BACKTRACE], [
+  AC_DEFINE([CONFIG_WEAK_BACKTRACE], [1], [Define if the weak 'backtrace' symbol is provided.])
+])
 
 AC_CONFIG_FILES(Makefile src/Makefile
                 include/libunwind-common.h
