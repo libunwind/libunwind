@@ -215,7 +215,7 @@ is_cached_valid_mem(unw_word_t addr)
   int i;
   for (i = 0; i < NLGA; i++)
     {
-      if (addr == &last_good_addr[i])
+      if (addr == last_good_addr[i])
         return 1;
     }
   return 0;
