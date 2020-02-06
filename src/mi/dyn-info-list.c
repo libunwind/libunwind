@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
-HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
+extern HIDDEN unw_dyn_info_list_t _U_dyn_info_list;
 
 unw_word_t
 _U_dyn_info_list_addr (void)
