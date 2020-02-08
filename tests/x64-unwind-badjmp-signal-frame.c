@@ -30,7 +30,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/types.h>
 #include <sys/ucontext.h>
 #include <unistd.h>
+
+#ifdef HAVE_SYS_PTRACE_H
 #include <sys/ptrace.h>
+#endif
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
