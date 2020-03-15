@@ -208,7 +208,7 @@ only test programs that are known to work at this time are:
 
 ### Expected results on Solaris x86-64
 
-`make check` is passing 13 out of 33 tests. The following nine tests are consistently
+`make check` is passing 13 out of 33 tests. The following twenty tests are consistently
 failing:
 
 * `Gtest-bt`
