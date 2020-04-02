@@ -124,6 +124,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
         (pthread_mutex_unlock != NULL ? pthread_mutex_unlock (l) : 0)
 
 #ifdef HAVE_ATOMIC_OPS_H
+# define AO_REQUIRE_CAS
 # include <atomic_ops.h>
 static inline int
 cmpxchg_ptr (void *addr, void *old, void *new)
