@@ -572,6 +572,10 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
         }
       else if (phdr->p_type == PT_GNU_EH_FRAME)
         p_eh_hdr = phdr;
+#if defined __sun
+      else if (phdr->p_type == PT_SUNW_UNWIND)
+        p_eh_hdr = phdr;
+#endif
       else if (phdr->p_type == PT_DYNAMIC)
         p_dynamic = phdr;
     }
