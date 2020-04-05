@@ -30,75 +30,65 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/syscall.h>
 
-HIDDEN void
-tdep_fetch_frame (struct dwarf_cursor *dw, unw_word_t ip, int need_unwind_info)
-{
-  struct cursor *c = (struct cursor *) dw;
-  assert(! need_unwind_info || dw->pi_valid);
-  assert(! need_unwind_info || dw->pi.unwind_info);
-  if (dw->pi_valid
-      && dw->pi.unwind_info
-      && ((struct dwarf_cie_info *) dw->pi.unwind_info)->signal_frame)
-    c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
-  else
-    c->sigcontext_format = X86_64_SCF_NONE;
-
-  Debug(5, "fetch frame ip=0x%lx cfa=0x%lx format=%d\n",
-        dw->ip, dw->cfa, c->sigcontext_format);
-}
-
-HIDDEN int
-tdep_cache_frame (struct dwarf_cursor *dw)
-{
-  struct cursor *c = (struct cursor *) dw;
-
-  Debug(5, "cache frame ip=0x%lx cfa=0x%lx format=%d\n",
-        dw->ip, dw->cfa, c->sigcontext_format);
-  return c->sigcontext_format;
-}
-
-HIDDEN void
-tdep_reuse_frame (struct dwarf_cursor *dw, int frame)
-{
-  struct cursor *c = (struct cursor *) dw;
-  c->sigcontext_format = frame;
-  if (c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME)
-  {
-    c->frame_info.frame_type = UNW_X86_64_FRAME_SIGRETURN;
-    /* Offset from cfa to ucontext_t in signal frame.  */
-    c->frame_info.cfa_reg_offset = 0;
-    c->sigcontext_addr = dw->cfa;
-  }
-  else
-    c->sigcontext_addr = 0;
-
-  Debug(5, "reuse frame ip=0x%lx cfa=0x%lx format=%d addr=0x%lx offset=%+d\n",
-        dw->ip, dw->cfa, c->sigcontext_format, c->sigcontext_addr,
-	(c->sigcontext_format == X86_64_SCF_LINUX_RT_SIGFRAME
-	 ? c->frame_info.cfa_reg_offset : 0));
-}
+struct sigframe {
+	uint64_t	signo;
+	uint64_t	sip;
+};
 
 int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  return c->sigcontext_format != X86_64_SCF_NONE;
+
+  c->sigcontext_format = (c->dwarf.ip == (unw_word_t)-1) ?
+    X86_64_SCF_SOLARIS_SIGFRAME : X86_64_SCF_NONE;
+
+  return (c->sigcontext_format);
 }
 
 HIDDEN int
 x86_64_handle_signal_frame (unw_cursor_t *cursor)
 {
-#if UNW_DEBUG /* To silence compiler warnings */
-  /* Should not get here because we now use kernel-provided dwarf
-     information for the signal trampoline and dwarf_step() works.
-     Hence unw_step() should never call this function. Maybe
-     restore old non-dwarf signal handling here, but then the
-     gating on unw_is_signal_frame() needs to be removed. */
   struct cursor *c = (struct cursor *) cursor;
-  Debug(1, "old format signal frame? format=%d addr=0x%lx cfa=0x%lx\n",
-	c->sigcontext_format, c->sigcontext_addr, c->dwarf.cfa);
-#endif
-  return -UNW_EBADFRAME;
+  unw_word_t ucontext = c->dwarf.cfa + sizeof (struct sigframe);
+
+  if (c->sigcontext_format != X86_64_SCF_SOLARIS_SIGFRAME)
+    return -UNW_EBADFRAME;
+
+  c->sigcontext_addr = c->dwarf.cfa;
+
+  Debug(1, "signal frame cfa = %lx ucontext = %lx\n",
+    (uint64_t)c->dwarf.cfa, (uint64_t)ucontext);
+
+  struct dwarf_loc rsp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+  int ret = dwarf_get (&c->dwarf, rsp_loc, &c->dwarf.cfa);
+
+  if (ret < 0)
+    {
+      Debug (2, "return %d\n", ret);
+      return ret;
+    }
+
+    c->dwarf.loc[RAX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RAX, 0);
+    c->dwarf.loc[RDX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDX, 0);
+    c->dwarf.loc[RCX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RCX, 0);
+    c->dwarf.loc[RBX] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBX, 0);
+    c->dwarf.loc[RSI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSI, 0);
+    c->dwarf.loc[RDI] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RDI, 0);
+    c->dwarf.loc[RBP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RBP, 0);
+    c->dwarf.loc[RSP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RSP, 0);
+    c->dwarf.loc[ R8] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
+    c->dwarf.loc[ R9] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
+    c->dwarf.loc[R10] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
+    c->dwarf.loc[R11] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
+    c->dwarf.loc[R12] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
+    c->dwarf.loc[R13] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
+    c->dwarf.loc[R14] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
+    c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
+    c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
+
+    c->dwarf.use_prev_instr = 1;
+    return 0;
 }
 
 #ifndef UNW_REMOTE_ONLY
@@ -134,22 +124,9 @@ x86_64_r_uc_addr (ucontext_t *uc, int reg)
   return addr;
 }
 
-/* sigreturn() is a no-op on x86_64 glibc.  */
 HIDDEN NORETURN void
 x86_64_sigreturn (unw_cursor_t *cursor)
 {
-#if 0
-  struct cursor *c = (struct cursor *) cursor;
-  struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
-
-  Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
-	     (unsigned long long) c->dwarf.ip, sc);
-  __asm__ __volatile__ ("mov %0, %%rsp;"
-			"mov %1, %%rax;"
-			"syscall"
-			:: "r"(sc), "i"(SYS_rt_sigreturn)
-			: "memory");
-#endif // 0
   abort();
 }
 
