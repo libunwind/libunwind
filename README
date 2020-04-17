@@ -21,7 +21,7 @@ several architecture/operating-system combinations:
 | FreeBSD | x86-64       | ✓      |
 | FreeBSD | x86          | ✓      |
 | FreeBSD | AArch64      | ✓      |
-| Solaris | x86-64       | Initial support |
+| Solaris | x86-64       | ✓      |
 
 ## Libc Requirements
 
