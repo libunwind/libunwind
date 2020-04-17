@@ -270,6 +270,13 @@ unw_step (unw_cursor_t *cursor)
               Debug (2, "returning %d\n", ret);
               return ret;
             }
+#if __sun
+          if (c->dwarf.ip == 0)
+            {
+              Debug (2, "returning 0\n");
+              return ret;
+            }
+#endif
           ret = 1;
         }
       else
