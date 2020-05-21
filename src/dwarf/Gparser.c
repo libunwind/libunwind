@@ -617,14 +617,14 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
       lock_acquire (&cache->lock, *saved_maskp);
     }
 
-  if ((atomic_read (&as->cache_generation) != atomic_read (&cache->generation))
+  if ((atomic_load (&as->cache_generation) != atomic_load (&cache->generation))
        || !cache->hash)
     {
       /* cache_size is only set in the global_cache, copy it over before flushing */
       cache->log_size = as->global_cache.log_size;
       if (dwarf_flush_rs_cache (cache) < 0)
         return NULL;
-      cache->generation = as->cache_generation;
+      atomic_store (&cache->generation, atomic_load (&as->cache_generation));
     }
 
   return cache;

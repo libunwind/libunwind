@@ -32,8 +32,6 @@ case "$ac_cv_search_dlopen" in
   *) DLLIB="";;
 esac
 
-CHECK_ATOMIC_OPS
-
 dnl Checks for header files.
 AC_HEADER_STDC
 AC_CHECK_HEADERS(asm/ptrace_offsets.h endian.h sys/endian.h execinfo.h \
@@ -397,20 +395,6 @@ if test x$have__builtin_unreachable = xyes; then
             [Defined if __builtin_unreachable() is available])
 fi
 AC_MSG_RESULT([$have__builtin_unreachable])
-
-AC_MSG_CHECKING([for __sync atomics])
-AC_LINK_IFELSE(
-  [AC_LANG_PROGRAM([[]], [[
-    __sync_bool_compare_and_swap((int *)0, 0, 1);
-    __sync_fetch_and_add((int *)0, 1);
-    ]])],
-  [have_sync_atomics=yes],
-  [have_sync_atomics=no])
-if test x$have_sync_atomics = xyes; then
-  AC_DEFINE([HAVE_SYNC_ATOMICS], [1],
-            [Defined if __sync atomics are available])
-fi
-AC_MSG_RESULT([$have_sync_atomics])
 
 CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 

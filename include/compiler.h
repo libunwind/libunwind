@@ -65,13 +65,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define unlikely(x)    (x)
 #endif
 
-#ifdef _MSC_VER
-#include <inttypes.h>
-uint32_t fetch_and_add(uint32_t* ptr, uint32_t value);
-# define fetch_and_add1(_ptr)           fetch_and_add(_ptr, 1)
-# define HAVE_FETCH_AND_ADD
-#endif
-
 #define ARRAY_SIZE(a)   (sizeof (a) / sizeof ((a)[0]))
 
 #endif /* COMPILER_H */

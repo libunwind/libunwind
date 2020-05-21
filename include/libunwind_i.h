@@ -123,57 +123,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define mutex_unlock(l)                                                 \
         (pthread_mutex_unlock != NULL ? pthread_mutex_unlock (l) : 0)
 
-#ifdef HAVE_ATOMIC_OPS_H
-# include <atomic_ops.h>
-static inline int
-cmpxchg_ptr (void *addr, void *old, void *new)
-{
-  union
-    {
-      void *vp;
-      AO_t *aop;
-    }
-  u;
-
-  u.vp = addr;
-  return AO_compare_and_swap(u.aop, (AO_t) old, (AO_t) new);
-}
-# define fetch_and_add1(_ptr)           AO_fetch_and_add1(_ptr)
-# define fetch_and_add(_ptr, value)     AO_fetch_and_add(_ptr, value)
-# define atomic_read(ptr) (AO_load(ptr))
-   /* GCC 3.2.0 on HP-UX crashes on cmpxchg_ptr() */
-#  if !(defined(__hpux) && __GNUC__ == 3 && __GNUC_MINOR__ == 2)
-#   define HAVE_CMPXCHG
-#  endif
-# define HAVE_FETCH_AND_ADD
-#elif defined(HAVE_SYNC_ATOMICS) || defined(HAVE_IA64INTRIN_H)
-# ifdef HAVE_IA64INTRIN_H
-#  include <ia64intrin.h>
-# endif
-static inline int
-cmpxchg_ptr (void *addr, void *old, void *new)
-{
-  union
-    {
-      void *vp;
-      long *vlp;
-    }
-  u;
-
-  u.vp = addr;
-  return __sync_bool_compare_and_swap(u.vlp, (long) old, (long) new);
-}
-# define fetch_and_add1(_ptr)           __sync_fetch_and_add(_ptr, 1)
-# define fetch_and_add(_ptr, value)     __sync_fetch_and_add(_ptr, value)
-# define atomic_read(ptr) (__atomic_load_n(ptr,__ATOMIC_RELAXED))
-# define HAVE_CMPXCHG
-# define HAVE_FETCH_AND_ADD
-#endif
-
-#ifndef atomic_read
-#define atomic_read(ptr)        (*(ptr))
-#endif
-
 #define UNWI_OBJ(fn)      UNW_PASTE(UNW_PREFIX,UNW_PASTE(I,fn))
 #define UNWI_ARCH_OBJ(fn) UNW_PASTE(UNW_PASTE(UNW_PASTE(_UI,UNW_TARGET),_), fn)
 
