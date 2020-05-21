@@ -251,6 +251,7 @@ dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,
   uint32_t u32;
   uint64_t u64;
   int ret;
+#ifdef __GNUC__
 # define pop()                                  \
 ({                                              \
   if ((tos - 1) >= MAX_EXPR_STACK_SIZE)         \
@@ -280,6 +281,48 @@ do {                                            \
     }                                           \
   stack[_index];                                \
 })
+#else // __GNUC__
+// We don't have non-standard statement expressions
+// Use multiple statements instead
+int stackerror = 0;
+
+// pop() is either followed by a semicolon or
+// used in a push() macro
+// In either case we can sneak in an extra statement
+# define pop()                                  \
+(((tos - 1) >= MAX_EXPR_STACK_SIZE) ?           \
+  stackerror++ :   stack[--tos]);               \
+if (stackerror)                                 \
+  {                                             \
+    Debug (1, "Stack underflow\n");             \
+    return -UNW_EINVAL;                         \
+  }
+
+// Removed the parentheses on the asignment
+// to allow the extra stack error check
+// when x is evaluated
+# define push(x)                                \
+do {                                            \
+  unw_word_t _x = x;                            \
+  if (tos >= MAX_EXPR_STACK_SIZE)               \
+    {                                           \
+      Debug (1, "Stack overflow\n");            \
+      return -UNW_EINVAL;                       \
+    }                                           \
+  stack[tos++] = _x;                            \
+} while (0)
+
+// Pick is always used in a push() macro
+// In either case we can sneak in an extra statement
+# define pick(n)                                \
+(((tos - 1 - (n)) >= MAX_EXPR_STACK_SIZE) ?     \
+  stackerror++ : stack[tos - 1 - (n)]);         \
+if (stackerror)                                 \
+  {                                             \
+    Debug (1, "Out-of-stack pick\n");           \
+    return -UNW_EINVAL;                         \
+  }
+#endif // __GNUC__
 
   as = c->as;
   arg = c->as_arg;

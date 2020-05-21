@@ -130,8 +130,14 @@ dwarf_get_uc(const struct dwarf_cursor *cursor)
 #else /* !UNW_LOCAL_ONLY */
 
 # define DWARF_NULL_LOC         DWARF_LOC (0, 0)
-# define DWARF_IS_NULL_LOC(l)                                           \
-                ({ dwarf_loc_t _l = (l); _l.val == 0 && _l.type == 0; })
+
+static inline int
+dwarf_is_null_loc(dwarf_loc_t l)
+{
+  return l.val == 0 && l.type == 0;
+}
+
+# define DWARF_IS_NULL_LOC(l)   dwarf_is_null_loc(l)
 # define DWARF_REG_LOC(c,r)     DWARF_LOC((r), DWARF_LOC_TYPE_REG)
 # define DWARF_FPREG_LOC(c,r)   DWARF_LOC((r), (DWARF_LOC_TYPE_REG      \
                                                 | DWARF_LOC_TYPE_FP))

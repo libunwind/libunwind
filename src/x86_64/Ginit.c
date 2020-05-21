@@ -205,8 +205,8 @@ tdep_init_mem_validate (void)
 #define NLGA 4
 #if defined(HAVE___THREAD) && HAVE___THREAD
 // thread-local variant
-static __thread unw_word_t last_good_addr[NLGA];
-static __thread int lga_victim;
+static THREAD_LOCAL unw_word_t last_good_addr[NLGA];
+static THREAD_LOCAL int lga_victim;
 
 static int
 is_cached_valid_mem(unw_word_t addr)

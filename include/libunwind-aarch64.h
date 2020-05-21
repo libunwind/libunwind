@@ -34,6 +34,11 @@ extern "C" {
 #include <inttypes.h>
 #include <stddef.h>
 #include <ucontext.h>
+#include "compiler.h"
+
+#ifndef UNW_EMPTY_STRUCT
+# define UNW_EMPTY_STRUCT
+#endif
 
 #define UNW_TARGET      aarch64
 #define UNW_TARGET_AARCH64      1
@@ -60,6 +65,7 @@ typedef long double unw_tdep_fpreg_t;
 typedef struct
   {
     /* no aarch64-specific auxiliary proc-info */
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_proc_info_t;
 
@@ -169,9 +175,9 @@ aarch64_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  */
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_save_loc_t;
-
 
 /* On AArch64, we can directly use ucontext_t as the unwind context,
  * however, the __reserved struct is quite large: tune it down to only
@@ -184,7 +190,7 @@ struct unw_sigcontext
 	uint64_t sp;
 	uint64_t pc;
 	uint64_t pstate;
-	uint8_t __reserved[(66 * 8)] __attribute__((__aligned__(16)));
+	uint8_t __reserved[(66 * 8)] ALIGNED(16);
 };
 
 typedef struct

@@ -275,7 +275,7 @@ extern pthread_mutex_t _U_dyn_info_list_lock;
 extern long unwi_debug_level;
 
 # include <stdio.h>
-# define Debug(level,format...)                                         \
+# define Debug(level, /* format */ ...)                                 \
 do {                                                                    \
   if (unwi_debug_level >= level)                                        \
     {                                                                   \
@@ -283,13 +283,14 @@ do {                                                                    \
       if (_n > 16)                                                      \
         _n = 16;                                                        \
       fprintf (stderr, "%*c>%s: ", _n, ' ', __FUNCTION__);              \
-      fprintf (stderr, format);                                         \
+      fprintf (stderr, /* format */ __VA_ARGS__);                       \
     }                                                                   \
 } while (0)
-# define Dprintf(format...)         fprintf (stderr, format)
+# define Dprintf(/* format */ ...)                                      \
+  fprintf (stderr, /* format */ __VA_ARGS__)
 #else
-# define Debug(level,format...)
-# define Dprintf(format...)
+# define Debug(level, /* format */ ...)
+# define Dprintf( /* format */ ...)
 #endif
 
 static ALWAYS_INLINE int

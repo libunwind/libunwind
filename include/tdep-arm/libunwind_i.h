@@ -151,8 +151,14 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 # define DWARF_LOC_TYPE_FP      (1 << 0)
 # define DWARF_LOC_TYPE_REG     (1 << 1)
 # define DWARF_NULL_LOC         DWARF_LOC (0, 0)
-# define DWARF_IS_NULL_LOC(l)                                           \
-                ({ dwarf_loc_t _l = (l); _l.val == 0 && _l.type == 0; })
+
+static inline int
+dwarf_is_null_loc(dwarf_loc_t l)
+{
+  return l.val == 0 && l.type == 0;
+}
+
+# define DWARF_IS_NULL_LOC(l)   dwarf_is_null_loc(l)
 # define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r), .type = (t) })
 # define DWARF_IS_REG_LOC(l)    (((l).type & DWARF_LOC_TYPE_REG) != 0)
 # define DWARF_IS_FP_LOC(l)     (((l).type & DWARF_LOC_TYPE_FP) != 0)

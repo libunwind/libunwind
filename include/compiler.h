@@ -30,6 +30,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef COMPILER_H
 #define COMPILER_H
 
+#if defined(__STDC_VERSION__ ) && __STDC_VERSION__  >= 201112L // C11
+# include <thread.h>
+# define THREAD_LOCAL thread_local
+#elseif defined(__GNUC__)
+# define THREAD_LOCAL __thread
+#else
+# define THREAD_LOCAL
+#endif
+
 #ifdef __GNUC__
 # define ALIGNED(x)     __attribute__((aligned(x)))
 # define CONST_ATTR     __attribute__((__const__))
@@ -65,6 +74,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define WEAK
 # define likely(x)      (x)
 # define unlikely(x)    (x)
+#endif
+
+#ifdef _MSC_VER
+#include <inttypes.h>
+uint32_t fetch_and_add(uint32_t* ptr, uint32_t value);
+# define fetch_and_add1(_ptr)           fetch_and_add(_ptr, 1)
+# define HAVE_FETCH_AND_ADD
 #endif
 
 #define ARRAY_SIZE(a)   (sizeof (a) / sizeof ((a)[0]))
