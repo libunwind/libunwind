@@ -251,40 +251,7 @@ dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,
   uint32_t u32;
   uint64_t u64;
   int ret;
-#ifdef __GNUC__
-# define pop()                                  \
-({                                              \
-  if ((tos - 1) >= MAX_EXPR_STACK_SIZE)         \
-    {                                           \
-      Debug (1, "Stack underflow\n");           \
-      return -UNW_EINVAL;                       \
-    }                                           \
-  stack[--tos];                                 \
-})
-# define push(x)                                \
-do {                                            \
-  unw_word_t _x = (x);                          \
-  if (tos >= MAX_EXPR_STACK_SIZE)               \
-    {                                           \
-      Debug (1, "Stack overflow\n");            \
-      return -UNW_EINVAL;                       \
-    }                                           \
-  stack[tos++] = _x;                            \
-} while (0)
-# define pick(n)                                \
-({                                              \
-  unsigned int _index = tos - 1 - (n);          \
-  if (_index >= MAX_EXPR_STACK_SIZE)            \
-    {                                           \
-      Debug (1, "Out-of-stack pick\n");         \
-      return -UNW_EINVAL;                       \
-    }                                           \
-  stack[_index];                                \
-})
-#else // __GNUC__
-// We don't have non-standard statement expressions
-// Use multiple statements instead
-int stackerror = 0;
+  unw_word_t stackerror = 0;
 
 // pop() is either followed by a semicolon or
 // used in a push() macro
@@ -322,7 +289,6 @@ if (stackerror)                                 \
     Debug (1, "Out-of-stack pick\n");           \
     return -UNW_EINVAL;                         \
   }
-#endif // __GNUC__
 
   as = c->as;
   arg = c->as_arg;
