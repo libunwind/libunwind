@@ -164,7 +164,7 @@ static int mincore_validate (void *addr, size_t len)
 
   /* mincore could fail with EAGAIN but we conservatively return -1
      instead of looping. */
-  if (mincore (addr, len, (char *)mvec) != 0)
+  if (mincore (addr, len, (unsigned char *)mvec) != 0)
     {
       return -1;
     }
@@ -187,7 +187,7 @@ tdep_init_mem_validate (void)
   unw_word_t addr = PAGE_START((unw_word_t)&present);
   unsigned char mvec[1];
   int ret;
-  while ((ret = mincore ((void*)addr, PAGE_SIZE, (char *)mvec)) == -1 &&
+  while ((ret = mincore ((void*)addr, PAGE_SIZE, (unsigned char *)mvec)) == -1 &&
          errno == EAGAIN) {}
   if (ret == 0)
     {
