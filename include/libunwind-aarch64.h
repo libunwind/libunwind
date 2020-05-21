@@ -34,6 +34,7 @@ extern "C" {
 #include <inttypes.h>
 #include <stddef.h>
 #include <ucontext.h>
+#include <stdalign.h>
 
 #ifndef UNW_EMPTY_STRUCT
 # define UNW_EMPTY_STRUCT
@@ -182,13 +183,6 @@ unw_tdep_save_loc_t;
  * however, the __reserved struct is quite large: tune it down to only
  * the necessary used fields.  */
 
-#ifdef _MSC_VER
-// __attribute__((__aligned__(16))) is a GNUC attribute not recognized by MSVC
-// Since the field alignment doesn't matter for UNW_REMOTE_ONLY,
-// Temproarily define __attribute__(x) to remove it
-#define __attribute__(x)
-#endif
-
 struct unw_sigcontext
   {
 	uint64_t fault_address;
@@ -196,12 +190,8 @@ struct unw_sigcontext
 	uint64_t sp;
 	uint64_t pc;
 	uint64_t pstate;
-	uint8_t __reserved[(66 * 8)] __attribute__((__aligned__(16)));
+	uint8_t alignas(16) __reserved[(66 * 8)];
 };
-
-#ifdef _MSC_VER
-#undef __attribute__
-#endif
 
 typedef struct
   {
