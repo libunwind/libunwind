@@ -601,10 +601,10 @@ get_rs_cache (unw_addr_space_t as, intrmask_t *saved_maskp)
   if (caching == UNW_CACHE_NONE)
     return NULL;
 
-#if defined(HAVE___THREAD) && HAVE___THREAD
+#if defined(HAVE___CACHE_PER_THREAD) && HAVE___CACHE_PER_THREAD
   if (likely (caching == UNW_CACHE_PER_THREAD))
     {
-      static __thread struct dwarf_rs_cache tls_cache __attribute__((tls_model("initial-exec")));
+      static _Thread_local struct dwarf_rs_cache tls_cache __attribute__((tls_model("initial-exec")));
       Debug (16, "using TLS cache\n");
       cache = &tls_cache;
     }

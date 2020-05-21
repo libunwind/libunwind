@@ -328,10 +328,8 @@ AC_ARG_ENABLE([per-thread-cache],
 AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a hight TLS memory usage) (default: disabled)]))
 AC_MSG_RESULT([$enable_per_thread_cache])
 AS_IF([test x$enable_per_thread_cache = xyes], [
-  LIBUNWIND___THREAD
-  AS_IF([test x$libc_cv_gcc___thread = xno], [
-    AC_MSG_FAILURE([UNW_CACHE_PER_THREAD requires __thread])
-  ])
+  AC_DEFINE(HAVE___CACHE_PER_THREAD, 1,
+	[Define to 1 if --enable-per-thread-cache])
 ])
 
 AC_MSG_CHECKING([for Intel compiler])

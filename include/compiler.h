@@ -30,15 +30,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef COMPILER_H
 #define COMPILER_H
 
-#if defined(__STDC_VERSION__ ) && __STDC_VERSION__  >= 201112L // C11
-# include <thread.h>
-# define THREAD_LOCAL thread_local
-#elseif defined(__GNUC__)
-# define THREAD_LOCAL __thread
-#else
-# define THREAD_LOCAL
-#endif
-
 #ifdef __GNUC__
 # define ALIGNED(x)     __attribute__((aligned(x)))
 # define CONST_ATTR     __attribute__((__const__))
