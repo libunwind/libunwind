@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "config.h"
 #endif
 
-#include <sys/ucontext.h>
+#include <ucontext.h>
 #include <machine/sigframe.h>
 #include <signal.h>
 #include <stddef.h>

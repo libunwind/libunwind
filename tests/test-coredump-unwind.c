@@ -62,7 +62,7 @@
 #else
   extern int backtrace (void **, int);
 #endif
-#include <sys/ucontext.h>
+#include <ucontext.h>
 
 #include <libunwind-coredump.h>
 
