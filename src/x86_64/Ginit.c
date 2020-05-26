@@ -34,7 +34,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 #include <string.h>
 #include <sys/mman.h>
-#include <sys/syscall.h>
+#if defined(HAVE_SYS_SYSCALL_H)
+# include <sys/syscall.h>
+#endif
 #include <stdatomic.h>
 
 #include "unwind_i.h"
@@ -138,8 +140,12 @@ write_validate (void *addr)
 
   do
     {
-      /* use syscall insteadof write() so that ASAN does not complain */
-      ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
+#ifdef HAVE_SYS_SYSCALL_H
+       /* use syscall insteadof write() so that ASAN does not complain */
+       ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
+#else
+	  ret = write (mem_validate_pipe[1], addr, 1);
+#endif
     }
   while ( errno == EINTR );
 
