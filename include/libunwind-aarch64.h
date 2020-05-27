@@ -183,6 +183,7 @@ typedef struct unw_tdep_save_loc
   }
 unw_tdep_save_loc_t;
 
+#ifdef __linux__
 /* On AArch64, we can directly use ucontext_t as the unwind context,
  * however, the __reserved struct is quite large: tune it down to only
  * the necessary used fields.  */
@@ -214,7 +215,10 @@ typedef struct
 	uint32_t fpcr;
 	uint64_t vregs[64];
   } unw_fpsimd_context_t;
-
+#else
+/* On AArch64, we can directly use ucontext_t as the unwind context.  */
+typedef ucontext_t unw_tdep_context_t;
+#endif
 
 
 #include "libunwind-common.h"
