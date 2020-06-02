@@ -23,10 +23,7 @@ linux-s390x: &linux-s390x
 
 windows-remote-only: &windows-remote-only
   os: windows
-  env:
-  - TARGET=x86_64-linux-gnu    HOST=x64
-  - TARGET=arm-linux-gnueabihf HOST=Win32
-  - TARGET=aarch64-linux-gnu   HOST=x64
+  compiler: msvc
   script:
   - cmake -G "Visual Studio 15 2017" -A ${HOST} -S . -B bin/windows-${HOST}/${TARGET}
   - cmake --build bin/windows-${HOST}/${TARGET}
@@ -43,3 +40,8 @@ jobs:
   include:
     - <<: *linux-s390x
     - <<: *windows-remote-only
+      env: TARGET=x86_64-linux-gnu    HOST=x64
+    - <<: *windows-remote-only
+      env: TARGET=arm-linux-gnueabihf HOST=Win32
+    - <<: *windows-remote-only
+      env: TARGET=aarch64-linux-gnu   HOST=x64
