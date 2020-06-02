@@ -4,6 +4,7 @@
 *.lo
 *~
 *.pc
+bin
 
 .libs/
 .deps/
