@@ -14,6 +14,20 @@
 #include <sys/types.h>
 #include <sys/ucontext.h>
 
+#if defined(__linux__) && defined(__x86_64__)
+#  define SIZEOF_SIGINFO 128
+#elif defined(__linux__) && defined(__aarch64__)
+#  define SIZEOF_SIGINFO 128
+#elif defined(__linux__) && defined(__arm__)
+#  define SIZEOF_SIGINFO 128
+#elif !defined(SIZEOF_SIGINFO)
+  // It is not clear whether the sizeof(siginfo_t) is important
+  // While compiling on Windows the members are not referenced...
+  // However the size maybe important during a case or a memcpy
+  // Barring a full audit it could be important so require the size to be defined
+#  error SIZEOF_SIGINFO is unknown for this target
+#endif
+
 typedef struct siginfo
 {
     uint8_t content[SIZEOF_SIGINFO];
