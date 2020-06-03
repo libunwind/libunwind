@@ -64,11 +64,6 @@ if ("${CMAKE_GENERATOR}" MATCHES "^Visual Studio.*$")
   set(HAVE_ELF_H 1)
   set(HAVE_ENDIAN_H 1)
 
-  # Abstraction layer requires defines for UCONTEXT sizes
-  # Fixme these sizes probably need to be consistent with the 
-  add_definitions(-DSIZEOF_UCONTENT=128)
-  add_definitions(-DSIZEOF_SIGINFO=128)
-  
   # MSVC compiler is currently missing C11 stdalign.h header
   # Fake it until support is added
   check_include_files(stdalign.h HAVE_STDALIGN_H)
