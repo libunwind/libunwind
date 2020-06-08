@@ -149,6 +149,13 @@ AC_ARG_ENABLE(weak-backtrace,
  AS_HELP_STRING([--disable-weak-backtrace],[Do not provide the weak 'backtrace' symbol.]),,
  [enable_weak_backtrace=yes])
 
+AC_ARG_ENABLE(unwind-header,
+ AS_HELP_STRING([--disable-unwind-header],[Do not export the 'unwind.h' header]),,
+ [enable_unwind_header=yes])
+
+AC_MSG_CHECKING([if we should export unwind.h])
+AC_MSG_RESULT([$enable_unwind_header])
+
 AC_MSG_CHECKING([if we should build libunwind-setjmp])
 AC_MSG_RESULT([$enable_setjmp])
 
@@ -164,6 +171,7 @@ AC_MSG_RESULT([$target_os])
 AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
 AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
+AM_CONDITIONAL(BUILD_UNWIND_HEADER, test "x$enable_unwind_header" = xyes)
 AM_CONDITIONAL(NO_PTRACE_TEST, test x$build_arch != x$host_arch)
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
