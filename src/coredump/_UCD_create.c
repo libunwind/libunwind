@@ -31,7 +31,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <byteswap.h>
 #endif
 
-#include <elf.h>
+#if defined(HAVE_ELF_H)
+# include <elf.h>
+#if defined(HAVE_SYS_ELF_H)
+# include <sys/elf.h>
+#endif
 #include <sys/procfs.h> /* struct elf_prstatus */
 
 #include "_UCD_lib.h"
