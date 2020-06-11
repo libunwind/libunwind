@@ -63,6 +63,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #else
 # error Could not locate <elf.h>
 #endif
+#if defined(ELFCLASS32)
+# define UNW_ELFCLASS32 ELFCLASS32
+#else
+# define UNW_ELFCLASS32 1
+#endif
+#if defined(ELFCLASS64)
+# define UNW_ELFCLASS64 ELFCLASS64
+#else
+# define UNW_ELFCLASS64 2
+#endif
 
 #if defined(HAVE_ENDIAN_H)
 # include <endian.h>
