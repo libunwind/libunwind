@@ -211,7 +211,7 @@ HIDDEN void
 ppc64_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
-  local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
+  local_addr_space.big_endian = target_is_big_endian();
 #if _CALL_ELF == 2
   local_addr_space.abi = UNW_PPC64_ABI_ELFv2;
 #else
