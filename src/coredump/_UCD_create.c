@@ -30,35 +30,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if defined(HAVE_BYTESWAP_H)
 #include <byteswap.h>
 #endif
-#if defined(HAVE_ENDIAN_H)
-# include <endian.h>
-#elif defined(HAVE_SYS_ENDIAN_H)
-# include <sys/endian.h>
-#endif
-#if defined(__BYTE_ORDER) && __BYTE_ORDER == __BIG_ENDIAN
-# define WE_ARE_BIG_ENDIAN    1
-# define WE_ARE_LITTLE_ENDIAN 0
-#elif defined(__BYTE_ORDER) && __BYTE_ORDER == __LITTLE_ENDIAN
-# define WE_ARE_BIG_ENDIAN    0
-# define WE_ARE_LITTLE_ENDIAN 1
-#elif defined(_BYTE_ORDER) && _BYTE_ORDER == _BIG_ENDIAN
-# define WE_ARE_BIG_ENDIAN    1
-# define WE_ARE_LITTLE_ENDIAN 0
-#elif defined(_BYTE_ORDER) && _BYTE_ORDER == _LITTLE_ENDIAN
-# define WE_ARE_BIG_ENDIAN    0
-# define WE_ARE_LITTLE_ENDIAN 1
-#elif defined(BYTE_ORDER) && BYTE_ORDER == BIG_ENDIAN
-# define WE_ARE_BIG_ENDIAN    1
-# define WE_ARE_LITTLE_ENDIAN 0
-#elif defined(BYTE_ORDER) && BYTE_ORDER == LITTLE_ENDIAN
-# define WE_ARE_BIG_ENDIAN    0
-# define WE_ARE_LITTLE_ENDIAN 1
-#elif defined(__386__)
-# define WE_ARE_BIG_ENDIAN    0
-# define WE_ARE_LITTLE_ENDIAN 1
-#else
-# error "Can't determine endianness"
-#endif
 
 #include <elf.h>
 #include <sys/procfs.h> /* struct elf_prstatus */
@@ -118,7 +89,7 @@ _UCD_create(const char *filename)
       goto err;
     }
 
-  if (WE_ARE_LITTLE_ENDIAN != (elf_header32.e_ident[EI_DATA] == ELFDATA2LSB))
+  if (target_is_big_endian() && (elf_header32.e_ident[EI_DATA] == ELFDATA2LSB))
     {
       Debug(0, "'%s' is endian-incompatible\n", filename);
       goto err;

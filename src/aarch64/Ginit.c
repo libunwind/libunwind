@@ -182,7 +182,7 @@ aarch64_local_addr_space_init (void)
   local_addr_space.acc.access_fpreg = access_fpreg;
   local_addr_space.acc.resume = aarch64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
-  local_addr_space.big_endian = (__BYTE_ORDER == __BIG_ENDIAN);
+  local_addr_space.big_endian = target_is_big_endian();
   unw_flush_cache (&local_addr_space, 0, 0);
 }
 
