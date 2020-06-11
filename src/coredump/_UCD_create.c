@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #if defined(HAVE_ELF_H)
 # include <elf.h>
-#if defined(HAVE_SYS_ELF_H)
+#elif defined(HAVE_SYS_ELF_H)
 # include <sys/elf.h>
 #endif
 #include <sys/procfs.h> /* struct elf_prstatus */
