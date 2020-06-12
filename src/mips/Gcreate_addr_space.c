@@ -38,7 +38,7 @@ unw_create_addr_space (unw_accessors_t *a, int byte_order)
    * MIPS supports only big or little-endian, not weird stuff like
    * PDP_ENDIAN.
    */
-  if (byte_order != 0 byte_order_is_valid(byte_order) == 0)
+  if (byte_order != 0 && byte_order_is_valid(byte_order) == 0)
     return NULL;
 
   as = malloc (sizeof (*as));
