@@ -41,11 +41,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "_UCD_lib.h"
 #include "_UCD_internal.h"
 
-#define NOTE_DATA(_hdr) STRUCT_MEMBER_P((_hdr), sizeof (Elf32_Nhdr) + UNW_ALIGN((_hdr)->n_namesz, 4))
-#define NOTE_SIZE(_hdr) (sizeof (Elf32_Nhdr) + UNW_ALIGN((_hdr)->n_namesz, 4) + UNW_ALIGN((_hdr)->n_descsz, 4))
-#define NOTE_NEXT(_hdr) STRUCT_MEMBER_P((_hdr), NOTE_SIZE(_hdr))
-#define NOTE_FITS_IN(_hdr, _size) ((_size) >= sizeof (Elf32_Nhdr) && (_size) >= NOTE_SIZE (_hdr))
-#define NOTE_FITS(_hdr, _end) NOTE_FITS_IN((_hdr), (unsigned long)((char *)(_end) - (char *)(_hdr)))
 
 struct UCD_info *
 _UCD_create(const char *filename)
@@ -180,72 +175,39 @@ _UCD_create(const char *filename)
         }
     }
 
-    unsigned i = 0;
-    coredump_phdr_t *cur = phdrs;
-    while (i < size)
-      {
-        Debug(2, "phdr[%03d]: type:%d", i, cur->p_type);
-        if (cur->p_type == PT_NOTE)
-          {
-            Elf32_Nhdr *note_hdr, *note_end;
-            unsigned n_threads;
+    int ret = _UCD_get_threadinfo(ui, phdrs, size);
+    if (ret != UNW_ESUCCESS) {
+		Debug(0, "failure retrieving thread info from core file\n");
+		goto err;
+	}
 
-            ui->note_phdr = malloc(cur->p_filesz);
-            if (lseek(fd, cur->p_offset, SEEK_SET) != (off_t)cur->p_offset
-             || (uoff_t)read(fd, ui->note_phdr, cur->p_filesz) != cur->p_filesz)
-              {
-                    Debug(0, "Can't read PT_NOTE from '%s'\n", filename);
-                    goto err;
-              }
-
-            note_end = STRUCT_MEMBER_P (ui->note_phdr, cur->p_filesz);
-
-            /* Count number of threads */
-            n_threads = 0;
-            note_hdr = (Elf32_Nhdr *)ui->note_phdr;
-            while (NOTE_FITS (note_hdr, note_end))
-              {
-                if (note_hdr->n_type == NT_PRSTATUS)
-                  n_threads++;
-
-                note_hdr = NOTE_NEXT (note_hdr);
-              }
-
-            ui->n_threads = n_threads;
-            ui->threads = malloc(sizeof (void *) * n_threads);
-
-            n_threads = 0;
-            note_hdr = (Elf32_Nhdr *)ui->note_phdr;
-            while (NOTE_FITS (note_hdr, note_end))
-              {
-                if (note_hdr->n_type == NT_PRSTATUS)
-                  ui->threads[n_threads++] = NOTE_DATA (note_hdr);
-
-                note_hdr = NOTE_NEXT (note_hdr);
-              }
-          }
-        if (cur->p_type == PT_LOAD)
-          {
-            Debug(2, " ofs:%08llx va:%08llx filesize:%08llx memsize:%08llx flg:%x",
-                                (unsigned long long) cur->p_offset,
-                                (unsigned long long) cur->p_vaddr,
-                                (unsigned long long) cur->p_filesz,
-                                (unsigned long long) cur->p_memsz,
-                                cur->p_flags
-            );
-            if (cur->p_filesz < cur->p_memsz)
-              {
-                Debug(2, " partial");
-              }
-            if (cur->p_flags & PF_X)
-              {
-                Debug(2, " executable");
-              }
-          }
-        Debug(2, "\n");
-        i++;
-        cur++;
-      }
+    if (unwi_debug_level > 1)
+	  {
+		coredump_phdr_t *cur = phdrs;
+		for (unsigned i = 0; i < size; ++i)
+		  {
+			if (cur->p_type == PT_LOAD)
+			  {
+				Debug(2, " ofs:%08llx va:%08llx filesize:%08llx memsize:%08llx flg:%x",
+									(unsigned long long) cur->p_offset,
+									(unsigned long long) cur->p_vaddr,
+									(unsigned long long) cur->p_filesz,
+									(unsigned long long) cur->p_memsz,
+									cur->p_flags
+				);
+				if (cur->p_filesz < cur->p_memsz)
+				  {
+					Debug(2, " partial");
+				  }
+				if (cur->p_flags & PF_X)
+				  {
+					Debug(2, " executable");
+				  }
+			  }
+			Debug(2, "\n");
+			cur++;
+		  }
+	  }
 
     if (ui->n_threads == 0)
       {
@@ -253,7 +215,7 @@ _UCD_create(const char *filename)
         goto err;
       }
 
-    ui->prstatus = ui->threads[0];
+    ui->prstatus = &ui->threads[0];
 
   return ui;
 
@@ -270,7 +232,7 @@ int _UCD_get_num_threads(struct UCD_info *ui)
 void _UCD_select_thread(struct UCD_info *ui, int n)
 {
   if (n >= 0 && n < ui->n_threads)
-    ui->prstatus = ui->threads[n];
+    ui->prstatus = &ui->threads[n];
 }
 
 pid_t _UCD_get_pid(struct UCD_info *ui)
