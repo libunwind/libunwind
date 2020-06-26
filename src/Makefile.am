@@ -521,7 +521,8 @@ if OS_LINUX
  libunwind_la_SOURCES_arm_os          = arm/Gos-linux.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-linux.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_linux.c
- libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_linux.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_linux.c
 endif
 
 if OS_HPUX
@@ -540,6 +541,8 @@ if OS_FREEBSD
  libunwind_la_SOURCES_arm_os          = arm/Gos-freebsd.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-freebsd.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_generic.c
 endif
 
 if OS_SOLARIS

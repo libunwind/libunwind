@@ -101,9 +101,11 @@ typedef int (*note_visitor_t)(uint32_t, uint32_t, uint32_t, char *, uint8_t *, v
 
 
 coredump_phdr_t * _UCD_get_elf_image(struct UCD_info *ui, unw_word_t ip);
-int _UCD_get_threadinfo(struct UCD_info *ui, coredump_phdr_t *phdrs, unsigned phdr_size);
+
 int _UCD_elf_read_segment(struct UCD_info *ui, coredump_phdr_t *phdr, uint8_t **segment, size_t *segment_size);
 int _UCD_elf_visit_notes(uint8_t *segment, size_t segment_size, note_visitor_t visit, void *arg);
+int _UCD_get_threadinfo(struct UCD_info *ui, coredump_phdr_t *phdrs, unsigned phdr_size);
+int _UCD_get_mapinfo(struct UCD_info *ui, coredump_phdr_t *phdrs, unsigned phdr_size);
 
 
 #endif

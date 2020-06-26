@@ -181,6 +181,12 @@ _UCD_create(const char *filename)
 		goto err;
 	}
 
+    ret = _UCD_get_mapinfo(ui, phdrs, size);
+    if (ret != UNW_ESUCCESS) {
+		Debug(0, "failure retrieving file mapping from core file\n");
+		goto err;
+	}
+
     if (unwi_debug_level > 1)
 	  {
 		coredump_phdr_t *cur = phdrs;
@@ -294,41 +300,6 @@ int _UCD_add_backing_file_at_segment(struct UCD_info *ui, int phdr_no, const cha
       );
     }
 //TODO: else loudly complain? Maybe even fail?
-
-  if (phdr->p_filesz != 0)
-    {
-//TODO: loop and compare in smaller blocks
-      char *core_buf = malloc(phdr->p_filesz);
-      char *file_buf = malloc(phdr->p_filesz);
-      if (lseek(ui->coredump_fd, phdr->p_offset, SEEK_SET) != (off_t)phdr->p_offset
-       || (uoff_t)read(ui->coredump_fd, core_buf, phdr->p_filesz) != phdr->p_filesz
-      )
-        {
-          Debug(0, "Error reading from coredump file\n");
- err_read:
-          free(core_buf);
-          free(file_buf);
-          goto err;
-        }
-      if ((uoff_t)read(fd, file_buf, phdr->p_filesz) != phdr->p_filesz)
-        {
-          Debug(0, "Error reading from '%s'\n", filename);
-          goto err_read;
-        }
-      int r = memcmp(core_buf, file_buf, phdr->p_filesz);
-      free(core_buf);
-      free(file_buf);
-      if (r != 0)
-        {
-          Debug(1, "Note: phdr[%u] first %lld bytes in core dump and in file do not match\n",
-                                phdr_no, (unsigned long long)phdr->p_filesz
-          );
-        } else {
-          Debug(1, "Note: phdr[%u] first %lld bytes in core dump and in file match\n",
-                                phdr_no, (unsigned long long)phdr->p_filesz
-          );
-        }
-    }
 
   /* Success */
   return 0;
