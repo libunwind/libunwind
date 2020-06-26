@@ -60,6 +60,7 @@ libunwind_coredump_la_SOURCES = \
 	coredump/_UCD_elf_map_image.c \
 	coredump/_UCD_find_proc_info.c \
 	coredump/_UCD_get_proc_name.c \
+	coredump/_UCD_corefile_elf.c \
 	\
 	coredump/_UPT_elf.c \
 	coredump/_UPT_access_fpreg.c \
@@ -520,6 +521,7 @@ if OS_LINUX
  libunwind_la_SOURCES_arm_os          = arm/Gos-linux.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-linux.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_linux.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_linux.c
 endif
 
 if OS_HPUX
