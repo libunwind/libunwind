@@ -187,32 +187,29 @@ _UCD_create(const char *filename)
 		goto err;
 	}
 
-    if (unwi_debug_level > 1)
+	coredump_phdr_t *cur = phdrs;
+	for (unsigned i = 0; i < size; ++i)
 	  {
-		coredump_phdr_t *cur = phdrs;
-		for (unsigned i = 0; i < size; ++i)
+		if (cur->p_type == PT_LOAD)
 		  {
-			if (cur->p_type == PT_LOAD)
+			Debug(2, " ofs:%08llx va:%08llx filesize:%08llx memsize:%08llx flg:%x",
+								(unsigned long long) cur->p_offset,
+								(unsigned long long) cur->p_vaddr,
+								(unsigned long long) cur->p_filesz,
+								(unsigned long long) cur->p_memsz,
+								cur->p_flags
+			);
+			if (cur->p_filesz < cur->p_memsz)
 			  {
-				Debug(2, " ofs:%08llx va:%08llx filesize:%08llx memsize:%08llx flg:%x",
-									(unsigned long long) cur->p_offset,
-									(unsigned long long) cur->p_vaddr,
-									(unsigned long long) cur->p_filesz,
-									(unsigned long long) cur->p_memsz,
-									cur->p_flags
-				);
-				if (cur->p_filesz < cur->p_memsz)
-				  {
-					Debug(2, " partial");
-				  }
-				if (cur->p_flags & PF_X)
-				  {
-					Debug(2, " executable");
-				  }
+				Debug(2, " partial");
 			  }
-			Debug(2, "\n");
-			cur++;
+			if (cur->p_flags & PF_X)
+			  {
+				Debug(2, " executable");
+			  }
 		  }
+		Debug(2, "\n");
+		cur++;
 	  }
 
     if (ui->n_threads == 0)
