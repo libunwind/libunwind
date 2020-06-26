@@ -1,5 +1,5 @@
 /**
- * Extract threadinfo from a coredump (Linux and similar)
+ * Extract threadinfo from a coredump (targets with NT_PRSTATUS)
  */
 /*
  This file is part of libunwind.
@@ -70,7 +70,7 @@ _save_thread_notes(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *
 
 
 /**
- * Get thread info from core file (Linux and similar)
+ * Get thread info from core file
  *
  * On Linux threads are emulated by cloned processes sharing an address space
  * and the process information is described by a note in the core file of type
