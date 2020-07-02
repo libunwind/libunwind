@@ -106,6 +106,36 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
    contains no .debug_frame.  */
 /* XXX: Could use mmap; but elf_map_image keeps tons mapped in.  */
 
+#ifndef SHF_COMPRESSED
+ /* Older glibc elf.h might not yet define the ELF compression types.  */
+#define SHF_COMPRESSED      (1 << 11)  /* Section with compressed data. */
+
+ /* Section compression header.  Used when SHF_COMPRESSED is set.  */
+#if ELF_CLASS == ELFCLASS32
+ typedef struct
+ {
+   Elf32_Word   ch_type;        /* Compression format.  */
+   Elf32_Word   ch_size;        /* Uncompressed data size.  */
+   Elf32_Word   ch_addralign;   /* Uncompressed data alignment.  */
+ } Elf32_Chdr;
+#else
+ typedef struct
+ {
+   Elf64_Word   ch_type;        /* Compression format.  */
+   Elf64_Word   ch_reserved;
+   Elf64_Xword  ch_size;        /* Uncompressed data size.  */
+   Elf64_Xword  ch_addralign;   /* Uncompressed data alignment.  */
+ } Elf64_Chdr;
+#endif
+
+ /* Legal values for ch_type (compression algorithm).  */
+#define ELFCOMPRESS_ZLIB       1          /* ZLIB/DEFLATE algorithm.  */
+#define ELFCOMPRESS_LOOS       0x60000000 /* Start of OS-specific.  */
+#define ELFCOMPRESS_HIOS       0x6fffffff /* End of OS-specific.  */
+#define ELFCOMPRESS_LOPROC     0x70000000 /* Start of processor-specific.  */
+#define ELFCOMPRESS_HIPROC     0x7fffffff /* End of processor-specific.  */
+#endif
+
 static int
 load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 {
