@@ -242,11 +242,8 @@ AC_MSG_CHECKING([whether to enable C++ exception support])
 AC_ARG_ENABLE(cxx_exceptions,
 AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions]),,
 [
-# C++ exception handling doesn't work too well on x86
 case $target_arch in
-  x86*) enable_cxx_exceptions=no;;
   aarch64*) enable_cxx_exceptions=no;;
-  arm*) enable_cxx_exceptions=no;;
   mips*) enable_cxx_exceptions=no;;
   tile*) enable_cxx_exceptions=no;;
   *) enable_cxx_exceptions=yes;;
