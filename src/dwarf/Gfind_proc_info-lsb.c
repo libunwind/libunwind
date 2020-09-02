@@ -46,7 +46,7 @@ struct table_entry
 
 #ifndef UNW_REMOTE_ONLY
 
-#ifdef __linux
+#ifdef __linux__
 #include "os-linux.h"
 #endif
 
@@ -184,7 +184,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 static int
 find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
 {
-#if defined(__linux) && (!UNW_REMOTE_ONLY)
+#if defined(__linux__) && (!UNW_REMOTE_ONLY)
   struct map_iterator mi;
   int found = 0;
   int pid = getpid ();

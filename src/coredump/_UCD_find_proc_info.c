@@ -35,7 +35,7 @@ get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
 {
   unsigned long segbase, mapoff;
 
-#if UNW_TARGET_IA64 && defined(__linux)
+#if UNW_TARGET_IA64 && defined(__linux__)
   if (!ui->edi.ktab.start_ip && _Uia64_get_kernel_table (&ui->edi.ktab) < 0)
     return -UNW_ENOINFO;
 
