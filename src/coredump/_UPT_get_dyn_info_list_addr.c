@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "_UCD_lib.h"
 #include "_UCD_internal.h"
 
-#if UNW_TARGET_IA64 && defined(__linux)
+#if UNW_TARGET_IA64 && defined(__linux__)
 # include "elf64.h"
 # include "os-linux.h"
 

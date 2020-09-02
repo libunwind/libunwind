@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 /* Avoid a trip to x86_64_r_uc_addr() for purely local initialisation. */
-#if defined UNW_LOCAL_ONLY && defined __linux
+#if defined UNW_LOCAL_ONLY && defined __linux__
 # define REG_INIT_LOC(c, rlc, ruc) \
     DWARF_LOC ((unw_word_t) &c->uc->uc_mcontext.gregs[REG_ ## ruc], 0)
 

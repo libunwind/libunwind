@@ -357,7 +357,7 @@ ia64_local_addr_space_init (void)
 {
   memset (&local_addr_space, 0, sizeof (local_addr_space));
   local_addr_space.big_endian = target_is_big_endian();
-#if defined(__linux)
+#if defined(__linux__)
   local_addr_space.abi = ABI_LINUX;
 #elif defined(__hpux)
   local_addr_space.abi = ABI_HPUX;
