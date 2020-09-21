@@ -67,6 +67,7 @@ static int
 _handle_file_note(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *name, uint8_t *desc, void *arg)
 {
   struct UCD_info *ui = (struct UCD_info *)arg;
+#ifdef NT_FILE
   if (n_type == NT_FILE)
   {
     Debug(0, "found a PT_FILE note\n");
@@ -96,6 +97,7 @@ _handle_file_note(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *n
       strings += (len + 1);
     }
   }
+#endif
   return UNW_ESUCCESS;
 }
 
