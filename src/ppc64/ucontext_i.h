@@ -52,7 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UC_MCONTEXT_V_REGS ( ((void *)&dmy_ctxt.uc_mcontext.v_regs - (void *)&dmy_ctxt) )
 
-#define _UC_MCONTEXT_GPR(x) ( (void *)&dmy_ctxt.uc_mcontext.gp_regs[x] - (void *)&dmy_ctxt) )
+#define _UC_MCONTEXT_GPR(x) ( ((void *)&dmy_ctxt.uc_mcontext.gp_regs[x] - (void *)&dmy_ctxt) )
 #define _UC_MCONTEXT_FPR(x) ( ((void *)&dmy_ctxt.uc_mcontext.fp_regs[x] - (void *)&dmy_ctxt) )
 #define _UC_MCONTEXT_VR(x)  ( ((void *)&dmy_vrregset.vrregs[x] - (void *)&dmy_vrregset) )
 
