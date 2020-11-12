@@ -211,7 +211,7 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
   if (maps_init (&mi, pid) != 0)
     return 1;
 
-  while (maps_next (&mi, &segbase, &hi, &mapoff))
+  while (maps_next (&mi, &segbase, &hi, &mapoff, NULL))
     if (ip >= segbase && ip < hi)
       {
         size_t len = strlen (mi.path);
