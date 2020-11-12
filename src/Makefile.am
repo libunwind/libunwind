@@ -147,7 +147,7 @@ libunwind_la_SOURCES_local =						\
 	$(libunwind_la_SOURCES_local_unwind)
 
 noinst_HEADERS += os-linux.h
-libunwind_la_SOURCES_os_linux = os-linux.c
+libunwind_la_SOURCES_os_linux = os-linux.c dl-iterate-phdr.c
 
 libunwind_la_SOURCES_os_hpux = os-hpux.c
 

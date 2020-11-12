@@ -46,6 +46,9 @@ struct elf_dyn_info;
   #else
     #error Could not find <link.h>
   #endif
+  #if defined(__ANDROID__) && defined(__arm__) && __ANDROID_API__ < 21
+    int dl_iterate_phdr(int (*)(struct dl_phdr_info *, size_t, void *), void *);
+  #endif
 #endif
 
 #include <pthread.h>
