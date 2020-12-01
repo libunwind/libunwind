@@ -107,7 +107,8 @@ linear_search (unw_addr_space_t as, unw_word_t ip,
 /* XXX: Could use mmap; but elf_map_image keeps tons mapped in.  */
 
 static int
-load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local, unw_word_t *load_offset)
+load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
+                  unw_word_t segbase, unw_word_t *load_offset)
 {
   struct elf_image ei;
   Elf_W (Ehdr) *ehdr;
@@ -184,7 +185,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local, u
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD)
       {
-        *load_offset = phdr[i].p_vaddr;
+        *load_offset = segbase - phdr[i].p_vaddr;
 
         Debug (4, "%s load offset is 0x%zx\n", file, *load_offset);
 
@@ -234,8 +235,8 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
    pointer to debug frame descriptor, or zero if not found.  */
 
 static struct unw_debug_frame_list *
-locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
-                   unw_word_t start, unw_word_t end)
+locate_debug_info (unw_addr_space_t as, unw_word_t addr, unw_word_t segbase,
+                   const char *dlname, unw_word_t start, unw_word_t end)
 {
   struct unw_debug_frame_list *w, *fdesc = 0;
   char path[PATH_MAX];
@@ -270,7 +271,8 @@ locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
   else
     name = (char*) dlname;
 
-  err = load_debug_frame (name, &buf, &bufsize, as == unw_local_addr_space, &load_offset);
+  err = load_debug_frame (name, &buf, &bufsize, as == unw_local_addr_space,
+                          segbase, &load_offset);
 
   if (!err)
     {
@@ -416,7 +418,8 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
   Debug (15, "Trying to find .debug_frame for %s\n", obj_name);
 
-  fdesc = locate_debug_info (unw_local_addr_space, ip, obj_name, start, end);
+  fdesc = locate_debug_info (unw_local_addr_space, ip, segbase, obj_name, start,
+                             end);
 
   if (!fdesc)
     {
