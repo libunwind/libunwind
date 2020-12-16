@@ -244,7 +244,7 @@ typedef enum
 
     UNW_TDEP_LAST_REG = UNW_ARM_D31,
 
-    UNW_TDEP_IP = UNW_ARM_R14,  /* A little white lie.  */
+    UNW_TDEP_IP = UNW_ARM_R15,
     UNW_TDEP_SP = UNW_ARM_R13,
     UNW_TDEP_EH = UNW_ARM_R0   /* FIXME.  */
   }
