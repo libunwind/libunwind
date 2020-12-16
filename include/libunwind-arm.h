@@ -268,28 +268,42 @@ typedef struct unw_tdep_context
   }
 unw_tdep_context_t;
 
-/* There is no getcontext() on ARM.  Use a stub version which only saves GP
-   registers.  FIXME: Not ideal, may not be sufficient for all libunwind
-   use cases.  Stores pc+8, which is only approximately correct, really.  */
+/* FIXME: this is a stub version which only saves GP registers.  Not ideal, but
+   may be sufficient for all libunwind use cases.
+   In thumb mode, we return directly back to thumb mode on return (with bx), to
+   avoid altering any registers after unw_resume. */
 #ifndef __thumb__
-#define unw_tdep_getcontext(uc) (({                                     \
-  unw_tdep_context_t *unw_ctx = (uc);                                   \
-  register unsigned long *unw_base __asm__ ("r0") = unw_ctx->regs;      \
-  __asm__ __volatile__ (                                                \
-    "stmia %[base], {r0-r15}"                                           \
-    : : [base] "r" (unw_base) : "memory");                              \
-  }), 0)
+#define unw_tdep_getcontext(uc) ({					\
+  unw_tdep_context_t *unw_ctx = (uc);					\
+  register unsigned long *r0 __asm__ ("r0");				\
+  unsigned long *unw_base = unw_ctx->regs;				\
+  __asm__ __volatile__ (						\
+    "mov r0, #0\n"							\
+    "stmia %[base], {r0-r15}\n"						\
+    "nop\n" /* align return address to value stored by stmia */		\
+    : [r0] "=r" (r0) : [base] "r" (unw_base) : "memory");		\
+  (int)r0; })
 #else /* __thumb__ */
-#define unw_tdep_getcontext(uc) (({                                     \
-  unw_tdep_context_t *unw_ctx = (uc);                                   \
-  register unsigned long *unw_base __asm__ ("r0") = unw_ctx->regs;      \
-  __asm__ __volatile__ (                                                \
-    ".align 2\nbx pc\nnop\n.code 32\n"                                  \
-    "stmia %[base], {r0-r15}\n"                                         \
-    "orr %[base], pc, #1\nbx %[base]\n"                                 \
+#define unw_tdep_getcontext(uc) ({					\
+  unw_tdep_context_t *unw_ctx = (uc);					\
+  register unsigned long *r0 __asm__ ("r0");				\
+  unsigned long *unw_base = unw_ctx->regs;				\
+  __asm__ __volatile__ (						\
+    ".align 2\n"							\
+    "bx pc\n"								\
+    "nop\n"								\
+    ".code 32\n"							\
+    "mov r0, #0\n"							\
+    "stmia %[base], {r0-r14}\n"						\
+    "adr r0, ret%=+1\n"							\
+    "str r0, [%[base], #60]\n"						\
+    "orr r0, pc, #1\n"							\
+    "bx r0\n"								\
     ".code 16\n"							\
-    : [base] "+r" (unw_base) : : "memory", "cc");                       \
-  }), 0)
+    "mov r0, #0\n"							\
+    "ret%=:\n"								\
+    : [r0] "=r" (r0) : [base] "r" (unw_base) : "memory", "cc");		\
+  (int)r0; })
 #endif
 
 #include "libunwind-dynamic.h"
