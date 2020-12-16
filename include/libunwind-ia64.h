@@ -162,7 +162,7 @@ typedef ucontext_t unw_tdep_context_t;
 # define unw_tdep_getcontext            getcontext
 #else
 # define unw_tdep_getcontext            UNW_ARCH_OBJ (getcontext)
-  extern int unw_tdep_getcontext (unw_tdep_context_t *);
+  extern int unw_tdep_getcontext (unw_tdep_context_t *) __attribute__((returns_twice));
 #endif
 
 /* This is a helper routine to search an ia64 unwind table.  If the

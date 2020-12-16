@@ -149,6 +149,7 @@ typedef struct
 
 #include "libunwind-common.h"
 
+/* Returns -UNW_EUNSPEC on error (incidentally). */
 #define unw_tdep_getcontext  getcontext
 
 #define unw_tdep_is_fpreg    UNW_ARCH_OBJ(is_fpreg)

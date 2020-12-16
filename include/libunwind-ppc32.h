@@ -184,8 +184,9 @@ typedef ucontext_t unw_tdep_context_t;
 /* XXX this is not ideal: an application should not be prevented from
    using the "getcontext" name just because it's using libunwind.  We
    can't just use __getcontext() either, because that isn't exported
-   by glibc...  */
-#define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+   by glibc...
+   Returns -UNW_EUNSPEC on error (incidentally). */
+#define unw_tdep_getcontext(uc)         (getcontext (uc))
 
 #include "libunwind-dynamic.h"
 

@@ -116,7 +116,7 @@ unw_tdep_proc_info_t;
 #include "libunwind-common.h"
 
 #define unw_tdep_getcontext             UNW_ARCH_OBJ (getcontext)
-extern int unw_tdep_getcontext (unw_tdep_context_t *);
+extern int unw_tdep_getcontext (unw_tdep_context_t *) __attribute__((returns_twice));
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

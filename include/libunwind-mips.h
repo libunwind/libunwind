@@ -148,7 +148,7 @@ unw_tdep_proc_info_t;
    registers.  FIXME: Not ideal, may not be sufficient for all libunwind
    use cases.  */
 #define unw_tdep_getcontext UNW_ARCH_OBJ(getcontext)
-extern int unw_tdep_getcontext (ucontext_t *uc);
+extern int unw_tdep_getcontext (ucontext_t *uc) __attribute__((returns_twice));
 
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);
