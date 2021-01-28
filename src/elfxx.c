@@ -177,7 +177,7 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD && (phdr[i].p_offset & pagesize_aligment_mask) == mapoff)
       {
-        offset = segbase - phdr[i].p_vaddr;
+        offset = segbase - phdr[i].p_vaddr + (phdr[i].p_offset & (~pagesize_aligment_mask))
         break;
       }
 
