@@ -25,6 +25,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "libunwind_i.h"
 #include "unwind_i.h"
 #include "ucontext_i.h"
 
@@ -140,7 +141,7 @@ x86_64_sigreturn (unw_cursor_t *cursor)
   struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
   mcontext_t *sc_mcontext = &((ucontext_t*)sc)->uc_mcontext;
   /* Copy in saved uc - all preserved regs are at the start of sigcontext */
-  memcpy(sc_mcontext, &c->uc->uc_mcontext,
+  memcpy(sc_mcontext, &dwarf_get_uc(&c->dwarf)->uc_mcontext,
          DWARF_NUM_PRESERVED_REGS * sizeof(unw_word_t));
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
