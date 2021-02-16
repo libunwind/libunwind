@@ -249,6 +249,7 @@ case $target_arch in
   arm*) enable_cxx_exceptions=no;;
   mips*) enable_cxx_exceptions=no;;
   tile*) enable_cxx_exceptions=no;;
+  s390x*) enable_cxx_exceptions=no;;
   *) enable_cxx_exceptions=yes;;
 esac
 ])
