@@ -38,7 +38,7 @@ script:
 
 jobs:
   include:
-#    - <<: *linux-s390x
+    - <<: *linux-s390x
     - <<: *windows-remote-only
       env: TARGET=x86_64-linux-gnu    HOST=x64
     - <<: *windows-remote-only
