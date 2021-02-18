@@ -265,6 +265,9 @@ case "${target_arch}" in
   (aarch64) enable_debug_frame=yes;;
   (*)   enable_debug_frame=no;;
 esac])
+if test x$remote_only == xyes; then
+  enable_debug_frame=no
+fi
 if test x$enable_debug_frame = xyes; then
   AC_DEFINE([CONFIG_DEBUG_FRAME], [], [Enable Debug Frame])
 fi
