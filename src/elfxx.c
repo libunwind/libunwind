@@ -169,15 +169,15 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
   // PT_LOAD program headers p_offset however is not guaranteed to be aligned on a
   // page size, ld.lld generate libraries where this is not the case. So we must
   // make sure we compare both values with the same alignment.
-  unsigned long pagesize_aligment_mask = ~(((unsigned long)getpagesize()) - 1UL);
+  unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
 
   ehdr = ei->image;
   phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
 
   for (i = 0; i < ehdr->e_phnum; ++i)
-    if (phdr[i].p_type == PT_LOAD && (phdr[i].p_offset & pagesize_aligment_mask) == mapoff)
+    if (phdr[i].p_type == PT_LOAD && (phdr[i].p_offset & pagesize_alignment_mask) == mapoff)
       {
-        offset = segbase - phdr[i].p_vaddr + (phdr[i].p_offset & (~pagesize_aligment_mask));
+        offset = segbase - phdr[i].p_vaddr + (phdr[i].p_offset & (~pagesize_alignment_mask));
         break;
       }
 
