@@ -203,7 +203,15 @@ typedef struct
 	unsigned long uc_flags;
 	struct ucontext *uc_link;
 	stack_t uc_stack;
+#ifndef __ANDROID__
 	sigset_t uc_sigmask;
+#else
+	union {
+		sigset_t uc_sigmask;
+		sigset64_t uc_sigmask64;
+	};
+	char __padding[128 - sizeof(sigset_t)];
+#endif
 	struct unw_sigcontext uc_mcontext;
   } unw_tdep_context_t;
 
