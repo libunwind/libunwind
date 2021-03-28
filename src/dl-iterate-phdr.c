@@ -71,8 +71,8 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *info, size_t size, void *
       Elf_W(Ehdr) *ehdr = (Elf_W(Ehdr) *) start;
       Dl_info canonical_info;
 
-      if (mi.path[0] != '\0' && (flags & PROT_EXEC) != 0 && IS_ELF (*ehdr)
-          && dladdr (ehdr, &canonical_info) == 0
+      if (mi.path[0] != '\0' && (flags & PROT_READ) != 0 && IS_ELF (*ehdr)
+          && dladdr (ehdr, &canonical_info) != 0
           && ehdr == canonical_info.dli_fbase)
         {
           struct dl_phdr_info info;
