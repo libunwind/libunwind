@@ -11,6 +11,7 @@ several architecture/operating-system combinations:
 | Linux   | x86          | ✓      |
 | Linux   | ARM          | ✓      |
 | Linux   | AArch64      | ✓      |
+| Linux   | PPC32        | ✓      |
 | Linux   | PPC64        | ✓      |
 | Linux   | SuperH       | ✓      |
 | Linux   | IA-64        | ✓      |
