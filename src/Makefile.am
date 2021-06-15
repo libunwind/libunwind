@@ -247,6 +247,8 @@ noinst_HEADERS += ia64/init.h ia64/offsets.h ia64/regs.h		    \
 	ia64/ucontext_i.h ia64/unwind_decoder.h ia64/unwind_i.h
 libunwind_la_SOURCES_ia64_common = $(libunwind_la_SOURCES_common)	    \
 	ia64/regname.c
+libunwind_la_EXTRAS_ia64 = ia64/mk_cursor_i ia64/mk_Lcursor_i.c	    \
+	ia64/mk_Gcursor_i.c
 
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_ia64 = $(libunwind_la_SOURCES_ia64_common)		     \
@@ -747,6 +749,7 @@ EXTRA_DIST =	$(libunwind_la_SOURCES_aarch64)			\
 		$(libunwind_la_SOURCES_arm)			\
 		$(libunwind_la_SOURCES_hppa)			\
 		$(libunwind_la_SOURCES_ia64)			\
+		$(libunwind_la_EXTRAS_ia64)			\
 		$(libunwind_la_SOURCES_mips)			\
 		$(libunwind_la_SOURCES_sh)			\
 		$(libunwind_la_SOURCES_x86)			\
