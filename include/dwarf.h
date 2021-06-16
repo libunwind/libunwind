@@ -140,7 +140,7 @@ typedef enum
 dwarf_expr_op_t;
 
 #define DWARF_CIE_VERSION       3
-#define DWARF_CIE_VERSION_MAX   4
+#define DWARF_CIE_VERSION_MAX   3
 
 #define DWARF_CFA_OPCODE_MASK   0xc0
 #define DWARF_CFA_OPERAND_MASK  0x3f
