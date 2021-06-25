@@ -339,6 +339,26 @@ libunwind_tilegx_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)	    \
 	tilegx/Gglobal.c tilegx/Ginit.c tilegx/Ginit_local.c tilegx/Ginit_remote.c	    \
 	tilegx/Gis_signal_frame.c tilegx/Gregs.c tilegx/Gresume.c tilegx/Gstep.c
 
+# The list of files that go info libunwind and libunwind-riscv:
+noinst_HEADERS += riscv/init.h riscv/offsets.h riscv/unwind_i.h
+libunwind_la_SOURCES_riscv_common = $(libunwind_la_SOURCES_common)	    \
+	riscv/is_fpreg.c riscv/regname.c
+
+# The list of files that go into libunwind:
+libunwind_la_SOURCES_riscv = $(libunwind_la_SOURCES_riscv_common)		    \
+	$(libunwind_la_SOURCES_local)					    \
+	riscv/getcontext.S riscv/setcontext.S \
+	riscv/Lapply_reg_state.c riscv/Lreg_states_iterate.c		    \
+	riscv/Lcreate_addr_space.c riscv/Lget_proc_info.c riscv/Lget_save_loc.c   \
+	riscv/Lglobal.c riscv/Linit.c riscv/Linit_local.c riscv/Linit_remote.c  \
+	riscv/Lis_signal_frame.c riscv/Lregs.c riscv/Lresume.c riscv/Lstep.c
+
+libunwind_riscv_la_SOURCES_riscv = $(libunwind_la_SOURCES_riscv_common)	    \
+	$(libunwind_la_SOURCES_generic)					    \
+	riscv/Gapply_reg_state.c riscv/Greg_states_iterate.c			     \
+	riscv/Gcreate_addr_space.c riscv/Gget_proc_info.c riscv/Gget_save_loc.c   \
+	riscv/Gglobal.c riscv/Ginit.c riscv/Ginit_local.c riscv/Ginit_remote.c	    \
+	riscv/Gis_signal_frame.c riscv/Gregs.c riscv/Gresume.c riscv/Gstep.c
 
 # The list of files that go both into libunwind and libunwind-x86:
 noinst_HEADERS += x86/init.h x86/offsets.h x86/unwind_i.h
@@ -642,6 +662,18 @@ if !REMOTE_ONLY
 endif
  libunwind_setjmp_la_SOURCES += tilegx/siglongjmp.S
 else
+if ARCH_RISCV
+ lib_LTLIBRARIES += libunwind-riscv.la
+ libunwind_la_SOURCES = $(libunwind_la_SOURCES_riscv)
+ libunwind_riscv_la_SOURCES = $(libunwind_riscv_la_SOURCES_riscv)
+ libunwind_riscv_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
+ libunwind_riscv_la_LIBADD = libunwind-dwarf-generic.la
+ libunwind_riscv_la_LIBADD += libunwind-elf64.la
+if !REMOTE_ONLY
+ libunwind_riscv_la_LIBADD += libunwind.la -lc
+endif
+ libunwind_setjmp_la_SOURCES += riscv/siglongjmp.S
+else
 if ARCH_X86
  lib_LTLIBRARIES += libunwind-x86.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_x86) $(libunwind_x86_la_SOURCES_os)
@@ -719,6 +751,7 @@ endif # ARCH_PPC64
 endif # ARCH_PPC32
 endif # ARCH_X86_64
 endif # ARCH_X86
+endif # ARCH_RISCV
 endif # ARCH_TILEGX
 endif # ARCH_MIPS
 endif # ARCH_HPPA
