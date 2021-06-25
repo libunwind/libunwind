@@ -207,10 +207,7 @@ trace_cache_get (void)
    RIP using current CFA, RBP and RSP values.  Modifies CURSOR to
    that location, performs one unw_step(), and fills F with what
    was discovered about the location.  Returns F.
-
-   FIXME: This probably should tell DWARF handling to never evaluate
-   or use registers other than RBP, RSP and RIP in case there is
-   highly unusual unwind info which uses these creatively. */
+*/
 static unw_tdep_frame_t *
 trace_init_addr (unw_tdep_frame_t *f,
                  unw_cursor_t *cursor,
@@ -238,6 +235,9 @@ trace_init_addr (unw_tdep_frame_t *f,
      their desired values. Then perform the step. */
   d->ip = rip + d->use_prev_instr;
   d->cfa = cfa;
+  for(int i = 0; i < DWARF_NUM_PRESERVED_REGS; i++) {
+    d->loc[i] = DWARF_NULL_LOC;
+  }
   d->loc[UNW_X86_64_RIP] = DWARF_REG_LOC (d, UNW_X86_64_RIP);
   d->loc[UNW_X86_64_RBP] = DWARF_REG_LOC (d, UNW_X86_64_RBP);
   d->loc[UNW_X86_64_RSP] = DWARF_REG_LOC (d, UNW_X86_64_RSP);
