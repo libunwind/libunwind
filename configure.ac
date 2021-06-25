@@ -97,6 +97,7 @@ AC_DEFUN([SET_ARCH],[
         [sh*],[$2=sh],
         [amd64],[$2=x86_64],
         [tile*],[$2=tilegx],
+        [riscv*],[$2=riscv],
         [$2=$1])
 ]) dnl SET_ARCH
 
@@ -119,7 +120,7 @@ esac
 
 AC_ARG_ENABLE(coredump,
 	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
-        [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*], [enable_coredump=yes], [enable_coredump=no])]
+        [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*|riscv*], [enable_coredump=yes], [enable_coredump=no])]
 )
 
 AC_MSG_CHECKING([if we should build libunwind-coredump])
@@ -187,6 +188,7 @@ AM_CONDITIONAL(ARCH_PPC64, test x$target_arch = xppc64)
 AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
 AM_CONDITIONAL(ARCH_TILEGX, test x$target_arch = xtilegx)
 AM_CONDITIONAL(ARCH_S390X, test x$target_arch = xs390x)
+AM_CONDITIONAL(ARCH_RISCV, test x$target_arch = xriscv)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
 AM_CONDITIONAL(OS_HPUX, expr x$target_os : xhpux >/dev/null)
 AM_CONDITIONAL(OS_FREEBSD, expr x$target_os : xfreebsd >/dev/null)
@@ -197,7 +199,7 @@ AC_MSG_CHECKING([for ELF helper width])
 case "${target_arch}" in
 (arm|hppa|ppc32|x86|sh) use_elf32=yes; AC_MSG_RESULT([32]);;
 (aarch64|ia64|ppc64|x86_64|s390x|tilegx)  use_elf64=yes; AC_MSG_RESULT([64]);;
-(mips)                 use_elfxx=yes; AC_MSG_RESULT([xx]);;
+(mips|riscv)                 use_elfxx=yes; AC_MSG_RESULT([xx]);;
 *)                     AC_MSG_ERROR([Unknown ELF target: ${target_arch}])
 esac
 AM_CONDITIONAL(USE_ELF32, [test x$use_elf32 = xyes])
