@@ -57,7 +57,7 @@ _UCD_access_reg (unw_addr_space_t as,
 #elif defined(UNW_TARGET_S390X)
   if (regnum > UNW_S390X_R15)
     goto badreg;
-#elif defined(UNW_TARGET_IA64)
+#elif defined(UNW_TARGET_IA64) || defined(UNW_TARGET_HPPA) || defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
   if (regnum >= ARRAY_SIZE(ui->prstatus->pr_reg))
     goto badreg;
 #else
