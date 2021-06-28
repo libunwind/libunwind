@@ -2,20 +2,20 @@ sudo: required
 language: c
 compiler: gcc
 env:
-- TARGET=x86_64-linux-gnu
-- TARGET=x86-linux-gnu
-- TARGET=arm-linux-gnueabihf
-- TARGET=aarch64-linux-gnu
-- TARGET=mipsel-unknown-linux-gnu
+- HOST=x86_64-linux-gnu
+- HOST=x86-linux-gnu
+- HOST=arm-linux-gnueabihf
+- HOST=aarch64-linux-gnu
+- HOST=mipsel-linux-gnu
 # Currently experiencing build failures here
-#- TARGET=powerpc64-linux-gnu
+#- HOST=powerpc64-linux-gnu
 
 linux-s390x: &linux-s390x
   os: linux
   arch: s390x
-  env: TARGET=s390x-linux-gnu
+  env: BUILD=s390x-linux-gnu HOST=s390x-linux-gnu
   script:
-    - ./autogen.sh
+    - autoreconf -i
     - ./configure
     - make -j32
     - ulimit -c unlimited
@@ -25,23 +25,39 @@ windows-remote-only: &windows-remote-only
   os: windows
   compiler: msvc
   script:
-  - cmake -G "Visual Studio 15 2017" -A ${HOST} -S . -B bin/windows-${HOST}/${TARGET}
-  - cmake --build bin/windows-${HOST}/${TARGET}
+  - cmake -G "Visual Studio 15 2017" -A ${WINHOST} -S . -B bin/windows-${WINHOST}/${TARGET}
+  - cmake --build bin/windows-${WINHOST}/${TARGET}
 
 script:
-- ./autogen.sh
-- ./configure --target=$TARGET --host=$HOST
+- |
+  BUILD=x86_64-linux-gnu
+  export BUILD
+  if [ $HOST = 'x86-linux-gnu' ]; then
+    sudo apt-get update 
+    sudo apt-get install -yqq -o=Dpkg::Use-Pty=0 g++-multilib
+    CFLAGS=" -m32"
+    CXXFLAGS=" -m32"
+    export CFLAGS CXXFLAGS
+  elif [ $HOST != 'x86_64-linux-gnu' ]; then
+    sudo apt-get update
+    sudo apt-get install -yqq -o=Dpkg::Use-Pty=0 g++-$HOST
+    CC=$HOST-gcc
+    CXX=$HOST-g++
+    export CC CXX
+  fi
+- autoreconf -i
+- ./configure CC=$CC CXX=$CXX CFLAGS="$CFLAGS" CXXFLAGS="$CXXFLAGS" --build=$BUILD --host=$HOST
 - make -j32
 - sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
 - ulimit -c unlimited
-- if [ $TARGET == 'x86_64-linux-gnu' ]; then make check -j32; fi
+- if [ $HOST = 'x86_64-linux-gnu' ]; then make check -j32; fi
 
 jobs:
   include:
     - <<: *linux-s390x
     - <<: *windows-remote-only
-      env: TARGET=x86_64-linux-gnu    HOST=x64
+      env: TARGET=x86_64-linux-gnu    WINHOST=x64
     - <<: *windows-remote-only
-      env: TARGET=arm-linux-gnueabihf HOST=Win32
+      env: TARGET=arm-linux-gnueabihf WINHOST=Win32
     - <<: *windows-remote-only
-      env: TARGET=aarch64-linux-gnu   HOST=x64
+      env: TARGET=aarch64-linux-gnu   WINHOST=x64
