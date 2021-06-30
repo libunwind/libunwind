@@ -149,7 +149,7 @@ x86_64_sigreturn (unw_cursor_t *cursor)
   __asm__ __volatile__ ("mov %0, %%rsp;"
                         "mov %1, %%rax;"
                         "syscall"
-                        :: "r"(sc), "i"(SYS_rt_sigreturn)
+                        :: "r"((uint64_t)sc), "i"(SYS_rt_sigreturn)
                         : "memory");
   abort();
 }
