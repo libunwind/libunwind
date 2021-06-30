@@ -55,7 +55,7 @@ such dependencies
 In general, this library can be built and installed with the following
 commands:
 
-    $ ./autogen.sh # Needed only for building from git. Depends on libtool.
+    $ autoreconf -i # Needed only for building from git. Depends on libtool.
     $ ./configure
     $ make
     $ make install prefix=PREFIX
