@@ -52,6 +52,8 @@ script:
 - ulimit -c unlimited
 - if [ $HOST = 'x86_64-linux-gnu' ]; then make check -j32; fi
 
+after_failure: cat tests/test-suite.log 2>/dev/null
+
 jobs:
   include:
     - <<: *linux-s390x
