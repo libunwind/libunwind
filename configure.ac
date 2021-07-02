@@ -213,12 +213,6 @@ fi
 AM_CONDITIONAL(USE_DWARF, [test x$use_dwarf = xyes])
 AC_MSG_RESULT([$use_dwarf])
 
-if test x$target_arch = xppc64; then
-        libdir='${exec_prefix}/lib64'
-        AC_MSG_NOTICE([PowerPC64 detected, lib will be installed ${libdir}]);
-        AC_SUBST([libdir])
-fi
-
 AC_MSG_CHECKING([whether to restrict build to remote support])
 if test x$target_arch != x$host_arch; then
   CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
