@@ -28,6 +28,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stddef.h>
 
+#ifdef HAVE_ASM_PTRACE_H
+# include <asm/ptrace.h>
+#endif
+
 #ifdef HAVE_ASM_PTRACE_OFFSETS_H
 # include <asm/ptrace_offsets.h>
 #endif
