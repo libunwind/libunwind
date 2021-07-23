@@ -191,17 +191,19 @@ sighandler (int signal, void *siginfo UNUSED, void *context)
       }
 # endif
 #elif UNW_TARGET_X86
-#if defined __linux__ || defined __sun
+# if defined __linux__ || defined __sun
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_EIP]);
-#elif defined __FreeBSD__
+# elif defined __FreeBSD__
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_eip);
-#endif
+# endif
 #elif UNW_TARGET_X86_64
-#if defined __linux__ || defined __sun
+# if defined __linux__ || defined __sun
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.gregs[REG_RIP]);
-#elif defined __FreeBSD__
+# elif defined __FreeBSD__
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_rip);
-#endif
+# elif defined __HAIKU__
+      printf (" @ %lx", (unsigned long) uc->uc_mcontext.rip);
+# endif
 #endif
       printf ("\n");
     }

@@ -33,6 +33,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #pragma weak pthread_getspecific
 #pragma weak pthread_setspecific
 
+#ifdef __HAIKU__
+#define PTHREAD_DESTRUCTOR_ITERATIONS 0
+#endif
+
 /* Initial hash table size. Table expands by 2 bits (times four). */
 #define HASH_MIN_BITS 14
 

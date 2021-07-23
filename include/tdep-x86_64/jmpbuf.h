@@ -41,4 +41,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define JB_MASK_SAVED   0
 #define JB_MASK         9
 
+#elif defined __HAIKU__
+
+#define JB_SP			1
+#define JB_RP			0
+/* Not sure about these for Haiku, just copy FreeBSD for now */
+#define JB_MASK_SAVED	0
+#define JB_MASK			9
+
 #endif

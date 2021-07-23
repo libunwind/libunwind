@@ -52,9 +52,9 @@ endif #!ARCH_IA64
 			Gtest-trace Ltest-trace				 \
 			Ltest-init-local-signal				 \
 			Ltest-mem-validate				 \
-			test-async-sig test-flush-cache test-init-remote \
+			test-flush-cache test-init-remote \
 			test-mem test-reg-state Ltest-varargs		 \
-			Ltest-nomalloc Ltest-nocalloc Lrs-race
+			Ltest-nomalloc Ltest-nocalloc
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 

@@ -88,6 +88,8 @@ struct cursor
         X86_64_SCF_FREEBSD_SIGFRAME,    /* FreeBSD signal frame */
         X86_64_SCF_FREEBSD_SYSCALL,     /* FreeBSD syscall */
         X86_64_SCF_SOLARIS_SIGFRAME,    /* illumos/Solaris signal frame */
+        X86_64_SCF_HAIKU_SIGFRAME,		/* Haiku signal frame */
+        X86_64_SCF_HAIKU_SYSCALL,		/* Haiku syscall */
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;

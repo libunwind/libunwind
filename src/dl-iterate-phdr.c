@@ -23,13 +23,17 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#if defined(__ANDROID__) && __ANDROID_API__ < 21
+#if (defined(__ANDROID__) && __ANDROID_API__ < 21) || defined(__HAIKU__)
 
 #include <dlfcn.h>
 #include <link.h>
 
 #include "libunwind_i.h"
+#ifndef __HAIKU__
 #include "os-linux.h"
+#else
+#include "os-haiku.h"
+#endif
 
 #ifndef IS_ELF
 /* Copied from NDK header. */
@@ -63,15 +67,20 @@ dl_iterate_phdr (int (*callback) (struct dl_phdr_info *info, size_t size, void *
   if (libc_impl != NULL)
     return libc_impl (callback, data);
 
+#ifdef __HAIKU__
+  if (maps_init (&mi) < 0)
+    return -1;
+#else
   if (maps_init (&mi, getpid()) < 0)
     return -1;
+#endif
 
   while (maps_next (&mi, &start, &end, &offset, &flags))
     {
       Elf_W(Ehdr) *ehdr = (Elf_W(Ehdr) *) start;
       Dl_info canonical_info;
 
-      if (mi.path[0] != '\0' && (flags & PROT_READ) != 0 && IS_ELF (*ehdr)
+      if ((flags & PROT_READ) != 0 && IS_ELF (*ehdr)
           && dladdr (ehdr, &canonical_info) != 0
           && ehdr == canonical_info.dli_fbase)
         {

@@ -259,6 +259,7 @@ extern int unwi_dyn_validate_cache (unw_addr_space_t as, void *arg);
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
 
+#define UNW_DEBUG 1
 #if UNW_DEBUG
 #define unwi_debug_level                UNWI_ARCH_OBJ(debug_level)
 extern long unwi_debug_level;
@@ -266,7 +267,7 @@ extern long unwi_debug_level;
 # include <stdio.h>
 # define Debug(level, /* format */ ...)                                 \
 do {                                                                    \
-  if (unwi_debug_level >= level)                                        \
+  if (1)                                        \
     {                                                                   \
       int _n = level;                                                   \
       if (_n > 16)                                                      \

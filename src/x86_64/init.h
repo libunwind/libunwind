@@ -36,6 +36,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define REG_INIT_LOC(c, rlc, ruc) \
     DWARF_LOC ((unw_word_t) &dwarf_get_uc(&c->dwarf)->uc_mcontext.mc_ ## rlc, 0)
 
+#elif defined UNW_LOCAL_ONLY && defined __HAIKU__
+# define REG_INIT_LOC(c, rlc, ruc) \
+	DWARF_LOC ((unw_word_t) &dwarf_get_uc(&c->dwarf)->uc_mcontext.rlc, 0)
+
 #else
 # define REG_INIT_LOC(c, rlc, ruc) \
     DWARF_REG_LOC (&c->dwarf, UNW_X86_64_ ## ruc)

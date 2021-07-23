@@ -84,6 +84,14 @@ SET(libunwind_la_SOURCES_os_solaris_local
 # Nothing
 )
 
+SET(libunwind_la_SOURCES_os_haiku
+	os-haiku.c
+)
+
+SET(libunwind_la_SOURCES_os_haiku_local
+# Nothing
+)
+
 if(UNW_CMAKE_TARGET_LINUX)
     SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_linux})
     SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_linux_local})
@@ -110,11 +118,18 @@ elseif(UNW_CMAKE_TARGET_FREEBSD)
     list(APPEND libunwind_coredump_la_SOURCES   coredump/_UCD_access_reg_freebsd.c
                                                 coredump/_UCD_get_threadinfo_prstatus.c
                                                 coredump/_UCD_get_mapinfo_generic.c)
+elseif(UNW_CMAKE_TARGET_HAIKU)
+    SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_haiku})
+    SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_haiku_local})
+    SET(libunwind_la_SOURCES_x86_64_os          x86_64/Gos-haiku.c)
+    SET(libunwind_la_SOURCES_x86_64_os_local    x86_64/Los-haiku.c)
+
 elseif(UNW_CMAKE_HOST_SUNOS)
     SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_solaris})
     SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_solaris_local})
     SET(libunwind_la_SOURCES_x86_64_os          x86_64/Gos-solaris.c)
     SET(libunwind_la_SOURCES_x86_64_os_local    x86_64/Los-solaris.c)
+
 endif()
 
 # List of arch-independent files needed by both local-only and generic
