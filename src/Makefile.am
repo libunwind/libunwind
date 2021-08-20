@@ -340,7 +340,7 @@ libunwind_tilegx_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)	    \
 	tilegx/Gis_signal_frame.c tilegx/Gregs.c tilegx/Gresume.c tilegx/Gstep.c
 
 # The list of files that go info libunwind and libunwind-riscv:
-noinst_HEADERS += riscv/init.h riscv/offsets.h riscv/unwind_i.h
+noinst_HEADERS += riscv/init.h riscv/offsets.h riscv/unwind_i.h riscv/asm.h
 libunwind_la_SOURCES_riscv_common = $(libunwind_la_SOURCES_common)	    \
 	riscv/is_fpreg.c riscv/regname.c
 
