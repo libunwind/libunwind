@@ -231,6 +231,7 @@ typedef enum
     DWARF_WHERE_REG,            /* register saved in another register */
     DWARF_WHERE_EXPR,           /* register saved */
     DWARF_WHERE_VAL_EXPR,       /* register has computed value */
+    DWARF_WHERE_CFA,            /* register is set to the computed cfa value */
   }
 dwarf_where_t;
 
@@ -313,7 +314,7 @@ typedef struct dwarf_cursor
     void *as_arg;               /* argument to address-space callbacks */
     unw_addr_space_t as;        /* reference to per-address-space info */
 
-    unw_word_t cfa;     /* canonical frame address; aka frame-/stack-pointer */
+    unw_word_t cfa;     /* canonical frame address; aka frame-pointer */
     unw_word_t ip;              /* instruction pointer */
     unw_word_t args_size;       /* size of arguments */
     unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
