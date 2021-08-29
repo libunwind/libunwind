@@ -223,7 +223,7 @@ unw_step (unw_cursor_t *cursor)
                   Debug (2, "RIP fixup didn't work, falling back\n");
                   unw_word_t rbp1 = 0;
                   rbp_loc = DWARF_LOC(rbp, 0);
-                  rsp_loc = DWARF_NULL_LOC;
+                  rsp_loc = DWARF_VAL_LOC(c, rbp + 16);
                   rip_loc = DWARF_LOC (rbp + 8, 0);
                   ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
                   Debug (1, "[RBP=0x%lx] = 0x%lx (cfa = 0x%lx) -> 0x%lx\n",

@@ -133,6 +133,7 @@ x86_64_handle_signal_frame (unw_cursor_t *cursor)
     c->dwarf.loc[RCX] = c->dwarf.loc[R10];
     /*  rsp_loc = DWARF_LOC(c->dwarf.cfa - 8, 0);       */
     /*  rbp_loc = c->dwarf.loc[RBP];                    */
+    c->dwarf.loc[RSP] = DWARF_VAL_LOC (c, c->dwarf.cfa + 8);
     c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
     ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
     Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
