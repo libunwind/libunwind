@@ -351,7 +351,7 @@ AC_MSG_RESULT([$intel_compiler])
 
 AC_MSG_CHECKING([if building on Solaris then define __EXTENSIONS__ macro])
 if $OS_SOLARIS; then
-  CFLAGS="${CFLAGS} -D__EXTENSIONS__"
+  CFLAGS="${CFLAGS} -D__EXTENSIONS__ -lproc"
   AC_MSG_RESULT([yes])
 else
   AC_MSG_RESULT([no])

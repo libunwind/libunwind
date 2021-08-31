@@ -27,38 +27,24 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 
 #include "libunwind_i.h"
-#include "os-linux.h" // using linux header for map_iterator implementation
+#include "os-solaris.h"
 
 int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                     unsigned long *segbase, unsigned long *mapoff,
                     char *path, size_t pathlen)
 {
-  struct map_iterator mi;
-  int found = 0, rc;
-  unsigned long hi;
-
-  if (maps_init (&mi, pid) < 0)
-    return -1;
-
-  while (maps_next (&mi, segbase, &hi, mapoff, NULL))
-    if (ip >= *segbase && ip < hi)
-      {
-        found = 1;
-        break;
-      }
-
-  if (!found)
+  char *elf_path = get_elf_path(pid, ip);
+  if (elf_path == NULL)
     {
-      maps_close (&mi);
       return -1;
     }
   if (path)
     {
-      strncpy(path, mi.path, pathlen);
+      strncpy(path, elf_path, pathlen);
     }
-  rc = elf_map_image (ei, mi.path);
-  maps_close (&mi);
+  int rc = elf_map_image (ei, elf_path);
+  free(elf_path);
   return rc;
 }
 
