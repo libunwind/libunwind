@@ -101,7 +101,7 @@ unw_caching_policy_t;
 
 typedef enum
   {
-    UNW_INIT_SIGNAL_FRAME = 1,          /* We know this is a signal frame */
+    UNW_INIT_SIGNAL_FRAME = 1           /* We know this is a signal frame */
   }
 unw_init_local2_flags_t;
 
