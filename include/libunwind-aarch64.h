@@ -168,7 +168,7 @@ typedef enum
 
     UNW_TDEP_IP = UNW_AARCH64_X30,
     UNW_TDEP_SP = UNW_AARCH64_SP,
-    UNW_TDEP_EH = UNW_AARCH64_X0,
+    UNW_TDEP_EH = UNW_AARCH64_X0
 
   }
 aarch64_regnum_t;
