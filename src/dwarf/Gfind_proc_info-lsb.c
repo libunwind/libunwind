@@ -966,7 +966,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
   if (as == unw_local_addr_space)
     {
       e = lookup (table, table_len, ip - ip_base - di->load_offset);
-      if (e && &e[1] < &table[table_len])
+      if (e && &e[1] < &table[table_len / sizeof (unw_word_t)])
 	last_ip = e[1].start_ip_offset + ip_base + di->load_offset;
       else
 	last_ip = di->end_ip;
