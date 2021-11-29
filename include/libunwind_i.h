@@ -346,6 +346,10 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
 
 #include "tdep/libunwind_i.h"
 
+#ifndef TDEP_DWARF_SP
+#define TDEP_DWARF_SP UNW_TDEP_SP
+#endif
+
 #ifndef tdep_get_func_addr
 # define tdep_get_func_addr(as,addr,v)          (*(v) = addr, 0)
 #endif
