@@ -443,7 +443,7 @@ AC_SUBST(DLLIB)
 AC_SUBST(BACKTRACELIB)
 
 AC_PATH_PROG([LATEX2MAN],[latex2man])
-if test "x$LATEX2MAN" = "x"; then
+if test "x$LATEX2MAN" = "x" && test "x$enable_documentation" = "xyes"; then
   AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
   enable_documentation="no";
 fi
