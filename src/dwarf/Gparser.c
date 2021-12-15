@@ -960,13 +960,11 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 	  cache->links[c->prev_rs].hint = index + 1;
 	  c->prev_rs = index;
 	}
+      if (ret >= 0)
+        tdep_reuse_frame (c, cache->links[index].signal_frame);
       put_rs_cache (c->as, cache, &saved_mask);
     }
-  if (ret < 0)
-      return ret;
-  if (cache)
-    tdep_reuse_frame (c, cache->links[index].signal_frame);
-  return 0;
+  return ret;
 }
 
 /* The function finds the saved locations and applies the register
