@@ -123,6 +123,9 @@ typedef enum
     UNW_AARCH64_PC,
     UNW_AARCH64_PSTATE,
 
+    /* Pseudo-register */
+    UNW_AARCH64_RA_SIGN_STATE = 34,
+
     /* 128-bit FP/Advanced SIMD registers.  */
     UNW_AARCH64_V0 = 64,
     UNW_AARCH64_V1,
