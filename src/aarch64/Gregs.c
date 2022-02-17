@@ -88,6 +88,9 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_AARCH64_PSTATE:
       loc = c->dwarf.loc[reg];
       break;
+    case UNW_AARCH64_RA_SIGN_STATE:
+      Debug (1, "Reading from ra sign state not supported: %u\n", reg);
+      return -UNW_EBADREG;
 
     case UNW_AARCH64_SP:
       if (write)
