@@ -183,7 +183,7 @@ typedef struct unw_tdep_save_loc
   }
 unw_tdep_save_loc_t;
 
-#ifdef __linux__
+#if defined(__linux__) || defined(__FreeBSD__)
 /* On AArch64, we can directly use ucontext_t as the unwind context,
  * however, the __reserved struct is quite large: tune it down to only
  * the necessary used fields.  */
