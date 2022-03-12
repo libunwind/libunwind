@@ -23,6 +23,8 @@ This library supports several architecture/operating-system combinations:
 | FreeBSD | x86-64       | ✓      |
 | FreeBSD | x86          | ✓      |
 | FreeBSD | AArch64      | ✓      |
+| FreeBSD | PPC32        | ✓      |
+| FreeBSD | PPC64        | ✓      |
 | Solaris | x86-64       | ✓      |
 
 ## Libc Requirements
