@@ -36,7 +36,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <asm/ptrace_offsets.h>
 #endif
 
-#if defined(__powerpc64__) && defined(__FreeBSD__)
+#if defined(__powerpc__) && defined(__FreeBSD__)
 #define PT_R0   0
 #define PT_R1   1
 #define PT_R2   2
@@ -70,10 +70,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define PT_R30  30
 #define PT_R31  31
 #define PT_NIP  32
+#define PT_CCR  33
 #define PT_CTR  35
 #define PT_LNK  36
 #define PT_XER  37
 #define PT_FPR0  48
+#define PT_FPSCR (PT_FPR0 + 2*32 + 1)
 #define PT_VR0  82
 #define PT_VSCR (PT_VR0 + 32*2 + 1)
 #define PT_VRSAVE (PT_VR0 + 33*2)
