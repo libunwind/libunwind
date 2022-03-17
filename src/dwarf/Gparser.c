@@ -994,7 +994,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 static int
 find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 {
-  dwarf_reg_state_t *rs;
+  dwarf_reg_state_t *rs = NULL;
   struct dwarf_rs_cache *cache;
   int ret = 0;
   intrmask_t saved_mask;
@@ -1070,6 +1070,7 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
      args_size, and set cursor appropriately.  Only
      needed for unw_resume */
   dwarf_state_record_t sr;
+  sr.args_size = 0;
   int ret;
 
   /* Lookup it up the slow way... */
