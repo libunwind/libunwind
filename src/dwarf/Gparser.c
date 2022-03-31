@@ -778,6 +778,15 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   int i, ret;
   void *arg;
 
+  /* In the case that we have incorrect CFI, the return address column may be
+   * outside the valid range of data and will read invalid data.  Protect
+   * against the errant read and indicate that we have a bad frame.  */
+  if (rs->ret_addr_column >= DWARF_NUM_PRESERVED_REGS) {
+    Dprintf ("%s: return address entry %zu is outside of range of CIE",
+             __FUNCTION__, rs->ret_addr_column);
+    return -UNW_EBADFRAME;
+  }
+
   prev_ip = c->ip;
   prev_cfa = c->cfa;
 
