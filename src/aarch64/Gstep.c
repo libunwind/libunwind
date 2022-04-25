@@ -122,6 +122,8 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.loc[UNW_AARCH64_SP]  = DWARF_LOC (sc_addr + LINUX_SC_SP_OFF, 0);
   c->dwarf.loc[UNW_AARCH64_PC]  = DWARF_LOC (sc_addr + LINUX_SC_PC_OFF, 0);
   c->dwarf.loc[UNW_AARCH64_PSTATE]  = DWARF_LOC (sc_addr + LINUX_SC_PSTATE_OFF, 0);
+  for (i = 0; i < 32; ++i)
+    c->dwarf.loc[UNW_AARCH64_V0 + i] = DWARF_LOC (sc_addr + LINUX_SC_V0_OFF + i * 0x10, 0);
 
   /* Set SP/CFA and PC/IP.  */
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &c->dwarf.cfa);
