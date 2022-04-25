@@ -253,7 +253,7 @@ unw_step (unw_cursor_t *cursor)
             }
           /* Mark all registers unsaved */
           for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
-          c->dwarf.loc[i] = DWARF_NULL_LOC;
+            c->dwarf.loc[i] = DWARF_NULL_LOC;
 
           c->dwarf.loc[RBP] = rbp_loc;
           c->dwarf.loc[RSP] = rsp_loc;
