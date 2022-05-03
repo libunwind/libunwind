@@ -86,6 +86,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_AARCH64_X29:
     case UNW_AARCH64_PC:
     case UNW_AARCH64_PSTATE:
+    case UNW_AARCH64_VG:
       loc = c->dwarf.loc[reg];
       break;
     case UNW_AARCH64_RA_SIGN_STATE:

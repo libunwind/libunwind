@@ -46,6 +46,15 @@ unw_addr_space_t unw_local_addr_space = &local_addr_space;
 static inline void *
 uc_addr (unw_tdep_context_t *uc, int reg)
 {
+  if (reg == UNW_AARCH64_VG)
+    {
+      /*
+       * Support for saving the vector length in the context needs to be
+       * added to get_context() for this path to work.
+       */
+      Debug(1, "Accessing VG register from context is not supported\n");
+      return NULL;
+    }
 #ifdef __FreeBSD__
   if (reg >= UNW_AARCH64_X0 && reg < UNW_AARCH64_X30)
     return &uc->uc_mcontext.mc_gpregs.gp_x[reg];
