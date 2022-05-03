@@ -122,6 +122,9 @@ typedef enum
     /* Pseudo-register */
     UNW_AARCH64_RA_SIGN_STATE = 34,
 
+    /* SVE Vector Granule pseudo register */
+    UNW_AARCH64_VG = 46,
+
     /* 128-bit FP/Advanced SIMD registers.  */
     UNW_AARCH64_V0 = 64,
     UNW_AARCH64_V1,
