@@ -28,7 +28,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <execinfo.h>
 #include <sys/types.h>
+#if HAVE_SYS_UCONTEXT_H
 #include <sys/ucontext.h>
+#endif
 #include <unistd.h>
 
 #ifdef HAVE_SYS_PTRACE_H

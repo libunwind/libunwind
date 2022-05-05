@@ -36,7 +36,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#if HAVE_UCONTEXT_H
 #include <ucontext.h>
+#endif
 #include <unistd.h>
 #include <libunwind.h>
 
