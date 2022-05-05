@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "libunwind_i.h"
 #include "os-linux.h"
 
+#define FULL_PATH_BUFF_SZ 1024
+
 int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                     unsigned long *segbase, unsigned long *mapoff,
@@ -44,8 +46,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   char root[sizeof ("/proc/0123456789/root")], *cp;
   char *full_path;
   struct stat st;
-  const unsigned long full_path_buff_sz = 1024;
-  char                full_path_buff[full_path_buff_sz];
+  char                full_path_buff[FULL_PATH_BUFF_SZ];
 
   if (maps_init (&mi, pid) < 0)
     return -1;
@@ -74,13 +75,13 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   if (!stat(root, &st) && S_ISDIR(st.st_mode))
     {
       unsigned long _len = strlen(root) + strlen(mi.path) + 1;
-      if(_len >= full_path_buff_sz)
+      if(_len >= FULL_PATH_BUFF_SZ)
         {
           full_path = (char*) malloc(_len);
         }
       else
         {
-          snprintf(full_path_buff, full_path_buff_sz, "%s%s", root, mi.path);
+          snprintf(full_path_buff, FULL_PATH_BUFF_SZ, "%s%s", root, mi.path);
           full_path = &full_path_buff[0];
         }
       if (!full_path)
