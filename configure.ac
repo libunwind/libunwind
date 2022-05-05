@@ -123,6 +123,13 @@ AC_ARG_ENABLE(coredump,
         [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*|riscv*], [enable_coredump=yes], [enable_coredump=no])]
 )
 
+# Disable coredump if prstatus is missing
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if !defined(HAVE_STRUCT_ELF_PRSTATUS) && !defined(HAVE_STRUCT_PRSTATUS)
+#error choke
+#endif
+]])], [], [enable_coredump=no])
+
 AC_MSG_CHECKING([if we should build libunwind-coredump])
 AC_MSG_RESULT([$enable_coredump])
 
