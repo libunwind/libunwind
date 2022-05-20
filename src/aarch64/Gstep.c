@@ -24,6 +24,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "dwarf_i.h"
 #include "unwind_i.h"
 #include "offsets.h"
 
@@ -49,6 +50,58 @@ is_plt_entry (struct dwarf_cursor *c)
 
   Debug (14, "ip=0x%lx => 0x%016lx 0x%016lx, ret = %d\n", c->ip, w0, w1, ret);
   return ret;
+}
+
+/*
+ * Save the location of VL (vector length) from the signal frame to the VG (vector
+ * granule) register if it exists, otherwise do nothing. If there is an error,
+ * the location is also not modified.
+ */
+static int
+get_sve_vl_signal_loc (struct dwarf_cursor* dwarf, unw_word_t sc_addr)
+{
+  uint32_t size;
+  unw_addr_space_t as = dwarf->as;
+  unw_accessors_t *a = unw_get_accessors_int (as);
+  void *arg = dwarf->as_arg;
+  unw_word_t res_addr = sc_addr + LINUX_SC_RESERVED_OFF;
+
+  /*
+   * Max possible size of reserved section is 4096. Jump by size of each record
+   * until the SVE signal context section is found.
+   */
+  for(unw_word_t section_off = 0; section_off < 4096; section_off += size)
+    {
+      uint32_t magic;
+      int ret;
+      unw_word_t item_addr = res_addr + section_off + LINUX_SC_RESERVED_MAGIC_OFF;
+      if ((ret = dwarf_readu32(as, a, &item_addr, &magic, arg)) < 0)
+        return ret;
+      item_addr = res_addr + section_off + LINUX_SC_RESERVED_SIZE_OFF;
+      if ((ret = dwarf_readu32(as, a, &item_addr, &size, arg)) < 0)
+        return ret;
+
+      switch(magic)
+        {
+          case 0:
+            /* End marker, size must be 0 */
+            return size ? -UNW_EUNSPEC : 1;
+
+          /* Magic number marking the SVE context section */
+          case 0x53564501:
+            /* Must be big enough so that the 16 bit VL value can be accessed */
+            if (size < LINUX_SC_RESERVED_SVE_VL_OFF + 2)
+              return -UNW_EUNSPEC;
+            dwarf->loc[UNW_AARCH64_VG] = DWARF_MEM_LOC(c->dwarf, res_addr + section_off +
+                                                       LINUX_SC_RESERVED_SVE_VL_OFF);
+            return 1;
+
+          default:
+            /* Don't care about any of the other sections */
+            break;
+        }
+   }
+   return 1;
 }
 
 static int
@@ -131,7 +184,7 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.pi_valid = 0;
   c->dwarf.use_prev_instr = 0;
 
-  return 1;
+  return get_sve_vl_signal_loc (&c->dwarf, sc_addr);
 }
 
 int
