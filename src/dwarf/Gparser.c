@@ -816,7 +816,7 @@ aarch64_strip_pac_local(unw_word_t in_addr)
 {
   unw_word_t out_addr = in_addr;
 
-#ifdef __aarch64__
+#if defined(__aarch64__) && !defined(_MSC_VER) // MSVC doesn't support inline-assembly on arm64
   // Strip the PAC with XPACLRI instruction
   register unsigned long long x30 __asm__("x30") = in_addr;
   __asm__("hint 0x7" : "+r" (x30));
