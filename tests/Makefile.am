@@ -46,6 +46,11 @@ if ARCH_X86_64
 endif #ARCH X86_64
 endif #!ARCH_PPC64
 endif #!ARCH_IA64
+
+if ARCH_AARCH64
+  check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal
+endif
+
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
@@ -157,6 +162,10 @@ Gx64_test_dwarf_expressions_SOURCES =  Gx64-test-dwarf-expressions.c \
 Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
 																			 x64-test-dwarf-expressions.S
 
+Garm64_test_sve_signal_SOURCES = Garm64-test-sve-signal.c
+Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
+Garm64_test_sve_signal_CFLAGS = -fno-inline -march=native
+Larm64_test_sve_signal_CFLAGS = -fno-inline -march=native
 
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
@@ -257,3 +266,6 @@ ppc64_test_altivec_LDADD = $(LIBUNWIND)
 
 Gx64_test_dwarf_expressions_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
+
+Garm64_test_sve_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Larm64_test_sve_signal_LDADD = $(LIBUNWIND_local)
