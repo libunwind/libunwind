@@ -78,32 +78,34 @@ struct coredump_phdr
 typedef struct coredump_phdr coredump_phdr_t;
 
 #if defined(HAVE_STRUCT_ELF_PRSTATUS)
-#define PRSTATUS_STRUCT elf_prstatus
+typedef struct elf_prstatus UCD_proc_status_t;
 #elif defined(HAVE_STRUCT_PRSTATUS)
-#define PRSTATUS_STRUCT prstatus
+typedef struct prstatus UCD_proc_status_t;
+#elif defined(HAVE_PROCFS_STATUS)
+typedef procfs_status UCD_proc_status_t;
 #else
-#define PRSTATUS_STRUCT non_existent
+# error UCD_proc_status_t undefined
 #endif
 
 struct UCD_thread_info
   {
-    struct PRSTATUS_STRUCT prstatus;
-    elf_fpregset_t fpregset;
+    UCD_proc_status_t  prstatus;
+    elf_fpregset_t     fpregset;
   };
 
 struct UCD_info
   {
-    int big_endian;  /* bool */
-    int coredump_fd;
-    char *coredump_filename; /* for error meesages only */
-    coredump_phdr_t *phdrs; /* array, allocated */
-    unsigned phdrs_count;
-    void *note_phdr; /* allocated or NULL */
-    struct PRSTATUS_STRUCT *prstatus; /* points inside note_phdr */
-    elf_fpregset_t *fpregset;
-    int n_threads;
+    int                     big_endian;        /* bool */
+    int                     coredump_fd;
+    char                   *coredump_filename; /* for error meesages only */
+    coredump_phdr_t        *phdrs;             /* array, allocated */
+    unsigned                phdrs_count;
+    void                   *note_phdr;         /* allocated or NULL */
+    UCD_proc_status_t      *prstatus;          /* points inside note_phdr */
+    elf_fpregset_t         *fpregset;
+    int                     n_threads;
     struct UCD_thread_info *threads;
-    struct elf_dyn_info edi;
+    struct elf_dyn_info     edi;
   };
 
 
