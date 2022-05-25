@@ -48,7 +48,7 @@ AC_CHECK_SIZEOF(off_t)
 CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
 
 AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
-AC_CHECK_TYPES([struct elf_prstatus, struct prstatus], [], [],
+AC_CHECK_TYPES([struct elf_prstatus, struct prstatus, procfs_status], [], [],
 [$ac_includes_default
 #if HAVE_SYS_PROCFS_H
 # include <sys/procfs.h>
