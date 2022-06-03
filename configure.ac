@@ -428,6 +428,12 @@ case "$ac_cv_search_backtrace" in
   *) BACKTRACELIB="";;
 esac
 
+AC_ARG_WITH([testdriver],
+            [AS_HELP_STRING([--with-testdriver],
+                            [use designated test driver instead of default LOG_DRIVER])],
+                            [],
+                            [with_testdriver=\$\(top_srcdir\)/config/test-driver])
+AC_SUBST([UNW_TESTDRIVER], $with_testdriver)
 
 AC_SUBST(build_arch)
 AC_SUBST(target_os)
