@@ -1,6 +1,7 @@
-/* libunwind - a platform-independent unwind library
-   Copyright (c) 2003, 2005 Hewlett-Packard Development Company, L.P.
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+/* Copyright (C) 2022 Hewlett-Packard Co.
+     Contributed by David Mosberger-Tang <davidm@hpl.hp.com>.
+
+This file is part of libunwind.
 
 Permission is hereby granted, free of charge, to any person obtaining
 a copy of this software and associated documentation files (the
