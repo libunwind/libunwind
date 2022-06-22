@@ -218,7 +218,8 @@ _UCD_create(const char *filename)
         goto err;
       }
 
-    ui->prstatus = &ui->threads[0];
+    ui->prstatus = &ui->threads[0].prstatus;
+    ui->fpregset = &ui->threads[0].fpregset;
 
   return ui;
 
@@ -234,8 +235,10 @@ int _UCD_get_num_threads(struct UCD_info *ui)
 
 void _UCD_select_thread(struct UCD_info *ui, int n)
 {
-  if (n >= 0 && n < ui->n_threads)
-    ui->prstatus = &ui->threads[n];
+  if (n >= 0 && n < ui->n_threads) {
+    ui->prstatus = &ui->threads[n].prstatus;
+    ui->fpregset = &ui->threads[n].fpregset;
+  }
 }
 
 pid_t _UCD_get_pid(struct UCD_info *ui)
