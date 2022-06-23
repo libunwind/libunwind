@@ -38,7 +38,10 @@ _UCD_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 
 #ifdef __s390x__
   if (reg < UNW_S390X_F0 || reg > UNW_S390X_F15)
-    goto badreg;
+    {
+      Debug(0, "bad regnum:%d\n", reg);
+      return -UNW_EINVAL;
+    }
 
   *val = ui->fpregset->fprs[reg - UNW_S390X_F0].d;
   return 0;
@@ -47,8 +50,4 @@ _UCD_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   print_error (" not implemented for this architecture\n");
   return -UNW_EINVAL;
 #endif
-
-badreg: UNUSED
-  Debug(0, "bad regnum:%d\n", reg);
-  return -UNW_EINVAL;
 }
