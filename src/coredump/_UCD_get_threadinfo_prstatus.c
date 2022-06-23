@@ -62,8 +62,12 @@ _save_thread_notes(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *
   struct UCD_info *ui = (struct UCD_info *)arg;
   if (n_type == NT_PRSTATUS)
   {
-    memcpy(&ui->threads[ui->n_threads], desc, sizeof(struct PRSTATUS_STRUCT));
+    memcpy(&ui->threads[ui->n_threads].prstatus, desc, sizeof(struct PRSTATUS_STRUCT));
     ++ui->n_threads;
+  }
+  if (n_type == NT_FPREGSET)
+  {
+    memcpy(&ui->threads[ui->n_threads-1].fpregset, desc, sizeof(elf_fpregset_t));
   }
   return UNW_ESUCCESS;
 }
@@ -102,7 +106,7 @@ _UCD_get_threadinfo(struct UCD_info *ui, coredump_phdr_t *phdrs, unsigned phdr_s
       	_UCD_elf_visit_notes(segment, segment_size, _count_thread_notes, &thread_count);
 	Debug(2, "found %zu threads\n", thread_count);
 
-      	size_t new_size = sizeof(struct PRSTATUS_STRUCT) * (ui->n_threads + thread_count);
+      	size_t new_size = sizeof(struct UCD_thread_info) * (ui->n_threads + thread_count);
       	ui->threads = realloc(ui->threads, new_size);
       	if (ui->threads == NULL)
 	{

@@ -54,9 +54,6 @@ _UCD_access_reg (unw_addr_space_t as,
 #elif defined(UNW_TARGET_TILEGX)
   if (regnum > UNW_TILEGX_CFA)
     goto badreg;
-#elif defined(UNW_TARGET_S390X)
-  if (regnum > UNW_S390X_R15)
-    goto badreg;
 #elif defined(UNW_TARGET_IA64) || defined(UNW_TARGET_HPPA) || defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
   if (regnum >= ARRAY_SIZE(ui->prstatus->pr_reg))
     goto badreg;
@@ -137,6 +134,27 @@ _UCD_access_reg (unw_addr_space_t as,
       [UNW_MIPS_R30] = EF_REG30,
       [UNW_MIPS_R31] = EF_REG31,
       [UNW_MIPS_PC]  = EF_CP0_EPC,
+    };
+#elif defined(UNW_TARGET_S390X)
+  static const uint8_t remap_regs[] =
+    {
+      [UNW_S390X_IP]  = offsetof(struct user_regs_struct, psw.addr) / sizeof(long),
+      [UNW_S390X_R0]  = offsetof(struct user_regs_struct, gprs[0]) / sizeof(long),
+      [UNW_S390X_R1]  = offsetof(struct user_regs_struct, gprs[1]) / sizeof(long),
+      [UNW_S390X_R2]  = offsetof(struct user_regs_struct, gprs[2]) / sizeof(long),
+      [UNW_S390X_R3]  = offsetof(struct user_regs_struct, gprs[3]) / sizeof(long),
+      [UNW_S390X_R4]  = offsetof(struct user_regs_struct, gprs[4]) / sizeof(long),
+      [UNW_S390X_R5]  = offsetof(struct user_regs_struct, gprs[5]) / sizeof(long),
+      [UNW_S390X_R6]  = offsetof(struct user_regs_struct, gprs[6]) / sizeof(long),
+      [UNW_S390X_R7]  = offsetof(struct user_regs_struct, gprs[7]) / sizeof(long),
+      [UNW_S390X_R8]  = offsetof(struct user_regs_struct, gprs[8]) / sizeof(long),
+      [UNW_S390X_R9]  = offsetof(struct user_regs_struct, gprs[9]) / sizeof(long),
+      [UNW_S390X_R10] = offsetof(struct user_regs_struct, gprs[10]) / sizeof(long),
+      [UNW_S390X_R11] = offsetof(struct user_regs_struct, gprs[11]) / sizeof(long),
+      [UNW_S390X_R12] = offsetof(struct user_regs_struct, gprs[12]) / sizeof(long),
+      [UNW_S390X_R13] = offsetof(struct user_regs_struct, gprs[13]) / sizeof(long),
+      [UNW_S390X_R14] = offsetof(struct user_regs_struct, gprs[14]) / sizeof(long),
+      [UNW_S390X_R15] = offsetof(struct user_regs_struct, gprs[15]) / sizeof(long),
     };
 #elif defined(UNW_TARGET_X86)
   static const uint8_t remap_regs[] =

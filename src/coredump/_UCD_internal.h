@@ -34,6 +34,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifdef HAVE_SYS_PROCFS_H
 #include <sys/procfs.h> /* struct elf_prstatus */
 #endif
+#ifdef HAVE_ASM_PTRACE_H
+#include <asm/ptrace.h> /* struct user_regs_struct on s390x */
+#endif
 #include <errno.h>
 #include <string.h>
 #include <limits.h>
@@ -82,6 +85,12 @@ typedef struct coredump_phdr coredump_phdr_t;
 #define PRSTATUS_STRUCT non_existent
 #endif
 
+struct UCD_thread_info
+  {
+    struct PRSTATUS_STRUCT prstatus;
+    elf_fpregset_t fpregset;
+  };
+
 struct UCD_info
   {
     int big_endian;  /* bool */
@@ -91,8 +100,9 @@ struct UCD_info
     unsigned phdrs_count;
     void *note_phdr; /* allocated or NULL */
     struct PRSTATUS_STRUCT *prstatus; /* points inside note_phdr */
+    elf_fpregset_t *fpregset;
     int n_threads;
-    struct PRSTATUS_STRUCT *threads;
+    struct UCD_thread_info *threads;
     struct elf_dyn_info edi;
   };
 
