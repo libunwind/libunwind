@@ -397,9 +397,9 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
-          set_reg (sr, regnum, DWARF_WHERE_CFAREL, (unw_word_t)(-(unw_sword_t)val));
+          set_reg (sr, regnum, DWARF_WHERE_CFAREL, ~(val * dci->data_align) + 1);
           Debug (15, "CFA_GNU_negative_offset_extended cfa+0x%lx\n",
-                 (long)(unw_word_t)(-(unw_sword_t)val));
+                 (long) (~(val * dci->data_align) + 1));
           break;
 
         case DW_CFA_GNU_window_save:
@@ -816,7 +816,8 @@ aarch64_strip_pac_local(unw_word_t in_addr)
 {
   unw_word_t out_addr = in_addr;
 
-#if defined(__aarch64__) && !defined(_MSC_VER) // MSVC doesn't support inline-assembly on arm64
+
+#if defined(__aarch64__) && !defined(UNW_REMOTE_ONLY)
   // Strip the PAC with XPACLRI instruction
   register unsigned long long x30 __asm__("x30") = in_addr;
   __asm__("hint 0x7" : "+r" (x30));
