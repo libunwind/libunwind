@@ -93,7 +93,7 @@ filter_misc () {
 	ignore _gp
     fi
 
-    if [ ${os} == "solaris2.11" ]; then
+    if [ ${os} = "solaris2.11" ]; then
         ignore _PROCEDURE_LINKAGE_TABLE_
         ignore _etext
     fi
