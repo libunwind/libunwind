@@ -816,7 +816,6 @@ aarch64_strip_pac_local(unw_word_t in_addr)
 {
   unw_word_t out_addr = in_addr;
 
-
 #if defined(__aarch64__) && !defined(UNW_REMOTE_ONLY)
   // Strip the PAC with XPACLRI instruction
   register unsigned long long x30 __asm__("x30") = in_addr;
