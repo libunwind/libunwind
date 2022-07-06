@@ -219,7 +219,9 @@ _UCD_create(const char *filename)
       }
 
     ui->prstatus = &ui->threads[0].prstatus;
+#ifdef HAVE_ELF_FPREGSET_T
     ui->fpregset = &ui->threads[0].fpregset;
+#endif
 
   return ui;
 
@@ -237,7 +239,9 @@ void _UCD_select_thread(struct UCD_info *ui, int n)
 {
   if (n >= 0 && n < ui->n_threads) {
     ui->prstatus = &ui->threads[n].prstatus;
+#ifdef HAVE_ELF_FPREGSET_T
     ui->fpregset = &ui->threads[n].fpregset;
+#endif
   }
 }
 

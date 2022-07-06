@@ -67,7 +67,9 @@ _save_thread_notes(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *
   }
   if (n_type == NT_FPREGSET)
   {
+#ifdef HAVE_ELF_FPREGSET_T
     memcpy(&ui->threads[ui->n_threads-1].fpregset, desc, sizeof(elf_fpregset_t));
+#endif
   }
   return UNW_ESUCCESS;
 }

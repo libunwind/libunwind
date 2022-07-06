@@ -90,7 +90,9 @@ typedef procfs_status UCD_proc_status_t;
 struct UCD_thread_info
   {
     UCD_proc_status_t  prstatus;
+#ifdef HAVE_ELF_FPREGSET_T
     elf_fpregset_t     fpregset;
+#endif
   };
 
 struct UCD_info
@@ -102,7 +104,9 @@ struct UCD_info
     unsigned                phdrs_count;
     void                   *note_phdr;         /* allocated or NULL */
     UCD_proc_status_t      *prstatus;          /* points inside note_phdr */
+#ifdef HAVE_ELF_FPREGSET_T
     elf_fpregset_t         *fpregset;
+#endif
     int                     n_threads;
     struct UCD_thread_info *threads;
     struct elf_dyn_info     edi;
