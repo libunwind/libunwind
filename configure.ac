@@ -69,7 +69,7 @@ PT_STEP, PT_SYSCALL], [], [],
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
-		ttrace mincore pipe2)
+		ttrace mincore pipe2 sigaltstack)
 
 AC_MSG_CHECKING([if building with AltiVec])
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
