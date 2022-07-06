@@ -228,7 +228,9 @@ int
 main (int argc, char **argv UNUSED)
 {
   struct sigaction act;
+#ifdef HAVE_SIGALTSTACK
   stack_t stk;
+#endif /* HAVE_SIGALTSTACK */
 
   verbose = (argc > 1);
 
@@ -247,6 +249,7 @@ main (int argc, char **argv UNUSED)
     printf ("\nBacktrace across signal handler:\n");
   kill (getpid (), SIGTERM);
 
+#ifdef HAVE_SIGALTSTACK
   if (verbose)
     printf ("\nBacktrace across signal handler on alternate stack:\n");
   stk.ss_sp = malloc (SIG_STACK_SIZE);
@@ -263,6 +266,7 @@ main (int argc, char **argv UNUSED)
   if (sigaction (SIGTERM, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
   kill (getpid (), SIGTERM);
+#endif /* HAVE_SIGALTSTACK */
 
   if (num_errors > 0)
     {
@@ -274,9 +278,11 @@ main (int argc, char **argv UNUSED)
     printf ("SUCCESS.\n");
 
   signal (SIGTERM, SIG_DFL);
+#ifdef HAVE_SIGALTSTACK
   stk.ss_flags = SS_DISABLE;
   sigaltstack (&stk, NULL);
   free (stk.ss_sp);
+#endif /* HAVE_SIGALTSTACK */
 
   return 0;
 }
