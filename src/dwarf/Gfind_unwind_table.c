@@ -73,7 +73,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
           if (phdr[i].p_vaddr + phdr[i].p_memsz > end_ip)
             end_ip = phdr[i].p_vaddr + phdr[i].p_memsz;
 
-          if (phdr[i].p_offset == mapoff)
+          if ((phdr[i].p_flags & PF_X) == PF_X)
             ptxt = phdr + i;
           if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
             max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
