@@ -61,6 +61,7 @@ libunwind_coredump_la_SOURCES = \
 	coredump/_UCD_find_proc_info.c \
 	coredump/_UCD_get_proc_name.c \
 	coredump/_UCD_corefile_elf.c \
+	coredump/ucd_file_table.c \
 	\
 	coredump/_UPT_elf.c \
 	coredump/_UPT_access_fpreg.c \
