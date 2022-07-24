@@ -315,17 +315,6 @@ main(int argc UNUSED, char **argv)
     argv++;
   }
 
-  while (*argv)
-    {
-      char *colon;
-      unsigned long vaddr = strtoul(*argv, &colon, 16);
-      if (*colon != ':')
-        error_msg_and_die("Bad format: '%s'", *argv);
-      if (_UCD_add_backing_file_at_vaddr(ui, vaddr, colon + 1) < 0)
-        error_msg("Can't add backing file '%s'", colon + 1);
-      argv++;
-    }
-
   for (;;)
     {
       unw_word_t ip;
