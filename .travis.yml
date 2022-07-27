@@ -23,6 +23,7 @@ env:
 
 linux-s390x: &linux-s390x
   os: linux
+  dist: focal
   arch: s390x
   env: HOST=s390x-linux-gnu BUILD=s390x-linux-gnu
   script:
