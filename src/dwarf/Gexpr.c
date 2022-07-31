@@ -265,7 +265,7 @@ if (stackerror)                                 \
     return -UNW_EINVAL;                         \
   }
 
-// Removed the parentheses on the asignment
+// Removed the parentheses on the assignment
 // to allow the extra stack error check
 // when x is evaluated
 # define push(x)                                \

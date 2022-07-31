@@ -108,7 +108,7 @@
 * News for v0.98:
 
 ** Update libunwind to be compliant with the updated/expanded
-   ia64 unwind specificiation by HJ Lu [1].  This is needed for
+   ia64 unwind specification by HJ Lu [1].  This is needed for
    GCC 3.4 compatibility.
 
    [1] http://www.kernel.org/pub/linux/devel/gcc/unwind/
@@ -116,7 +116,7 @@
 ** Initial support for x86-64 has been added courtesy of Max Asbock.
    Along with this came a bunch of DWARF2 unwinder fixes.
 
-** A new rountine unw_strerror() has been added courtesy of
+** A new routine unw_strerror() has been added courtesy of
    Thomas Hallgren.
 
 ** Including <libunwind.h> now defines 4 macros that can be used

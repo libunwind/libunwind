@@ -165,7 +165,7 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
   Elf_W (Ehdr) *ehdr;
   Elf_W (Phdr) *phdr;
   int i;
-  // mapoff is obtained from mmap informations, so is always aligned on a page size.
+  // mapoff is obtained from mmap information, so it is always aligned on a page size.
   // PT_LOAD program headers p_offset however is not guaranteed to be aligned on a
   // page size, ld.lld generate libraries where this is not the case. So we must
   // make sure we compare both values with the same alignment.

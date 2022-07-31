@@ -50,7 +50,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
   unw_accessors_t *a;
   Elf_W(Ehdr) *ehdr;
 #if UNW_TARGET_ARM
-  const Elf_W(Phdr) *parm_exidx = NULL;
+  const Elf_W(Phdr) *param_exidx = NULL;
 #endif
   int i, ret, found = 0;
 
@@ -92,7 +92,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
 
 #if UNW_TARGET_ARM
         case PT_ARM_EXIDX:
-          parm_exidx = phdr + i;
+          param_exidx = phdr + i;
           break;
 #endif
 
@@ -112,7 +112,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
     {
       if (pdyn)
         {
-          /* For dynamicly linked executables and shared libraries,
+          /* For dynamically linked executables and shared libraries,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
                 Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
@@ -212,14 +212,14 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
     }
 
 #if UNW_TARGET_ARM
-  if (parm_exidx)
+  if (param_exidx)
     {
       edi->di_arm.format = UNW_INFO_FORMAT_ARM_EXIDX;
       edi->di_arm.start_ip = start_ip;
       edi->di_arm.end_ip = end_ip;
       edi->di_arm.u.rti.name_ptr = to_unw_word (path);
-      edi->di_arm.u.rti.table_data = load_base + parm_exidx->p_vaddr;
-      edi->di_arm.u.rti.table_len = parm_exidx->p_memsz;
+      edi->di_arm.u.rti.table_data = load_base + param_exidx->p_vaddr;
+      edi->di_arm.u.rti.table_len = param_exidx->p_memsz;
       found = 1;
     }
 #endif
