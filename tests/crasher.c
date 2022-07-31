@@ -110,7 +110,7 @@ int NOINLINE b(int x)
   int r;
 
   compiler_barrier();
-  
+
   if (x)
     r = a();
   else
