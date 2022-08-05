@@ -335,7 +335,7 @@ AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlibdebuginfo = xyes)
 
 AC_MSG_CHECKING([whether to support UNW_CACHE_PER_THREAD])
 AC_ARG_ENABLE([per-thread-cache],
-AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a hight TLS memory usage) (default: disabled)]))
+AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a high TLS memory usage) (default: disabled)]))
 AC_MSG_RESULT([$enable_per_thread_cache])
 AS_IF([test x$enable_per_thread_cache = xyes], [
   AC_DEFINE(HAVE___CACHE_PER_THREAD, 1,

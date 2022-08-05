@@ -658,7 +658,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
     {
       if (p_dynamic)
         {
-          /* For dynamicly linked executables and shared libraries,
+          /* For dynamically linked executables and shared libraries,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
           Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(p_dynamic->p_vaddr + load_base);

@@ -45,7 +45,7 @@ tdep_stash_frame (struct dwarf_cursor *d, struct dwarf_reg_state *rs)
     rs->reg.where[RBP] == DWARF_WHERE_EXPR) {
     /* Check for GCC generated alignment frame for rsp.  A simple
      * def_cfa_expr that loads a constant offset from rbp, where the
-     * addres of the rip was pushed on the stack */
+     * address of the rip was pushed on the stack */
     unw_word_t cfa_addr = rs->reg.val[DWARF_CFA_REG_COLUMN];
     unw_word_t rbp_addr = rs->reg.val[RBP];
     unw_word_t cfa_offset;

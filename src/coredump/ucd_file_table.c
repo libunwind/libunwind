@@ -40,7 +40,7 @@
  *
  * Stores the filename in the object and sets the fd to an uninitialized state.
  *
- * @returns UNW_ESUCCESS on success, a negated `unw_erro_t` code otherwise.
+ * @returns UNW_ESUCCESS on success, a negated `unw_error_t` code otherwise.
  */
 unw_error_t
 ucd_file_init (ucd_file_t *ucd_file, char const *filename)
@@ -156,7 +156,7 @@ ucd_file_unmap (ucd_file_t *ucd_file)
  * Initialize a UCD file table.
  * @param[in] ucd_file_table  The UCD file table to initialize.
  *
- * @returns UNW_ESUCCESS on success, a negated `unw_erro_t` code otherwise.
+ * @returns UNW_ESUCCESS on success, a negated `unw_error_t` code otherwise.
  */
 unw_error_t
 ucd_file_table_init (ucd_file_table_t *ucd_file_table)

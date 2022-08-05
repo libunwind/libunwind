@@ -70,7 +70,7 @@ static const size_t mapinfo_offset = sizeof (core_nt_file_hdr_t);
  * @param[in] arg   The user-supplied callback argument
  *
  * The CORE/NT_FILE note type contains a list of start/end virtual addresses
- * within the core file and an associated filename. The purpose is to mape
+ * within the core file and an associated filename. The purpose is to map
  * various segments loaded into memory from ELF files with the ELF file from
  * which those segments were loaded.
  *
