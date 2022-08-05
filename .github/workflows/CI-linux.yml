@@ -79,18 +79,18 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: arm,     toolchain: gcc-arm-linux-gnueabi,     host: arm-linux-gnueabi,      qemu: qemu-arm-static     }
-          - {target: armhf,   toolchain: gcc-arm-linux-gnueabihf,   host: arm-linux-gnueabihf,    qemu: qemu-arm-static     }
-          - {target: aarch64, toolchain: gcc-aarch64-linux-gnu,     host: aarch64-linux-gnu,      qemu: qemu-aarch64-static }
-          - {target: riscv64, toolchain: gcc-riscv64-linux-gnu,     host: riscv64-linux-gnu,      qemu: qemu-riscv64-static }
-          - {target: ppc,     toolchain: gcc-powerpc-linux-gnu,     host: powerpc-linux-gnu,      qemu: qemu-ppc-static     }
-          - {target: ppc64,   toolchain: gcc-powerpc64-linux-gnu,   host: powerpc64-linux-gnu,    qemu: qemu-ppc64-static   }
-          - {target: ppc64le, toolchain: gcc-powerpc64le-linux-gnu, host: powerpc64le-linux-gnu,  qemu: qemu-ppc64le-static }
-          - {target: s390x,   toolchain: gcc-s390x-linux-gnu,       host: s390x-linux-gnu,        qemu: qemu-s390x-static   }
-          - {target: mips,    toolchain: gcc-mips-linux-gnu,          host: mips-linux-gnu,         qemu: qemu-mips-static     }
-          - {target: mips64,  toolchain: gcc-mips64-linux-gnuabi64,   host: mips64-linux-gnuabi64,  qemu: qemu-mips64-static   }
-          - {target: mipsel,  toolchain: gcc-mipsel-linux-gnu,        host: mipsel-linux-gnu,       qemu: qemu-mipsel-static   }
-          - {target: mips64el,toolchain: gcc-mips64el-linux-gnuabi64, host: mips64el-linux-gnuabi64,qemu: qemu-mips64el-static }
+          - {target: arm,     toolchain: g++-arm-linux-gnueabi,       host: arm-linux-gnueabi,      qemu: arm     }
+          - {target: armhf,   toolchain: g++-arm-linux-gnueabihf,     host: arm-linux-gnueabihf,    qemu: arm     }
+          - {target: aarch64, toolchain: g++-aarch64-linux-gnu,       host: aarch64-linux-gnu,      qemu: aarch64 }
+          - {target: riscv64, toolchain: g++-riscv64-linux-gnu,       host: riscv64-linux-gnu,      qemu: riscv64 }
+          - {target: ppc,     toolchain: g++-powerpc-linux-gnu,       host: powerpc-linux-gnu,      qemu: ppc     }
+          - {target: ppc64,   toolchain: g++-powerpc64-linux-gnu,     host: powerpc64-linux-gnu,    qemu: ppc64   }
+          - {target: ppc64le, toolchain: g++-powerpc64le-linux-gnu,   host: powerpc64le-linux-gnu,  qemu: ppc64le }
+          - {target: s390x,   toolchain: g++-s390x-linux-gnu,         host: s390x-linux-gnu,        qemu: s390x   }
+          - {target: mips,    toolchain: g++-mips-linux-gnu,          host: mips-linux-gnu,         qemu: mips     }
+          - {target: mips64,  toolchain: g++-mips64-linux-gnuabi64,   host: mips64-linux-gnuabi64,  qemu: mips64   }
+          - {target: mipsel,  toolchain: g++-mipsel-linux-gnu,        host: mipsel-linux-gnu,       qemu: mipsel   }
+          - {target: mips64el,toolchain: g++-mips64el-linux-gnuabi64, host: mips64el-linux-gnuabi64,qemu: mips64el }
 
     steps:
       - uses: actions/checkout@v2
@@ -112,7 +112,7 @@ jobs:
           set -x
           autoreconf -i
           BUILD=x86_64-linux-gnu
-          ./configure --build=$BUILD --host=${{ matrix.config.host }}
+          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver=$(pwd)/scripts/qemu-test-driver
       - name: Build
         run: |
           make -j8
@@ -121,4 +121,9 @@ jobs:
           set -x
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
-          ${{ matrix.config.qemu }} make -j8 check
+          CROSS_LIB="/usr/${{ matrix.config.host }}"
+          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
+      - name: Show Logs
+        if: ${{ failure() }}
+        run: |
+          cat tests/test-suite.log 2>/dev/null
