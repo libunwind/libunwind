@@ -66,16 +66,16 @@ L2M_CMD	= $(L2M) -t $(srcdir)/libunwind.trans
 L2H_CMD	= $(L2M) -H -t $(srcdir)/libunwind.trans
 
 .tex.man:
-	$(L2M_CMD) $< $@
+	$(AM_V_GEN)$(L2M_CMD) $< $@
 	-cp $@ $(srcdir)/$@
 
-html:
+html-local:
 	for n in $(man3_MANS); do					\
 		page=`basename $$n .man`;				\
 		$(L2H_CMD) $(srcdir)/$$page.tex "$$page(3).raw";	\
 	done
 
-pdf:
+pdf-local:
 	for n in $(man3_MANS); do					\
 		page=`basename $$n .man`;				\
 		$(L2P) $(srcdir)/$$page.tex "$$page(3).pdf";		\
