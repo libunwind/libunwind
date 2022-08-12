@@ -25,9 +25,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifdef HAVE_ASM_VSYSCALL_H
+#include <asm/vsyscall.h>
+#endif
+
 #include "libunwind_i.h"
 #include "unwind_i.h"
-#include <asm/vsyscall.h>
 #include <signal.h>
 
 /* Recognise PLT entries such as:

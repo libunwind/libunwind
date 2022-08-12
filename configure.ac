@@ -34,10 +34,10 @@ esac
 
 dnl Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h endian.h sys/endian.h sys/param.h \
-		execinfo.h ia64intrin.h sys/uc_access.h unistd.h signal.h sys/types.h \
-		sys/procfs.h sys/ptrace.h sys/syscall.h byteswap.h elf.h sys/elf.h \
-		link.h sys/link.h)
+AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h asm/vsyscall.h endian.h sys/endian.h \
+		sys/param.h execinfo.h ia64intrin.h sys/uc_access.h unistd.h signal.h \
+		sys/types.h sys/procfs.h sys/ptrace.h sys/syscall.h byteswap.h elf.h \
+		sys/elf.h link.h sys/link.h)
 
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
