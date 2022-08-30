@@ -127,6 +127,10 @@ if ARCH_ARM
 XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
 endif
 
+if ARCH_LOONGARCH64
+XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
+endif
+
 # This is meant for multilib binaries, -m32.
 # ptrace gives EBADREG when testing,
 # but generally everything else works.
