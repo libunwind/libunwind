@@ -36,8 +36,7 @@ loongarch64_handle_signal_frame (unw_cursor_t *cursor)
   int i, ret;
 
   if (unw_is_signal_frame (cursor)) {
-    sc_addr = sp_addr + LINUX_SF_TRAMP_SIZE + sizeof (siginfo_t) +
-              LINUX_UC_MCONTEXT_OFF;
+    sc_addr = sp_addr + sizeof (siginfo_t) + LINUX_UC_MCONTEXT_OFF;
   } else {
     c->sigcontext_format = LOONGARCH64_SCF_NONE;
     return -UNW_EUNSPEC;

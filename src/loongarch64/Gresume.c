@@ -65,6 +65,7 @@ loongarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
         : "r" (uc->uc_mcontext.__gregs),
           "r" (sp),
           "r" (ra)
+        : "$t0", "$t1", "$t2", "memory"
       );
     }
   else /* c->sigcontext_format == LOONGARCH64_SCF_LINUX_RT_SIGFRAME */
