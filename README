@@ -61,9 +61,9 @@ In general, this library can be built and installed with the following
 commands:
 
     $ autoreconf -i # Needed only for building from git. Depends on libtool.
-    $ ./configure
+    $ ./configure --prefix=PREFIX
     $ make
-    $ make install prefix=PREFIX
+    $ make install
 
 where `PREFIX` is the installation prefix.  By default, a prefix of
 `/usr/local` is used, such that `libunwind.a` is installed in
