@@ -33,14 +33,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* See glibc manual for a description of this function.  */
 
 static ALWAYS_INLINE int
-slow_backtrace (void **buffer, int size, unw_context_t *uc)
+slow_backtrace (void **buffer, int size, unw_context_t *uc, int flag)
 {
   unw_cursor_t cursor;
   unw_word_t ip;
   int n = 0;
 
-  if (unlikely (unw_init_local (&cursor, uc) < 0))
+  if (unlikely (unw_init_local2 (&cursor, uc, flag) < 0))
     return 0;
+
 
   while (unw_step (&cursor) > 0)
     {
@@ -69,7 +70,33 @@ unw_backtrace (void **buffer, int size)
   if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
     {
       unw_getcontext (&uc);
-      return slow_backtrace (buffer, size, &uc);
+      return slow_backtrace (buffer, size, &uc, 0);
+    }
+
+  return n;
+}
+
+int
+unw_backtrace2 (void **buffer, int size, unw_context_t* uc2)
+{
+  if (size == 0)
+    return 0;
+    
+  if (uc2 == NULL)
+    return unw_backtrace(buffer, size);
+
+  unw_cursor_t cursor;
+  // need to copy, because the context will be modified by tdep_trace
+  unw_context_t uc = *(unw_context_t*)uc2;
+
+  if (unlikely (unw_init_local2 (&cursor, &uc, UNW_INIT_SIGNAL_FRAME) < 0))
+    return 0;
+
+  int n = size;
+
+  if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
+    {
+      return slow_backtrace (buffer, n, &uc, UNW_INIT_SIGNAL_FRAME);
     }
 
   return n;
