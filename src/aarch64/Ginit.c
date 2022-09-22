@@ -52,9 +52,9 @@ uc_addr (unw_tdep_context_t *uc, int reg)
   else if (reg == UNW_AARCH64_X30)
     return &uc->uc_mcontext.mc_gpregs.gp_lr;
   else if (reg == UNW_AARCH64_SP)
-    return &uc->uc_mcontext.sp;
+    return &uc->uc_mcontext.mc_gpregs.gp_sp;
   else if (reg == UNW_AARCH64_PC)
-    return &uc->uc_mcontext.gp_elr;
+    return &uc->uc_mcontext.mc_gpregs.gp_elr;
   else if (reg >= UNW_AARCH64_V0 && reg <= UNW_AARCH64_V31)
     return &GET_FPCTX(uc)->uc_mcontext.mc_fpregs.fp_q[reg - UNW_AARCH64_V0];
   else
