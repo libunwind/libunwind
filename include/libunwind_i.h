@@ -132,7 +132,7 @@ byte_order_is_big_endian(int byte_order)
 }
 
 static inline int
-target_is_big_endian()
+target_is_big_endian(void)
 {
     return byte_order_is_big_endian(UNW_BYTE_ORDER);
 }
