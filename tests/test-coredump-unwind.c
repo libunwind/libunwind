@@ -244,8 +244,7 @@ void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
   {
     /* glibc extension */
     void *array[50];
-    int size;
-    size = backtrace(array, 50);
+    int size UNUSED = backtrace(array, 50);
 #if defined __linux__ && HAVE_EXECINFO_H
     backtrace_symbols_fd(array, size, 2);
 #endif
