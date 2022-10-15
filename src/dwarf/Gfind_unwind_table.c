@@ -37,7 +37,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 int
 dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
-                         char *path, unw_word_t segbase, unw_word_t mapoff,
+                         const char *path, unw_word_t segbase, unw_word_t mapoff,
                          unw_word_t ip)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;

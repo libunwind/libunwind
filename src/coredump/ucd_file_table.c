@@ -189,7 +189,7 @@ ucd_file_table_dispose (ucd_file_table_t *ucd_file_table)
 {
   if (ucd_file_table->uft_files != NULL)
     {
-      for (int i = 0; i < ucd_file_table->uft_count; ++i)
+      for (size_t i = 0; i < ucd_file_table->uft_count; ++i)
         {
           ucd_file_dispose(&ucd_file_table->uft_files[i]);
         }
