@@ -578,8 +578,8 @@ if (stackerror)                                 \
 
         case DW_OP_neg:
           Debug (15, "OP_neg\n");
-          unw_word_t tmp UNUSED = pop ();
-          push (~tmp + 1);
+          tmp1 = pop ();
+          push (~tmp1 + 1);
           break;
 
         case DW_OP_not:
