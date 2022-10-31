@@ -41,8 +41,9 @@ typedef struct
   unw_tdep_frame_t *frames;
   size_t log_size;
   size_t used;
-  size_t dtor_count;  /* Counts how many times our destructor has already
+  uint32_t dtor_count;  /* Counts how many times our destructor has already
                          been called. */
+  uint32_t frame_rc;
 } unw_trace_cache_t;
 
 static const unw_tdep_frame_t empty_frame = { 0, UNW_X86_64_FRAME_OTHER, -1, -1, 0, -1, -1 };
@@ -130,6 +131,7 @@ trace_cache_create (void)
   cache->log_size = HASH_MIN_BITS;
   cache->used = 0;
   cache->dtor_count = 0;
+  cache->frame_rc = 0;
   tls_cache_destroyed = 0;  /* Paranoia: should already be 0. */
   Debug(5, "allocated cache %p\n", cache);
   return cache;
@@ -430,7 +432,10 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     d->stash_frames = 0;
     return -UNW_ENOMEM;
   }
+  if (cache->frame_rc > 0)
+    return -UNW_EINVAL;
 
+  cache->frame_rc = 1;
   /* Trace the stack upwards, starting from current RIP.  Adjust
      the RIP address for previous/next instruction as the main
      unwinding logic would also do.  We undo this before calling
@@ -552,6 +557,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     buffer[depth++] = (void *) rip;
   }
 
+  cache->frame_rc = 0;
 #if UNW_DEBUG
   Debug (1, "returning %d, depth %d\n", ret, depth);
 #endif
