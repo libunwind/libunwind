@@ -57,13 +57,17 @@ endif
 			Gtest-resume-sig Ltest-resume-sig		 \
 			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
 			Gtest-trace Ltest-trace				 \
-			Ltest-init-local-signal				 \
 			Ltest-mem-validate				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-reg-state Ltest-varargs		 \
 			Ltest-nomalloc Ltest-nocalloc Lrs-race
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
+
+# unw_init_local2() is not implemented on ia64
+if !ARCH_IA64
+ check_PROGRAMS_cdep += Ltest-init-local-signal
+endif
 
 if BUILD_PTRACE
  check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
