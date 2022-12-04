@@ -96,7 +96,7 @@ unw_backtrace2 (void **buffer, int size, unw_context_t* uc2)
 
   if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
     {
-      return slow_backtrace (buffer, n, &uc, UNW_INIT_SIGNAL_FRAME);
+      return slow_backtrace (buffer, size, &uc, UNW_INIT_SIGNAL_FRAME);
     }
 
   return n;
