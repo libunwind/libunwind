@@ -1,4 +1,4 @@
-name: CI-linux
+name: CI - Unix
 
 on:
   pull_request:
@@ -9,7 +9,7 @@ on:
       - '!NEWS'
       - '!doc/**'
       - '!.**'
-      - '.github/workflows/CI-linux.yml'
+      - '.github/workflows/CI-unix.yml'
   push:
     branches:
       - v[0-9].*
