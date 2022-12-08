@@ -137,6 +137,7 @@ check_local_unw_abi () {
 
     match unw_backtrace
     @CONFIG_WEAK_BACKTRACE_TRUE@match backtrace
+    match unw_backtrace2
 
     case ${plat} in
 	arm)

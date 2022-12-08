@@ -92,14 +92,28 @@ unw_backtrace2 (void **buffer, int size, unw_context_t* uc2)
   if (unlikely (unw_init_local2 (&cursor, &uc, UNW_INIT_SIGNAL_FRAME) < 0))
     return 0;
 
-  int n = size;
+  // get the first ip from the context
+  unw_word_t ip;
 
+  if (unw_get_reg (&cursor, UNW_REG_IP, &ip) < 0)
+    return 0;
+
+  buffer[0] =  (void *) (uintptr_t)ip;
+
+  // update buffer info to collect the rest of the IPs
+  buffer = buffer+1;
+  int remaining_size = size-1;
+
+  int n = remaining_size;
+
+  // returns the number of frames collected by tdep_trace or slow_backtrace
+  // and add 1 to it (the one we retrieved above)
   if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
     {
-      return slow_backtrace (buffer, size, &uc, UNW_INIT_SIGNAL_FRAME);
+      return slow_backtrace (buffer, remaining_size, &uc, UNW_INIT_SIGNAL_FRAME) + 1;
     }
 
-  return n;
+  return n + 1;
 }
 
 #ifdef CONFIG_WEAK_BACKTRACE
