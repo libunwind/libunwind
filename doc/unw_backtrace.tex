@@ -13,6 +13,7 @@
 \File{\#include $<$libunwind.h$>$}\\
 
 \Type{int} \Func{unw\_backtrace}(\Type{void~**}\Var{buffer}, \Type{int}~\Var{size});\\
+\Type{int} \Func{unw\_backtrace2}(\Type{void~**}\Var{buffer}, \Type{int}~\Var{size}, \Type{unw_context_t~*}\Var{ctxt});\\
 
 \File{\#include $<$execinfo.h$>$}\\
 
@@ -31,6 +32,10 @@ by including the \File{$<$execinfo.h$>$} header file -- a prototype for
 aliases \Func{backtrace}() to \Func{unw\_backtrace}(), so when a program
 calling \Func{backtrace}() is linked against \Prog{libunwind}, it may end up
 calling \Func{unw\_backtrace}().
+
+If the \Type{unw\_context_t} is known to be a signal frame (i.e., from the third argument
+in a sigaction handler on linux), \Func{unw\_backtrace2} can be used to collect
+only the frames before the signal frame.
 
 \section{Return Value}
 
