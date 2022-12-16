@@ -121,8 +121,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 byte_order_is_valid(int byte_order)
 {
-    return byte_order != UNW_BIG_ENDIAN
-        && byte_order != UNW_LITTLE_ENDIAN;
+    return byte_order == UNW_BIG_ENDIAN
+        || byte_order == UNW_LITTLE_ENDIAN;
 }
 
 static inline int
