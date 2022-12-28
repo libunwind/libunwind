@@ -231,14 +231,14 @@ unw_step (unw_cursor_t *cursor)
                              */
                             c->dwarf.cfa += 8;
                             /* Optimised x64 binaries don't use RBP it seems? */
-                            rbp_loc = DWARF_LOC (rbp, 0);
-                            rsp_loc = DWARF_LOC (rsp, 0);
+                            rbp_loc = c->dwarf.loc[RBP];
+                            rsp_loc = DWARF_VAL_LOC (c, rsp + 8);
                             rip_loc = DWARF_LOC (rsp, 0);
                           }
                         else
                           Debug (2, "new_ip 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used) != 0\n", new_ip);
                       }
-		                else
+                    else
                         Debug (2, "rsp 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip) != 0\n", rsp);
                   }
               /*
