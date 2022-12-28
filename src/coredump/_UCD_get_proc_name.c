@@ -101,10 +101,9 @@ elf_w (CD_get_proc_name) (struct UCD_info *ui, unw_addr_space_t as, unw_word_t i
     }
 
   segbase = 0; /* everything is relative to the beginning of the ELF file */
-  mapoff  = 0;
   /* Adjust IP to be relative to start of the .text section of the ELF file */
   ip = ip - cphdr->p_vaddr + _get_text_offset (ui->edi.ei.image);
-  ret = elf_w (get_proc_name_in_image) (as, &ui->edi.ei, segbase, mapoff, ip, buf, buf_len, offp);
+  ret = elf_w (get_proc_name_in_image) (as, &ui->edi.ei, segbase, ip, buf, buf_len, offp);
   return ret;
 }
 
