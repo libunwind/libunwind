@@ -38,6 +38,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <setjmp.h>
 #include <ucontext.h>
 #include <unistd.h>
 #include <libunwind.h>
@@ -49,6 +50,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 int verbose;
 int num_errors;
+sigjmp_buf env;
 
 /* These variables are global because they
  * cause the signal stack to overflow */
@@ -166,6 +168,16 @@ bar (long v)
 }
 
 void
+segv_handler (int signal, void *siginfo UNUSED, void *context)
+{
+  if (verbose)
+    fprintf (stderr, "segv_handler: got signal %d\n", signal);
+
+  do_backtrace ();
+  siglongjmp (env, 42);
+}
+
+void
 sighandler (int signal, void *siginfo UNUSED, void *context)
 {
   ucontext_t *uc UNUSED;
@@ -235,6 +247,20 @@ main (int argc, char **argv UNUSED)
   if (verbose)
     printf ("\nBacktrace across signal handler:\n");
   kill (getpid (), SIGTERM);
+
+  if (verbose)
+    printf ("\nBacktrace across SIGSEGV handler:\n");
+
+  act.sa_handler = (void (*)(int)) segv_handler;
+  if (sigaction (SIGSEGV, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
+
+  if (sigsetjmp (env, 1) == 0)
+  {
+    /* Make a bad function pointer and call it.  */
+    void (*bad_fn)(void) = (void (*)(void)) 0x123;
+    bad_fn ();
+  }
 
 #ifdef HAVE_SIGALTSTACK
   if (verbose)
