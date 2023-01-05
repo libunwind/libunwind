@@ -1,7 +1,7 @@
 .\" *********************************** start of \input{common.tex}
 .\" *********************************** end of \input{common.tex}
 '\" t
-.\" Manual page created with latex2man on Thu Dec  8 12:01:30 2022
+.\" Manual page created with latex2man on Thu Jan  5 15:33:00 2023
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -12,7 +12,7 @@
 
 .fi
 ..
-.TH "UNW\\_BACKTRACE" "3" "08 December 2022" "Programming Library " "Programming Library "
+.TH "UNW\\_BACKTRACE" "3" "05 January 2023" "Programming Library " "Programming Library "
 .SH NAME
 unw_backtrace
 \-\- return backtrace for the calling program 
@@ -30,7 +30,8 @@ int size);
 int
 unw_backtrace2(void **buffer,
 int size,
-unw_context_t *ctxt);
+unw_context_t *ctxt,
+int flag);
 .br
 .PP
 #include <execinfo.h>
@@ -68,11 +69,16 @@ is linked against libunwind,
 it may end up 
 calling unw_backtrace().
 .PP
+In case you want to obtain the backtrace from a specific unw_context_t,
+you can call unw_backtrace2
+with that context passing 0
+for flag. 
 If the unw_context_t
 is known to be a signal frame (i.e., from the third argument 
 in a sigaction handler on linux), unw_backtrace2
 can be used to collect 
-only the frames before the signal frame. 
+only the frames before the signal frame passing the UNW_INIT_SIGNAL_FRAME
+flag. 
 .PP
 .SH RETURN VALUE
 
