@@ -316,6 +316,6 @@ extern int unw_get_proc_name_by_ip (unw_addr_space_t, unw_word_t, char *,
 				    size_t, unw_word_t *, void *);
 extern const char *unw_strerror (int);
 extern int unw_backtrace (void **, int);
-extern int unw_backtrace2 (void **, int, unw_context_t*);
+extern int unw_backtrace2 (void **, int, unw_context_t*, int);
 
 extern unw_addr_space_t unw_local_addr_space;

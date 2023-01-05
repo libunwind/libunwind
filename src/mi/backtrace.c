@@ -77,7 +77,7 @@ unw_backtrace (void **buffer, int size)
 }
 
 int
-unw_backtrace2 (void **buffer, int size, unw_context_t* uc2)
+unw_backtrace2 (void **buffer, int size, unw_context_t* uc2, int flag)
 {
   if (size == 0)
     return 0;
@@ -89,7 +89,7 @@ unw_backtrace2 (void **buffer, int size, unw_context_t* uc2)
   // need to copy, because the context will be modified by tdep_trace
   unw_context_t uc = *(unw_context_t*)uc2;
 
-  if (unlikely (unw_init_local2 (&cursor, &uc, UNW_INIT_SIGNAL_FRAME) < 0))
+  if (unlikely (unw_init_local2 (&cursor, &uc, flag) < 0))
     return 0;
 
   // get the first ip from the context
@@ -110,7 +110,7 @@ unw_backtrace2 (void **buffer, int size, unw_context_t* uc2)
   // and add 1 to it (the one we retrieved above)
   if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
     {
-      return slow_backtrace (buffer, remaining_size, &uc, UNW_INIT_SIGNAL_FRAME) + 1;
+      return slow_backtrace (buffer, remaining_size, &uc, flag) + 1;
     }
 
   return n + 1;

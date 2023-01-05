@@ -174,7 +174,7 @@ do_backtrace_with_context(void *context)
   if (verbose)
     printf ("\n\tvia unw_backtrace2():\n");
 
-  m = unw_backtrace2 (addresses[1], 128, (unw_context_t*)context);
+  m = unw_backtrace2 (addresses[1], 128, (unw_context_t*)context, UNW_INIT_SIGNAL_FRAME);
 
   if (verbose)
     for (i = 0; i < m; ++i)
