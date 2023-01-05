@@ -1,7 +1,7 @@
 dnl Process this file with autoconf to produce a configure script.
 
 define(pkg_major, 1)
-define(pkg_minor, 6)
+define(pkg_minor, 7)
 define(pkg_extra, -rc1)
 define(pkg_maintainer, libunwind-devel@nongnu.org)
 define(mkvers, $1.$2$3)
@@ -11,7 +11,7 @@ AC_CONFIG_SRCDIR(src/mi/backtrace.c)
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIRS([m4])
 AC_CANONICAL_TARGET
-AM_INIT_AUTOMAKE([1.6 subdir-objects -Wall])
+AM_INIT_AUTOMAKE([1.7 subdir-objects -Wall])
 AM_SILENT_RULES([yes])
 AM_MAINTAINER_MODE
 AC_CONFIG_HEADERS([include/config.h])
