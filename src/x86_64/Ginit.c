@@ -117,7 +117,7 @@ open_pipe (void)
 
 ALWAYS_INLINE
 static int
-write_validate (void *addr)
+write_validate (unw_word_t addr)
 {
   int ret = -1;
   ssize_t bytes = 0;
@@ -142,7 +142,7 @@ write_validate (void *addr)
        /* use syscall insteadof write() so that ASAN does not complain */
        ret = syscall (SYS_write, mem_validate_pipe[1], addr, 1);
 #else
-	  ret = write (mem_validate_pipe[1], addr, 1);
+	  ret = write (mem_validate_pipe[1], (void *)addr, 1);
 #endif
     }
   while ( errno == EINTR );
@@ -150,10 +150,10 @@ write_validate (void *addr)
   return ret;
 }
 
-static int (*mem_validate_func) (void *addr, size_t len);
-static int msync_validate (void *addr, size_t len)
+static int (*mem_validate_func) (unw_word_t addr, size_t len);
+static int msync_validate (unw_word_t addr, size_t len)
 {
-  if (msync (addr, len, MS_ASYNC) != 0)
+  if (msync ( (void *)uwn_page_start (addr), len, MS_ASYNC) != 0)
     {
       return -1;
     }
@@ -162,13 +162,13 @@ static int msync_validate (void *addr, size_t len)
 }
 
 #ifdef HAVE_MINCORE
-static int mincore_validate (void *addr, size_t len)
+static int mincore_validate (unw_word_t addr, size_t len)
 {
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
 
   /* mincore could fail with EAGAIN but we conservatively return -1
      instead of looping. */
-  if (mincore (addr, len, (unsigned char *)mvec) != 0)
+  if (mincore ((void *)uwn_page_start (addr), len, mvec) != 0)
     {
       return -1;
     }
@@ -186,6 +186,29 @@ tdep_init_mem_validate (void)
 {
   open_pipe ();
 
+  const char *force_mem_validate = getenv ("UNW_X86_64_FORCE_MEM_VALIDATE");
+
+  if (force_mem_validate != NULL)
+    {
+#ifdef HAVE_MINCORE
+      if (strcmp(force_mem_validate, "mincore") == 0)
+        {
+          Debug(1, "force using mincore to validate memory\n");
+          mem_validate_func = mincore_validate;
+          return;
+        }
+#endif
+      if (strcmp(force_mem_validate, "msync") == 0)
+        {
+          Debug(1, "force using msync to validate memory\n");
+          mem_validate_func = msync_validate;
+          return;
+        }
+      Debug(1, "cannot force %s to validate memory, unknown method \n",
+              force_mem_validate);
+    }
+
+  // Work out dynamically what memory validation function to use.
 #ifdef HAVE_MINCORE
   unsigned char present = 1;
   size_t len = unw_page_size;
@@ -217,6 +240,7 @@ static _Thread_local int lga_victim;
 static int
 is_cached_valid_mem(unw_word_t addr)
 {
+  addr = uwn_page_start (addr);
   int i;
   for (i = 0; i < NLGA; i++)
     {
@@ -229,6 +253,7 @@ is_cached_valid_mem(unw_word_t addr)
 static void
 cache_valid_mem(unw_word_t addr)
 {
+  addr = uwn_page_start (addr);
   int i, victim;
   victim = lga_victim;
   for (i = 0; i < NLGA; i++) {
@@ -254,6 +279,7 @@ static int
 is_cached_valid_mem(unw_word_t addr)
 {
   int i;
+  addr = uwn_page_start (addr);
   for (i = 0; i < NLGA; i++)
     {
       if (addr == atomic_load(&last_good_addr[i]))
@@ -268,6 +294,7 @@ cache_valid_mem(unw_word_t addr)
   int i, victim;
   victim = atomic_load(&lga_victim);
   unw_word_t zero = 0;
+  addr = uwn_page_start (addr);
   for (i = 0; i < NLGA; i++) {
     if (atomic_compare_exchange_strong(&last_good_addr[victim], &zero, addr)) {
       return;
@@ -283,21 +310,30 @@ cache_valid_mem(unw_word_t addr)
 #endif
 
 static int
-validate_mem (unw_word_t addr)
+validate_mem (unw_word_t addr, size_t len)
 {
-  size_t len = unw_page_size;
-  addr = uwn_page_start(addr);
-
-  if (addr == 0)
-    return -1;
-
-  if (is_cached_valid_mem(addr))
+  if (len == 0)
     return 0;
 
-  if (mem_validate_func ((void *) addr, len) == -1)
+  if (uwn_page_start (addr) == 0)
     return -1;
 
-  cache_valid_mem(addr);
+  unw_word_t lastbyte = addr + (len - 1); // highest addressed byte of data to access
+  while (1)
+    {
+      if (!is_cached_valid_mem(addr))
+        {
+          if (mem_validate_func (addr, len) == -1)
+            return -1;
+          cache_valid_mem(addr);
+        }
+      // If we're still on the same page, we're done.
+      unw_word_t stride = (long)len-1 < unw_page_size ? (long)len-1 : unw_page_size;
+      len -= stride;
+      addr += stride;
+      if (uwn_page_start (addr) == uwn_page_start (lastbyte))
+        break;
+    }
 
   return 0;
 }
@@ -315,7 +351,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     {
       /* validate address */
       if (unlikely (AS_ARG_GET_VALIDATE(arg))
-          && unlikely (validate_mem (addr))) {
+          && unlikely (validate_mem (addr, sizeof (unw_word_t)))) {
         Debug (16, "mem[%016lx] -> invalid\n", addr);
         return -1;
       }
