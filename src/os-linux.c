@@ -74,7 +74,7 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
 
   if (!stat(root, &st) && S_ISDIR(st.st_mode))
     {
-      unsigned long _len = strlen(root) + strlen(mi.path) + 1;
+      size_t _len = strlen(root) + strlen(mi.path) + 1;
       if(_len >= FULL_PATH_BUFF_SZ)
         {
           full_path = (char*) malloc(_len);
