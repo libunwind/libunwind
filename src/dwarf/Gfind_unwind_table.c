@@ -41,7 +41,7 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
                          unw_word_t ip)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
-  unw_word_t addr, eh_frame_start, fde_count, load_base;
+  unw_word_t addr, eh_frame_start, fde_count, loadoff, load_base;
   unw_word_t max_load_addr = 0;
   unw_word_t start_ip = to_unw_word (-1);
   unw_word_t end_ip = 0;
@@ -104,7 +104,8 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
   if (!ptxt)
     return 0;
 
-  load_base = segbase - ptxt->p_vaddr;
+  loadoff = mapoff + (ptxt->p_vaddr - ptxt->p_offset);
+  load_base = segbase - loadoff;
   start_ip += load_base;
   end_ip += load_base;
 
