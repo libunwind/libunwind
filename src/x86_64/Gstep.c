@@ -220,7 +220,7 @@ unw_step (unw_cursor_t *cursor)
                             Debug (2, "new_ip 0x%lx looks valid\n", new_ip);
                             rip_fixup_success = 1;
                             c->frame_info.cfa_reg_offset = 8;
-                            c->frame_info.cfa_reg_rsp = 1;
+                            c->frame_info.cfa_reg_rsp = -1;
                             c->frame_info.rbp_cfa_offset = -1;
                             c->frame_info.rsp_cfa_offset = -1;
                             c->frame_info.frame_type = UNW_X86_64_FRAME_OTHER;
