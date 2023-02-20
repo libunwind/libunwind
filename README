@@ -200,10 +200,5 @@ commands:
 
 ## Contacting the Developers
 
-Please direct all questions regarding this library to <libunwind-devel@nongnu.org>.
-
-You can do this by sending an email to <libunwind-request@nongnu.org> with
-a body of "subscribe libunwind-devel", or you can subscribe and manage your
-subscription via the web-interface at <https://savannah.nongnu.org/mail/?group=libunwind>.
-
-You can also interact on our GitHub page: <https://github.com/libunwind/libunwind>.
+Please raise issues and pull requests through the GitHub repository:
+<https://github.com/libunwind/libunwind>.
