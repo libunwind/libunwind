@@ -33,7 +33,7 @@ jobs:
           - O0
           - O3
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup
         run: |
           HOST=${{ matrix.HOST }}
@@ -93,7 +93,7 @@ jobs:
           - {target: mips64el,toolchain: g++-mips64el-linux-gnuabi64, host: mips64el-linux-gnuabi64,qemu: mips64el }
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Install QEMU
         # this ensure install latest qemu on ubuntu, apt get version is old
         env:
