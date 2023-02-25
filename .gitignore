@@ -15,6 +15,7 @@ Makefile.in
 
 INSTALL
 aclocal.m4
+m4/
 autom4te.cache/
 aux
 config.log

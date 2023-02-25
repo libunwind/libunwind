@@ -389,6 +389,10 @@ if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes -a x$
   LIBCRTS="-lgcc_s"
 fi
 
+AC_MSG_CHECKING([if compiler supports -march=native])
+AM_CONDITIONAL([COMPILER_SUPPORTS_MARCH_NATIVE], ["$CC" -march=native -S -o /dev/null -xc /dev/null > /dev/null 2>&1])
+AM_COND_IF([COMPILER_SUPPORTS_MARCH_NATIVE], [AC_MSG_NOTICE(yes)], [AC_MSG_NOTICE(no)])
+
 AC_MSG_CHECKING([for __builtin___clear_cache])
 AC_LINK_IFELSE(
   [AC_LANG_PROGRAM([[]], [[__builtin___clear_cache(0, 0)]])],
