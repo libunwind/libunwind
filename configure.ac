@@ -389,9 +389,13 @@ if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes -a x$
   LIBCRTS="-lgcc_s"
 fi
 
+OLD_CFLAGS="${CFLAGS}"
+CFLAGS="${CFLAGS} -march=native"
 AC_MSG_CHECKING([if compiler supports -march=native])
-AM_CONDITIONAL([COMPILER_SUPPORTS_MARCH_NATIVE], ["$CC" -march=native -S -o /dev/null -xc /dev/null > /dev/null 2>&1])
-AM_COND_IF([COMPILER_SUPPORTS_MARCH_NATIVE], [AC_MSG_NOTICE(yes)], [AC_MSG_NOTICE(no)])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [supports_march_native=yes],[supports_march_native=no])
+AM_CONDITIONAL(COMPILER_SUPPORTS_MARCH_NATIVE, [test x$supports_march_native = xyes])
+AC_MSG_RESULT([$supports_march_native])
+CFLAGS="${OLD_CFLAGS}"
 
 AC_MSG_CHECKING([for __builtin___clear_cache])
 AC_LINK_IFELSE(
