@@ -173,9 +173,9 @@ Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
 Garm64_test_sve_signal_SOURCES = Garm64-test-sve-signal.c
 Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
 
-if COMPILER_SUPPORTS_MARCH_NATIVE
- Garm64_test_sve_signal_CFLAGS = -fno-inline -march=native
- Larm64_test_sve_signal_CFLAGS = -fno-inline -march=native
+if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
+ Garm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
+ Larm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
 endif
 
 Gtest_init_SOURCES = Gtest-init.cxx

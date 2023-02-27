@@ -390,11 +390,11 @@ if test x$GCC = xyes -a x$intel_compiler != xyes -a x$qcc_compiler != xyes -a x$
 fi
 
 OLD_CFLAGS="${CFLAGS}"
-CFLAGS="${CFLAGS} -march=native"
-AC_MSG_CHECKING([if compiler supports -march=native])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [supports_march_native=yes],[supports_march_native=no])
-AM_CONDITIONAL(COMPILER_SUPPORTS_MARCH_NATIVE, [test x$supports_march_native = xyes])
-AC_MSG_RESULT([$supports_march_native])
+CFLAGS="${CFLAGS} -march=armv8-a+sve"
+AC_MSG_CHECKING([if compiler supports -march=armv8-a+sve])
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], [supports_march_armv8_a_sve=yes],[supports_march_armv8_a_sve=no])
+AM_CONDITIONAL(COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE, [test x$supports_march_armv8_a_sve = xyes])
+AC_MSG_RESULT([$supports_march_armv8_a_sve])
 CFLAGS="${OLD_CFLAGS}"
 
 AC_MSG_CHECKING([for __builtin___clear_cache])
