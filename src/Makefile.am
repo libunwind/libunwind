@@ -42,6 +42,7 @@ endif
 
 ### libunwind-ptrace:
 libunwind_ptrace_la_SOURCES =						  \
+	mi/init.c							  \
 	ptrace/_UPT_elf.c						  \
 	ptrace/_UPT_accessors.c ptrace/_UPT_access_fpreg.c		  \
 	ptrace/_UPT_access_mem.c ptrace/_UPT_access_reg.c		  \
@@ -63,6 +64,7 @@ libunwind_coredump_la_SOURCES = \
 	coredump/_UCD_corefile_elf.c \
 	coredump/ucd_file_table.c \
 	\
+	mi/init.c \
 	coredump/_UPT_elf.c \
 	coredump/_UPT_access_fpreg.c \
 	coredump/_UPT_get_dyn_info_list_addr.c \
@@ -92,7 +94,8 @@ endif
 libunwind_setjmp_la_LIBADD		= $(LIBUNWIND_ELF)	\
 					  libunwind-$(arch).la	\
 					  libunwind.la -lc
-libunwind_setjmp_la_SOURCES		= setjmp/longjmp.c	\
+libunwind_setjmp_la_SOURCES		= mi/init.c		\
+					  setjmp/longjmp.c	\
 					  setjmp/siglongjmp.c
 noinst_HEADERS				+= setjmp/setjmp_i.h
 
