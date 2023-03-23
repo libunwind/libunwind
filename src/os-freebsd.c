@@ -37,7 +37,7 @@ get_mem(size_t sz)
 {
   void *res;
 
-  res = mmap(NULL, sz, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
+  res = mi_mmap(NULL, sz, PROT_READ | PROT_WRITE, MAP_ANON | MAP_PRIVATE, -1, 0);
   if (res == MAP_FAILED)
     return (NULL);
   return (res);

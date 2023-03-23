@@ -124,10 +124,10 @@ ucd_file_map (ucd_file_t *ucd_file)
       _ucd_file_open (ucd_file);
 	}
 
-  ucd_file->image = mmap(NULL, ucd_file->size, PROT_READ, MAP_PRIVATE, ucd_file->fd, 0);
+  ucd_file->image = mi_mmap(NULL, ucd_file->size, PROT_READ, MAP_PRIVATE, ucd_file->fd, 0);
   if (ucd_file->image == MAP_FAILED)
 	{
-	  Debug(0, "error %d in mmap(%s): %s\n", errno, ucd_file->filename, strerror(errno));
+	  Debug(0, "error in mmap(%s)\n", ucd_file->filename);
 	  ucd_file->image = NULL;
 	  return NULL;
 	}
