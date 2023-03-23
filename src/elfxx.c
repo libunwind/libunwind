@@ -239,10 +239,9 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
     }
 
   mdi->size = uncompressed_len;
-  mdi->image = mmap (NULL, uncompressed_len, PROT_READ|PROT_WRITE,
-                     MAP_PRIVATE|MAP_ANONYMOUS, -1, 0);
+  GET_MEMORY (mdi->image, uncompressed_len);
 
-  if (mdi->image == MAP_FAILED)
+  if (!mdi->image)
     return 0;
 
   size_t in_pos = 0, out_pos = 0;

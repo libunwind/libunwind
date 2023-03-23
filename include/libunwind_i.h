@@ -217,6 +217,26 @@ do {                                            \
 
 #define SOS_MEMORY_SIZE 16384   /* see src/mi/mempool.c */
 
+/* Provide an internal syscall version of mmap to improve signal safety. */
+static ALWAYS_INLINE void *
+mi_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset)
+{
+#ifdef SYS_mmap
+#ifdef __syscall // prefer over syscall on *BSD
+  long int ret = __syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
+#else
+  long int ret = syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
+#endif
+  // @todo this is very likely Linux specific
+  if ((unsigned long int)ret > -4096UL)
+    return MAP_FAILED;
+  else
+    return (void *)ret;
+#else
+  return mmap (addr, len, prot, flags, fd, offset);
+#endif
+}
+
 /* Provide an internal syscall version of munmap to improve signal safety. */
 static ALWAYS_INLINE int
 mi_munmap (void *addr, size_t len)
@@ -233,9 +253,8 @@ mi_munmap (void *addr, size_t len)
 #endif
 #define GET_MEMORY(mem, size)                                               \
 do {                                                                        \
-  /* Hopefully, mmap() goes straight through to a system call stub...  */   \
-  mem = mmap (NULL, size, PROT_READ | PROT_WRITE,                           \
-              MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);                          \
+  mem = mi_mmap (NULL, size, PROT_READ | PROT_WRITE,                        \
+                 MAP_PRIVATE | MAP_ANONYMOUS, -1, 0);                       \
   if (mem == MAP_FAILED)                                                    \
     mem = NULL;                                                             \
 } while (0)

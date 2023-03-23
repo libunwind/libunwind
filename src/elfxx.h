@@ -85,7 +85,7 @@ elf_map_image (struct elf_image *ei, const char *path)
     }
 
   ei->size = stat.st_size;
-  ei->image = mmap (NULL, ei->size, PROT_READ, MAP_PRIVATE, fd, 0);
+  ei->image = mi_mmap (NULL, ei->size, PROT_READ, MAP_PRIVATE, fd, 0);
   close (fd);
   if (ei->image == MAP_FAILED)
     return -1;
