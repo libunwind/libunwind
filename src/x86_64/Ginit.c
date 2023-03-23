@@ -153,7 +153,7 @@ write_validate (unw_word_t addr)
 static int (*mem_validate_func) (unw_word_t addr, size_t len);
 static int msync_validate (unw_word_t addr, size_t len)
 {
-  if (msync ( (void *)uwn_page_start (addr), len, MS_ASYNC) != 0)
+  if (msync ( (void *)unw_page_start (addr), len, MS_ASYNC) != 0)
     {
       return -1;
     }
@@ -168,7 +168,7 @@ static int mincore_validate (unw_word_t addr, size_t len)
 
   /* mincore could fail with EAGAIN but we conservatively return -1
      instead of looping. */
-  if (mincore ((void *)uwn_page_start (addr), len, mvec) != 0)
+  if (mincore ((void *)unw_page_start (addr), len, mvec) != 0)
     {
       return -1;
     }
@@ -212,7 +212,7 @@ tdep_init_mem_validate (void)
 #ifdef HAVE_MINCORE
   unsigned char present = 1;
   size_t len = unw_page_size;
-  unw_word_t addr = uwn_page_start((unw_word_t)&present);
+  unw_word_t addr = unw_page_start((unw_word_t)&present);
   unsigned char mvec[1];
   int ret;
   while ((ret = mincore ((void*)addr, len, (unsigned char *)mvec)) == -1 &&
@@ -240,7 +240,7 @@ static _Thread_local int lga_victim;
 static int
 is_cached_valid_mem(unw_word_t addr)
 {
-  addr = uwn_page_start (addr);
+  addr = unw_page_start (addr);
   int i;
   for (i = 0; i < NLGA; i++)
     {
@@ -253,7 +253,7 @@ is_cached_valid_mem(unw_word_t addr)
 static void
 cache_valid_mem(unw_word_t addr)
 {
-  addr = uwn_page_start (addr);
+  addr = unw_page_start (addr);
   int i, victim;
   victim = lga_victim;
   for (i = 0; i < NLGA; i++) {
@@ -279,7 +279,7 @@ static int
 is_cached_valid_mem(unw_word_t addr)
 {
   int i;
-  addr = uwn_page_start (addr);
+  addr = unw_page_start (addr);
   for (i = 0; i < NLGA; i++)
     {
       if (addr == atomic_load(&last_good_addr[i]))
@@ -294,7 +294,7 @@ cache_valid_mem(unw_word_t addr)
   int i, victim;
   victim = atomic_load(&lga_victim);
   unw_word_t zero = 0;
-  addr = uwn_page_start (addr);
+  addr = unw_page_start (addr);
   for (i = 0; i < NLGA; i++) {
     if (atomic_compare_exchange_strong(&last_good_addr[victim], &zero, addr)) {
       return;
@@ -315,7 +315,7 @@ validate_mem (unw_word_t addr, size_t len)
   if (len == 0)
     return 0;
 
-  if (uwn_page_start (addr) == 0)
+  if (unw_page_start (addr) == 0)
     return -1;
 
   unw_word_t lastbyte = addr + (len - 1); // highest addressed byte of data to access
@@ -331,7 +331,7 @@ validate_mem (unw_word_t addr, size_t len)
       unw_word_t stride = (long)len-1 < unw_page_size ? (long)len-1 : unw_page_size;
       len -= stride;
       addr += stride;
-      if (uwn_page_start (addr) == uwn_page_start (lastbyte))
+      if (unw_page_start (addr) == unw_page_start (lastbyte))
         break;
     }
 

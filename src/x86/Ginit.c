@@ -87,7 +87,7 @@ validate_mem (unw_word_t addr)
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
 #endif
   size_t len = unw_page_size;
-  addr = uwn_page_start(addr);
+  addr = unw_page_start(addr);
 
   if (addr == 0)
     return -1;
