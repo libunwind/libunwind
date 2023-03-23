@@ -30,6 +30,8 @@ _UPT_resume (unw_addr_space_t as, unw_cursor_t *c, void *arg)
 {
   struct UPT_info *ui = arg;
 
+  mi_init ();
+
 #ifdef HAVE_TTRACE
 # warning No support for ttrace() yet.
 #elif HAVE_DECL_PTRACE_CONT
