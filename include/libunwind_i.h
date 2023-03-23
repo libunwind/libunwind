@@ -326,7 +326,7 @@ print_error (const char *string)
 
 HIDDEN extern long unw_page_size;
 
-static inline unw_word_t uwn_page_start(unw_word_t addr)
+static inline unw_word_t unw_page_start(unw_word_t addr)
 {
   return addr & ~(unw_page_size - 1);
 }

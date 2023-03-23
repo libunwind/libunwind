@@ -191,7 +191,7 @@ do_backtrace_with_context(void *context)
       /* Allow one in difference in comparison, trace returns adjusted addresses. */
       if (labs((unw_word_t) addresses[0][i] - (unw_word_t) addresses[1][i]) > 1)
 	{
-          printf ("FAILURE: unw_step() loop and uwn_backtrace2() addresses differ at %d: %p vs. %p\n",
+          printf ("FAILURE: unw_step() loop and unw_backtrace2() addresses differ at %d: %p vs. %p\n",
                   i, addresses[0][i], addresses[1][i]);
           ++num_errors;
 	}
