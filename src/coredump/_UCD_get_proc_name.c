@@ -84,7 +84,7 @@ static int
 elf_w (CD_get_proc_name) (struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip,
                           char *buf, size_t buf_len, unw_word_t *offp)
 {
-  unsigned long segbase, mapoff;
+  unsigned long segbase;
   int ret;
   /* We're about to map an elf image.
      The call will unmap memory it doesn't own, so just null it out and avoid
