@@ -168,7 +168,7 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase)
   // PT_LOAD program headers p_offset however is not guaranteed to be aligned on a
   // page size, ld.lld generate libraries where this is not the case. So we must
   // make sure we compare both values with the same alignment.
-  unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
+  unsigned long pagesize_alignment_mask = ~(unw_page_size - 1UL);
 
   ehdr = ei->image;
   phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
