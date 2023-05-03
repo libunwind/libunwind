@@ -42,7 +42,7 @@ if USE_ALTIVEC
 endif #USE_ALTIVEC
 else  #!ARCH_PPC64
 if ARCH_X86_64
- check_PROGRAMS_arch +=	Gx64-test-dwarf-expressions Lx64-test-dwarf-expressions x64-unwind-badjmp-signal-frame
+ check_PROGRAMS_arch +=	Gx64-test-dwarf-expressions Lx64-test-dwarf-expressions x64-unwind-badjmp-signal-frame x64-test-dyn1
 endif #ARCH X86_64
 endif #!ARCH_PPC64
 endif #!ARCH_IA64
@@ -184,6 +184,7 @@ Ltest_cxx_exceptions_SOURCES = Ltest-cxx-exceptions.cxx
 
 Ltest_init_local_signal_SOURCES = Ltest-init-local-signal.c Ltest-init-local-signal-lib.c
 
+x64_test_dyn1_SOURCES = x64-test-dyn1.c
 x64_unwind_badjmp_signal_frame_SOURCES = x64-unwind-badjmp-signal-frame.c
 Gtest_dyn1_SOURCES = Gtest-dyn1.c flush-cache.S flush-cache.h
 Ltest_dyn1_SOURCES = Ltest-dyn1.c flush-cache.S flush-cache.h
@@ -231,6 +232,7 @@ Ltest_init_local_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_concurrent_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) -lpthread
+x64_test_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 x64_unwind_badjmp_signal_frame_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)

@@ -232,6 +232,10 @@ typedef enum
     DWARF_WHERE_EXPR,           /* register saved */
     DWARF_WHERE_VAL_EXPR,       /* register has computed value */
     DWARF_WHERE_CFA,            /* register is set to the computed cfa value */
+    DWARF_WHERE_DYN_OFFSET,     /* register has the value in the previous frame, plus an offset */
+    DWARF_WHERE_DYN_FP_REL,     /* register is spilled to this fp-relative offset */
+    DWARF_WHERE_DYN_SP_REL,     /* register is spilled to this sp-relative offset */
+    DWARF_WHERE_DYN_SAVE_SP,    /* used to implement UNW_DYN_SAVE_SP */
   }
 dwarf_where_t;
 
