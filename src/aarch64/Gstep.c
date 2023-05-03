@@ -213,11 +213,11 @@ unw_step (unw_cursor_t *cursor)
       dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
     }
 
-  /* Restore default memory validation state */
-  c->validate = validate;
-
   ret = dwarf_step (&c->dwarf);
   Debug(1, "dwarf_step()=%d\n", ret);
+
+  /* Restore default memory validation state */
+  c->validate = validate;
 
   if (unlikely (ret == -UNW_ESTOPUNWIND))
     return ret;
@@ -225,6 +225,16 @@ unw_step (unw_cursor_t *cursor)
   if (unlikely (ret < 0))
     {
       /* DWARF failed. */
+
+      /*
+       * We could get here because of missing/bad unwind information.
+       * Validate all addresses before dereferencing.
+       */
+      if (c->dwarf.as == unw_local_addr_space)
+        {
+          c->validate = 1;
+        }
+
       if (is_plt_entry (&c->dwarf))
         {
           Debug (2, "found plt entry\n");
