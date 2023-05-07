@@ -22,6 +22,7 @@ man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 	unw_regname.man unw_resume.man					\
 	unw_reg_states_iterate.man					\
 	unw_set_caching_policy.man					\
+	unw_set_iterate_phdr_function.man				\
 	unw_set_cache_size.man						\
 	unw_set_fpreg.man						\
 	unw_set_reg.man							\
@@ -50,6 +51,7 @@ EXTRA_DIST = NOTES libunwind.trans					\
 	unw_is_signal_frame.tex						\
 	unw_create_addr_space.tex unw_destroy_addr_space.tex		\
 	unw_regname.tex unw_resume.tex unw_set_caching_policy.tex	\
+	unw_set_iterate_phdr_function.tex				\
 	unw_reg_states_iterate.tex					\
 	unw_set_cache_size.tex						\
 	unw_set_fpreg.tex						\
