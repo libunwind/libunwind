@@ -144,7 +144,7 @@ endif
 # ptrace gives EBADREG when testing,
 # but generally everything else works.
 if NO_PTRACE_TEST
- XFAIL_TESTS += run-ptrace-mapper test-ptrace Ltest-init-local-signal
+ XFAIL_TESTS += run-ptrace-mapper test-ptrace
 endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
