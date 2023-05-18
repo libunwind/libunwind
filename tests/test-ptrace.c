@@ -222,12 +222,20 @@ main (int argc, char **argv)
 	dup2 (open ("/dev/null", O_WRONLY), 1);
 
 #if HAVE_DECL_PTRACE_TRACEME
-      ptrace (PTRACE_TRACEME, 0, 0, 0);
+      long stat = ptrace (PTRACE_TRACEME, 0, 0, 0);
 #elif HAVE_DECL_PT_TRACE_ME
-      ptrace (PT_TRACE_ME, 0, 0, 0);
+      int stat = ptrace (PT_TRACE_ME, 0, 0, 0);
 #else
 #error Trace me
 #endif
+      if (stat == -1)
+        {
+          if (verbose)
+            {
+              fprintf(stderr, "ptrace() returned %ld errno=%d (%s)\n", (long)stat, errno, strerror(errno));
+            }
+          _exit(77);
+        }
 
       if ((argc > 1) && (optind == argc)) {
         fprintf(stderr, "Need to specify a command line for the child\n");
@@ -262,6 +270,8 @@ main (int argc, char **argv)
 	    {
 	      if (WEXITSTATUS (status) != 0)
 		panic ("child's exit status %d\n", WEXITSTATUS (status));
+	      if (WEXITSTATUS (status) == 77)
+		_exit(77);
 	      break;
 	    }
 	  else if (WIFSIGNALED (status))
