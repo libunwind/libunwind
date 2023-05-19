@@ -299,18 +299,39 @@ extern pthread_mutex_t _U_dyn_info_list_lock;
 #define unwi_debug_level                UNWI_ARCH_OBJ(debug_level)
 extern long unwi_debug_level;
 
+# include <stdarg.h>
 # include <stdio.h>
-# define Debug(level, /* format */ ...)                                 \
-do {                                                                    \
-  if (unwi_debug_level >= level)                                        \
-    {                                                                   \
-      int _n = level;                                                   \
-      if (_n > 16)                                                      \
-        _n = 16;                                                        \
-      fprintf (stderr, "%*c>%s: ", _n, ' ', __FUNCTION__);              \
-      fprintf (stderr, /* format */ __VA_ARGS__);                       \
-    }                                                                   \
-} while (0)
+# include <unistd.h>
+
+#define Debug(level, ...) _unw_debug(level, __FUNCTION__,  __VA_ARGS__)
+
+/**
+ * Send a debug message to stderr.
+ *
+ * This function may be called from within a signal handler context where
+ * fprintf(3) is not safe to call. The write(2) call is safe, however, and we're
+ * going to have to assume that snprintf(3) is signal safe otherwise it's pretty
+ * pointless to use Debug() calls anywhere.
+ */
+static inline void _unw_debug(int level, char const * const fname, char const * const fmt, ...)
+{
+  if (unwi_debug_level >= level)
+    {
+      enum { buf_size = 512 };
+      char buf[buf_size];
+
+      int _n = level > 16 ? level : 16;
+      int bcount = snprintf (buf, buf_size, "%*c>%s: ", _n, ' ', fname);
+      int res = write(STDERR_FILENO, buf, bcount);
+
+      va_list ap;
+      va_start(ap, fmt);
+      bcount = vsnprintf (buf, buf_size, fmt, ap);
+      va_end(ap);
+      res = write(STDERR_FILENO, buf, bcount);
+      (void)res; /* silence "variable set but not used" warning */
+    }
+}
 # define Dprintf(/* format */ ...)                                      \
   fprintf (stderr, /* format */ __VA_ARGS__)
 #else
@@ -326,7 +347,7 @@ print_error (const char *string)
 
 HIDDEN extern long unw_page_size;
 
-static inline unw_word_t uwn_page_start(unw_word_t addr)
+static inline unw_word_t unw_page_start(unw_word_t addr)
 {
   return addr & ~(unw_page_size - 1);
 }

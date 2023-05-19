@@ -182,7 +182,7 @@ tdep_init_mem_validate (void)
 #ifdef HAVE_MINCORE
   unsigned char present = 1;
   size_t len = unw_page_size;
-  unw_word_t addr = uwn_page_start((unw_word_t)&present);
+  unw_word_t addr = unw_page_start((unw_word_t)&present);
   unsigned char mvec[1];
   int ret;
   while ((ret = mincore((void *)addr, len, mvec)) == -1 &&
@@ -212,7 +212,7 @@ validate_mem (unw_word_t addr)
 {
   int i, victim;
   size_t len = unw_page_size;
-  addr = uwn_page_start(addr);
+  addr = unw_page_start(addr);
 
   if (addr == 0)
     return -1;

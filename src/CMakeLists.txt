@@ -21,6 +21,7 @@ elseif(TARGET_AARCH64)
 endif()
 
 SET(libunwind_ptrace_la_SOURCES
+    mi/init.c
     ptrace/_UPT_elf.c
     ptrace/_UPT_accessors.c ptrace/_UPT_access_fpreg.c
     ptrace/_UPT_access_mem.c ptrace/_UPT_access_reg.c
@@ -39,6 +40,7 @@ SET(libunwind_coredump_la_SOURCES
     coredump/_UCD_find_proc_info.c
     coredump/_UCD_get_proc_name.c
 
+    mi/init.c
     coredump/_UPT_elf.c
     coredump/_UPT_access_fpreg.c
     coredump/_UPT_get_dyn_info_list_addr.c

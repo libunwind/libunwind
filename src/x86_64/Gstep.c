@@ -65,7 +65,7 @@ is_vsyscall (struct dwarf_cursor *c)
 #elif defined(VSYSCALL_ADDR)
   /* Linux 3.16 removes `VSYSCALL_START` and `VSYSCALL_END`.  Assume
      a single page is mapped for vsyscalls.  */
-  return c->ip >= VSYSCALL_ADDR && c->ip < VSYSCALL_ADDR + sysconf(_SC_PAGESIZE);
+  return c->ip >= VSYSCALL_ADDR && c->ip < VSYSCALL_ADDR + unw_page_size;
 #else
   return 0;
 #endif

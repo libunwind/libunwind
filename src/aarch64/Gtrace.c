@@ -483,13 +483,20 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       /* Advance standard traceable frame. */
       cfa = (f->cfa_reg_sp ? sp : fp) + f->cfa_reg_offset;
       if (likely(f->lr_cfa_offset != -1))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->lr_cfa_offset, pc);
+        {
+          ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->lr_cfa_offset, pc);
+        }
       else if (lr != 0)
-      {
-        /* Use the saved link register as the new pc. */
-        pc = lr;
-        lr = 0;
-      }
+        {
+          /* Use the saved link register as the new pc. */
+          pc = lr;
+          lr = 0;
+        }
+      else
+        {
+          /* Cached frame has no LR and neither do we. */
+          return -UNW_ESTOPUNWIND;
+        }
       if (likely(ret >= 0) && likely(f->fp_cfa_offset != -1))
         ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->fp_cfa_offset, fp);
 

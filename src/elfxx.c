@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/param.h>
 #include <limits.h>
 
-#ifdef HAVE_LZMA
+#if HAVE_LZMA
 #include <lzma.h>
 #endif /* HAVE_LZMA */
 
@@ -168,7 +168,7 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase)
   // PT_LOAD program headers p_offset however is not guaranteed to be aligned on a
   // page size, ld.lld generate libraries where this is not the case. So we must
   // make sure we compare both values with the same alignment.
-  unsigned long pagesize_alignment_mask = ~(((unsigned long)getpagesize()) - 1UL);
+  unsigned long pagesize_alignment_mask = ~(unw_page_size - 1UL);
 
   ehdr = ei->image;
   phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
@@ -184,8 +184,62 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase)
 }
 
 #if HAVE_LZMA
+
+#define XZ_MAX_ALLOCS 16
+struct xz_allocator_data {
+  struct {
+    void   *ptr;
+    size_t  size;
+  } allocations[XZ_MAX_ALLOCS];
+  uint8_t n_allocs;
+};
+
+static void*
+xz_alloc (void *opaque, size_t nmemb, size_t size)
+{
+  struct xz_allocator_data *data = opaque;
+  if (XZ_MAX_ALLOCS == data->n_allocs)
+    return NULL;
+  size = UNW_ALIGN(size * nmemb, unw_page_size);
+  void *ptr;
+  GET_MEMORY (ptr, size);
+  if (!ptr) return ptr;
+  data->allocations[data->n_allocs].ptr  = ptr;
+  data->allocations[data->n_allocs].size = size;
+  ++data->n_allocs;
+  return ptr;
+}
+
+static void
+xz_free (void *opaque, void *ptr)
+{
+  struct xz_allocator_data *data = opaque;
+  for (uint8_t i = data->n_allocs; i-- > 0;)
+    {
+      if (data->allocations[i].ptr == ptr)
+        {
+          mi_munmap (ptr, data->allocations[i].size);
+          --data->n_allocs;
+          if (i != data->n_allocs)
+            {
+              data->allocations[i] = data->allocations[data->n_allocs];
+            }
+          return;
+        }
+    }
+}
+
+static void
+xz_free_all (struct xz_allocator_data *data)
+{
+  while (data->n_allocs-- > 0)
+    {
+      mi_munmap (data->allocations[data->n_allocs].ptr, data->allocations[data->n_allocs].size);
+    }
+}
+
 static size_t
-xz_uncompressed_size (uint8_t *compressed, size_t length)
+xz_uncompressed_size (lzma_allocator *xz_allocator, uint8_t *compressed, size_t length)
 {
   uint64_t memlimit = UINT64_MAX;
   size_t ret = 0, pos = 0;
@@ -203,7 +257,7 @@ xz_uncompressed_size (uint8_t *compressed, size_t length)
     return 0;
 
   uint8_t *indexdata = footer - options.backward_size;
-  if (lzma_index_buffer_decode (&index, &memlimit, NULL, indexdata,
+  if (lzma_index_buffer_decode (&index, &memlimit, xz_allocator, indexdata,
                                 &pos, options.backward_size) != LZMA_OK)
     return 0;
 
@@ -212,7 +266,7 @@ xz_uncompressed_size (uint8_t *compressed, size_t length)
       ret = lzma_index_uncompressed_size (index);
     }
 
-  lzma_index_end (index, NULL);
+  lzma_index_end (index, xz_allocator);
   return ret;
 }
 
@@ -224,6 +278,14 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   uint64_t memlimit = UINT64_MAX; /* no memory limit */
   size_t compressed_len, uncompressed_len;
 
+  struct xz_allocator_data allocator_data;
+  lzma_allocator xz_allocator =
+  {
+    .alloc  = xz_alloc,
+    .free   = xz_free,
+    .opaque = &allocator_data
+  };
+
   shdr = elf_w (find_section) (ei, ".gnu_debugdata");
   if (!shdr)
     return 0;
@@ -231,9 +293,10 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   compressed = ((uint8_t *) ei->image) + shdr->sh_offset;
   compressed_len = shdr->sh_size;
 
-  uncompressed_len = xz_uncompressed_size (compressed, compressed_len);
+  uncompressed_len = xz_uncompressed_size (&xz_allocator, compressed, compressed_len);
   if (uncompressed_len == 0)
     {
+      xz_free_all (&allocator_data);
       Debug (1, "invalid .gnu_debugdata contents\n");
       return 0;
     }
@@ -242,13 +305,18 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
   GET_MEMORY (mdi->image, uncompressed_len);
 
   if (!mdi->image)
-    return 0;
+    {
+      xz_free_all (&allocator_data);
+      return 0;
+    }
 
   size_t in_pos = 0, out_pos = 0;
   lzma_ret lret;
-  lret = lzma_stream_buffer_decode (&memlimit, 0, NULL,
+  lret = lzma_stream_buffer_decode (&memlimit, 0, &xz_allocator,
                                     compressed, &in_pos, compressed_len,
                                     mdi->image, &out_pos, mdi->size);
+  xz_free_all (&allocator_data);
+
   if (lret != LZMA_OK)
     {
       Debug (1, "LZMA decompression failed: %d\n", lret);

@@ -54,6 +54,8 @@ _UCD_create(const char *filename)
 #define elf_header64 elf_header.h64
   bool _64bits;
 
+  mi_init ();
+
   struct UCD_info *ui = memset(malloc(sizeof(*ui)), 0, sizeof(*ui));
   ui->edi.di_cache.format = -1;
   ui->edi.di_debug.format = -1;

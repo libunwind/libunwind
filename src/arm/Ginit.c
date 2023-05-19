@@ -83,7 +83,7 @@ validate_mem (unw_word_t addr)
 {
   int i, victim;
   size_t len = unw_page_size;
-  addr = uwn_page_start(addr);
+  addr = unw_page_start(addr);
 
   if (addr == 0)
     return -1;
