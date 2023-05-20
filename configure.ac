@@ -143,10 +143,6 @@ AC_ARG_ENABLE(setjmp,
         [AS_IF([test x$target_arch = x$host_arch], [enable_setjmp=yes], [enable_setjmp=no])]
 )
 
-AC_ARG_ENABLE(documentation,
-	AS_HELP_STRING([--disable-documentation],[Disable generating the man pages]),,
-	[enable_documentation=yes])
-
 AC_ARG_ENABLE(tests,
  AS_HELP_STRING([--disable-tests],[Disable tests build]),,
  [enable_tests=yes])
@@ -178,7 +174,8 @@ AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
 AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
 AM_CONDITIONAL(BUILD_UNWIND_HEADER, test "x$enable_unwind_header" = xyes)
-AM_CONDITIONAL(NO_PTRACE_TEST, test x$build_arch != x$host_arch)
+AM_CONDITIONAL([XFAIL_PTRACE_TEST], [echo $CFLAGS | grep -q '\-m32\>'])
+AM_CONDITIONAL([CROSS_BUILD], [test x$build_arch != x$host_arch])
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
@@ -462,16 +459,19 @@ AC_SUBST(enable_debug_frame)
 AC_SUBST(DLLIB)
 AC_SUBST(BACKTRACELIB)
 
+AC_ARG_ENABLE(documentation,
+	AS_HELP_STRING([--enable-documentation],[Enable generating the man pages @<:@default=yes@:>@]),
+	[],
+	[enable_documentation=yes])
 AC_PATH_PROG([LATEX2MAN],[latex2man])
-if test "x$LATEX2MAN" = "x" && test "x$enable_documentation" = "xyes"; then
+if test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"; then
   AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
   enable_documentation="no";
 fi
-
-AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation = xyes])
-if test "x$enable_documentation" = "xyes"; then
-  AC_CONFIG_FILES(doc/Makefile doc/common.tex)
-fi
+AC_MSG_CHECKING([if we should build documentation])
+AC_MSG_RESULT([$enable_documentation])
+AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
+AM_COND_IF([CONFIG_DOCS],[AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
 
 AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
 if test "x$enable_tests" = "xyes"; then

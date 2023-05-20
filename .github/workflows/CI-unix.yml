@@ -127,6 +127,10 @@ jobs:
         env:
           CFLAGS: "-Wall -Wextra"
 
+      - name: ABI Check
+        run: |
+            cd tests && ./run-check-namespace
+
       - name: Test
         run: |
           set -x

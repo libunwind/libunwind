@@ -111,8 +111,10 @@ check_PROGRAMS = $(check_PROGRAMS_common) $(check_PROGRAMS_cdep) \
 check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 		$(check_SCRIPTS_arch)
 
-
-TESTS = $(check_PROGRAMS) $(check_SCRIPTS)
+TESTS = $(check_PROGRAMS)
+if !CROSS_BUILD
+ TESTS += $(check_SCRIPTS)
+endif
 XFAIL_TESTS =
 
 if ARCH_IA64
@@ -143,8 +145,8 @@ endif
 # This is meant for multilib binaries, -m32.
 # ptrace gives EBADREG when testing,
 # but generally everything else works.
-if NO_PTRACE_TEST
- XFAIL_TESTS += run-ptrace-mapper test-ptrace Ltest-init-local-signal
+if XFAIL_PTRACE_TEST
+ XFAIL_TESTS += run-ptrace-mapper 
 endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
