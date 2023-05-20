@@ -238,7 +238,7 @@ typedef ucontext_t unw_fpsimd_context_t;
 #include "libunwind-dynamic.h"
 
 #if defined(__FreeBSD__)
-#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.mc_gpregs.gp_x[0];
+#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.mc_gpregs.gp_x;
 #else
 #define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;
 #endif
