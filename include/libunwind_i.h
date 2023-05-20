@@ -222,7 +222,7 @@ static ALWAYS_INLINE void *
 mi_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 #ifdef SYS_mmap
-#ifdef __syscall // prefer over syscall on *BSD
+#if defined(__FreeBSD__) // prefer over syscall on *BSD
   long int ret = __syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
 #else
   long int ret = syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
