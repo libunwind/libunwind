@@ -421,8 +421,7 @@ libunwind_x86_la_SOURCES_x86 = $(libunwind_la_SOURCES_x86_common)	\
 	x86/Gresume.c x86/Gstep.c
 
 # The list of files that go both into libunwind and libunwind-x86_64:
-noinst_HEADERS += x86_64/offsets.h					\
-	x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h
+noinst_HEADERS += x86_64/init.h x86_64/unwind_i.h x86_64/ucontext_i.h
 libunwind_la_SOURCES_x86_64_common = $(libunwind_la_SOURCES_common)	\
 	x86_64/is_fpreg.c x86_64/regname.c
 
