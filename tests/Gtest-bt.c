@@ -254,6 +254,8 @@ main (int argc, char **argv UNUSED)
   act.sa_handler = (void (*)(int)) segv_handler;
   if (sigaction (SIGSEGV, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
+  if (sigaction (SIGBUS, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
 
   if (sigsetjmp (env, 1) == 0)
   {
