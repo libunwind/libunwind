@@ -1,7 +1,4 @@
-/* libunwind - a platform-independent unwind library
-   Copyright (C) 2008 Google, Inc
-	Contributed by Paul Pluzhnikov <ppluzhnikov@google.com>
-   Copyright (C) 2010 Konstantin Belousov <kib@freebsd.org>
+/*  Contributed by Dmitry Chagin <dchagin@FreeBSD.org>.
 
 This file is part of libunwind.
 
@@ -24,29 +21,37 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#include "ucontext_i.h"
 
-/*  int _Uaarch64_getcontext_trace (unw_tdep_context_t *ucp)
+#if defined __FreeBSD__
 
-  Saves limited machine context in UCP necessary for fast trace. If fast trace
-  fails, caller will have to get the full context.
-*/
+#define	UC_MCONTEXT_OFF			0x10
+#define	SC_GPR_OFF			0x00
 
-	.global _Uaarch64_getcontext_trace
-	.hidden _Uaarch64_getcontext_trace
-	.type _Uaarch64_getcontext_trace, @function
-_Uaarch64_getcontext_trace:
-	.cfi_startproc
+#define	SC_X29_OFF			0x0e8
+#define	SC_X30_OFF			0x0f0
+#define	SC_SP_OFF			0x0f8
+#define	SC_PC_OFF			0x100
+#define	SC_PSTATE_OFF			0x108
 
-	/* Save only FP, SP, PC - exclude this call. */
-	str x29, [x0, #(UC_MCONTEXT_OFF + SC_X29_OFF)]
-	mov x9, sp
-	str x9, [x0, #(UC_MCONTEXT_OFF + SC_SP_OFF)]
-	str x30, [x0, #(UC_MCONTEXT_OFF + SC_PC_OFF)]
+#define	SCF_FORMAT			AARCH64_SCF_FREEBSD_RT_SIGFRAME
 
-	ret
-	.cfi_endproc
-	.size _Uaarch64_getcontext_trace, . - _Uaarch64_getcontext_trace
+#else /* defined __linux__ */
 
-      /* We do not need executable stack.  */
-      .section        .note.GNU-stack,"",@progbits
+#define	UC_MCONTEXT_OFF			0xb0
+#define	SC_GPR_OFF			0x08
+
+#define	SC_X29_OFF			0x0f0
+#define	SC_X30_OFF			0x0f8
+#define	SC_SP_OFF			0x100
+#define	SC_PC_OFF			0x108
+#define	SC_PSTATE_OFF			0x110
+
+#define	SCF_FORMAT			AARCH64_SCF_LINUX_RT_SIGFRAME
+
+#define	LINUX_SC_RESERVED_OFF		0x120
+
+#define	LINUX_SC_RESERVED_MAGIC_OFF	0x0
+#define	LINUX_SC_RESERVED_SIZE_OFF	0x4
+#define	LINUX_SC_RESERVED_SVE_VL_OFF	0x8
+
+#endif

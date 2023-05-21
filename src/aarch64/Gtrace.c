@@ -25,7 +25,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
-#include "offsets.h"
+#include "ucontext_i.h"
 #include <signal.h>
 #include <limits.h>
 
@@ -510,15 +510,15 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     case UNW_AARCH64_FRAME_SIGRETURN:
       cfa = cfa + f->cfa_reg_offset; /* cfa now points to ucontext_t.  */
 
-      ACCESS_MEM_FAST(ret, c->validate, d, cfa + LINUX_SC_PC_OFF, pc);
+      ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_PC_OFF, pc);
       if (likely(ret >= 0))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + LINUX_SC_X29_OFF, fp);
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_X29_OFF, fp);
       if (likely(ret >= 0))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + LINUX_SC_SP_OFF, sp);
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_SP_OFF, sp);
       /* Save the link register here in case we end up in a function that
          doesn't save the link register in the prologue, e.g. kill. */
       if (likely(ret >= 0))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + LINUX_SC_X30_OFF, lr);
+        ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_X30_OFF, lr);
 
       /* Resume stack at signal restoration point. The stack is not
          necessarily continuous here, especially with sigaltstack(). */
