@@ -9,6 +9,12 @@
 #include <stdio.h>
 #include <assert.h>
 
+#if defined __FreeBSD__
+#define	_X	4
+#else
+#define	_X	2
+#endif
+
 int stepper(unw_cursor_t* c) {
   int steps = 0;
   int ret = 1;
@@ -38,11 +44,11 @@ void handler(int num, siginfo_t* info, void* ucontext) {
   (void)ret;
   assert(!ret);
   int getcontext_steps = stepper(&c);
-  if (ucontext_steps == getcontext_steps - 2) {
+  if (ucontext_steps == getcontext_steps - _X) {
     exit(0);
   }
   printf("unw_getcontext steps was %i, ucontext steps was %i, should be %i\n",
-	 getcontext_steps, ucontext_steps, getcontext_steps - 2);
+	 getcontext_steps, ucontext_steps, getcontext_steps - _X);
   exit(-1);
 }
 
