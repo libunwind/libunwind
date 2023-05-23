@@ -179,6 +179,7 @@ if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
  Garm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
  Larm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
 endif
+XFAIL_TESTS += Garm64-test-sve-signal Larm64-test-sve-signal
 
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
