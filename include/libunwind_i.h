@@ -150,7 +150,7 @@ target_is_big_endian(void)
 #ifdef DEBUG
 # define UNW_DEBUG      1
 #else
-# define UNW_DEBUG      0
+# undef UNW_DEBUG
 #endif
 
 /* Make it easy to write thread-safe code which may or may not be
