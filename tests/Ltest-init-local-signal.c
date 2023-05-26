@@ -9,6 +9,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+static const int max_steps = 10;
+
 int stepper(unw_cursor_t* c) {
   int steps = 0;
   int ret = 1;
@@ -19,6 +21,7 @@ int stepper(unw_cursor_t* c) {
       break;
     }
     steps++;
+    if (steps > max_steps) break;
   }
   return steps;
 }
