@@ -150,7 +150,7 @@ target_is_big_endian(void)
 #ifdef DEBUG
 # define UNW_DEBUG      1
 #else
-# define UNW_DEBUG      0
+# undef UNW_DEBUG
 #endif
 
 /* Make it easy to write thread-safe code which may or may not be
@@ -295,8 +295,8 @@ extern int unwi_dyn_validate_cache (unw_addr_space_t as, void *arg);
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
 
-#if UNW_DEBUG
-#define unwi_debug_level                UNWI_ARCH_OBJ(debug_level)
+#if defined(UNW_DEBUG)
+# define unwi_debug_level                UNWI_ARCH_OBJ(debug_level)
 extern long unwi_debug_level;
 
 # include <stdarg.h>
@@ -320,8 +320,8 @@ static inline void _unw_debug(int level, char const * const fname, char const * 
       enum { buf_size = 512 };
       char buf[buf_size];
 
-      int _n = level > 16 ? level : 16;
-      int bcount = snprintf (buf, buf_size, "%*c>%s: ", _n, ' ', fname);
+      if (level > 16) level = 16;
+      int bcount = snprintf (buf, buf_size, "%*c>%s: ", level, ' ', fname);
       int res = write(STDERR_FILENO, buf, bcount);
 
       va_list ap;
@@ -334,10 +334,10 @@ static inline void _unw_debug(int level, char const * const fname, char const * 
 }
 # define Dprintf(/* format */ ...)                                      \
   fprintf (stderr, /* format */ __VA_ARGS__)
-#else
+#else /* defined(UNW_DEBUG) */
 # define Debug(level, /* format */ ...)
 # define Dprintf( /* format */ ...)
-#endif
+#endif /* defined(UNW_DEBUG) */
 
 static ALWAYS_INLINE int
 print_error (const char *string)
