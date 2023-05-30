@@ -257,9 +257,9 @@ main (int argc, char **argv UNUSED)
 
   if (sigsetjmp (env, 1) == 0)
   {
-    /* Make a bad function pointer and call it.  */
-    void (*bad_fn)(void) = (void (*)(void)) 0x123;
-    bad_fn ();
+    /* Make a NULL pointer dereference.  */
+    int *bad_ptr = NULL;
+    *bad_ptr = 0;
   }
 
 #ifdef HAVE_SIGALTSTACK
