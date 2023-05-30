@@ -53,11 +53,10 @@ unw_get_proc_info_in_range (unw_word_t start_ip, unw_word_t end_ip,
     if (eh_frame_table != 0) {
         unw_accessors_t *a = unw_get_accessors_int (as);
 
-        unw_word_t hdr;
-        if ((*a->access_mem)(as, eh_frame_table, &hdr, 0, arg) < 0) {
+        struct dwarf_eh_frame_hdr* exhdr = NULL;
+        if ((*a->access_mem)(as, eh_frame_table, (unw_word_t*)&exhdr, 0, arg) < 0) {
             return -UNW_EINVAL;
         }
-        struct dwarf_eh_frame_hdr* exhdr = (struct dwarf_eh_frame_hdr*)&hdr;
 
         if (exhdr->version != DW_EH_VERSION) {
             Debug (1, "Unexpected version %d\n", exhdr->version);
