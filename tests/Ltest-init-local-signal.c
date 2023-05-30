@@ -11,6 +11,12 @@
 
 static const int max_steps = 10;
 
+#if defined __FreeBSD__
+#define	TRAMPOLINE_DEPTH	4
+#else
+#define	TRAMPOLINE_DEPTH	2
+#endif
+
 int stepper(unw_cursor_t* c) {
   int steps = 0;
   int ret = 1;
@@ -41,11 +47,11 @@ void handler(int num, siginfo_t* info, void* ucontext) {
   (void)ret;
   assert(!ret);
   int getcontext_steps = stepper(&c);
-  if (ucontext_steps == getcontext_steps - 2) {
+  if (ucontext_steps == getcontext_steps - TRAMPOLINE_DEPTH) {
     exit(0);
   }
   printf("unw_getcontext steps was %i, ucontext steps was %i, should be %i\n",
-	 getcontext_steps, ucontext_steps, getcontext_steps - 2);
+    getcontext_steps, ucontext_steps, getcontext_steps - TRAMPOLINE_DEPTH);
   exit(-1);
 }
 
