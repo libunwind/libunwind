@@ -141,6 +141,7 @@ bar (long v)
 {
   extern long f (long);
   int arr[v];
+  arr[0] = 0;
 
   /* This is a vain attempt to use up lots of registers to force
      the frame-chain info to be saved on the memory stack on ia64.
