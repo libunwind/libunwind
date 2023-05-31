@@ -82,6 +82,10 @@ endif
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
 endif
+# Temporarily XFAIL this test for riscv64 until #519 is fixed
+if ARCH_RISCV
+  XFAIL_TESTS += Ltest-cxx-exceptions
+endif
 
 if OS_LINUX
 if BUILD_COREDUMP
