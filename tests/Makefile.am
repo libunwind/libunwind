@@ -21,6 +21,8 @@ check_SCRIPTS_arch =
 check_SCRIPTS_cdep =
 check_SCRIPTS_common =	run-check-namespace
 
+XFAIL_TESTS =
+
 if REMOTE_ONLY
 
 perf:
@@ -119,7 +121,6 @@ TESTS = $(check_PROGRAMS)
 if !CROSS_BUILD
  TESTS += $(check_SCRIPTS)
 endif
-XFAIL_TESTS =
 
 if ARCH_IA64
  check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
