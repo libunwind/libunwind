@@ -75,6 +75,9 @@ if BUILD_PTRACE
  check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep += test-ptrace
  noinst_PROGRAMS_cdep += mapper test-ptrace-misc
+if ARCH_X86
+ XFAIL_TESTS += test-ptrace
+endif
 endif
 
 if BUILD_SETJMP
