@@ -202,7 +202,7 @@ noinst_LTLIBRARIES += $(LIBUNWIND_ELF)
 libunwind_la_LIBADD += $(LIBUNWIND_ELF)
 
 # The list of files that go into libunwind and libunwind-aarch64:
-noinst_HEADERS += aarch64/init.h aarch64/offsets.h aarch64/unwind_i.h
+noinst_HEADERS += aarch64/init.h aarch64/ucontext_i.h aarch64/unwind_i.h
 libunwind_la_SOURCES_aarch64_common = $(libunwind_la_SOURCES_common)	    \
 	aarch64/is_fpreg.c aarch64/regname.c
 
