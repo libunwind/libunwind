@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
-#ifdef __linux__
+#if defined __linux__ || defined __FreeBSD__
   struct cursor *c = (struct cursor *) cursor;
   unw_word_t w0, ip;
   unw_addr_space_t as;
@@ -52,9 +52,28 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   if (ret < 0)
     return ret;
 
+#if defined __linux__
   /* FIXME: distinguish 32bit insn vs 64bit registers.  */
   if (w0 != 0xd4000001d2801168)
     return 0;
+#else
+  /*
+   * mov     x0, sp
+   * add     x0, x0, #SF_UC
+   */
+  if (w0 != 0x91014000910003e0)
+    return 0;
+  ip += 8;
+  /*
+   * mov     x8, #SYS_sigreturn
+   * svc     0
+   */
+  ret = (*a->access_mem) (as, ip, &w0, 0, arg);
+  if (ret < 0)
+    return ret;
+  if (w0 != 0xd4000001d2803428)
+    return 0;
+#endif
 
   return 1;
 
