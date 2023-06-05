@@ -51,6 +51,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <pthread.h>
 #include <signal.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <unistd.h>
@@ -294,6 +295,10 @@ extern int unwi_dyn_validate_cache (unw_addr_space_t as, void *arg);
 
 extern unw_dyn_info_list_t _U_dyn_info_list;
 extern pthread_mutex_t _U_dyn_info_list_lock;
+
+#define unw_address_is_valid UNWI_ARCH_OBJ(address_is_valid)
+HIDDEN bool unw_address_is_valid(unw_word_t, size_t);
+
 
 #if defined(UNW_DEBUG)
 # define unwi_debug_level                UNWI_ARCH_OBJ(debug_level)
