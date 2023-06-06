@@ -223,17 +223,19 @@ static ALWAYS_INLINE void *
 mi_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
 #if defined(SYS_mmap) && !defined(__i386__)
-#if defined(__FreeBSD__) // prefer over syscall on *BSD
+  /* Where supported, bypass libc and invoke the syscall directly. */
+# if defined(__FreeBSD__) // prefer over syscall on *BSD
   long int ret = __syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
-#else
+# else
   long int ret = syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
-#endif
+# endif
   // @todo this is very likely Linux specific
   if ((unsigned long int)ret > -4096UL)
     return MAP_FAILED;
   else
     return (void *)ret;
 #else
+  /* Where direct syscalls are not supported, forward to the libc call. */
   return mmap (addr, len, prot, flags, fd, offset);
 #endif
 }

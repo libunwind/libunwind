@@ -1,9 +1,9 @@
 dnl Process this file with autoconf to produce a configure script.
 
 define(pkg_major, 1)
-define(pkg_minor, 7)
-define(pkg_extra, -rc2)
-define(pkg_maintainer, libunwind-devel@nongnu.org)
+define(pkg_minor, 8)
+define(pkg_extra, -pre)
+define(pkg_maintainer, https://github.com/libunwind/libunwind)
 define(mkvers, $1.$2$3)
 
 AC_INIT([libunwind],[mkvers(pkg_major, pkg_minor, pkg_extra)],[pkg_maintainer])

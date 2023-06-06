@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "tdep-ia64/rse.h"
 #endif
 
-#if HAVE_DECL_PTRACE_SETREGSET
+#if HAVE_DECL_PTRACE_SETREGSET && (defined(__linux__) && !defined(UNW_TARGET_X86))
 #include <sys/uio.h>
 int
 _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
@@ -77,7 +77,7 @@ badreg:
   Debug (1, "bad register %s [%u] (error: %s)\n", unw_regname(reg), reg, strerror (errno));
   return -UNW_EBADREG;
 }
-#elif HAVE_DECL_PTRACE_POKEUSER || defined(HAVE_TTRACE)
+#elif (HAVE_DECL_PTRACE_POKEUSER || defined(HAVE_TTRACE)) && (defined(__linux__) && !defined(UNW_TARGET_X86))
 int
 _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
                  int write, void *arg)
@@ -322,13 +322,15 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   return -UNW_EBADREG;
 }
 #elif HAVE_DECL_PT_GETREGS
+# include <sys/user.h>
+
 int
 _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
                  int write, void *arg)
 {
   struct UPT_info *ui = arg;
   pid_t pid = ui->pid;
-  gregset_t regs;
+  struct user_regs_struct regs;
   char *r;
 
 #if UNW_DEBUG
@@ -343,11 +345,11 @@ _UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
       goto badreg;
     }
   r = (char *)&regs + _UPT_reg_offset[reg];
-  if (ptrace(PT_GETREGS, pid, (caddr_t)&regs, 0) == -1)
+  if (ptrace(PT_GETREGS, pid, NULL, &regs) == -1)
     goto badreg;
   if (write) {
       memcpy(r, val, sizeof(unw_word_t));
-      if (ptrace(PT_SETREGS, pid, (caddr_t)&regs, 0) == -1)
+      if (ptrace(PT_SETREGS, pid, NULL, &regs) == -1)
         goto badreg;
   } else
       memcpy(val, r, sizeof(unw_word_t));
