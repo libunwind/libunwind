@@ -41,8 +41,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <ia64intrin.h>
 #endif
 
-#define panic(args...)						\
-	do { fprintf (stderr, args); ++nerrors; } while (0)
+#define panic(...)						\
+	do { fprintf (stderr, __VA_ARGS__); ++nerrors; } while (0)
 
 int verbose;
 int nerrors;

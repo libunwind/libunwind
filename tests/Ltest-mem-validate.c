@@ -38,8 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/types.h>
 #include <sys/wait.h>
 
-#define panic(args...)				\
-	{ fprintf (stderr, args); exit (-1); }
+#define panic(...)				\
+	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
 void * stack_start;
 
@@ -97,7 +97,7 @@ void NOINLINE consume_and_run (int depth)
   unw_context_t uc;
   char string[1024];
 
-  sprintf (string, "hello %p %p\n", &cursor, &uc);
+  sprintf (string, "hello %p %p\n", (void *)&cursor, (void *)&uc);
   if (depth == 0) {
     do_backtrace();
   } else {
@@ -106,7 +106,7 @@ void NOINLINE consume_and_run (int depth)
 }
 
 int
-main (int argc, char **argv UNUSED)
+main (int argc UNUSED, char **argv UNUSED)
 {
   int start;
   unw_context_t uc;

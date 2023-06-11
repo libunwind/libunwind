@@ -24,12 +24,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "dwarf_i.h"
 
 int
-unw_get_proc_info_in_range (unw_word_t start_ip, unw_word_t end_ip,
-                            unw_word_t eh_frame_table, unw_word_t eh_frame_table_len,
-                            unw_word_t exidx_frame_table, unw_word_t exidx_frame_table_len,
-                            unw_addr_space_t as, unw_word_t ip,
-                            unw_proc_info_t *pi, int need_unwind_info,
-                            void *arg)
+unw_get_proc_info_in_range (unw_word_t        start_ip,
+							unw_word_t        end_ip,
+                            unw_word_t        eh_frame_table,
+                            unw_word_t        eh_frame_table_len UNUSED,
+                            unw_word_t        exidx_frame_table UNUSED,
+                            unw_word_t        exidx_frame_table_len UNUSED,
+                            unw_addr_space_t  as,
+                            unw_word_t        ip,
+                            unw_proc_info_t  *pi,
+                            int               need_unwind_info,
+                            void             *arg)
 {
     int ret = 0;
 

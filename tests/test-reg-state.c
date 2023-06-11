@@ -36,8 +36,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/mman.h>
 #include <sys/resource.h>
 
-#define panic(args...)				\
-	{ fprintf (stderr, args); exit (-1); }
+#define panic(...)				\
+	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
 int verbose;
 
@@ -111,7 +111,7 @@ consume_some_stack_space (void)
 
   memset (&cursor, 0, sizeof (cursor));
   memset (&uc, 0, sizeof (uc));
-  return sprintf (string, "hello %p %p\n", &cursor, &uc);
+  return sprintf (string, "hello %p %p\n", (void *)&cursor, (void *)&uc);
 }
 
 int
