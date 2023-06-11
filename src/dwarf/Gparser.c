@@ -490,7 +490,9 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip)
 }
 
 static int
-parse_dynamic (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
+parse_dynamic (struct dwarf_cursor  *c UNUSED,
+			   unw_word_t            ip UNUSED,
+               dwarf_state_record_t *sr UNUSED)
 {
   Debug (1, "Not yet implemented\n");
   return -UNW_ENOINFO;
@@ -1097,9 +1099,9 @@ dwarf_make_proc_info (struct dwarf_cursor *c)
 }
 
 static int
-dwarf_reg_states_dynamic_iterate(struct dwarf_cursor *c,
-				 unw_reg_states_callback cb,
-				 void *token)
+dwarf_reg_states_dynamic_iterate(struct dwarf_cursor     *c UNUSED,
+                                 unw_reg_states_callback  cb UNUSED,
+                                 void                    *token UNUSED)
 {
   Debug (1, "Not yet implemented\n");
   return -UNW_ENOINFO;

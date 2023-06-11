@@ -64,8 +64,8 @@ enum
   }
 trace_mode = SYSCALL;
 
-#define panic(args...)						\
-	do { fprintf (stderr, args); ++nerrors; } while (0)
+#define panic(...)						\
+	do { fprintf (stderr, __VA_ARGS__); ++nerrors; } while (0)
 
 static unw_addr_space_t as;
 static struct UPT_info *ui;

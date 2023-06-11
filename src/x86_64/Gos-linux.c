@@ -32,7 +32,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/syscall.h>
 
 HIDDEN void
-tdep_fetch_frame (struct dwarf_cursor *dw, unw_word_t ip, int need_unwind_info)
+tdep_fetch_frame (struct dwarf_cursor *dw, unw_word_t ip UNUSED, int need_unwind_info UNUSED)
 {
   struct cursor *c = (struct cursor *) dw;
   assert(! need_unwind_info || dw->pi_valid);
@@ -85,7 +85,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 }
 
 HIDDEN int
-x86_64_handle_signal_frame (unw_cursor_t *cursor)
+x86_64_handle_signal_frame (unw_cursor_t *cursor UNUSED)
 {
 #if UNW_DEBUG /* To silence compiler warnings */
   /* Should not get here because we now use kernel-provided dwarf

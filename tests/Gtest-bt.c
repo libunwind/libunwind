@@ -43,8 +43,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 #include <libunwind.h>
 
-#define panic(args...)				\
-	{ fprintf (stderr, args); exit (-1); }
+#define panic(...)				\
+	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
 #define SIG_STACK_SIZE 0x100000
 
@@ -169,7 +169,7 @@ bar (long v)
 }
 
 void
-segv_handler (int signal, void *siginfo UNUSED, void *context)
+segv_handler (int signal, siginfo_t *siginfo UNUSED, void *context UNUSED)
 {
   if (verbose)
     fprintf (stderr, "segv_handler: got signal %d\n", signal);
@@ -179,7 +179,7 @@ segv_handler (int signal, void *siginfo UNUSED, void *context)
 }
 
 void
-sighandler (int signal, void *siginfo UNUSED, void *context)
+sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
 {
   ucontext_t *uc UNUSED;
   int sp;
@@ -188,7 +188,7 @@ sighandler (int signal, void *siginfo UNUSED, void *context)
 
   if (verbose)
     {
-      printf ("sighandler: got signal %d, sp=%p", signal, &sp);
+      printf ("sighandler: got signal %d, sp=%p", signal, (void *)&sp);
 #if UNW_TARGET_IA64
 # if defined(__linux__) || defined __sun
       printf (" @ %lx", uc->uc_mcontext.sc_ip);
@@ -240,8 +240,8 @@ main (int argc, char **argv UNUSED)
   bar (1);
 
   memset (&act, 0, sizeof (act));
-  act.sa_handler = (void (*)(int)) sighandler;
   act.sa_flags = SA_SIGINFO;
+  act.sa_sigaction = sighandler;
   if (sigaction (SIGTERM, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
 
@@ -252,7 +252,7 @@ main (int argc, char **argv UNUSED)
   if (verbose)
     printf ("\nBacktrace across SIGSEGV handler:\n");
 
-  act.sa_handler = (void (*)(int)) segv_handler;
+  act.sa_sigaction = segv_handler;
   if (sigaction (SIGSEGV, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
 
@@ -275,8 +275,8 @@ main (int argc, char **argv UNUSED)
     panic ("sigaltstack: %s\n", strerror (errno));
 
   memset (&act, 0, sizeof (act));
-  act.sa_handler = (void (*)(int)) sighandler;
   act.sa_flags = SA_ONSTACK | SA_SIGINFO;
+  act.sa_sigaction = sighandler;
   if (sigaction (SIGTERM, &act, NULL) < 0)
     panic ("sigaction: %s\n", strerror (errno));
   kill (getpid (), SIGTERM);

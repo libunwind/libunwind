@@ -1037,7 +1037,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 }
 
 HIDDEN void
-dwarf_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *pi, void *arg)
+dwarf_put_unwind_info (unw_addr_space_t as UNUSED, unw_proc_info_t *pi UNUSED, void *arg UNUSED)
 {
   return;       /* always a nop */
 }

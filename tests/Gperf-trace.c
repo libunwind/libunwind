@@ -32,8 +32,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/resource.h>
 #include <sys/time.h>
 
-#define panic(args...)							  \
-	do { fprintf (stderr, args); exit (-1); } while (0)
+#define panic(...)							  \
+	do { fprintf (stderr, __VA_ARGS__); exit (-1); } while (0)
 
 long dummy;
 

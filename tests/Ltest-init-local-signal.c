@@ -1,4 +1,5 @@
 #include "libunwind.h"
+#include "compiler.h"
 #include <sys/types.h>
 #include <unistd.h>
 #include <string.h>
@@ -35,7 +36,7 @@ int stepper(unw_cursor_t* c) {
 /* Verify that we can step from both ucontext, and from getcontext()
  * roughly the same.  This tests that the IP from ucontext is used
  * correctly (see impl of unw_init_local2) */
-void handler(int num, siginfo_t* info, void* ucontext) {
+void handler(int num UNUSED, siginfo_t* info UNUSED, void* ucontext) {
   unw_cursor_t c;
   unw_context_t context;
   unw_getcontext(&context);

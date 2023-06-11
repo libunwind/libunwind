@@ -37,12 +37,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 #include <libunwind.h>
+#include "compiler.h"
 
 /*
  * unwind in the signal handler checking the backtrace is correct
  * after a bad jump.
  */
-void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
+void handle_sigsegv(int signal UNUSED, siginfo_t *info UNUSED, void *ucontext UNUSED)
 {
   /*
    * 0 = success
@@ -108,7 +109,7 @@ void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
 
 void (*invalid_function)() = (void*)1;
 
-int main(int argc, char *argv[])
+int main(int argc UNUSED, char *argv[] UNUSED)
 {
   struct sigaction sa;
   memset(&sa, 0, sizeof(sa));

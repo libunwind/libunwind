@@ -60,8 +60,8 @@ int sigcount;
 int recurcount;
 #endif
 
-#define panic(args...)					\
-	{ ++nerrors; fprintf (stderr, args); return; }
+#define panic(...)					\
+	{ ++nerrors; fprintf (stderr, __VA_ARGS__); return; }
 
 static void
 do_backtrace (int may_print, int get_proc_name)

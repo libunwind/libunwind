@@ -130,12 +130,12 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
  * Note interpretation requires both name and type.
  */
 static int
-_handle_pt_note_segment (uint32_t  n_namesz,
-						 uint32_t  n_descsz,
-						 uint32_t  n_type,
-						 char     *name,
-						 uint8_t  *desc,
-						 void     *arg)
+_handle_pt_note_segment (uint32_t  n_namesz UNUSED,
+                         uint32_t  n_descsz UNUSED,
+                         uint32_t  n_type,
+                         char     *name,
+                         uint8_t  *desc,
+                         void     *arg)
 {
 #ifdef NT_FILE
   if (n_type == NT_FILE && strcmp (name, "CORE") == 0)

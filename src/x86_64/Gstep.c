@@ -58,7 +58,7 @@ is_plt_entry (struct dwarf_cursor *c)
 }
 
 static int
-is_vsyscall (struct dwarf_cursor *c)
+is_vsyscall (struct dwarf_cursor *c UNUSED)
 {
 #if defined(VSYSCALL_START) && defined(VSYSCALL_END)
   return c->ip >= VSYSCALL_START && c->ip < VSYSCALL_END;
@@ -236,10 +236,14 @@ unw_step (unw_cursor_t *cursor)
                             rip_loc = DWARF_LOC (rsp, 0);
                           }
                         else
-                          Debug (2, "new_ip 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used) != 0\n", new_ip);
+                          {
+                            Debug (2, "new_ip 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used) != 0\n", new_ip);
+                          }
                       }
                     else
+                      {
                         Debug (2, "rsp 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip) != 0\n", rsp);
+                      }
                   }
               /*
                * If the previous rip we found on the stack didn't look valid fall back
