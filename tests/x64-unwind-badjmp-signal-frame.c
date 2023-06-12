@@ -57,6 +57,9 @@ void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
   int found_signal_frame = 0;
   int i = 0;
   char *names[] = {
+#if defined __FreeBSD__
+    "",
+#endif
     "",
     "main",
   };
