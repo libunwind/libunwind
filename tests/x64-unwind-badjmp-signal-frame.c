@@ -22,6 +22,7 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <dlfcn.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <signal.h>
@@ -55,7 +56,7 @@ void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
   unw_word_t ip, sp, offset;
   char name[1000];
   int found_signal_frame = 0;
-  int i = 0;
+  int i = 0, fs;
   char *names[] = {
 #if defined __FreeBSD__
     "",
@@ -70,17 +71,31 @@ void handle_sigsegv(int signal, siginfo_t *info, void *ucontext)
 
   while (unw_step(&cursor) > 0 && !test_status)
     {
+      unw_get_reg(&cursor, UNW_REG_IP, &ip);
+      unw_get_reg(&cursor, UNW_REG_SP, &sp);
+      memset(name, 0, sizeof(name));
+
       if (unw_is_signal_frame(&cursor))
         {
           found_signal_frame = 1;
         }
+
+      printf("ip = %lx, sp = %lx, found_signal_frame = %d", (long) ip, (long) sp,
+        found_signal_frame);
+
+      fs = unw_get_proc_name(&cursor, name, sizeof(char) * 1000, &offset);
+      if (fs == 0)
+        printf(", name = %s, offset = %lx\n", name, (long) offset);
+      else {
+	Dl_info info = {};
+	if (dladdr((void *)((long)ip + 1), &info))
+	  printf(", name = %s:%s\n", info.dli_fname, info.dli_sname ? info.dli_sname : "");
+	else
+	  puts("");
+      }
+
       if (found_signal_frame)
         {
-          unw_get_reg(&cursor, UNW_REG_IP, &ip);
-          unw_get_reg(&cursor, UNW_REG_SP, &sp);
-          memset(name, 0, sizeof(char) * 1000);
-          unw_get_proc_name(&cursor, name, sizeof(char) * 1000, &offset);
-          printf("ip = %lx, sp = %lx offset = %lx name = %s\n", (long) ip, (long) sp, (long) offset, name);
           if (i < names_count)
             {
               if (strcmp(names[i], name) != 0)
