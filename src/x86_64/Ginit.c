@@ -215,7 +215,7 @@ tdep_init_mem_validate (void)
   unw_word_t addr = unw_page_start((unw_word_t)&present);
   unsigned char mvec[1];
   int ret;
-  while ((ret = mincore ((void*)addr, len, (unsigned char *)mvec)) == -1 &&
+  while ((ret = mincore ((void*)addr, len, mvec)) == -1 &&
          errno == EAGAIN) {}
   if (ret == 0)
     {
