@@ -178,7 +178,11 @@ main (int argc, char **argv)
 
   if (argc == 1)
     {
+#if defined(__FreeBSD__)
+      static char *args[] = { "self", "/bin/ls", "/", NULL };
+#else
       static char *args[] = { "self", "ls", "/", NULL };
+#endif
 
       /* automated test case */
       argv = args;
