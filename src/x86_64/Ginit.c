@@ -164,7 +164,11 @@ static int msync_validate (unw_word_t addr, size_t len)
 #ifdef HAVE_MINCORE
 static int mincore_validate (unw_word_t addr, size_t len)
 {
+#ifdef __FreeBSD__
+  char mvec[2];
+#else
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
+#endif
 
   /* mincore could fail with EAGAIN but we conservatively return -1
      instead of looping. */
@@ -213,9 +217,13 @@ tdep_init_mem_validate (void)
   unsigned char present = 1;
   size_t len = unw_page_size;
   unw_word_t addr = unw_page_start((unw_word_t)&present);
+#ifdef __FreeBSD__
+  char mvec[2];
+#else
   unsigned char mvec[1];
+#endif
   int ret;
-  while ((ret = mincore ((void*)addr, len, (unsigned char *)mvec)) == -1 &&
+  while ((ret = mincore ((void*)addr, len, mvec)) == -1 &&
          errno == EAGAIN) {}
   if (ret == 0)
     {
