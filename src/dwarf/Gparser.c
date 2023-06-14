@@ -492,8 +492,135 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip)
 static int
 parse_dynamic (struct dwarf_cursor *c, unw_word_t ip, dwarf_state_record_t *sr)
 {
-  Debug (1, "Not yet implemented\n");
-  return -UNW_ENOINFO;
+
+  /* Default all register rules to "same as previous" */
+  sr->rs_current.ret_addr_column = UNW_TDEP_IP;
+  for (int i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
+    set_reg (sr, i, DWARF_WHERE_SAME, 0);
+  // set_reg (sr, TDEP_DWARF_SP, DWARF_WHERE_CFA, 0);
+
+  unw_dyn_info_t *dyn = c->pi.unwind_info;
+  unw_sword_t sp_offset = 0;
+  unw_word_t cur_ip;
+  unw_dyn_region_info_t *region;
+  size_t op_index = 0;
+  size_t region_number;
+
+  /* Initialize the op interpreting loop */
+  cur_ip = dyn->start_ip;
+  region = dyn->u.pi.regions;
+  region_number = 0;
+  op_index = 0;
+  Debug (6, "Initialized cur_ip to 0x%lx\n", cur_ip);
+
+  while (1)
+    {
+      if (!region)
+        {
+          /* the unwind info goes no further */
+          Debug (2, "Success: reached end of UNW_INFO_FORMAT_DYNAMIC info\n");
+          return 0;
+        }
+
+      if (op_index >= region->op_count)
+        {
+          /* This is an error - this means the region didn't end with UNW_DYN_STOP */
+          Debug (2, "Fail: UNW_INFO_FORMAT_DYNAMIC region (no. %ld) did not end with UNW_DYN_STOP\n",
+                 region_number);
+          return -UNW_EINVAL;
+        }
+
+      unw_dyn_op_t *op = &region->op[op_index];
+      /* Handle a stop "instruction" specially */
+      if (op->tag == UNW_DYN_STOP)
+        {
+            Debug (6, "Hit UNW_DYN_STOP; moving to next region\n");
+            region = region->next;
+            region_number++;
+            op_index = 0;
+            continue;
+        }
+      /* Advance ip to this op */
+      if (region->insn_count > 0)
+        {
+          /* Normal case - use op's when to work out what it refers to. */
+          cur_ip = dyn->start_ip + op->when;
+        }
+      else if (region->insn_count < 0)
+        {
+          /* Count from end of procedure if insn_count is negative */
+          cur_ip = dyn->end_ip - op->when - 1;
+        }
+      /*  else region->insn_count == 0 - means the region is empty, and so we must execute
+          it without advancing */
+
+      int region_is_empty = region->insn_count == 0;
+      if (cur_ip >= ip && !region_is_empty)
+        {
+          /* We've hit the target IP - note though that as a special case,
+             we will execute ops _at_ the target IP, if the region is empty; this is
+             because "Empty regions by definition contain no actual instructions and
+             as such the directives are not tied to a particular instruction". This
+             lets one use an empty region to describe the state of the stack before
+             _any_ instructions in the procedure are executed. */
+          Debug (2, "Success: hit target IP in UNW_INFO_FORMAT_DYNAMIC info; frame state ready\n");
+          return 0;
+        }
+
+      /* Otherwise we must execute this op */
+      Debug (6, "op %d cur_ip 0x%lx target ip 0x%lx\n", op->tag, cur_ip, ip);
+      switch (op->tag)
+        {
+          case UNW_DYN_STOP:
+            /* handled above */
+            unreachable();
+          case UNW_DYN_SAVE_REG:
+            sr->rs_current.reg.where[op->reg] = DWARF_WHERE_REG;
+            sr->rs_current.reg.val[op->reg] = op->val;
+            break;
+          case UNW_DYN_RESTORE_REG:
+            sr->rs_current.reg.where[op->reg] = DWARF_WHERE_SAME;
+            sr->rs_current.reg.val[op->reg] = 0;
+            break;
+          case UNW_DYN_ADD:
+            if (op->reg != UNW_TDEP_SP)
+              {
+                Debug (2, "tried to UNW_DYN_ADD unsupported reg %d", op->reg);
+                return -UNW_EINVAL;
+              }
+            Debug (6, "sp-add %ld\n", op->val);
+            sp_offset += op->val;
+            sr->rs_current.reg.where[op->reg] = DWARF_WHERE_DYN_OFFSET;
+            sr->rs_current.reg.val[op->reg] = sp_offset;
+            /* Need to also update any existing sp-relative spills with this extra
+                offset */
+            for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; i++)
+              {
+                if (sr->rs_current.reg.where[i] == DWARF_WHERE_DYN_SP_REL)
+                  {
+                    Debug (6, "Updating sp-rel spill of reg %d by %ld\n", i, op->val);
+                    sr->rs_current.reg.val[i] -= op->val;
+                  }
+              }
+            break;
+          case UNW_DYN_SPILL_SP_REL:
+            sr->rs_current.reg.where[op->reg] = DWARF_WHERE_DYN_SP_REL;
+            sr->rs_current.reg.val[op->reg] = op->val;
+            break;
+          case UNW_DYN_SPILL_FP_REL:
+            sr->rs_current.reg.where[op->reg] = DWARF_WHERE_DYN_FP_REL;
+            sr->rs_current.reg.val[op->reg] = op->val;
+            break;
+          case UNW_DYN_SAVE_SP:
+            sr->rs_current.reg.where[TDEP_DWARF_SP] = DWARF_WHERE_DYN_SAVE_SP;
+            sr->rs_current.reg.val[TDEP_DWARF_SP] = sp_offset;
+            break;
+          default:
+            Debug (2, "Unimplemented op %d\n", op->tag);
+            return -UNW_EINVAL;
+          }
+      op_index++;
+    }
 }
 
 static inline void
@@ -885,11 +1012,9 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
         }
       cfa += rs->reg.val[DWARF_CFA_OFF_COLUMN];
     }
-  else
+  else if (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_EXPR)
     {
       /* CFA is equal to EXPR: */
-
-      assert (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_EXPR);
 
       addr = rs->reg.val[DWARF_CFA_REG_COLUMN];
       /* The dwarf standard doesn't specify an initial value to be pushed on */
@@ -906,6 +1031,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   dwarf_loc_t new_loc[DWARF_NUM_PRESERVED_REGS];
   memcpy(new_loc, c->loc, sizeof(new_loc));
 
+  unw_word_t reg_value;
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
     {
       switch ((dwarf_where_t) rs->reg.where[i])
@@ -953,7 +1079,32 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
             return ret;
           new_loc[i] = DWARF_VAL_LOC (c, DWARF_GET_LOC (new_loc[i]));
           break;
-        }
+
+        /* Special "where"'s which are for UNW_INFO_FORMAT_DYNAMIC */
+        case DWARF_WHERE_DYN_OFFSET:
+          if ((ret = dwarf_get(c, c->loc[i], &reg_value)) < 0)
+            return ret;
+          new_loc[i] = DWARF_VAL_LOC (c, reg_value - rs->reg.val[i]);
+          break;
+
+        case DWARF_WHERE_DYN_SP_REL:
+          if ((ret = dwarf_get(c, c->loc[UNW_TDEP_SP], &reg_value)) < 0)
+            return ret;
+          new_loc[i] = DWARF_MEM_LOC (c, reg_value + rs->reg.val[i]);
+          break;
+
+        case DWARF_WHERE_DYN_FP_REL:
+          if ((ret = dwarf_get(c, c->loc[UNW_TDEP_BP], &reg_value)) < 0)
+            return ret;
+          new_loc[i] = DWARF_MEM_LOC (c, reg_value + rs->reg.val[i]);
+          break;
+
+        case DWARF_WHERE_DYN_SAVE_SP:
+          if ((ret = dwarf_get(c, c->loc[UNW_TDEP_BP], &reg_value)) < 0)
+            return ret;
+          new_loc[i] = DWARF_VAL_LOC (c, reg_value - rs->reg.val[i]);
+          break;
+      }
     }
 
   memcpy(c->loc, new_loc, sizeof(new_loc));

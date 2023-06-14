@@ -67,7 +67,13 @@ typedef enum
     UNW_DYN_POP_FRAMES,         /* drop one or more stack frames */
     UNW_DYN_LABEL_STATE,        /* name the current state */
     UNW_DYN_COPY_STATE,         /* set the region's entry-state */
-    UNW_DYN_ALIAS               /* get unwind info from an alias */
+    UNW_DYN_ALIAS,              /* get unwind info from an alias */
+    UNW_DYN_RESTORE_REG,        /* restores a register to the value it had in the previous frame */
+    UNW_DYN_SAVE_SP,            /* the value of SP in the previous frame is found as BP + displacement,
+                                   where displacement is the accumulated value from previous UNW_DYN_ADD
+                                   directives on SP. This displacement is needed on x86_64, because the
+                                   value of %rsp saved in %rbp is _not_ exactly the value from the
+                                   previous frame, but rather slightly lower. */
   }
 unw_dyn_operation_t;
 
@@ -205,6 +211,12 @@ extern void _U_dyn_cancel (unw_dyn_info_t *);
 
 #define _U_dyn_op_alias(op, qp, when, addr)                             \
         (*(op) = _U_dyn_op (UNW_DYN_ALIAS, (qp), (when), 0, (addr)))
+
+#define _U_dyn_op_restore_reg(op, qp, when, reg)                        \
+        (*(op) = _U_dyn_op (UNW_DYN_RESTORE_REG, (qp), (when), (reg), 0))
+
+#define _U_dyn_op_save_sp(op, qp, when)                                 \
+        (*(op) = _U_dyn_op (UNW_DYN_SAVE_SP, (qp), (when), 0, 0))
 
 #define _U_dyn_op_stop(op)                                              \
         (*(op) = _U_dyn_op (UNW_DYN_STOP, _U_QP_TRUE, -1, 0, 0))
