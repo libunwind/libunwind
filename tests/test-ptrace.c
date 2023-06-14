@@ -178,8 +178,11 @@ main (int argc, char **argv)
 
   if (argc == 1)
     {
+#ifdef HAVE_EXECVPE
       static char *args[] = { "self", "ls", "/", NULL };
-
+#else
+      static char *args[] = { "self", "/bin/ls", "/", NULL };
+#endif
       /* automated test case */
       argv = args;
 
@@ -241,10 +244,10 @@ main (int argc, char **argv)
         fprintf(stderr, "Need to specify a command line for the child\n");
         exit (-1);
       }
-#ifdef __FreeBSD__
-      execve (argv[optind], argv + optind, environ);
-#else
+#ifdef HAVE_EXECVPE
       execvpe (argv[optind], argv + optind, environ);
+#else
+      execve (argv[optind], argv + optind, environ);
 #endif
       _exit (-1);
     }
