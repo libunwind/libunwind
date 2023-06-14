@@ -346,7 +346,7 @@ main (int argc, char **argv)
 	  if (!state)
 	    do_backtrace ();
 	  state ^= 1;
-#if HAVE_DECL_PTRACE_SYSCALL
+#if HAVE_DECL_PTRACE_SYSCALL && !HAVE_DECL_PT_SYSCALL
 	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
 #elif HAVE_DECL_PT_SYSCALL
 	  ptrace (PT_SYSCALL, target_pid, (caddr_t)1, pending_sig);
