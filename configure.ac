@@ -144,6 +144,20 @@ AM_COND_IF([BUILD_PTRACE], [
                  ])
 ])
 
+AC_MSG_CHECKING([if libunwind-nto should be built])
+AC_ARG_ENABLE(nto,
+              [AS_HELP_STRING([--enable-nto],
+                              [build libunwind-nto library
+                               @<:@default=autodetect@:>@])],
+              [],
+              [enable_nto="check"]
+)
+AS_IF([test "$enable_nto" != "no"],
+      [AC_CHECK_HEADER([sys/neutrino.h], [enable_nto=yes], [enable_nto=no])]
+)
+AC_MSG_RESULT([$enable_nto])
+AM_CONDITIONAL([BUILD_NTO], [test x$enable_nto = xyes])
+
 AC_MSG_CHECKING([if libunwind-setjmp should be built])
 AC_ARG_ENABLE([setjmp],
               [AS_HELP_STRING([--enable-setjmp],

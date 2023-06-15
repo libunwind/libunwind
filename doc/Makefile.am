@@ -3,6 +3,7 @@ man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 	libunwind-coredump.man \
 	libunwind-ptrace.man \
 	libunwind-setjmp.man			\
+	libunwind-nto.man \
 	unw_apply_reg_state.man						\
 	unw_backtrace.man						\
 	unw_flush_cache.man						\
@@ -38,6 +39,7 @@ EXTRA_DIST = NOTES libunwind.trans					\
 	libunwind-coredump.tex \
 	libunwind-ptrace.tex \
 	libunwind-setjmp.tex			\
+	libunwind-nto.tex \
 	unw_apply_reg_state.tex						\
 	unw_backtrace.tex						\
 	unw_flush_cache.tex						\

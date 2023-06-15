@@ -259,13 +259,6 @@ unw_step (unw_cursor_t *cursor)
       c->frame_info.fp_cfa_offset = -1;
       c->frame_info.lr_cfa_offset = -1;
       c->frame_info.sp_cfa_offset = -1;
-#if defined(__QNX__)
-      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_X30]))
-        {
-          c->dwarf.loc[UNW_AARCH64_PC] = DWARF_NULL_LOC;
-          c->dwarf.ip = 0;
-        }
-#else
       c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
       c->dwarf.loc[UNW_AARCH64_X30] = DWARF_NULL_LOC;
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_PC]))
@@ -279,7 +272,6 @@ unw_step (unw_cursor_t *cursor)
           Debug (2, "link register (x30) = 0x%016lx\n", c->dwarf.ip);
           ret = 1;
         }
-#endif
       else
         c->dwarf.ip = 0;
     }

@@ -71,9 +71,9 @@ endif
 
 # Tests that exercise unw_resume, which is only unsupported on some targets
 if ENABLE_UNW_RESUME_TESTS
-check_PROGRAMS_cdep = Gtest-exc Ltest-exc \
-                      Gtest-resume-sig Ltest-resume-sig \
-                      Gtest-resume-sig-rt Ltest-resume-sig-rt
+check_PROGRAMS_cdep += Gtest-exc Ltest-exc \
+                       Gtest-resume-sig Ltest-resume-sig \
+                       Gtest-resume-sig-rt Ltest-resume-sig-rt
 endif
 
 if BUILD_PTRACE
