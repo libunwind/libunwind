@@ -2,6 +2,7 @@
    Copyright (C) 2008 CodeSourcery
    Copyright (C) 2011-2013 Linaro Limited
    Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
+   Copyright 2022 Blackberry Limited.
 
 This file is part of libunwind.
 
@@ -125,12 +126,6 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
 
   ret = unw_is_signal_frame (cursor);
   Debug(1, "unw_is_signal_frame()=%d\n", ret);
-
-  /* Save the SP and PC to be able to return execution at this point
-     later in time (unw_resume).  */
-  c->sigcontext_sp = c->dwarf.cfa;
-  c->sigcontext_pc = c->dwarf.ip;
-
   if (ret > 0)
     {
       c->sigcontext_format = SCF_FORMAT;
@@ -138,6 +133,11 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
     }
   else
     return -UNW_EUNSPEC;
+
+  /* Save the SP and PC to be able to return execution at this point
+     later in time (unw_resume).  */
+  c->sigcontext_sp = c->dwarf.cfa;
+  c->sigcontext_pc = c->dwarf.ip;
 
   c->sigcontext_addr = sc_addr;
   c->frame_info.frame_type = UNW_AARCH64_FRAME_SIGRETURN;
@@ -259,6 +259,13 @@ unw_step (unw_cursor_t *cursor)
       c->frame_info.fp_cfa_offset = -1;
       c->frame_info.lr_cfa_offset = -1;
       c->frame_info.sp_cfa_offset = -1;
+#if defined(__QNX__)
+      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_X30]))
+        {
+          c->dwarf.loc[UNW_AARCH64_PC] = DWARF_NULL_LOC;
+          c->dwarf.ip = 0;
+        }
+#else
       c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
       c->dwarf.loc[UNW_AARCH64_X30] = DWARF_NULL_LOC;
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_PC]))
@@ -272,6 +279,7 @@ unw_step (unw_cursor_t *cursor)
           Debug (2, "link register (x30) = 0x%016lx\n", c->dwarf.ip);
           ret = 1;
         }
+#endif
       else
         c->dwarf.ip = 0;
     }

@@ -248,7 +248,6 @@ AS_IF([test x$enable_debug = xyes],
       [CPPFLAGS="${CPPFLAGS} -DNDEBUG"]
 )
 
-<<<<<<< HEAD
 AC_MSG_CHECKING([if C++ exception support should be built])
 AC_ARG_ENABLE([cxx_exceptions],
               [AS_HELP_STRING([--enable-cxx-exceptions],
@@ -280,8 +279,13 @@ AS_IF([test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"], [
 AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
 AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
 
-=======
->>>>>>> Add basic local unwinding on QNX x86_64
+# Enable tests built around unw_resume, which is not supported on all targets
+AC_MSG_CHECKING([if we should enable unw_resume tests])
+AS_CASE([$target_os],
+        [nto-qnx*], [enable_unw_resume_tests=no],
+        [enable_unw_resule_tests=yes])
+AM_CONDITIONAL([ENABLE_UNW_RESUME_TESTS], [test x$enable_unw_resume_tests = xyes])
+
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
 AC_MSG_CHECKING([for host architecture])

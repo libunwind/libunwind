@@ -124,9 +124,11 @@ main (int argc, char **argv UNUSED)
   if (consume_some_stack_space () > 9999)
     exit (-1);	/* can't happen, but don't let the compiler know... */
 
+#if !defined(__QNX__)
   rlim.rlim_cur = 0;
   rlim.rlim_max = RLIM_INFINITY;
   setrlimit (RLIMIT_DATA, &rlim);
+#endif /* !defined(__QNX__) */
 
   do_backtrace ();
   return 0;
