@@ -30,10 +30,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-#if defined(_LITTLE_ENDIAN) && !defined(__LITTLE_ENDIAN)
-#define __LITTLE_ENDIAN _LITTLE_ENDIAN
-#endif
-
 unw_addr_space_t
 unw_create_addr_space (unw_accessors_t *a UNUSED, int byte_order UNUSED)
 {
@@ -45,7 +41,7 @@ unw_create_addr_space (unw_accessors_t *a UNUSED, int byte_order UNUSED)
   /*
    * x86_64 supports only little-endian.
    */
-  if (byte_order != 0 && byte_order != __LITTLE_ENDIAN)
+  if (byte_order != 0 && byte_order != UNW_LITTLE_ENDIAN)
     return NULL;
 
   as = malloc (sizeof (*as));

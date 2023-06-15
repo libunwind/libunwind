@@ -614,6 +614,8 @@ if OS_QNX
  libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_qnx_local)
  libunwind_la_SOURCES_arm_os          = arm/Gos-other.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-other.c
+ libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-qnx.c
+ libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-qnx.c
 endif
 
 if ARCH_AARCH64

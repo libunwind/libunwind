@@ -215,9 +215,9 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
       printf (" @ %lx", (unsigned long) uc->uc_mcontext.mc_rip);
 # endif
 #elif UNW_TARGET_AARCH64
-# if defined(__QNXNTO__)
+# if defined(__QNX__)
       fprintf (stderr, " @ %#010lx", (unsigned long) uc->uc_mcontext.cpu.elr);
-# endif /* defined(__QNXNTO__) */
+# endif /* defined(__QNX__) */
 #endif
       printf ("\n");
     }

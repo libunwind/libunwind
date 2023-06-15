@@ -40,7 +40,7 @@ static int callback(const struct dl_phdr_info *info, size_t size, void *data)
   int i;
   struct cb_info *cbi = (struct cb_info*)data;
   for(i=0; i<info->dlpi_phnum; i++) {
-    int segbase = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
+    unw_word_t segbase = info->dlpi_addr + info->dlpi_phdr[i].p_vaddr;
     if(cbi->ip >= segbase && cbi->ip < segbase + info->dlpi_phdr[i].p_memsz)
     {
       cbi->path = info->dlpi_name;

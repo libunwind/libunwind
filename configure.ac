@@ -156,6 +156,8 @@ AS_IF([test "$enable_setjmp" = check],
       [AS_IF([test x$target_arch = x$host_arch],
              [enable_setjmp=yes],
              [enable_setjmp=no])]
+      [AS_IF([expr x$target_os : xnto-qnx >/dev/null],
+             [enable_setjmp=no])]
 )
 AC_MSG_RESULT([$enable_setjmp])
 AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
@@ -246,6 +248,7 @@ AS_IF([test x$enable_debug = xyes],
       [CPPFLAGS="${CPPFLAGS} -DNDEBUG"]
 )
 
+<<<<<<< HEAD
 AC_MSG_CHECKING([if C++ exception support should be built])
 AC_ARG_ENABLE([cxx_exceptions],
               [AS_HELP_STRING([--enable-cxx-exceptions],
@@ -277,6 +280,8 @@ AS_IF([test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"], [
 AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
 AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
 
+=======
+>>>>>>> Add basic local unwinding on QNX x86_64
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
 AC_MSG_CHECKING([for host architecture])
