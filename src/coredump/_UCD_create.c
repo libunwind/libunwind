@@ -244,7 +244,7 @@ void _UCD_select_thread(struct UCD_info *ui, int n)
 pid_t _UCD_get_pid(struct UCD_info *ui)
 {
 #if defined(HAVE_PROCFS_STATUS)
-  return ui->prstatus->pid;
+  return ui->prstatus->thread.pid;
 #else
   return ui->prstatus->pr_pid;
 #endif
@@ -253,7 +253,7 @@ pid_t _UCD_get_pid(struct UCD_info *ui)
 int _UCD_get_cursig(struct UCD_info *ui)
 {
 #if defined(HAVE_PROCFS_STATUS)
-  return 0;
+  return ui->prstatus->thread.info.si_signo;
 #else
   return ui->prstatus->pr_cursig;
 #endif

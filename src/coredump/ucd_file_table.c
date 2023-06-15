@@ -93,6 +93,7 @@ _ucd_file_open (ucd_file_t *ucd_file)
   if (ucd_file->fd == -1)
 	{
 	  Debug(0, "error %d in open(%s): %s\n", errno, ucd_file->filename, strerror(errno));
+	  return;
 	}
 
   struct stat sbuf;
@@ -115,7 +116,6 @@ ucd_file_map (ucd_file_t *ucd_file)
 {
   if (ucd_file->image != NULL)
     {
-      Debug(0, "warning, file \"%s\" already loaded\n", ucd_file->filename);
       return ucd_file->image;
     }
 
