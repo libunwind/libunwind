@@ -965,7 +965,6 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   if (DWARF_IS_NULL_LOC (c->loc[rs->ret_addr_column]))
     {
       c->ip = 0;
-      ret = 0;
     }
   else
   {
@@ -986,8 +985,8 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
       }
 #endif
     c->ip = ip;
-    ret = 1;
   }
+  ret = (c->ip != 0) ? 1 : 0;
 
   /* XXX: check for ip to be code_aligned */
   if (c->ip == prev_ip && c->cfa == prev_cfa)
