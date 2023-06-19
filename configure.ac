@@ -215,9 +215,15 @@ AM_COND_IF([CONFIG_TESTS], [
   AC_SEARCH_LIBS([dlopen], [dl],
                  [AS_IF([test "$ac_cv_search_dlopen" != "none required"],
                         [AC_SUBST([DLLIB], ["$ac_cv_search_dlopen"])])])
-  AC_SEARCH_LIBS([pthread_key_create], [pthread],
+  AC_MSG_CHECKING([if building on FreeBSD then unconditionally use pthread library])
+  if $OS_FREEBSD; then
+    PTHREADS_LIB="${PTHREADS_LIB} -lpthread"
+    AC_MSG_RESULT([yes])
+  else
+    AC_SEARCH_LIBS([pthread_key_create], [pthread],
                  [AS_IF([test "$ac_cv_search_pthread_key_create" != "none required"],
                         [AC_SUBST([PTHREADS_LIB], ["$ac_cv_search_pthread_key_create"])])])
+  fi
   AC_SEARCH_LIBS([backtrace], [execinfo],
                  [AS_IF([test "$ac_cv_search_backtrace" != "none required"],
                         [AC_SUBST([BACKTRACELIB],["$ac_cv_search_backtrace"])])])
