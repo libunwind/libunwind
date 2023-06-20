@@ -84,7 +84,11 @@ validate_mem (unw_word_t addr)
 {
   int i, victim;
 #ifdef HAVE_MINCORE
+#if defined __FreeBSD__
+  char mvec[2];
+#else
   unsigned char mvec[2]; /* Unaligned access may cross page boundary */
+#endif
 #endif
   size_t len = unw_page_size;
   addr = unw_page_start(addr);
