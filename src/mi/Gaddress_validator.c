@@ -24,6 +24,7 @@
  */
 #include "libunwind_i.h"
 
+
 #ifdef UNW_REMOTE_ONLY
 bool
 unw_address_is_valid(UNUSED unw_word_t addr, UNUSED size_t len)
@@ -34,13 +35,11 @@ unw_address_is_valid(UNUSED unw_word_t addr, UNUSED size_t len)
 
 #else /* !UNW_REMOTE_ONLY */
 
-static pthread_once_t _unw_address_validator_init_once = PTHREAD_ONCE_INIT;
-static sig_atomic_t   _unw_address_validator_initialized = 0;
+#include <stdatomic.h>
+
+
+static atomic_flag _unw_address_validator_initialized = ATOMIC_FLAG_INIT;
 static int _mem_validate_pipe[2] = {-1, -1};
-static bool (*_mem_validate_func) (unw_word_t, size_t);
-
-#pragma weak pthread_once
-
 
 #ifdef HAVE_PIPE2
 static void
@@ -128,67 +127,6 @@ _write_validate (unw_word_t addr)
 }
 
 
-static bool
-_msync_validate (unw_word_t addr, size_t len)
-{
-  if (msync ( (void *)unw_page_start (addr), len, MS_ASYNC) != 0)
-    {
-      return false;
-    }
-
-  return _write_validate (addr);
-}
-
-
-#ifdef HAVE_MINCORE
-static bool
-_mincore_validate (unw_word_t addr, size_t len)
-{
-  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
-
-  /* mincore could fail with EAGAIN but we conservatively return false
-     instead of looping. */
-  if (mincore ((void *)unw_page_start (addr), len, mvec) != 0)
-    {
-      return false;
-    }
-
-  return _write_validate (addr);
-}
-#endif
-
-
-static void
-_unw_address_validator_init(void)
-{
-  _open_pipe ();
-
-  /* Work out dynamically what memory validation function to use. */
-#ifdef HAVE_MINCORE
-  unsigned char present = 1;
-  size_t len = unw_page_size;
-  unw_word_t addr = unw_page_start((unw_word_t)&present);
-  unsigned char mvec[1];
-  int ret;
-  do
-    {
-      ret = mincore ((void*)addr, len, mvec);
-    }
-  while (ret == -1 && errno == EAGAIN);
-  if (ret == 0)
-    {
-      Debug(1, "using mincore to validate memory\n");
-      _mem_validate_func = _mincore_validate;
-    }
-  else
-#endif
-    {
-      Debug(1, "using msync to validate memory\n");
-      _mem_validate_func = _msync_validate;
-    }
-  _unw_address_validator_initialized = ~0;
-}
-
 /* Cache of already validated addresses */
 enum { NLGA = 4 };
 
@@ -264,11 +202,10 @@ _is_cached_valid_mem(unw_word_t addr)
 static void
 _cache_valid_mem(unw_word_t addr)
 {
-  int i, victim;
-  victim = atomic_load(&lga_victim);
   unw_word_t zero = 0;
   addr = unw_page_start (addr);
-  for (i = 0; i < NLGA; i++)
+  int victim = atomic_load(&lga_victim);
+  for (int i = 0; i < NLGA; i++)
     {
       if (atomic_compare_exchange_strong(&last_good_addr[victim], &zero, addr))
         {
@@ -305,22 +242,9 @@ unw_address_is_valid(unw_word_t addr, size_t len)
   if (unw_page_start (addr) == 0)
     return false;
 
-  /*
-   * First time through initialize everything: once case if linked with pthreads
-   * and another when pthreads are not linked (which assumes the single-threaded
-   * case).
-   *
-   * There is a potential race condition in the second case if multiple signals
-   * are raised at exactly the same time but the worst case is that several
-   * unnecessary validations get done.
-   */
-  if (likely (pthread_once != NULL))
+  if (unlikely (!atomic_flag_test_and_set(&_unw_address_validator_initialized)))
     {
-      pthread_once (&_unw_address_validator_init_once, _unw_address_validator_init);
-    }
-  else if (unlikely (_unw_address_validator_initialized == 0))
-    {
-      _unw_address_validator_init();
+      _open_pipe ();
     }
 
   unw_word_t lastbyte = addr + (len - 1); // highest addressed byte of data to access
@@ -328,7 +252,7 @@ unw_address_is_valid(unw_word_t addr, size_t len)
     {
       if (!_is_cached_valid_mem(addr))
         {
-          if (!_mem_validate_func (addr, len))
+          if (!_write_validate (addr))
             {
               Debug(1, "returning false\n");
               return false;
