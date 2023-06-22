@@ -36,9 +36,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define to_unw_word(p) ((unw_word_t) (uintptr_t) (p))
 
 int
-dwarf_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
-                         const char *path, unw_word_t segbase, unw_word_t mapoff,
-                         unw_word_t ip)
+dwarf_find_unwind_table (struct elf_dyn_info *edi,
+						 unw_addr_space_t     as UNUSED,
+                         const char          *path UNUSED,
+                         unw_word_t           segbase,
+                         unw_word_t           mapoff,
+                         unw_word_t           ip UNUSED)
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, loadoff, load_base;

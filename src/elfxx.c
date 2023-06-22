@@ -85,7 +85,7 @@ elf_w (string_table) (struct elf_image *ei, int section)
 }
 
 static int
-elf_w (lookup_symbol) (unw_addr_space_t as,
+elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
                        unw_word_t ip, struct elf_image *ei,
                        Elf_W (Addr) load_offset,
                        char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
@@ -328,7 +328,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
 }
 #else
 static int
-elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
+elf_w (extract_minidebuginfo) (struct elf_image *ei UNUSED, struct elf_image *mdi UNUSED)
 {
   return 0;
 }

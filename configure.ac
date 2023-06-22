@@ -26,31 +26,22 @@ LT_INIT
 AM_PROG_AS
 AM_PROG_CC_C_O
 
-dnl Checks for libraries.
-AC_CHECK_LIB(gcc_s, _Unwind_Resume)
-AC_CHECK_LIB(uca, __uc_get_grs)
-OLD_LIBS=${LIBS}
-AC_SEARCH_LIBS(dlopen, dl)
-LIBS=${OLD_LIBS}
-case "$ac_cv_search_dlopen" in
-  -l*) DLLIB=$ac_cv_search_dlopen;;
-  *) DLLIB="";;
-esac
-
-dnl Checks for header files.
-AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h asm/vsyscall.h endian.h sys/endian.h \
-		sys/param.h execinfo.h ia64intrin.h sys/uc_access.h unistd.h signal.h \
-		sys/types.h sys/procfs.h sys/ptrace.h sys/syscall.h byteswap.h elf.h \
-		sys/elf.h link.h sys/link.h)
-
 dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
 AC_CHECK_SIZEOF(off_t)
 
+dnl Checks for header files.
+AC_MSG_NOTICE([--- Checking for header files ---])
+AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h asm/vsyscall.h endian.h sys/endian.h \
+		sys/param.h execinfo.h ia64intrin.h sys/uc_access.h unistd.h signal.h \
+		sys/types.h sys/procfs.h sys/ptrace.h sys/syscall.h byteswap.h elf.h \
+		sys/elf.h link.h sys/link.h)
+
 CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
 
+AC_MSG_NOTICE([--- Checking for available types ---])
 AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
 AC_CHECK_TYPES([struct elf_prstatus, struct prstatus, procfs_status, elf_fpregset_t], [], [],
 [$ac_includes_default
@@ -59,21 +50,14 @@ AC_CHECK_TYPES([struct elf_prstatus, struct prstatus, procfs_status, elf_fpregse
 #endif
 ])
 
-AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA, PTRACE_SETREGSET,
-PTRACE_TRACEME, PTRACE_CONT, PTRACE_SINGLESTEP,
-PTRACE_SYSCALL, PT_IO, PT_GETREGS,
-PT_GETFPREGS, PT_CONTINUE, PT_TRACE_ME,
-PT_STEP, PT_SYSCALL], [], [],
-[$ac_includes_default
-#if HAVE_SYS_TYPES_H
-#include <sys/types.h>
-#endif
-#include <sys/ptrace.h>
-])
+dnl Checks for libraries.
+AC_MSG_NOTICE([--- Checking for libraries ---])
+AC_CHECK_LIB([gcc_s], [_Unwind_Resume])
+AC_SEARCH_LIBS([__uc_get_grs], [uca])
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
-		ttrace mincore pipe2 sigaltstack)
+		ttrace mincore pipe2 sigaltstack execvpe)
 
 AC_MSG_CHECKING([if building with AltiVec])
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
@@ -110,57 +94,188 @@ SET_ARCH([$build_cpu],[build_arch])
 SET_ARCH([$host_cpu],[host_arch])
 SET_ARCH([$target_cpu],[target_arch])
 
-# Check for Android
-AC_MSG_CHECKING([for Android])
-android="no"
-case "$host_os" in
-  *android*)
-    android="yes"
-    AC_MSG_RESULT([yes])
-    ;;
-  *)
-    AC_MSG_RESULT([no])
-    ;;
-esac
-
-AC_ARG_ENABLE(coredump,
-	AS_HELP_STRING([--enable-coredump],[building libunwind-coredump library]),,
-        [AS_CASE([$host_arch], [aarch64*|arm*|mips*|sh*|x86*|tile*|riscv*|loongarch64], [enable_coredump=yes], [enable_coredump=no])]
+AC_MSG_CHECKING([if libunwind-coredump should be built])
+AC_ARG_ENABLE([coredump],
+              [AS_HELP_STRING([--enable-coredump],
+                              [build libunwind-coredump library
+                               @<:@default=autodetect@:>@])],
+              [],
+              [enable_coredump="check"]
 )
-
-AC_MSG_CHECKING([if we should build libunwind-coredump])
+AS_IF([test "$enable_coredump" = "check"],
+      [AS_CASE([$host_arch],
+               [aarch64*|arm*|mips*|sh*|x86*|tile*|riscv*|loongarch64], [enable_coredump=yes],
+               [enable_coredump=no])]
+)
 AC_MSG_RESULT([$enable_coredump])
+AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
 
-AC_ARG_ENABLE(ptrace,
-	AS_HELP_STRING([--enable-ptrace],[building libunwind-ptrace library]),,
-        [AC_CHECK_HEADER([sys/ptrace.h], [enable_ptrace=yes], [enable_ptrace=no])]
+AC_MSG_CHECKING([if libunwind-ptrace should be built])
+AC_ARG_ENABLE([ptrace],
+              [AS_HELP_STRING([--enable-ptrace],
+                              [build libunwind-ptrace library
+                               @<:@default=autodetect@:>@])],
+              [],
+              [enable_ptrace="check"]
 )
-
-AC_MSG_CHECKING([if we should build libunwind-ptrace])
+AS_IF([test "$enable_ptrace" != "no"],
+      [AS_IF([test "$ac_cv_header_sys_ptrace_h" = "yes"], [enable_ptrace=yes],
+             [test "$enable_ptrace" != "check"], [AC_MSG_FAILURE([--enable-ptrace given but
+                                                                  ptrace not supported on target])],
+             [enable_ptrace="no"]
+      )]
+)
 AC_MSG_RESULT([$enable_ptrace])
+AM_CONDITIONAL([BUILD_PTRACE], [test x$enable_ptrace = xyes])
+AM_COND_IF([BUILD_PTRACE], [
+  AC_MSG_NOTICE([--- Checking for ptrace symbols ---])
+  AC_CHECK_DECLS([PTRACE_POKEUSER, PTRACE_POKEDATA, PTRACE_SETREGSET,
+                  PTRACE_TRACEME, PTRACE_CONT, PTRACE_SINGLESTEP,
+                  PTRACE_SYSCALL, PT_IO, PT_GETREGS,
+                  PT_GETFPREGS, PT_CONTINUE, PT_TRACE_ME,
+                  PT_STEP, PT_SYSCALL],
+                 [],
+                 [],
+                 [$ac_includes_default
+                  #if HAVE_SYS_TYPES_H
+                  #include <sys/types.h>
+                  #endif
+                  #include <sys/ptrace.h>
+                 ])
+])
 
-AC_ARG_ENABLE(setjmp,
-	AS_HELP_STRING([--enable-setjmp],[building libunwind-setjmp library]),,
-        [AS_IF([test x$target_arch = x$host_arch], [enable_setjmp=yes], [enable_setjmp=no])]
+AC_MSG_CHECKING([if libunwind-setjmp should be built])
+AC_ARG_ENABLE([setjmp],
+              [AS_HELP_STRING([--enable-setjmp],
+                              [build libunwind-setjmp library
+                               @<:@default=autodetect@:>@])],
+              [],
+              [enable_setjmp=check]
+)
+AS_IF([test "$enable_setjmp" = check],
+      [AS_IF([test x$target_arch = x$host_arch],
+             [enable_setjmp=yes],
+             [enable_setjmp=no])]
+)
+AC_MSG_RESULT([$enable_setjmp])
+AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
+
+AC_MSG_CHECKING([if weak-backtrace is enabled])
+AC_ARG_ENABLE([weak-backtrace],
+              [AS_HELP_STRING([--disable-weak-backtrace],
+                              [do not provide the weak 'backtrace' symbol
+                               @<:@default=no@:>@])],
+              [],
+              [enable_weak_backtrace=yes]
+)
+AC_MSG_RESULT([$enable_weak_backtrace])
+AM_CONDITIONAL([CONFIG_WEAK_BACKTRACE], [test "x$enable_weak_backtrace" = xyes])
+AM_COND_IF([CONFIG_WEAK_BACKTRACE], [
+  AC_DEFINE([CONFIG_WEAK_BACKTRACE], [1], [Define if the weak 'backtrace' symbol is provided.])
+])
+
+
+AC_MSG_CHECKING([if unwind.h should be exported])
+AC_ARG_ENABLE([unwind-header],
+              [AS_HELP_STRING([--disable-unwind-header],
+                              [do not export the 'unwind.h' header
+                               @<:@default=no@:>@])],
+              [],
+              [enable_unwind_header=yes]
+)
+AC_MSG_RESULT([$enable_unwind_header])
+AM_CONDITIONAL(BUILD_UNWIND_HEADER, test "x$enable_unwind_header" = xyes)
+
+AC_MSG_CHECKING([whether to support UNW_CACHE_PER_THREAD])
+AC_ARG_ENABLE([per-thread-cache],
+              [AS_HELP_STRING([--enable-per-thread-cache],
+                              [build with support for UNW_CACHE_PER_THREAD
+                               (which imposes a high TLS memory usage)
+                               @<:@default=no@:>@])],
+              [],
+              [enable_per_thread_cache=no]
+)
+AC_MSG_RESULT([$enable_per_thread_cache])
+AS_IF([test x$enable_per_thread_cache = xyes],
+      [AC_DEFINE([HAVE___CACHE_PER_THREAD], 1, [Define to 1 if --enable-per-thread-cache])]
 )
 
-AC_ARG_ENABLE(tests,
- AS_HELP_STRING([--disable-tests],[Disable tests build]),,
- [enable_tests=yes])
+AC_MSG_CHECKING([if testsuite should be built])
+AC_ARG_ENABLE([tests],
+              [AS_HELP_STRING([--disable-tests],
+                              [disable building tests @<:@default=no@:>@])],
+              [],
+              [enable_tests=yes]
+)
+AC_MSG_RESULT([$enable_tests])
+AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
+AM_COND_IF([CONFIG_TESTS], [
+  old_LIBS="$LIBS"
+  AC_MSG_NOTICE([--- Checking for extra libraries linked to tests ---])
+  AC_SEARCH_LIBS([dlopen], [dl],
+                 [AS_IF([test "$ac_cv_search_dlopen" != "none required"],
+                        [AC_SUBST([DLLIB], ["$ac_cv_search_dlopen"])])])
+  AC_SEARCH_LIBS([pthread_create], [pthread],
+                 [AS_IF([test "$ac_cv_search_pthread_create" != "none required"],
+                        [AC_SUBST([PTHREADS_LIB],["$ac_cv_search_pthread_create"])])])
+  AC_SEARCH_LIBS([backtrace], [execinfo],
+                 [AS_IF([test "$ac_cv_search_backtrace" != "none required"],
+                        [AC_SUBST([BACKTRACELIB],["$ac_cv_search_backtrace"])])])
+  LIBS="$old_LIBS"
+  AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
+])
+AC_ARG_WITH([testdriver],
+            [AS_HELP_STRING([--with-testdriver],
+                            [use designated test driver instead of default LOG_DRIVER])],
+                            [],
+                            [with_testdriver=\$\(top_srcdir\)/config/test-driver])
+AC_SUBST([UNW_TESTDRIVER], $with_testdriver)
 
-AC_ARG_ENABLE(weak-backtrace,
- AS_HELP_STRING([--disable-weak-backtrace],[Do not provide the weak 'backtrace' symbol.]),,
- [enable_weak_backtrace=yes])
 
-AC_ARG_ENABLE(unwind-header,
- AS_HELP_STRING([--disable-unwind-header],[Do not export the 'unwind.h' header]),,
- [enable_unwind_header=yes])
+AC_MSG_CHECKING([if debug support should be built])
+AC_ARG_ENABLE([debug],
+              [AS_HELP_STRING([--enable-debug],
+                              [enable debug support (slows down execution)
+                               @<:@default=no@:>@])],
+              [],
+              [enable_debug=no]
+)
+AC_MSG_RESULT([$enable_debug])
+AS_IF([test x$enable_debug = xyes],
+      [CPPFLAGS="${CPPFLAGS} -DDEBUG"],
+      [CPPFLAGS="${CPPFLAGS} -DNDEBUG"]
+)
 
-AC_MSG_CHECKING([if we should export unwind.h])
-AC_MSG_RESULT([$enable_unwind_header])
+AC_MSG_CHECKING([if C++ exception support should be built])
+AC_ARG_ENABLE([cxx_exceptions],
+              [AS_HELP_STRING([--enable-cxx-exceptions],
+                              [use libunwind to handle C++ exceptions
+                               @<:@default=autodetect@:>@])],
+              [],
+              [enable_cxx_exceptions=check]
+)
+AS_IF([test $enable_cxx_exceptions = check],
+      [AS_CASE([$target_arch],
+               [aarch64*|arm*|mips*|x86*|tile*|s390x*|loongarch64], [enable_cxx_exceptions=no],
+               [enable_cxx_exceptions=yes])]
+)
+AC_MSG_RESULT([$enable_cxx_exceptions])
+AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
 
-AC_MSG_CHECKING([if we should build libunwind-setjmp])
-AC_MSG_RESULT([$enable_setjmp])
+AC_MSG_CHECKING([if documentation should be built])
+AC_ARG_ENABLE([documentation],
+	          [AS_HELP_STRING([--enable-documentation],
+	                          [enable generating the man pages @<:@default=yes@:>@])],
+	          [],
+	          [enable_documentation=yes])
+AC_MSG_RESULT([$enable_documentation])
+AC_PATH_PROG([LATEX2MAN],[latex2man])
+AS_IF([test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"], [
+  AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
+  enable_documentation="no";
+])
+AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
+AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
 
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
@@ -171,10 +286,6 @@ AC_MSG_RESULT([$target_arch])
 AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
 
-AM_CONDITIONAL(BUILD_COREDUMP, test x$enable_coredump = xyes)
-AM_CONDITIONAL(BUILD_PTRACE, test x$enable_ptrace = xyes)
-AM_CONDITIONAL(BUILD_SETJMP, test x$enable_setjmp = xyes)
-AM_CONDITIONAL(BUILD_UNWIND_HEADER, test "x$enable_unwind_header" = xyes)
 AM_CONDITIONAL([XFAIL_PTRACE_TEST], [echo $CFLAGS | grep -q '\-m32\>'])
 AM_CONDITIONAL([CROSS_BUILD], [test x$build_arch != x$host_arch])
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
@@ -226,36 +337,6 @@ else
   remote_only=no
 fi
 AC_MSG_RESULT([$remote_only])
-
-AC_MSG_CHECKING([whether to enable debug support])
-AC_ARG_ENABLE(debug,
-AS_HELP_STRING([--enable-debug],[turn on debug support (slows down execution)]))
-if test x$enable_debug = xyes; then
-  CPPFLAGS="${CPPFLAGS} -DDEBUG"
-else
-  CPPFLAGS="${CPPFLAGS} -DNDEBUG"
-fi
-AC_MSG_RESULT([$enable_debug])
-
-AC_MSG_CHECKING([whether to enable C++ exception support])
-AC_ARG_ENABLE(cxx_exceptions,
-AS_HELP_STRING([--enable-cxx-exceptions],[use libunwind to handle C++ exceptions]),,
-[
-# C++ exception handling doesn't work too well on x86
-case $target_arch in
-  x86*) enable_cxx_exceptions=no;;
-  aarch64*) enable_cxx_exceptions=no;;
-  arm*) enable_cxx_exceptions=no;;
-  mips*) enable_cxx_exceptions=no;;
-  tile*) enable_cxx_exceptions=no;;
-  s390x*) enable_cxx_exceptions=no;;
-  loongarch*) enable_cxx_exceptions=no;;
-  *) enable_cxx_exceptions=yes;;
-esac
-])
-
-AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
-AC_MSG_RESULT([$enable_cxx_exceptions])
 
 AC_MSG_CHECKING([whether to load .debug_frame sections])
 AC_ARG_ENABLE(debug_frame,
@@ -333,15 +414,6 @@ if test x$enable_zlibdebuginfo != xno; then
 fi
 AC_SUBST([LIBZ])
 AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlibdebuginfo = xyes)
-
-AC_MSG_CHECKING([whether to support UNW_CACHE_PER_THREAD])
-AC_ARG_ENABLE([per-thread-cache],
-AS_HELP_STRING([--enable-per-thread-cache], [build with support for UNW_CACHE_PER_THREAD (which imposes a high TLS memory usage) (default: disabled)]))
-AC_MSG_RESULT([$enable_per_thread_cache])
-AS_IF([test x$enable_per_thread_cache = xyes], [
-  AC_DEFINE(HAVE___CACHE_PER_THREAD, 1,
-	[Define to 1 if --enable-per-thread-cache])
-])
 
 AC_MSG_CHECKING([for Intel compiler])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[#ifndef __INTEL_COMPILER
@@ -424,21 +496,6 @@ PKG_MINOR=pkg_minor
 PKG_EXTRA=pkg_extra
 PKG_MAINTAINER=pkg_maintainer
 
-old_LIBS="$LIBS"
-LIBS=""
-AC_SEARCH_LIBS(backtrace, execinfo)
-LIBS="$old_LIBS"
-case "$ac_cv_search_backtrace" in
-  -l*) BACKTRACELIB=$ac_cv_search_backtrace;;
-  *) BACKTRACELIB="";;
-esac
-
-AC_ARG_WITH([testdriver],
-            [AS_HELP_STRING([--with-testdriver],
-                            [use designated test driver instead of default LOG_DRIVER])],
-                            [],
-                            [with_testdriver=\$\(top_srcdir\)/config/test-driver])
-AC_SUBST([UNW_TESTDRIVER], $with_testdriver)
 
 AC_SUBST(build_arch)
 AC_SUBST(target_os)
@@ -453,32 +510,7 @@ AC_SUBST(PKG_EXTRA)
 AC_SUBST(PKG_MAINTAINER)
 AC_SUBST(enable_cxx_exceptions)
 AC_SUBST(enable_debug_frame)
-AC_SUBST(DLLIB)
-AC_SUBST(BACKTRACELIB)
 
-AC_ARG_ENABLE(documentation,
-	AS_HELP_STRING([--enable-documentation],[Enable generating the man pages @<:@default=yes@:>@]),
-	[],
-	[enable_documentation=yes])
-AC_PATH_PROG([LATEX2MAN],[latex2man])
-if test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"; then
-  AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
-  enable_documentation="no";
-fi
-AC_MSG_CHECKING([if we should build documentation])
-AC_MSG_RESULT([$enable_documentation])
-AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
-AM_COND_IF([CONFIG_DOCS],[AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
-
-AM_CONDITIONAL([CONFIG_TESTS], [test x$enable_tests = xyes])
-if test "x$enable_tests" = "xyes"; then
-  AC_CONFIG_FILES(tests/Makefile tests/check-namespace.sh)
-fi
-
-AM_CONDITIONAL([CONFIG_WEAK_BACKTRACE], [test "x$enable_weak_backtrace" = xyes])
-AM_COND_IF([CONFIG_WEAK_BACKTRACE], [
-  AC_DEFINE([CONFIG_WEAK_BACKTRACE], [1], [Define if the weak 'backtrace' symbol is provided.])
-])
 
 AC_CONFIG_FILES(Makefile src/Makefile
                 include/libunwind-common.h

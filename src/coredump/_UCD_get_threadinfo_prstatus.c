@@ -38,7 +38,12 @@
  * NT_PRSTATUS note seen.
  */
 static int
-_count_thread_notes(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *name, uint8_t *desc, void *arg)
+_count_thread_notes(uint32_t  n_namesz UNUSED,
+                    uint32_t  n_descsz UNUSED,
+                    uint32_t  n_type,
+                    char     *name UNUSED,
+                    uint8_t  *desc UNUSED,
+                    void     *arg)
 {
   size_t *thread_count = (size_t *)arg;
   if (n_type == NT_PRSTATUS)
@@ -57,7 +62,12 @@ _count_thread_notes(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char 
  * increments the count.
  */
 static int
-_save_thread_notes(uint32_t n_namesz, uint32_t n_descsz, uint32_t n_type, char *name, uint8_t *desc, void *arg)
+_save_thread_notes(uint32_t  n_namesz UNUSED,
+                   uint32_t  n_descsz UNUSED,
+                   uint32_t  n_type,
+                   char     *name UNUSED,
+                   uint8_t  *desc,
+                   void     *arg)
 {
   struct UCD_info *ui = (struct UCD_info *)arg;
   if (n_type == NT_PRSTATUS)

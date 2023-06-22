@@ -64,8 +64,8 @@ enum
   }
 trace_mode = SYSCALL;
 
-#define panic(args...)						\
-	do { fprintf (stderr, args); ++nerrors; } while (0)
+#define panic(...)						\
+	do { fprintf (stderr, __VA_ARGS__); ++nerrors; } while (0)
 
 static unw_addr_space_t as;
 static struct UPT_info *ui;
@@ -178,8 +178,11 @@ main (int argc, char **argv)
 
   if (argc == 1)
     {
+#ifdef HAVE_EXECVPE
       static char *args[] = { "self", "ls", "/", NULL };
-
+#else
+      static char *args[] = { "self", "/bin/ls", "/", NULL };
+#endif
       /* automated test case */
       argv = args;
 
@@ -241,10 +244,10 @@ main (int argc, char **argv)
         fprintf(stderr, "Need to specify a command line for the child\n");
         exit (-1);
       }
-#ifdef __FreeBSD__
-      execve (argv[optind], argv + optind, environ);
-#else
+#ifdef HAVE_EXECVPE
       execvpe (argv[optind], argv + optind, environ);
+#else
+      execve (argv[optind], argv + optind, environ);
 #endif
       _exit (-1);
     }
@@ -343,10 +346,10 @@ main (int argc, char **argv)
 	  if (!state)
 	    do_backtrace ();
 	  state ^= 1;
-#if HAVE_DECL_PTRACE_SYSCALL
-	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
-#elif HAVE_DECL_PT_SYSCALL
+#if HAVE_DECL_PT_SYSCALL
 	  ptrace (PT_SYSCALL, target_pid, (caddr_t)1, pending_sig);
+#elif HAVE_DECL_PTRACE_SYSCALL
+	  ptrace (PTRACE_SYSCALL, target_pid, 0, pending_sig);
 #else
 #error Syscall me
 #endif

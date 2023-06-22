@@ -124,7 +124,7 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
             return 0;
     }
 
-    for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+    for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
       c->dwarf.loc[i] = DWARF_NULL_LOC;
 
     c->dwarf.loc[EIP] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EIP_OFF, 0);
