@@ -94,7 +94,6 @@ AC_DEFUN([SET_ARCH],[
         [powerpc*],[$2=ppc$ppc_bits],
         [sh*],[$2=sh],
         [amd64],[$2=x86_64],
-        [tile*],[$2=tilegx],
         [riscv*],[$2=riscv],
         [loongarch64*],[$2=loongarch64],
         [$2=$1])
@@ -114,7 +113,7 @@ AC_ARG_ENABLE([coredump],
 )
 AS_IF([test "$enable_coredump" = "check"],
       [AS_CASE([$host_arch],
-               [aarch64*|arm*|mips*|sh*|x86*|tile*|riscv*|loongarch64], [enable_coredump=yes],
+               [aarch64*|arm*|mips*|sh*|x86*|riscv*|loongarch64], [enable_coredump=yes],
                [enable_coredump=no])]
 )
 AC_MSG_RESULT([$enable_coredump])
@@ -282,7 +281,7 @@ AC_ARG_ENABLE([cxx_exceptions],
 )
 AS_IF([test $enable_cxx_exceptions = check],
       [AS_CASE([$target_arch],
-               [aarch64*|arm*|mips*|x86*|tile*|s390x*|loongarch64], [enable_cxx_exceptions=no],
+               [aarch64*|arm*|mips*|x86*|s390x*|loongarch64], [enable_cxx_exceptions=no],
                [enable_cxx_exceptions=yes])]
 )
 AC_MSG_RESULT([$enable_cxx_exceptions])
@@ -333,7 +332,6 @@ AM_CONDITIONAL(ARCH_X86_64, test x$target_arch = xx86_64)
 AM_CONDITIONAL(ARCH_PPC32, test x$target_arch = xppc32)
 AM_CONDITIONAL(ARCH_PPC64, test x$target_arch = xppc64)
 AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
-AM_CONDITIONAL(ARCH_TILEGX, test x$target_arch = xtilegx)
 AM_CONDITIONAL(ARCH_S390X, test x$target_arch = xs390x)
 AM_CONDITIONAL(ARCH_RISCV, test x$target_arch = xriscv)
 AM_CONDITIONAL(ARCH_LOONGARCH64, test x$target_arch = xloongarch64)
@@ -344,12 +342,12 @@ AM_CONDITIONAL(OS_QNX, expr x$target_os : xnto-qnx >/dev/null)
 AM_CONDITIONAL(OS_SOLARIS, expr x$target_os : xsolaris >/dev/null)
 
 AC_MSG_CHECKING([for ELF helper width])
-case "${target_arch}" in
-(arm|hppa|ppc32|x86|sh) use_elf32=yes; AC_MSG_RESULT([32]);;
-(aarch64|ia64|ppc64|x86_64|s390x|tilegx)  use_elf64=yes; AC_MSG_RESULT([64]);;
-(mips|riscv|loongarch64)                  use_elfxx=yes; AC_MSG_RESULT([xx]);;
-*)                     AC_MSG_ERROR([Unknown ELF target: ${target_arch}])
-esac
+AS_CASE([${target_arch}],
+        [arm|hppa|ppc32|x86|sh],           [use_elf32=yes; AC_MSG_RESULT([32])],
+        [aarch64|ia64|ppc64|x86_64|s390x], [use_elf64=yes; AC_MSG_RESULT([64])],
+        [mips|riscv|loongarch64],          [use_elfxx=yes; AC_MSG_RESULT([xx])],
+        [AC_MSG_ERROR([Unknown ELF target: ${target_arch}])]
+)
 AM_CONDITIONAL(USE_ELF32, [test x$use_elf32 = xyes])
 AM_CONDITIONAL(USE_ELF64, [test x$use_elf64 = xyes])
 AM_CONDITIONAL(USE_ELFXX, [test x$use_elfxx = xyes])

@@ -352,27 +352,6 @@ libunwind_mips_la_SOURCES_mips = $(libunwind_la_SOURCES_mips_common)	    \
 	mips/Gglobal.c mips/Ginit.c mips/Ginit_local.c mips/Ginit_remote.c	    \
 	mips/Gis_signal_frame.c mips/Gregs.c mips/Gresume.c mips/Gstep.c
 
-# The list of files that go info libunwind and libunwind-tilegx:
-noinst_HEADERS += tilegx/init.h tilegx/offsets.h tilegx/unwind_i.h
-libunwind_la_SOURCES_tilegx_common = $(libunwind_la_SOURCES_common)	    \
-	tilegx/is_fpreg.c tilegx/regname.c
-
-# The list of files that go into libunwind:
-libunwind_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)		    \
-	$(libunwind_la_SOURCES_local)					    \
-	tilegx/getcontext.S						\
-	tilegx/Lapply_reg_state.c tilegx/Lreg_states_iterate.c		    \
-	tilegx/Lcreate_addr_space.c tilegx/Lget_proc_info.c tilegx/Lget_save_loc.c   \
-	tilegx/Lglobal.c tilegx/Linit.c tilegx/Linit_local.c tilegx/Linit_remote.c  \
-	tilegx/Lis_signal_frame.c tilegx/Lregs.c tilegx/Lresume.c tilegx/Lstep.c
-
-libunwind_tilegx_la_SOURCES_tilegx = $(libunwind_la_SOURCES_tilegx_common)	    \
-	$(libunwind_la_SOURCES_generic)					    \
-	tilegx/Gapply_reg_state.c tilegx/Greg_states_iterate.c			     \
-	tilegx/Gcreate_addr_space.c tilegx/Gget_proc_info.c tilegx/Gget_save_loc.c   \
-	tilegx/Gglobal.c tilegx/Ginit.c tilegx/Ginit_local.c tilegx/Ginit_remote.c	    \
-	tilegx/Gis_signal_frame.c tilegx/Gregs.c tilegx/Gresume.c tilegx/Gstep.c
-
 # The list of files that go info libunwind and libunwind-riscv:
 noinst_HEADERS += riscv/init.h riscv/offsets.h riscv/unwind_i.h riscv/asm.h
 libunwind_la_SOURCES_riscv_common = $(libunwind_la_SOURCES_common)	    \
@@ -713,18 +692,6 @@ if !REMOTE_ONLY
 endif
  libunwind_setjmp_la_SOURCES += mips/siglongjmp.S
 else
-if ARCH_TILEGX
- lib_LTLIBRARIES += libunwind-tilegx.la
- libunwind_la_SOURCES = $(libunwind_la_SOURCES_tilegx)
- libunwind_tilegx_la_SOURCES = $(libunwind_tilegx_la_SOURCES_tilegx)
- libunwind_tilegx_la_LDFLAGS = $(COMMON_SO_LDFLAGS) -version-info $(SOVERSION)
- libunwind_tilegx_la_LIBADD = libunwind-dwarf-generic.la
- libunwind_tilegx_la_LIBADD += libunwind-elfxx.la
-if !REMOTE_ONLY
- libunwind_tilegx_la_LIBADD += libunwind.la -lc
-endif
- libunwind_setjmp_la_SOURCES += tilegx/siglongjmp.S
-else
 if ARCH_RISCV
  lib_LTLIBRARIES += libunwind-riscv.la
  libunwind_la_SOURCES = $(libunwind_la_SOURCES_riscv)
@@ -828,7 +795,6 @@ endif # ARCH_X86_64
 endif # ARCH_X86
 endif # ARCH_LOONGARCH64
 endif # ARCH_RISCV
-endif # ARCH_TILEGX
 endif # ARCH_MIPS
 endif # ARCH_HPPA
 endif # ARCH_IA64
