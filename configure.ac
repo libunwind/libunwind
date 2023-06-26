@@ -52,7 +52,17 @@ AC_CHECK_TYPES([struct elf_prstatus, struct prstatus, procfs_status, elf_fpregse
 
 dnl Checks for libraries.
 AC_MSG_NOTICE([--- Checking for libraries ---])
-AC_CHECK_LIB([gcc_s], [_Unwind_Resume])
+save_LDFLAGS="$LDFLAGS"
+save_LIBS="$LIBS"
+LDFLAGS+=" -nostdlib"
+AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
+               [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
+                      [AC_SUBST([LIBCRTS], ["$ac_cv_search__Unwind_Resume"])])],
+               [],
+               [-lc]
+)
+LIBS="$save_LIBS"
+LDFLAGS="$save_LDFLAGS"
 AC_SEARCH_LIBS([__uc_get_grs], [uca])
 
 dnl Checks for library functions.
@@ -526,7 +536,6 @@ AC_SUBST(arch)
 AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 AC_SUBST(LDFLAGS_NOSTARTFILES)
-AC_SUBST(LIBCRTS)
 AC_SUBST(PKG_MAJOR)
 AC_SUBST(PKG_MINOR)
 AC_SUBST(PKG_EXTRA)
