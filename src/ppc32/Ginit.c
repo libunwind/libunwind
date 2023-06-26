@@ -127,6 +127,12 @@ static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
             void *arg)
 {
+  if (unlikely (as->validate) && unlikely (!unw_address_is_valid (addr, sizeof(unw_word_t))))
+    {
+      Debug (16, "mem[%#010lx] invalid\n", (long)addr);
+      return -1;
+    }
+
   if (write)
     {
       Debug (12, "mem[%lx] <- %lx\n", addr, *val);

@@ -110,6 +110,7 @@ libunwind_la_SOURCES_common =					\
 
 # List of arch-independent files needed by generic library (libunwind-$ARCH):
 libunwind_la_SOURCES_generic =						\
+	mi/Gaddress_validator.c \
 	mi/Gdyn-extract.c mi/Gdyn-remote.c mi/Gfind_dynamic_proc_info.c	\
 	mi/Gget_accessors.c						\
 	mi/Gget_proc_info_by_ip.c mi/Gget_proc_name.c			\
@@ -140,6 +141,7 @@ libunwind_la_SOURCES_local_nounwind =					\
 	$(libunwind_la_SOURCES_os_local)				\
 	mi/backtrace.c							\
 	mi/dyn-cancel.c mi/dyn-info-list.c mi/dyn-register.c		\
+	mi/Laddress_validator.c \
 	mi/Ldyn-extract.c mi/Lfind_dynamic_proc_info.c			\
 	mi/Lget_accessors.c						\
 	mi/Lget_proc_info_by_ip.c mi/Lget_proc_name.c			\

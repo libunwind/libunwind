@@ -248,7 +248,6 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #endif /* !UNW_LOCAL_ONLY */
 
 #define tdep_getcontext_trace           unw_getcontext
-#define tdep_init_mem_validate          UNW_OBJ(init_mem_validate)
 #define tdep_init_done                  UNW_OBJ(init_done)
 #define tdep_init                       UNW_OBJ(init)
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
@@ -287,7 +286,6 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 extern atomic_bool tdep_init_done;
 
 extern void tdep_init (void);
-extern void tdep_init_mem_validate (void);
 extern int tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                                      unw_dyn_info_t *di, unw_proc_info_t *pi,
                                      int need_unwind_info, void *arg);

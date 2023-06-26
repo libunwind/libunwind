@@ -59,12 +59,15 @@ unw_step (unw_cursor_t * cursor)
   unw_word_t back_chain_offset, lr_save_offset, v_regs_ptr;
   struct dwarf_loc back_chain_loc, lr_save_loc, sp_loc, ip_loc, v_regs_loc;
   int ret, i;
+  int validate = c->dwarf.as->validate;
 
   Debug (1, "(cursor=%p, ip=0x%016lx)\n", c, (unsigned long) c->dwarf.ip);
 
   /* Try DWARF-based unwinding... */
 
+  c->dwarf.as->validate = 1;
   ret = dwarf_step (&c->dwarf);
+  c->dwarf.as->validate = validate;
 
   if (ret < 0 && ret != -UNW_ENOINFO)
     {

@@ -74,57 +74,6 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
   return 0;
 }
 
-/* Cache of already validated addresses */
-#define NLGA 4
-static unw_word_t last_good_addr[NLGA];
-static int lga_victim;
-
-static int
-validate_mem (unw_word_t addr)
-{
-  int i, victim;
-#ifdef HAVE_MINCORE
-#if defined __FreeBSD__
-  char mvec[2];
-#else
-  unsigned char mvec[2]; /* Unaligned access may cross page boundary */
-#endif
-#endif
-  size_t len = unw_page_size;
-  addr = unw_page_start(addr);
-
-  if (addr == 0)
-    return -1;
-
-  for (i = 0; i < NLGA; i++)
-    {
-      if (last_good_addr[i] && (addr == last_good_addr[i]))
-        return 0;
-    }
-
-#ifdef HAVE_MINCORE
-  if (mincore ((void *) addr, len, mvec) == -1)
-#else
-  if (msync ((void *) addr, len, MS_ASYNC) == -1)
-#endif
-    return -1;
-
-  victim = lga_victim;
-  for (i = 0; i < NLGA; i++) {
-    if (!last_good_addr[victim]) {
-      last_good_addr[victim++] = addr;
-      return 0;
-    }
-    victim = (victim + 1) % NLGA;
-  }
-
-  /* All slots full. Evict the victim. */
-  last_good_addr[victim] = addr;
-  victim = (victim + 1) % NLGA;
-  lga_victim = victim;
-
-  return 0;
-}
 
 static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
@@ -139,8 +88,11 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     {
       /* validate address */
       const struct cursor *c = (const struct cursor *)arg;
-      if (c && c->validate && validate_mem(addr))
-        return -1;
+      if (unlikely (c && c->validate) && !unw_address_is_valid (addr, sizeof(unw_word_t)))
+        {
+          Debug (16, "mem[%#010lx] -> invalid\n", (long)addr);
+          return -1;
+        }
       *val = *(unw_word_t *) addr;
       Debug (16, "mem[%x] -> %x\n", addr, *val);
     }
