@@ -100,6 +100,7 @@ struct cursor
         AARCH64_SCF_NONE,
         AARCH64_SCF_LINUX_RT_SIGFRAME,
         AARCH64_SCF_FREEBSD_RT_SIGFRAME,
+        AARCH64_SCF_QNX_RT_SIGFRAME,
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;

@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.globl _UI_siglongjmp_cont
 	.type _UI_siglongjmp_cont, @function
 _UI_siglongjmp_cont:
-#if defined(__linux__)
+#if defined(__linux__) || defined(__QNX__)
 	retq
 #elif defined(__FreeBSD__)
 	pushq	%rax		/* return address */

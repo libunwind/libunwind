@@ -52,7 +52,17 @@ AC_CHECK_TYPES([struct elf_prstatus, struct prstatus, procfs_status, elf_fpregse
 
 dnl Checks for libraries.
 AC_MSG_NOTICE([--- Checking for libraries ---])
-AC_CHECK_LIB([gcc_s], [_Unwind_Resume])
+save_LDFLAGS="$LDFLAGS"
+save_LIBS="$LIBS"
+LDFLAGS+=" -nostdlib"
+AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
+               [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
+                      [AC_SUBST([LIBCRTS], ["$ac_cv_search__Unwind_Resume"])])],
+               [],
+               [-lc]
+)
+LIBS="$save_LIBS"
+LDFLAGS="$save_LDFLAGS"
 AC_SEARCH_LIBS([__uc_get_grs], [uca])
 
 dnl Checks for library functions.
@@ -144,6 +154,20 @@ AM_COND_IF([BUILD_PTRACE], [
                  ])
 ])
 
+AC_MSG_CHECKING([if libunwind-nto should be built])
+AC_ARG_ENABLE(nto,
+              [AS_HELP_STRING([--enable-nto],
+                              [build libunwind-nto library
+                               @<:@default=autodetect@:>@])],
+              [],
+              [enable_nto="check"]
+)
+AS_IF([test "$enable_nto" != "no"],
+      [AC_CHECK_HEADER([sys/neutrino.h], [enable_nto=yes], [enable_nto=no])]
+)
+AC_MSG_RESULT([$enable_nto])
+AM_CONDITIONAL([BUILD_NTO], [test x$enable_nto = xyes])
+
 AC_MSG_CHECKING([if libunwind-setjmp should be built])
 AC_ARG_ENABLE([setjmp],
               [AS_HELP_STRING([--enable-setjmp],
@@ -155,6 +179,8 @@ AC_ARG_ENABLE([setjmp],
 AS_IF([test "$enable_setjmp" = check],
       [AS_IF([test x$target_arch = x$host_arch],
              [enable_setjmp=yes],
+             [enable_setjmp=no])]
+      [AS_IF([expr x$target_os : xnto-qnx >/dev/null],
              [enable_setjmp=no])]
 )
 AC_MSG_RESULT([$enable_setjmp])
@@ -276,6 +302,13 @@ AS_IF([test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"], [
 ])
 AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
 AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
+
+# Enable tests built around unw_resume, which is not supported on all targets
+AC_MSG_CHECKING([if we should enable unw_resume tests])
+AS_CASE([$target_os],
+        [nto-qnx*], [enable_unw_resume_tests=no],
+        [enable_unw_resule_tests=yes])
+AM_CONDITIONAL([ENABLE_UNW_RESUME_TESTS], [test x$enable_unw_resume_tests = xyes])
 
 AC_MSG_CHECKING([for build architecture])
 AC_MSG_RESULT([$build_arch])
@@ -503,7 +536,6 @@ AC_SUBST(arch)
 AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 AC_SUBST(LDFLAGS_NOSTARTFILES)
-AC_SUBST(LIBCRTS)
 AC_SUBST(PKG_MAJOR)
 AC_SUBST(PKG_MINOR)
 AC_SUBST(PKG_EXTRA)

@@ -53,11 +53,9 @@ if ARCH_AARCH64
   check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal
 endif
 
- check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt Gtest-exc Ltest-exc		 \
+ check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
-			Gtest-resume-sig Ltest-resume-sig		 \
-			Gtest-resume-sig-rt Ltest-resume-sig-rt		 \
 			Gtest-trace Ltest-trace				 \
 			Ltest-mem-validate				 \
 			test-async-sig test-flush-cache test-init-remote \
@@ -69,6 +67,13 @@ endif
 # unw_init_local2() is not implemented on ia64
 if !ARCH_IA64
  check_PROGRAMS_cdep += Ltest-init-local-signal
+endif
+
+# Tests that exercise unw_resume, which is only unsupported on some targets
+if ENABLE_UNW_RESUME_TESTS
+check_PROGRAMS_cdep += Gtest-exc Ltest-exc \
+                       Gtest-resume-sig Ltest-resume-sig \
+                       Gtest-resume-sig-rt Ltest-resume-sig-rt
 endif
 
 if BUILD_PTRACE

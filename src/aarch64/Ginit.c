@@ -2,6 +2,7 @@
    Copyright (C) 2008 CodeSourcery
    Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
    Copyright (C) 2013 Linaro Limited
+   Copyright 2022 Blackberry Limited
 
 This file is part of libunwind.
 
@@ -68,7 +69,18 @@ uc_addr (unw_context_t *uc, int reg)
     return &GET_FPCTX(uc)->uc_mcontext.mc_fpregs.fp_q[reg - UNW_AARCH64_V0];
   else
     return NULL;
-#else /* __FreeBSD__ */
+#elif defined(__QNX__)
+  if (reg >= UNW_AARCH64_X0 && reg <= UNW_AARCH64_X30)
+    return &uc->uc_mcontext.cpu.gpr[reg];
+  else if (reg == UNW_AARCH64_SP)
+    return &AARCH64_GET_REGSP(&uc->uc_mcontext.cpu);
+  else if (reg == UNW_AARCH64_PC)
+    return &AARCH64_GET_REGIP(&uc->uc_mcontext.cpu);
+  else if (reg >= UNW_AARCH64_V0 && reg <= UNW_AARCH64_V31)
+    return &uc->uc_mcontext.fpu.reg[reg - UNW_AARCH64_V0];
+  else
+    return NULL;
+# else /* !__FreeBSD && ! __QNX__ */
   if (reg >= UNW_AARCH64_X0 && reg <= UNW_AARCH64_X30)
     return &uc->uc_mcontext.regs[reg];
   else if (reg == UNW_AARCH64_SP)

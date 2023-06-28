@@ -2,6 +2,7 @@
    Copyright (C) 2001-2004 Hewlett-Packard Co
         Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
    Copyright (C) 2013 Linaro Limited
+   Copyright 2022 Blackberry Limited
 
 This file is part of libunwind.
 
@@ -238,9 +239,11 @@ typedef ucontext_t unw_fpsimd_context_t;
 #include "libunwind-dynamic.h"
 
 #if defined(__FreeBSD__)
-#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.mc_gpregs.gp_x;
+# define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.mc_gpregs.gp_x;
+#elif defined(__QNX__)
+# define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.cpu.gpr;
 #else
-#define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;
+# define UNW_BASE register uint64_t unw_base __asm__ ("x0") = (uint64_t) unw_ctx->uc_mcontext.regs;
 #endif
 
 #define unw_tdep_getcontext(uc) ({					\

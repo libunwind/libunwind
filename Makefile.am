@@ -8,7 +8,9 @@ endif BUILD_PTRACE
 if BUILD_COREDUMP
 include_HEADERS += include/libunwind-coredump.h
 endif BUILD_COREDUMP
-
+if BUILD_NTO
+include_HEADERS += include/libunwind-nto.h
+endif BUILD_NTO
 if ARCH_AARCH64
 include_HEADERS += include/libunwind-aarch64.h
 endif

@@ -1,0 +1,120 @@
+\documentclass{article}
+\usepackage[fancyhdr,pdf]{latex2man}
+
+\input{common.tex}
+
+\begin{document}
+
+\begin{Name}{3}{libunwind-nto}{Blackberry}{Programming Library}{QNX Neutrino support in libunwind}libunwind-nto -- QNX Neutrino support in libunwind
+\end{Name}
+
+\section{Synopsis}
+
+\File{\#include $<$libunwind-nto.h$>$}\\
+
+\noindent
+\Type{unw\_accessors\_t} \Var{unw\_nto\_accessors};\\
+
+\Type{void~*}\Func{unw\_nto\_create}(\Type{pid\_t}, \Type{pthread\_t});\\
+\noindent
+\Type{void} \Func{unw\_nto\_destroy}(\Type{void~*});\\
+
+\noindent
+\Type{int} \Func{unw\_nto\_find\_proc\_info}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t}, \Type{unw\_proc\_info\_t~*}, \Type{int}, \Type{void~*});\\
+\noindent
+\Type{void} \Func{unw\_nto\_put\_unwind\_info}(\Type{unw\_addr\_space\_t}, \Type{unw\_proc\_info\_t~*}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{unw\_nto\_get\_dyn\_info\_list\_addr}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t~*}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{unw\_nto\_access\_mem}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t}, \Type{unw\_word\_t~*}, \Type{int}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{unw\_nto\_access\_reg}(\Type{unw\_addr\_space\_t}, \Type{unw\_regnum\_t}, \Type{unw\_word\_t~*}, \Type{int}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{unw\_nto\_access\_fpreg}(\Type{unw\_addr\_space\_t}, \Type{unw\_regnum\_t}, \Type{unw\_fpreg\_t~*}, \Type{int}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{unw\_nto\_get\_proc\_name}(\Type{unw\_addr\_space\_t}, \Type{unw\_word\_t}, \Type{char~*}, \Type{size\_t}, \Type{unw\_word\_t~*}, \Type{void~*});\\
+\noindent
+\Type{int} \Func{unw\_nto\_resume}(\Type{unw\_addr\_space\_t}, \Type{unw\_cursor\_t~*}, \Type{void~*});\\
+
+\section{Description}
+
+The QNX operating system makes it possible for a process to
+gain access to the machine-state and virtual memory of \emph{another}
+process.
+With the right set of call-back routines,
+it is therefore possible to hook up \Prog{libunwind} to another process.
+While it's not very difficult to do so directly,
+\Prog{libunwind} further facilitates this task by providing
+ready-to-use callbacks for this purpose.
+The routines and variables
+implementing this facility use a name-prefix of \Func{unw\_nto},
+which is stands for ``unwind-via-nto''.
+
+An application that wants to use the \Func{unw\_nto}-facility first needs
+to create a new \Prog{libunwind} address-space that represents the
+target process.  This is done by calling
+\Func{unw\_create\_addr\_space}().  In many cases, the application
+will simply want to pass the address of \Var{unw\_nto\_accessors} as the
+first argument to this routine.  Doing so will ensure that
+\Prog{libunwind} will be able to properly unwind the target process.
+However, in special circumstances, an application may prefer to use
+only portions of the \Prog{unw\_nto}-facility.  For this reason, the
+individual callback routines (\Func{unw\_nto\_find\_proc\_info}(),
+\Func{unw\_nto\_put\_unwind\_info}(), etc.)  are also available for direct
+use.  Of course, the addresses of these routines could also be picked
+up from \Var{unw\_nto\_accessors}, but doing so would prevent static
+initialization.  Also, when using \Var{unw\_nto\_accessors}, \emph{all}
+the callback routines will be linked into the application, even if
+they are never actually called.
+
+The process-ID (pid) of the target process must be known,
+and only a single thread can be unwound at a time so the thread-id (tid)
+must also be specified.
+A \Prog{unw\_nto}-info-structure can be created
+by calling \Func{unw\_nto\_create}(), passing the pid and tid of the target
+process thread as the arguments.
+This will stop the target thread.
+The returned void-pointer then needs to be
+passed as the ``argument'' pointer (third argument) to
+\Func{unw\_init\_remote}().
+
+The \Func{unw\_nto\_resume}() routine can be used to resume execution of
+the target process after unwinding.
+
+When the application is done using \Prog{libunwind} on the target
+process, \Func{unw\_nto\_destroy}() needs to be called, passing it the
+void-pointer that was returned by the corresponding call to
+\Func{unw\_nto\_create}().  This ensures that all memory and other
+resources are freed up.
+
+\section{Thread Safety}
+
+The \Prog{unw\_nto}-facility assumes that a single \Prog{unw\_nto}-info
+structure is never shared between threads of the unwinding program.
+Because of this,
+no explicit locking is used.
+As long as only one thread uses a \Prog{unw\_nto}-info structure at any given time,
+this facility is thread-safe.
+
+\section{Return Value}
+
+\Func{unw\_nto\_create}() may return a \Const{NULL} pointer if it fails
+to create the \Prog{unw\_nto}-info-structure for any reason.
+
+\section{Files}
+
+\begin{Description}
+\item[\File{libunwind-nto.h}] Headerfile to include when using the
+  interface defined by this library.
+\item[\Opt{-l}\File{unwind-nto} \Opt{-l}\File{unwind-generic}]
+    Linker-switches to add when building a program that uses the
+    functions defined by this library.
+\end{Description}
+
+\section{See Also}
+
+\SeeAlso{libunwind(3)},
+
+\LatexManEnd
+
+\end{document}

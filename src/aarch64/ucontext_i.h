@@ -20,7 +20,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
-
+#ifndef libunwind_src_aarch64_ucontext_i_h
+#define libunwind_src_aarch64_ucontext_i_h
 
 #if defined __FreeBSD__
 
@@ -35,7 +36,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define	SCF_FORMAT			AARCH64_SCF_FREEBSD_RT_SIGFRAME
 
-#else /* defined __linux__ */
+#elif defined(__linux__)
 
 #define	UC_MCONTEXT_OFF			0xb0
 #define	SC_GPR_OFF			0x08
@@ -54,4 +55,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define	LINUX_SC_RESERVED_SIZE_OFF	0x4
 #define	LINUX_SC_RESERVED_SVE_VL_OFF	0x8
 
+#elif defined(__QNX__)
+
+#define UC_MCONTEXT_OFF   48
+#define SC_GPR_OFF         0
+#define SC_X29_OFF       232
+#define SC_X30_OFF       240
+#define SC_SP_OFF        248
+#define SC_PC_OFF        256
+#define SC_PSTATE_OFF    264
+#define SCF_FORMAT       AARCH64_SCF_QNX_RT_SIGFRAME
+
+#else
+# error Port me
 #endif
+
+#endif /* libunwind_src_aarch64_ucontext_i_h */

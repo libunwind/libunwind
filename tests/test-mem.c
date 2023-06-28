@@ -86,17 +86,19 @@ consume_some_stack_space (void)
 int
 main (int argc, char **argv UNUSED)
 {
-  struct rlimit rlim;
+  struct rlimit rlim UNUSED;
 
   verbose = argc > 1;
 
   if (consume_some_stack_space () > 9999)
     exit (-1);	/* can't happen, but don't let the compiler know... */
 
+#if !defined(__QNX__)
   rlim.rlim_cur = 0;
   rlim.rlim_max = RLIM_INFINITY;
   setrlimit (RLIMIT_DATA, &rlim);
   setrlimit (RLIMIT_AS, &rlim);
+#endif /* !defined(__QNX__) */
 
   do_backtrace ();
   return 0;

@@ -17,6 +17,9 @@ if BUILD_COREDUMP
 lib_LTLIBRARIES += libunwind-coredump.la
 endif
 endif
+if BUILD_NTO
+lib_LTLIBRARIES += libunwind-nto.la
+endif
 
 noinst_HEADERS =
 noinst_LTLIBRARIES =
@@ -81,6 +84,25 @@ noinst_HEADERS += coredump/_UCD_internal.h \
 libunwind_setjmp_la_LDFLAGS		= $(COMMON_SO_LDFLAGS)		     \
 					  -version-info $(SETJMP_SO_VERSION)
 
+### libunwind-nto:
+libunwind_nto_la_SOURCES = \
+	mi/init.c \
+	nto/unw_nto_access_fpreg.c \
+	nto/unw_nto_access_mem.c \
+	nto/unw_nto_accessors.c \
+	nto/unw_nto_access_reg.c \
+	nto/unw_nto_create.c \
+	nto/unw_nto_elf.c \
+	nto/unw_nto_destroy.c \
+	nto/unw_nto_find_proc_info.c \
+	nto/unw_nto_get_dyn_info_list_addr.c \
+	nto/unw_nto_get_proc_name.c \
+	nto/unw_nto_put_unwind_info.c \
+	nto/unw_nto_resume.c
+noinst_HEADERS += nto/unw_nto_internal.h
+libunwind_nto_la_LIBADD = \
+					  libunwind-$(arch).la	\
+					  libunwind.la -lc
 if USE_ELF32
 LIBUNWIND_ELF = libunwind-elf32.la
 endif
@@ -610,10 +632,15 @@ if OS_SOLARIS
 endif
 
 if OS_QNX
- libunwind_la_SOURCES_os	= $(libunwind_la_SOURCES_os_qnx)
- libunwind_la_SOURCES_os_local	= $(libunwind_la_SOURCES_os_qnx_local)
+ libunwind_la_SOURCES_os              = $(libunwind_la_SOURCES_os_qnx)
+ libunwind_la_SOURCES_os_local        = $(libunwind_la_SOURCES_os_qnx_local)
  libunwind_la_SOURCES_arm_os          = arm/Gos-other.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-other.c
+ libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-qnx.c
+ libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-qnx.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_qnx.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_qnx.c
 endif
 
 if ARCH_AARCH64
