@@ -231,6 +231,21 @@ unw_step (unw_cursor_t *cursor)
   if (unlikely (ret == -UNW_ESTOPUNWIND))
     return ret;
 
+  if (likely (ret > 0))
+    {
+      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &fp);
+      if (ret == 0 && fp == 0)
+        {
+	  /* Procedure Call Standard for the ARM 64-bit Architecture (AArch64)
+	   * specifies that the end of the frame record chain is indicated by
+	   * the address zero in the address for the previous frame.
+	   */
+	  c->dwarf.ip = 0;
+	  Debug (2, "NULL frame pointer X29 loc, returning 0\n");
+	  return 0;
+        }
+    }
+
   if (unlikely (ret < 0))
     {
       /* DWARF failed. */
