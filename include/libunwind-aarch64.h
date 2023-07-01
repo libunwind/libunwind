@@ -229,9 +229,6 @@ typedef struct
 #else
 /* On AArch64, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
-#if defined(__FreeBSD__)
-typedef ucontext_t unw_fpsimd_context_t;
-#endif
 #endif
 
 
