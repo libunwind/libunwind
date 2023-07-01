@@ -200,6 +200,7 @@ unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int validate = c->validate;
+  unw_word_t fp;
   int ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx))\n",
@@ -250,8 +251,45 @@ unw_step (unw_cursor_t *cursor)
         }
       else
         {
-          Debug (2, "fallback\n");
+	  /* Try use frame pointer (X29). */
           c->frame_info.frame_type = UNW_AARCH64_FRAME_GUESSED;
+
+          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &fp);
+	  if (likely (ret == 0))
+	    {
+	      if (fp == 0)
+	        {
+		  /* Procedure Call Standard for the ARM 64-bit Architecture (AArch64)
+		   * specifies that the end of the frame record chain is indicated by
+		   * the address zero in the address for the previous frame.
+		   */
+		  c->dwarf.ip = 0;
+		  Debug (2, "NULL frame pointer X29 loc, returning 0\n");
+		  return 0;
+	        }
+
+	      Debug (2, "fallback, x29 = 0x%016lx\n", fp);
+	      for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+		c->dwarf.loc[i] = DWARF_NULL_LOC;
+
+	      c->dwarf.loc[UNW_AARCH64_SP]  = DWARF_MEM_LOC (c->dwarf, fp);
+	      c->dwarf.loc[UNW_AARCH64_X30] = DWARF_MEM_LOC (c->dwarf, fp + 8);
+
+	      /* Set SP/CFA and PC/IP.  */
+	      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &c->dwarf.cfa);
+	      if (ret < 0)
+	        return ret;
+	      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
+	      if (ret == 0)
+	        {
+	          ret = 1;
+	          c->dwarf.loc[UNW_AARCH64_X29] = c->dwarf.loc[UNW_AARCH64_SP];
+	          c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
+		}
+	      Debug (2, "fallback, CFA = 0x%016lx, IP = 0x%016lx returning %d\n",
+	        c->dwarf.cfa, c->dwarf.ip, ret);
+	      return ret;
+	    }
         }
       /* Use link register (X30). */
       c->frame_info.cfa_reg_offset = 0;
