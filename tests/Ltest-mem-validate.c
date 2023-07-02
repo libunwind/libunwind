@@ -52,8 +52,7 @@ void do_backtrace (void)
     (steps > 5) before touching the forbidden region in the stack,
     at which point the unwinding should stop gracefully.
   */
-  mprotect((void*)((uintptr_t)stack_start & ~(PAGE_SIZE - 1)),
-           PAGE_SIZE, PROT_NONE);
+  mprotect(stack_start, PAGE_SIZE, PROT_NONE);
 
   unw_cursor_t cursor;
   unw_word_t ip, sp;
@@ -87,8 +86,7 @@ void do_backtrace (void)
     }
   printf("success, steps: %d\n", steps);
 
-  mprotect((void*)((uintptr_t)stack_start & ~(PAGE_SIZE - 1)),
-           PAGE_SIZE, PROT_READ|PROT_WRITE);
+  mprotect(stack_start, PAGE_SIZE, PROT_READ|PROT_WRITE);
 }
 
 void NOINLINE consume_and_run (int depth)
@@ -108,19 +106,20 @@ void NOINLINE consume_and_run (int depth)
 int
 main (int argc UNUSED, char **argv UNUSED)
 {
-  int start;
-  unw_context_t uc;
-  unw_cursor_t cursor;
-
-  stack_start = &start;
-
   /*
     We need to make the frame at least the size protected by
     the mprotect call so we are not forbidding access to
     unrelated regions.
   */
-  char string[PAGE_SIZE];
-  sprintf (string, "hello\n");
+  int start __attribute__((__aligned__(PAGE_SIZE)));
+  unw_context_t uc;
+  unw_cursor_t cursor;
+
+  /*
+   * mprotect consume_and_run stack area.
+   * XXX. Should check whether stack grows downward or upward.
+   */
+  stack_start = &start - PAGE_SIZE;
 
   // Initialize pipe mem validate check, opens file descriptors
   unw_getcontext(&uc);
