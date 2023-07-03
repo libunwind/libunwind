@@ -111,7 +111,7 @@ do_backtrace (void)
 	  printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 	}
 
-      if ((ret = unw_get_proc_info (&c, &pi)) < 0)
+      if ((ret = unw_get_proc_info (&c, &pi)) < 0 && ret != -UNW_ENOINFO) /* It's possible unw_get_proc_info don't return infomation */
 	panic ("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
       else if (verbose)
 	printf ("\tproc=%016lx-%016lx\n\thandler=%lx lsda=%lx",
