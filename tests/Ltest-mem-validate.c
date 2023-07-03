@@ -103,7 +103,7 @@ void NOINLINE consume_and_run (int depth)
   }
 }
 
-static int NOINLINE is_stacl_downward (int *val)
+static int NOINLINE is_stack_downward (int *val)
 {
   int start;
 
@@ -126,7 +126,7 @@ main (int argc UNUSED, char **argv UNUSED)
    * mprotect consume_and_run stack area.
    * Check whether stack grows downward or upward.
    */
-  if (is_stacl_downward(&start))
+  if (is_stack_downward(&start))
     stack_start = &start - PAGE_SIZE;
   else
     stack_start = &start + PAGE_SIZE;
