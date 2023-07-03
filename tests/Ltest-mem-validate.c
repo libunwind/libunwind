@@ -70,7 +70,7 @@ void do_backtrace (void)
       unw_get_reg (&cursor, UNW_REG_SP, &sp);
 
       ret = unw_step (&cursor);
-	  printf("ip=%lx, sp=%lx -> %d\n", ip, sp, ret);
+	  printf("ip=%p, sp=%p -> %d\n", (void *)ip, (void *)sp, ret);
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
