@@ -65,6 +65,11 @@ is_plt_entry (struct dwarf_cursor *c)
   unw_word_t w0, w1;
   unw_accessors_t *a;
 
+  if (!c->as->big_endian)
+    {
+      return 0;
+    }
+
   /*
     A PLT (Procedure Linkage Table) is used by the dynamic linker to map the
     relative address of a position independent function call onto the real
