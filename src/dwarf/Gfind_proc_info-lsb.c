@@ -525,19 +525,26 @@ typedef struct eh_frame_list_entry
   }
 eh_frame_list_entry_t;
 
-/* Prepend entry to singly linked list head.  */
+static define_lock (eh_frame_list_lock);
+static eh_frame_list_entry_t *eh_frame_list_head;
+
+/* Prepend entry to singly-linked list head.  */
 static void
-eh_frame_list_prepend (eh_frame_list_entry_t **head, eh_frame_list_entry_t *entry)
+eh_frame_list_prepend (eh_frame_list_entry_t *entry)
 {
-  entry->next = *head;
-  *head = entry;
+  mutex_lock (&eh_frame_list_lock);
+  {
+    entry->next = eh_frame_list_head;
+    eh_frame_list_head = entry;
+  }
+  mutex_unlock (&eh_frame_list_lock);
 }
 
 /* Search singly linked list head for item with given filename.  */
 static eh_frame_list_entry_t*
-eh_frame_list_search (eh_frame_list_entry_t *head, const char *filename)
+eh_frame_list_search (const char *filename)
 {
-  eh_frame_list_entry_t *entry = head;
+  eh_frame_list_entry_t *entry = eh_frame_list_head;
   while (entry)
     {
       if (strcmp (entry->filename, filename) == 0)
@@ -556,10 +563,8 @@ eh_frame_list_search (eh_frame_list_entry_t *head, const char *filename)
   return NULL;
 }
 
-static eh_frame_list_entry_t *eh_frame_list;
-
 static Elf_W (Addr)
-dwarf_find_eh_frame_section(struct dl_phdr_info *info)
+find_eh_frame_section (struct dl_phdr_info *info)
 {
   int rc;
   struct elf_image ei;
@@ -576,7 +581,7 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
     }
 
   /* Check if cached synthetic eh_frame header exists for this file.  */
-  eh_frame_list_entry = eh_frame_list_search (eh_frame_list, file);
+  eh_frame_list_entry = eh_frame_list_search (file);
   if (eh_frame_list_entry)
     {
       return eh_frame_list_entry->eh_frame;
@@ -601,7 +606,7 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
   GET_MEMORY (eh_frame_list_entry, sizeof (eh_frame_list_entry_t) + strlen (file) + 1);
   strcpy (eh_frame_list_entry->filename, file);
   eh_frame_list_entry->eh_frame = eh_frame;
-  eh_frame_list_prepend (&eh_frame_list, eh_frame_list_entry);
+  eh_frame_list_prepend (eh_frame_list_entry);
 
 out:
   mi_munmap (ei.image, ei.size);
@@ -694,7 +699,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
     {
       Elf_W (Addr) eh_frame;
       Debug (1, "no .eh_frame_hdr section found\n");
-      eh_frame = dwarf_find_eh_frame_section (info);
+      eh_frame = find_eh_frame_section (info);
       if (eh_frame)
         {
           Debug (1, "using synthetic .eh_frame_hdr section for %s\n",
