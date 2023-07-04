@@ -61,6 +61,7 @@ main ()
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   struct unw_addr_space mock_address_space;
+  mock_address_space.big_endian = 1;
   mock_address_space.acc.access_mem = &access_mem;
 
   struct dwarf_cursor c;
