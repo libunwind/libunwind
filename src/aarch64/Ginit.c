@@ -66,7 +66,7 @@ uc_addr (unw_context_t *uc, int reg)
   else if (reg == UNW_AARCH64_PC)
     return &uc->uc_mcontext.mc_gpregs.gp_elr;
   else if (reg >= UNW_AARCH64_V0 && reg <= UNW_AARCH64_V31)
-    return &GET_FPCTX(uc)->uc_mcontext.mc_fpregs.fp_q[reg - UNW_AARCH64_V0];
+    return &uc->uc_mcontext.mc_fpregs.fp_q[reg  - UNW_AARCH64_V0];
   else
     return NULL;
 #elif defined(__QNX__)
