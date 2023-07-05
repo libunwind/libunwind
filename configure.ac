@@ -307,7 +307,8 @@ AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
 AC_MSG_CHECKING([if we should enable unw_resume tests])
 AS_CASE([$target_os],
         [nto-qnx*], [enable_unw_resume_tests=no],
-        [enable_unw_resule_tests=yes])
+        [enable_unw_resume_tests=yes])
+AC_MSG_RESULT([$enable_unw_resume_tests])
 AM_CONDITIONAL([ENABLE_UNW_RESUME_TESTS], [test x$enable_unw_resume_tests = xyes])
 
 AC_MSG_CHECKING([for build architecture])
