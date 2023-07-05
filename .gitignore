@@ -80,5 +80,6 @@ tests/ia64-test-dyn1
 tests/ia64-test-sig
 tests/[GL]x64-test-dwarf-expressions
 tests/x64-unwind-badjmp-signal-frame
+tests/[GL]arm64-test-sve-signal
 tests/*.log
 tests/*.trs
