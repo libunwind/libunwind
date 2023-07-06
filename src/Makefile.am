@@ -605,6 +605,7 @@ if OS_FREEBSD
  libunwind_la_SOURCES_arm_os_local    = arm/Los-freebsd.c
  libunwind_la_SOURCES_aarch64_os      = aarch64/Gos-freebsd.c
  libunwind_la_SOURCES_aarch64_os_local = aarch64/Los-freebsd.c
+ libunwind_la_SOURCES_aarch64_os_local+= aarch64/setcontext.S
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_generic.c
@@ -638,6 +639,7 @@ if ARCH_AARCH64
 if !REMOTE_ONLY
  libunwind_aarch64_la_LIBADD += libunwind.la -lc
 endif
+ libunwind_setjmp_la_SOURCES += aarch64/longjmp.S
  libunwind_setjmp_la_SOURCES += aarch64/siglongjmp.S
 else
 if ARCH_ARM

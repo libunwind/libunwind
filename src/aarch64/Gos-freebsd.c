@@ -22,15 +22,49 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include <sys/types.h>
+
+#include <signal.h>
+#include <stddef.h>
+#include <ucontext.h>
+
+#include <machine/sigframe.h>
+
 #include "unwind_i.h"
+#include "ucontext_i.h"
 
 #ifndef UNW_REMOTE_ONLY
+
+#define setcontext		UNW_ARCH_OBJ(setcontext)
+extern NORETURN void setcontext(ucontext_t *);
 
 HIDDEN int
 aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
+  struct cursor *c = (struct cursor *) cursor;
 
-  printf ("%s: implement me\n", __FUNCTION__);
+  if (unw_is_signal_frame (cursor))
+    {
+      ucontext_t *uc = (ucontext_t *)(c->sigcontext_sp + offsetof(struct sigframe, sf_uc));
+
+      if (c->dwarf.eh_valid_mask & 0x1)
+        uc->uc_mcontext.mc_gpregs.gp_x[0] = c->dwarf.eh_args[0];
+      if (c->dwarf.eh_valid_mask & 0x2)
+        uc->uc_mcontext.mc_gpregs.gp_x[1] = c->dwarf.eh_args[1];
+      if (c->dwarf.eh_valid_mask & 0x4)
+        uc->uc_mcontext.mc_gpregs.gp_x[2] = c->dwarf.eh_args[2];
+
+      Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
+               (unsigned long long) c->sigcontext_pc, uc);
+      sigreturn(uc);
+      abort();
+    }
+  else
+    {
+	setcontext(c->uc);
+    }
+
+  unreachable();
   return -UNW_EINVAL;
 }
 
