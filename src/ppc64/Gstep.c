@@ -65,7 +65,7 @@ is_plt_entry (struct dwarf_cursor *c)
   unw_word_t w0, w1;
   unw_accessors_t *a;
 
-  if (!c->as->big_endian)
+  if (c->as->big_endian)
     {
       return 0;
     }

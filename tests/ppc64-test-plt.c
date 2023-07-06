@@ -48,6 +48,9 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 int
 main ()
 {
+  if (target_is_big_endian())
+    return 77;
+
   const uint32_t plt_instructions[ip_program_end] =
     {
       0xdeadbeef,
@@ -61,7 +64,7 @@ main ()
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   struct unw_addr_space mock_address_space;
-  mock_address_space.big_endian = 1;
+  mock_address_space.big_endian = 0;
   mock_address_space.acc.access_mem = &access_mem;
 
   struct dwarf_cursor c;
