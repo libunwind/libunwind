@@ -222,6 +222,8 @@ unw_step (unw_cursor_t *cursor)
       dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
     }
 
+  /* Try DWARF-based unwinding... */
+  c->sigcontext_format = AARCH64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
   Debug(1, "dwarf_step()=%d\n", ret);
 
