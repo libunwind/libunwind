@@ -93,7 +93,11 @@ siglongjmp (sigjmp_buf env, int val)
       /* Order of evaluation is important here: if unw_resume()
          restores signal mask, we must set it up appropriately, even
          if wp[JB_MASK_SAVED] is FALSE.  */
+#ifdef __FreeBSD__
+      if ((wp[JB_MASK_SAVED] & 0x1) == 0x1)
+#else
       if (!resume_restores_sigmask (&c, wp) && wp[JB_MASK_SAVED])
+#endif
         {
           /* sigmask was saved */
 #if defined(__linux__) || defined(__sun)
