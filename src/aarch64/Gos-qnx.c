@@ -1,6 +1,4 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2004 Hewlett-Packard Co
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
 
 This file is part of libunwind.
 
@@ -23,21 +21,15 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/* Use glibc's jump-buffer indices; NPTL peeks at SP: */
+#include "unwind_i.h"
 
-#if defined __linux__
+#ifndef UNW_REMOTE_ONLY
 
-#define JB_SP           4
-#define JB_RP           5
-#define JB_MASK_SAVED   6
-#define JB_MASK         7
+HIDDEN int
+aarch64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor UNUSED,
+		      void *arg UNUSED)
+{
+  return -UNW_EINVAL;
+}
 
-#elif defined __FreeBSD__
-
-#define JB_SP           2
-#define JB_RP           0
-#define JB_MASK_SAVED   11
-#define JB_MASK         7
-#define	_JB_STK_SHIFT	4
-
-#endif
+#endif /* !UNW_REMOTE_ONLY */

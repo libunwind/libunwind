@@ -233,6 +233,7 @@ libunwind_la_SOURCES_aarch64_common = $(libunwind_la_SOURCES_common)	    \
 # The list of files that go into libunwind:
 libunwind_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common)	    \
 	$(libunwind_la_SOURCES_local)					    \
+	$(libunwind_la_SOURCES_aarch64_os_local)			    \
 	aarch64/Lapply_reg_state.c aarch64/Lreg_states_iterate.c	    \
 	aarch64/Lcreate_addr_space.c aarch64/Lget_proc_info.c 		    \
 	aarch64/Lget_save_loc.c aarch64/Lglobal.c aarch64/Linit.c	    \
@@ -243,6 +244,7 @@ libunwind_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common)	    \
 
 libunwind_aarch64_la_SOURCES_aarch64 = $(libunwind_la_SOURCES_aarch64_common) \
 	$(libunwind_la_SOURCES_generic)					      \
+	$(libunwind_la_SOURCES_aarch64_os)				      \
 	aarch64/Gapply_reg_state.c aarch64/Greg_states_iterate.c	      \
 	aarch64/Gcreate_addr_space.c aarch64/Gget_proc_info.c 		      \
 	aarch64/Gget_save_loc.c aarch64/Gglobal.c aarch64/Ginit.c 	      \
@@ -579,6 +581,8 @@ if OS_LINUX
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-linux.c
  libunwind_la_SOURCES_arm_os          = arm/Gos-linux.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-linux.c
+ libunwind_la_SOURCES_aarch64_os      = aarch64/Gos-linux.c
+ libunwind_la_SOURCES_aarch64_os_local = aarch64/Los-linux.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_linux.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_linux.c
@@ -599,6 +603,9 @@ if OS_FREEBSD
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-freebsd.c
  libunwind_la_SOURCES_arm_os          = arm/Gos-freebsd.c
  libunwind_la_SOURCES_arm_os_local    = arm/Los-freebsd.c
+ libunwind_la_SOURCES_aarch64_os      = aarch64/Gos-freebsd.c
+ libunwind_la_SOURCES_aarch64_os_local = aarch64/Los-freebsd.c
+ libunwind_la_SOURCES_aarch64_os_local+= aarch64/setcontext.S
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_generic.c
@@ -617,6 +624,8 @@ if OS_QNX
  libunwind_la_SOURCES_arm_os_local    = arm/Los-other.c
  libunwind_la_SOURCES_x86_64_os       = x86_64/Gos-qnx.c
  libunwind_la_SOURCES_x86_64_os_local = x86_64/Los-qnx.c
+ libunwind_la_SOURCES_aarch64_os      = aarch64/Gos-qnx.c
+ libunwind_la_SOURCES_aarch64_os_local = aarch64/Los-qnx.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_qnx.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_qnx.c
@@ -632,6 +641,7 @@ if ARCH_AARCH64
 if !REMOTE_ONLY
  libunwind_aarch64_la_LIBADD += libunwind.la -lc
 endif
+ libunwind_setjmp_la_SOURCES += aarch64/longjmp.S
  libunwind_setjmp_la_SOURCES += aarch64/siglongjmp.S
 else
 if ARCH_ARM

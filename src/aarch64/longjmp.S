@@ -1,6 +1,5 @@
 /* libunwind - a platform-independent unwind library
-   Copyright (C) 2004 Hewlett-Packard Co
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+   Copyright (C) 2023 Dmitry Chagin <dchagin@FreeBSD.org>
 
 This file is part of libunwind.
 
@@ -23,21 +22,25 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/* Use glibc's jump-buffer indices; NPTL peeks at SP: */
-
-#if defined __linux__
-
-#define JB_SP           4
-#define JB_RP           5
-#define JB_MASK_SAVED   6
-#define JB_MASK         7
-
-#elif defined __FreeBSD__
-
-#define JB_SP           2
-#define JB_RP           0
-#define JB_MASK_SAVED   11
-#define JB_MASK         7
-#define	_JB_STK_SHIFT	4
-
+	.global _UI_longjmp_cont
+	.type _UI_longjmp_cont, @function
+_UI_longjmp_cont:
+#if defined(__linux__) || defined(__QNX__)
+	ret
+#elif defined(__FreeBSD__)
+	.cfi_startproc
+	/*
+	 * x0 - return address
+	 * x1 - return value
+	 */
+	mov	x30, x0
+	mov	x0,  x1
+	ret
+	.cfi_endproc
+#else
+#error Port me
 #endif
+	.size _UI_longjmp_cont, . - _UI_longjmp_cont
+
+	/* We do not need executable stack.  */
+	.section  .note.GNU-stack,"",%progbits

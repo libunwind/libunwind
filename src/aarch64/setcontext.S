@@ -22,38 +22,39 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-#if defined(__FreeBSD__)
-#include <sys/syscall.h>
-#define	SIG_SETMASK	3
-#endif
+#include "ucontext_i.h"
 
-	.global _UI_siglongjmp_cont
-	.type _UI_siglongjmp_cont, @function
-_UI_siglongjmp_cont:
-#if defined(__linux__) || defined(__QNX__)
-	ret
-#elif defined(__FreeBSD__)
+
+	.global _Uaarch64_setcontext
+	.type _Uaarch64_setcontext, @function
+_Uaarch64_setcontext:
 	.cfi_startproc
+
 	/*
-	 * x0 - return address
-	 * x1 - return value
-	 * x2 - mask
+	 * Since there are no signals involved here we restore EH and
+	 * non scratch registers only.
 	 */
-	stp	x0, x1, [sp, #-16]!
-	.cfi_def_cfa_offset 16
-        /* Restore the signal mask */
-	mov	x1, x2				/* set */
-	mov	x2, #0				/* oset */
-	mov	x0, #SIG_SETMASK
-	mov	x8, #SYS_sigprocmask
-	svc	0
-	ldp	x30, x0, [sp], #16
-	.cfi_def_cfa_offset 0
+
+	mov  x9,  x0
+	ldp  x0,  x1, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF)]
+	ldp  x2,  x3, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF +  2 * 8)]
+	ldp x19, x20, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF + 19 * 8)]
+	ldp x21, x22, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF + 21 * 8)]
+	ldp x23, x24, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF + 23 * 8)]
+	ldp x25, x26, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF + 25 * 8)]
+	ldp x27, x28, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF + 27 * 8)]
+	ldp x29, x30, [x9, #(UC_MCONTEXT_OFF + SC_GPR_OFF + 29 * 8)]
+
+	ldp  q8,  q9, [x9, #(UC_MCONTEXT_OFF + SC_FPSIMD_OFF +  8 * 16)]
+	ldp q10, q11, [x9, #(UC_MCONTEXT_OFF + SC_FPSIMD_OFF + 10 * 16)]
+	ldp q12, q13, [x9, #(UC_MCONTEXT_OFF + SC_FPSIMD_OFF + 12 * 16)]
+	ldp q14, q15, [x9, #(UC_MCONTEXT_OFF + SC_FPSIMD_OFF + 14 * 16)]
+
+	ldr  x9, [x9, #(UC_MCONTEXT_OFF + SC_SP_OFF)]
+	mov  sp, x9
+
 	ret
 	.cfi_endproc
-#else
-#error Port me
-#endif
-	.size _UI_siglongjmp_cont, . - _UI_siglongjmp_cont
-	/* We do not need executable stack.  */
-	.section  .note.GNU-stack,"",%progbits
+	.size _Uaarch64_setcontext, . - _Uaarch64_setcontext
+
+	.section        .note.GNU-stack,"",@progbits
