@@ -53,6 +53,7 @@ libunwind_ptrace_la_SOURCES =						  \
 	ptrace/_UPT_find_proc_info.c ptrace/_UPT_get_dyn_info_list_addr.c \
 	ptrace/_UPT_put_unwind_info.c ptrace/_UPT_get_proc_name.c	  \
 	ptrace/_UPT_reg_offset.c ptrace/_UPT_resume.c
+libunwind_ptrace_la_LIBADD = libunwind-$(arch).la $(LIBLZMA)
 noinst_HEADERS += ptrace/_UPT_internal.h
 
 ### libunwind-coredump:
@@ -75,7 +76,7 @@ libunwind_coredump_la_SOURCES = \
 	coredump/_UPT_resume.c
 libunwind_coredump_la_LDFLAGS = $(COMMON_SO_LDFLAGS) \
 				-version-info $(COREDUMP_SO_VERSION)
-libunwind_coredump_la_LIBADD = $(LIBLZMA) $(LIBZ)
+libunwind_coredump_la_LIBADD = libunwind-$(arch).la $(LIBLZMA) $(LIBZ)
 noinst_HEADERS += coredump/_UCD_internal.h \
                   coredump/_UCD_lib.h \
                   coredump/ucd_file_table.h
