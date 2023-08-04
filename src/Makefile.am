@@ -129,6 +129,23 @@ if BUILD_SETJMP
 pkgconfig_DATA += setjmp/libunwind-setjmp.pc
 endif
 
+if BUILD_COREDUMP
+pkgconfig_DATA += coredump/libunwind-coredump.pc
+endif
+
+### libunwind-ptrace:
+libunwind_ptrace_la_SOURCES =						  \
+	mi/init.c							  \
+	ptrace/_UPT_elf.c						  \
+	ptrace/_UPT_accessors.c ptrace/_UPT_access_fpreg.c		  \
+	ptrace/_UPT_access_mem.c ptrace/_UPT_access_reg.c		  \
+	ptrace/_UPT_create.c ptrace/_UPT_destroy.c			  \
+	ptrace/_UPT_find_proc_info.c ptrace/_UPT_get_dyn_info_list_addr.c \
+	ptrace/_UPT_put_unwind_info.c ptrace/_UPT_get_proc_name.c	  \
+	ptrace/_UPT_reg_offset.c ptrace/_UPT_resume.c
+libunwind_ptrace_la_LIBADD = libunwind-$(arch).la $(LIBLZMA)
+noinst_HEADERS += ptrace/_UPT_internal.h
+
 ### libunwind-coredump:
 noinst_HEADERS += coredump/_UCD_internal.h     \
                   coredump/_UCD_lib.h          \
