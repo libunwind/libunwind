@@ -408,7 +408,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   int depth = 0;
   int ret;
 
-  /* Check input parametres. */
+  /* Check input parameters. */
   if (unlikely(! cursor || ! buffer || ! size || (maxdepth = *size) <= 0))
     return -UNW_EINVAL;
 

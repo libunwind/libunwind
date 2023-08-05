@@ -47,7 +47,7 @@
  *                                 - format
  *                                 - unwind_info_size
  *                                 - unwind_info
- * @param[in]  arg               The NTO unwind conext.
+ * @param[in]  arg               The NTO unwind context.
  *
  * @returns 0 on normal, successful completion and @c -UNW_ESTOPUNWIND to signal
  * the end of the frame-chain.  Returns @c -UNW_ENOINFO otherwise indicating an
