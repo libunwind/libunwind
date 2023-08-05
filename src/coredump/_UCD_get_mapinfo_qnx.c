@@ -52,7 +52,7 @@ static inline const size_t _roundup(size_t size)
  * various segments loaded into memory from ELF files with the ELF file from
  * which those segments were loaded.
  *
- * This function links the file namess mapped in the QNX/QNT_LINK_MAP note with
+ * This function links the file names mapped in the QNX/QNT_LINK_MAP note with
  * the program headers in the core file through the UCD_info file table.
  */
 static int

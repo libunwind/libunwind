@@ -46,7 +46,7 @@ aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   /*
    * XXX. Due to incorrectly handled cfi_signal_frame directive
    * (it should mark current function, not a frame above)
-   * temporarilly use unw_is_signal_frame to detect signal trampoline.
+   * temporarily use unw_is_signal_frame to detect signal trampoline.
    */
   if (unw_is_signal_frame (cursor))
     {

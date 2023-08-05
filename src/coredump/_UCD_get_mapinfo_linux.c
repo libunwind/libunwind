@@ -74,7 +74,7 @@ static const size_t mapinfo_offset = sizeof (core_nt_file_hdr_t);
  * various segments loaded into memory from ELF files with the ELF file from
  * which those segments were loaded.
  *
- * This function links the file namess mapped in the CORE/NT_FILE note with
+ * This function links the file names mapped in the CORE/NT_FILE note with
  * the program headers in the core file through the UCD_info file table.
  *
  * Any file names that end in the string "(deleted)" are ignored.
