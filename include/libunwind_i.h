@@ -162,6 +162,7 @@ target_is_big_endian(void)
 #pragma weak pthread_mutex_init
 #pragma weak pthread_mutex_lock
 #pragma weak pthread_mutex_unlock
+#pragma weak pthread_sigmask
 
 #define mutex_init(l)                                                   \
         (pthread_mutex_init != NULL ? pthread_mutex_init ((l), NULL) : 0)
@@ -189,8 +190,11 @@ static inline void mark_as_used(void *v UNUSED) {
 }
 
 #if defined(CONFIG_BLOCK_SIGNALS)
+/* SIGPROCMASK ignores return values, so we do not have to correct for pthread_sigmask() returning
+   errno on failure when sigprocmask() returns -1. */
 # define SIGPROCMASK(how, new_mask, old_mask) \
-  sigprocmask((how), (new_mask), (old_mask))
+    (pthread_sigmask != NULL ? pthread_sigmask((how), (new_mask), (old_mask)) \
+     : sigprocmask((how), (new_mask), (old_mask)))
 #else
 # define SIGPROCMASK(how, new_mask, old_mask) mark_as_used(old_mask)
 #endif
