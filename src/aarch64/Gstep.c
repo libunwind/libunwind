@@ -33,24 +33,119 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
   40ddf0:       b0000570        adrp    x16, 4ba000 <_GLOBAL_OFFSET_TABLE_+0x2a8>
   40ddf4:       f9433611        ldr     x17, [x16,#1640]
   40ddf8:       9119a210        add     x16, x16, #0x668
-  40ddfc:       d61f0220        br      x17 */
+  40ddfc:       d61f0220        br      x17
+
+  \note The current implementation only supports little endian modes.
+*/
 static int
 is_plt_entry (struct dwarf_cursor *c)
 {
   unw_word_t w0, w1;
   unw_accessors_t *a;
-  int ret;
 
-  a = unw_get_accessors_int (c->as);
-  if ((ret = (*a->access_mem) (c->as, c->ip, &w0, 0, c->as_arg)) < 0
-      || (ret = (*a->access_mem) (c->as, c->ip + 8, &w1, 0, c->as_arg)) < 0)
-    return 0;
+  if (c->as->big_endian)
+    {
+      return 0;
+    }
 
-  ret = (((w0 & 0xff0000009f000000) == 0xf900000090000000)
-         && ((w1 & 0xffffffffff000000) == 0xd61f022091000000));
+  /*
+    A PLT (Procedure Linkage Table) is used by the dynamic linker to map the
+    relative address of a position independent function call onto the real
+    address of the function. If we attempt to unwind from any instruction
+    inside the PLT, and the PLT is missing DWARF unwind information, then
+    conventional unwinding will fail because although the function has been
+    "called" we have not yet entered the prologue and set-up the stack frame.
 
-  Debug (14, "ip=0x%lx => 0x%016lx 0x%016lx, ret = %d\n", c->ip, w0, w1, ret);
-  return ret;
+    This code looks to see if the instruction is anywhere within a "recognised"
+    PLT entry (note that the IP could be anywhere within the PLT, so we have to
+    examine nearby instructions).
+  */
+
+  struct instruction_entry
+    {
+      uint32_t pattern;
+      uint32_t mask;
+    } instructions[4] =
+    {
+      // aarch64
+      {0x90000010,0x9f00001f}, // adrp
+      {0xf9400211,0xffc003ff}, // ldr
+      {0x91000210,0xff8003ff}, // add
+      {0xd61f0220,0xffffffff}, // br
+    };
+
+  a = unw_get_accessors (c->as);
+  if ((*a->access_mem) (c->as, c->ip, &w0, 0, c->as_arg) < 0)
+    {
+      return 0;
+    }
+
+  /*
+    NB: the following code is endian sensitive!
+
+    The current implementation is for little-endian modes, big-endian modes
+    will see the first instruction in the high bits of w0, and the second
+    instruction in the low bits of w0. Some tweaks will be needed to read from
+    the correct part of the word to support big endian modes.
+  */
+  if ((w0      & instructions[0].mask) == instructions[0].pattern &&
+     ((w0>>32) & instructions[1].mask) == instructions[1].pattern)
+  {
+    if ((*a->access_mem) (c->as, c->ip+8, &w1, 0, c->as_arg) >= 0 &&
+       (w1      & instructions[2].mask) == instructions[2].pattern &&
+      ((w1>>32) & instructions[3].mask) == instructions[3].pattern)
+      {
+        return 1;
+      }
+    else
+      {
+        return 0;
+      }
+  }
+  else if ((w0 & instructions[2].mask) == instructions[2].pattern &&
+     ((w0>>32) & instructions[3].mask) == instructions[3].pattern)
+  {
+    w1 = w0;
+    if ((*a->access_mem) (c->as, c->ip-8, &w0, 0, c->as_arg) >= 0 &&
+       (w0      & instructions[0].mask) == instructions[0].pattern &&
+      ((w0>>32) & instructions[1].mask) == instructions[1].pattern)
+      {
+        return 1;
+      }
+    else
+      {
+        return 0;
+      }
+  }
+  else if ((w0 & instructions[1].mask) == instructions[1].pattern &&
+     ((w0>>32) & instructions[2].mask) == instructions[2].pattern)
+  {
+    if ((*a->access_mem) (c->as, c->ip-4, &w0, 0, c->as_arg) < 0 ||
+        (*a->access_mem) (c->as, c->ip+4, &w1, 0, c->as_arg) < 0)
+    {
+      return 0;
+    }
+  }
+  else if ((w0 & instructions[3].mask) == instructions[3].pattern)
+  {
+    if ((*a->access_mem) (c->as, c->ip-12, &w0, 0, c->as_arg) < 0 ||
+        (*a->access_mem) (c->as, c->ip-4, &w1, 0, c->as_arg) < 0)
+    {
+      return 0;
+    }
+  }
+
+  if ((w0      & instructions[0].mask) == instructions[0].pattern &&
+     ((w0>>32) & instructions[1].mask) == instructions[1].pattern &&
+      (w1      & instructions[2].mask) == instructions[2].pattern &&
+     ((w1>>32) & instructions[3].mask) == instructions[3].pattern)
+    {
+      return 1;
+    }
+  else
+    {
+      return 0;
+    }
 }
 
 /*
