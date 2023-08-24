@@ -84,6 +84,9 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   strcpy (full_path, root);
   strcat (full_path, mi.path);
 
+  if (stat(full_path, &st) || !S_ISREG(st.st_mode))
+    strcpy(full_path, mi.path);
+
   rc = elf_map_image (ei, full_path);
 
   if (!path)
