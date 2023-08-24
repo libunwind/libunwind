@@ -389,7 +389,7 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
-  ret = elf_w (load_debuglink) (file, &ei, 1);
+  ret = elf_w (load_debuglib) (file, &ei, 1);
   if (ret < 0)
     return ret;
 
@@ -445,6 +445,91 @@ elf_w (find_section) (struct elf_image *ei, const char* secname)
   return 0;
 }
 
+
+static char *
+add_hex_byte(char *str, uint8_t byte)
+{
+  const char hex[] = "0123456789abcdef";
+
+  *str++ = hex[byte >> 4];
+  *str++ = hex[byte & 0xf];
+  *str = 0;
+
+  return str;
+}
+
+
+static int
+find_build_id_path(const struct elf_image *ei, char *path, unsigned path_len)
+{
+  const Elf_W (Ehdr) *ehdr = ei->image;
+  const Elf_W (Shdr) *shdr;
+  unsigned i;
+
+  if (!elf_w (valid_object) (ei))
+    return -1;
+
+  shdr = elf_w (section_table) (ei);
+  if (!shdr)
+    return -1;
+
+  for (i = 0; i < ehdr->e_shnum; ++i, shdr = (const Elf_W (Shdr) *) (((const uint8_t *) shdr) + ehdr->e_shentsize))
+    {
+      const uint8_t *notes;
+      const uint8_t *notes_end;
+
+      /* The build-id is in a note section */
+      if (shdr->sh_type != SHT_NOTE)
+        continue;
+
+      notes = ((const uint8_t *) ei->image) + shdr->sh_offset;
+      notes_end = notes + shdr->sh_size;
+
+      while(notes < notes_end)
+        {
+          const char prefix[] = "/usr/lib/debug/.build-id/";
+
+          /* See "man 5 elf" for notes about alignment in Nhdr */
+          const Elf_W(Nhdr *) nhdr = (const ElfW(Nhdr *)) notes;
+          const ElfW(Word) namesz = nhdr->n_namesz;
+          const ElfW(Word) descsz = nhdr->n_descsz;
+          const ElfW(Word) nameasz = UNW_ALIGN(namesz, 4); /* Aligned size */
+          const char *name = (const char *) (nhdr + 1);
+          const uint8_t *desc = (const uint8_t *) name + nameasz;
+          unsigned j;
+
+          notes += sizeof(*nhdr) + nameasz + UNW_ALIGN(descsz, 4);
+
+          if ((namesz != sizeof(ELF_NOTE_GNU)) ||  /* Spec says must be "GNU" with a NULL */
+              (nhdr->n_type != NT_GNU_BUILD_ID) || /* Spec says must be NT_GNU_BUILD_ID   */
+              (strcmp(name, ELF_NOTE_GNU) != 0))   /* Must be "GNU" with NULL termination */
+            continue;
+
+          /* Validate that we have enough space */
+          if (path_len < (sizeof(prefix) +     /* Path prefix inc NULL */
+                          2 +                  /* Subdirectory         */
+                          1 +                  /* Directory separator  */
+                          (2 * (descsz - 1)) + /* Leaf filename        */
+                          6))                  /* .debug extension     */
+            return -1;
+
+          memcpy(path, prefix, sizeof(prefix));
+
+          path = add_hex_byte(path + sizeof(prefix) - 1, *desc);
+          *path++ = '/';
+
+          for(j = 1, ++desc; j < descsz; ++j, ++desc)
+            path = add_hex_byte(path, *desc);
+
+          strcat(path, ".debug");
+
+          return 0;
+        }
+    }
+
+  return -1;
+}
+
 /* Load a debug section, following .gnu_debuglink if appropriate
  * Loads ei from file if not already mapped.
  * If is_local, will also search sys directories /usr/local/dbg
@@ -453,12 +538,13 @@ elf_w (find_section) (struct elf_image *ei, const char* secname)
  * ei will be mapped to file or the located .gnu_debuglink from file
  */
 HIDDEN int
-elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
+elf_w (load_debuglib) (const char* file, struct elf_image *ei, int is_local)
 {
   int ret;
   Elf_W (Shdr) *shdr;
   Elf_W (Ehdr) *prev_image;
   off_t prev_size;
+  char path[PATH_MAX];
 
   if (!ei->image)
     {
@@ -475,13 +561,27 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
     return 0;
   }
 
+  ret = find_build_id_path(ei, path, sizeof(path));
+  if (ret == 0)
+    {
+      ei->image = NULL;
+
+      ret = elf_w (load_debuglib) (path, ei, -1);
+      if (ret == 0)
+        {
+          mi_munmap (prev_image, prev_size);
+          return 0;
+        }
+
+      ei->image = prev_image;
+      ei->size  = prev_size;
+    }
+
   shdr = elf_w (find_section) (ei, ".gnu_debuglink");
   if (shdr) {
     if (shdr->sh_size >= PATH_MAX ||
 	(shdr->sh_offset + shdr->sh_size > ei->size))
-      {
-	return 0;
-      }
+      return 0;
 
     {
       char linkbuf[shdr->sh_size];
@@ -512,14 +612,14 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
       strcpy (newname, basedir);
       strcat (newname, "/");
       strcat (newname, linkbuf);
-      ret = elf_w (load_debuglink) (newname, ei, -1);
+      ret = elf_w (load_debuglib) (newname, ei, -1);
 
       if (ret == -1)
 	{
 	  strcpy (newname, basedir);
 	  strcat (newname, "/.debug/");
 	  strcat (newname, linkbuf);
-	  ret = elf_w (load_debuglink) (newname, ei, -1);
+	  ret = elf_w (load_debuglib) (newname, ei, -1);
 	}
 
       if (ret == -1 && is_local == 1)
@@ -528,7 +628,7 @@ elf_w (load_debuglink) (const char* file, struct elf_image *ei, int is_local)
 	  strcat (newname, basedir);
 	  strcat (newname, "/");
 	  strcat (newname, linkbuf);
-	  ret = elf_w (load_debuglink) (newname, ei, -1);
+	  ret = elf_w (load_debuglib) (newname, ei, -1);
 	}
 
       if (ret == -1)
