@@ -1,7 +1,7 @@
 .\" *********************************** start of \input{common.tex}
 .\" *********************************** end of \input{common.tex}
 '\" t
-.\" Manual page created with latex2man on Sun May  7 19:41:20 2023
+.\" Manual page created with latex2man on Tue Aug 29 11:10:10 2023
 .\" NOTE: This file is generated, DO NOT EDIT.
 .de Vb
 .ft CW
@@ -12,7 +12,7 @@
 
 .fi
 ..
-.TH "UNW\\_SET\\_ITERATE\\_PHDR\\_FUNCTION" "3" "07 May 2023" "Programming Library " "Programming Library "
+.TH "UNW\\_SET\\_ITERATE\\_PHDR\\_FUNCTION" "3libunwind" "29 August 2023" "Programming Library " "Programming Library "
 .SH NAME
 unw_set_iterate_phdr_function
 \-\- set dl_iterate_phdr
@@ -45,8 +45,8 @@ function);
 
 .PP
 The unw_set_iterate_phdr_function()
-routine sets the dl_iterate_phdr\-implementation
-of address space as
+routine sets the dl_iterate_phdr
+implementation of address space as
 to the function by argument function\&.
 The function
 will be called whenever libunwind
@@ -60,7 +60,7 @@ Though the burden lies on the user of libunwind\&.
 
 .PP
 unw_set_iterate_phdr_function()
-is thread\-safe. If the local address\-space 
+is thread safe. If the local address space 
 is passed in argument as,
 this routine is also safe to use from 
 a signal handler. 
@@ -68,9 +68,9 @@ a signal handler.
 .SH SEE ALSO
 
 .PP
-libunwind(3),
-unw_create_addr_space(3),
-dl_iterate_phdr(3),
+libunwind(3libunwind),
+unw_create_addr_space(3libunwind),
+dl_iterate_phdr(3libunwind),
 .PP
 .SH AUTHOR
 
