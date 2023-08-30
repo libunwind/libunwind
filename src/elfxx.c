@@ -34,6 +34,34 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <lzma.h>
 #endif /* HAVE_LZMA */
 
+struct symbol_info
+{
+  const char *strtab;
+  const Elf_W (Sym) *sym;
+  Elf_W (Addr) start_ip;
+};
+
+struct symbol_lookup_context
+{
+  unw_addr_space_t as;
+  unw_word_t ip;
+  struct elf_image *ei;
+  Elf_W (Addr) load_offset;
+  Elf_W (Addr) *min_dist;
+};
+
+struct symbol_callback_data
+{
+  char *buf;
+  size_t buf_len;
+};
+
+struct ip_range_callback_data
+{
+  Elf_W (Addr) *start_ip;
+  Elf_W (Addr) *end_ip;
+};
+
 static Elf_W (Shdr)*
 elf_w (section_table) (const struct elf_image *ei)
 {
@@ -85,11 +113,13 @@ elf_w (string_table) (const struct elf_image *ei, int section)
 }
 
 static int
-elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
-                       unw_word_t ip, struct elf_image *ei,
-                       Elf_W (Addr) load_offset,
-                       char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
+elf_w (lookup_symbol_closeness) (const struct symbol_lookup_context *context,
+                                int (*callback)(const struct symbol_lookup_context *context,
+                                                const struct symbol_info *syminfo, void *data),
+                                 void *data)
 {
+  struct elf_image *ei = context->ei;
+  Elf_W (Addr) load_offset = context->load_offset;
   size_t syment_size;
   Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Sym) *sym, *symtab, *symtab_end;
@@ -137,13 +167,17 @@ elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
                   Debug (16, "0x%016lx info=0x%02x %s\n",
                          (long) val, sym->st_info, strtab + sym->st_name);
 
-                  if ((Elf_W (Addr)) (ip - val) < *min_dist)
+                  /* as long as found one, the return will be success*/
+                  struct symbol_info syminfo =
                     {
-                      *min_dist = (Elf_W (Addr)) (ip - val);
-                      strncpy (buf, strtab + sym->st_name, buf_len);
-                      buf[buf_len - 1] = '\0';
-                      ret = (strlen (strtab + sym->st_name) >= buf_len
-                             ? -UNW_ENOMEM : 0);
+                      .strtab = strtab,
+                      .sym = sym,
+                      .start_ip = val
+                    };
+                  if ((*callback) (context, &syminfo, data) == UNW_ESUCCESS)
+                    {
+                      if (ret != UNW_ESUCCESS)
+                        ret = UNW_ESUCCESS;
                     }
                 }
             }
@@ -154,7 +188,95 @@ elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
         }
       shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
+
   return ret;
+}
+
+static int
+elf_w (lookup_symbol_callback)(const struct symbol_lookup_context *context,
+                               const struct symbol_info *syminfo, void *data)
+{
+  int ret = -UNW_ENOINFO;
+  struct symbol_callback_data *d = data;
+
+  if ((Elf_W (Addr)) (context->ip - syminfo->start_ip) < *(context->min_dist))
+    {
+      *(context->min_dist) = (Elf_W (Addr)) (context->ip - syminfo->start_ip);
+      Debug (1, "candidate sym: %s\n", syminfo->strtab + syminfo->sym->st_name);
+      strncpy (d->buf, syminfo->strtab + syminfo->sym->st_name, d->buf_len);
+      d->buf[d->buf_len - 1] = '\0';
+      ret = (strlen (syminfo->strtab + syminfo->sym->st_name) >= d->buf_len
+             ? -UNW_ENOMEM : UNW_ESUCCESS);
+    }
+
+  return ret;
+}
+
+static int
+elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
+                       unw_word_t ip, struct elf_image *ei,
+                       Elf_W (Addr) load_offset,
+                       char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
+{
+  struct symbol_lookup_context context =
+    {
+      .as = as,
+      .ip = ip, 
+      .ei = ei,
+      .load_offset = load_offset,
+      .min_dist = min_dist,
+    };
+  struct symbol_callback_data data =
+    {
+      .buf = buf, 
+      .buf_len = buf_len,
+    };
+  return elf_w (lookup_symbol_closeness) (&context,
+                                          elf_w (lookup_symbol_callback),
+                                          &data);
+}
+
+static int
+elf_w (lookup_ip_range_callback)(const struct symbol_lookup_context *context,
+                                 const struct symbol_info *syminfo, void *data)
+{
+  int ret = -UNW_ENOINFO;
+  struct ip_range_callback_data *d = data;
+
+  if ((Elf_W (Addr)) (context->ip - syminfo->start_ip) < *(context->min_dist))
+    {
+      *(context->min_dist) = (Elf_W (Addr)) (context->ip - syminfo->start_ip);
+      *(d->start_ip) = syminfo->start_ip;
+      *(d->end_ip) = syminfo->start_ip + syminfo->sym->st_size;
+
+      ret = UNW_ESUCCESS;
+    }
+
+  return ret;
+}
+
+static int
+elf_w (lookup_ip_range)(unw_addr_space_t as UNUSED,
+                        unw_word_t ip, struct elf_image *ei,
+                        Elf_W (Addr) load_offset, Elf_W (Addr) *start_ip,
+                        Elf_W (Addr) *end_ip, Elf_W (Addr) *min_dist)
+{
+  struct symbol_lookup_context context =
+    {
+      .as = as,
+      .ip = ip, 
+      .ei = ei,
+      .load_offset = load_offset,
+      .min_dist = min_dist
+    };
+  struct ip_range_callback_data data =
+    {
+      .start_ip = start_ip,
+      .end_ip = end_ip
+    };
+  return elf_w (lookup_symbol_closeness) (&context,
+                                          elf_w (lookup_ip_range_callback),
+                                          &data);
 }
 
 static Elf_W (Addr)
@@ -401,6 +523,66 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   return ret;
 }
 
+HIDDEN int
+elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
+                       unsigned long segbase,
+                       unw_word_t ip,
+                       unw_word_t *start, unw_word_t *end)
+{
+  Elf_W (Addr) load_offset;
+  Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
+  int ret;
+
+  load_offset = elf_w (get_load_offset) (ei, segbase);
+  ret = elf_w (lookup_ip_range) (as, ip, ei, load_offset, start, end, &min_dist);
+
+  /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
+     there as well and replace the previously found if it is closer. */
+  struct elf_image mdi;
+  if (elf_w (extract_minidebuginfo) (ei, &mdi))
+    {
+      int ret_mdi = elf_w (lookup_ip_range) (as, ip, &mdi, load_offset, start,
+                                             end, &min_dist);
+
+      /* Closer symbol was found (possibly truncated). */
+      if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
+        {
+          ret = ret_mdi;
+        }
+
+      mi_munmap (mdi.image, mdi.size);
+    }
+
+  if (min_dist >= ei->size)
+    return -UNW_ENOINFO;                /* not found */
+  return ret;
+}
+
+HIDDEN int
+elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
+                           unw_word_t *start, unw_word_t *end)
+{
+  unsigned long segbase, mapoff;
+  struct elf_image ei;
+  int ret;
+  char file[PATH_MAX];
+
+  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, file, PATH_MAX);
+  if (ret < 0)
+    return ret;
+
+  ret = elf_w (load_debuginfo) (file, &ei, 1);
+  if (ret < 0)
+    return ret;
+
+  ret = elf_w (get_proc_ip_range_in_image) (as, &ei, segbase, ip, start, end);
+
+  mi_munmap (ei.image, ei.size);
+  ei.image = NULL;
+
+  return ret;
+}
+
 HIDDEN Elf_W (Shdr)*
 elf_w (find_section) (const struct elf_image *ei, const char* secname)
 {
@@ -554,7 +736,7 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
     {
       ret = elf_map_image(ei, file);
       if (ret)
-	return ret;
+        return ret;
     }
 
   prev_image = ei->image;

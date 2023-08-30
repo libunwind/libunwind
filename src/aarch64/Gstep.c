@@ -148,6 +148,96 @@ is_plt_entry (struct dwarf_cursor *c)
     }
 }
 
+#if defined __QNX__
+/*
+ * QNX kernel call have neither CFI nor save frame pointer,
+ * 00000000000549e8 <MsgSendsv_r>:
+ *  549e8:       cb0203e2        neg     x2, x2
+ *  549ec:       52800168        mov     w8, #0xb  // #11
+ *  549f0:       d4000a21        svc     #0x51
+ *  549f4:       d65f03c0        ret
+ *  549f8:       cb0003e0        neg     x0, x0
+ *  549fc:       d65f03c0        ret
+ *
+ * From disassemble, QNX kernel call have mov followed by svc, and may with some
+ * neg instructions at beginning.
+ * 1. find procedure's ip start,end start
+ * 2. search mov,svc from begin, skip any neg instructions
+ */
+static bool is_neg_instr(uint32_t instr)
+{
+  /* 64bit register Xd */
+  return ((instr & 0xffe003e0) == 0xcb0003e0);
+}
+
+/* QNX use w8 to pass kernel call number */
+static bool is_mov_w8_instr(uint32_t instr)
+{
+  /* movz 32bit register Wd */
+  return ((instr & 0xffe00008) == 0x52800008);
+}
+
+static bool is_svc_instr(uint32_t instr)
+{
+  return instr == 0xd4000a21;
+}
+
+static bool
+is_qnx_kercall(struct dwarf_cursor *c)
+{
+  unw_word_t w0;
+  unw_accessors_t *a;
+  int ret;
+  unw_word_t proc_start_ip;
+  unw_word_t proc_end_ip;
+
+  a = unw_get_accessors_int (c->as);
+  if (c->as->big_endian || !a->get_proc_ip_range)
+    {
+      return false;
+    }
+
+  ret = (*a->get_proc_ip_range) (c->as, c->ip, &proc_start_ip, &proc_end_ip, c->as_arg);
+  if (ret < 0)
+    {
+      Debug (2, "ip=0x%lx get proc ip range fail, ret = %d\n", c->ip, ret);
+      return false;
+    }
+
+  unw_word_t ip = proc_start_ip;
+  while ((ip < proc_end_ip) && (ip + 8 < proc_end_ip))
+    {
+      if ((*a->access_mem) (c->as, ip, &w0, 0, c->as_arg) < 0)
+        {
+          Debug (14, "access_mem ip=0x%lx fail\n", ip);
+          return false;
+        }
+
+      uint32_t low32 = w0 & 0xffffffff;
+      uint32_t high32 = w0 >> 32;
+
+      if (is_mov_w8_instr(low32) && is_svc_instr(high32))
+        {
+          return true;
+        }
+      if (is_neg_instr(low32) && is_neg_instr(high32))
+        {
+          ip += 8;
+        }
+      else if (is_neg_instr(low32) && is_mov_w8_instr(high32))
+        {
+          ip += 4;
+        }
+      else
+        {
+          return false;
+        }
+    }
+
+  return false;
+}
+#endif
+
 /*
  * Save the location of VL (vector length) from the signal frame to the VG (vector
  * granule) register if it exists, otherwise do nothing. If there is an error,
@@ -361,6 +451,13 @@ unw_step (unw_cursor_t *cursor)
           Debug (2, "found plt entry\n");
           c->frame_info.frame_type = UNW_AARCH64_FRAME_STANDARD;
         }
+#if defined __QNX__
+      else if (is_qnx_kercall(&c->dwarf))
+        {
+          Debug (2, "found qnx kernel call, fallback to use link register\n");
+          c->frame_info.frame_type = UNW_AARCH64_FRAME_GUESSED;
+        }
+#endif
       else
         {
 	  /* Try use frame pointer (X29). */

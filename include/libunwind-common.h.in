@@ -208,6 +208,13 @@ typedef struct unw_accessors
     int (*get_proc_name) (unw_addr_space_t, unw_word_t, char *, size_t,
 			  unw_word_t *, void *);
 
+    /* Optional call back to obtain the start and end ip of a procedure.
+     * procedure ip range is [start, end), the range is without end.
+     * This callback is optional and may be set to NULL.
+     */
+    int (*get_proc_ip_range) (unw_addr_space_t, unw_word_t, unw_word_t *,
+			  unw_word_t *, void *);
+
     /* Optional call back to return a mask to be used with pointer
      * authentication on arm64.
      *
