@@ -37,6 +37,7 @@ unw_accessors_t unw_nto_accessors =
   .access_reg              = unw_nto_access_reg,
   .access_fpreg            = unw_nto_access_fpreg,
   .resume                  = unw_nto_resume,
-  .get_proc_name           = unw_nto_get_proc_name
+  .get_proc_name           = unw_nto_get_proc_name,
+  .get_proc_ip_range       = unw_nto_get_proc_ip_range,
 };
 
