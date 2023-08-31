@@ -389,7 +389,7 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
-  ret = elf_w (load_debuglib) (file, &ei, 1);
+  ret = elf_w (load_debuginfo) (file, &ei, 1);
   if (ret < 0)
     return ret;
 
@@ -462,35 +462,38 @@ elf_w (add_hex_byte) (char *str, uint8_t byte)
 static int
 elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned path_len)
 {
+/*
+ * build-id is only available on GNU plaforms. So on non-GNU platforms this
+ * function just returns fail (-1).
+ */
+#if defined(ELF_NOTE_GNU) && defined(NT_GNU_BUILD_ID)
   const Elf_W (Ehdr) *ehdr = ei->image;
-  const Elf_W (Shdr) *shdr;
+  const Elf_W (Phdr) *phdr;
   unsigned i;
 
   if (!elf_w (valid_object) (ei))
     return -1;
 
-  shdr = elf_w (section_table) (ei);
-  if (!shdr)
-    return -1;
+  phdr = (Elf_W (Phdr) *) ((uint8_t *) ehdr + ehdr->e_phoff);
 
-  for (i = 0; i < ehdr->e_shnum; ++i, shdr = (const Elf_W (Shdr) *) (((const uint8_t *) shdr) + ehdr->e_shentsize))
+  for (i = 0; i < ehdr->e_phnum; ++i, phdr = (const Elf_W (Phdr) *) (((const uint8_t *) phdr) + ehdr->e_phentsize))
     {
       const uint8_t *notes;
       const uint8_t *notes_end;
 
       /* The build-id is in a note section */
-      if (shdr->sh_type != SHT_NOTE)
+      if (phdr->p_type != PT_NOTE)
         continue;
 
-      notes = ((const uint8_t *) ei->image) + shdr->sh_offset;
-      notes_end = notes + shdr->sh_size;
+      notes = ((const uint8_t *) ehdr) + phdr->p_offset;
+      notes_end = notes + phdr->p_memsz;
 
       while(notes < notes_end)
         {
           const char prefix[] = "/usr/lib/debug/.build-id/";
 
           /* See "man 5 elf" for notes about alignment in Nhdr */
-          const Elf_W(Nhdr *) nhdr = (const ElfW(Nhdr *)) notes;
+          const Elf_W(Nhdr) *nhdr = (const ElfW(Nhdr) *) notes;
           const ElfW(Word) namesz = nhdr->n_namesz;
           const ElfW(Word) descsz = nhdr->n_descsz;
           const ElfW(Word) nameasz = UNW_ALIGN(namesz, 4); /* Aligned size */
@@ -526,6 +529,7 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
           return 0;
         }
     }
+#endif /* defined(ELF_NOTE_GNU) */
 
   return -1;
 }
@@ -538,7 +542,7 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
  * ei will be mapped to file or the located .gnu_debuglink from file
  */
 HIDDEN int
-elf_w (load_debuglib) (const char* file, struct elf_image *ei, int is_local)
+elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
 {
   int ret;
   Elf_W (Shdr) *shdr;
@@ -566,7 +570,7 @@ elf_w (load_debuglib) (const char* file, struct elf_image *ei, int is_local)
     {
       ei->image = NULL;
 
-      ret = elf_w (load_debuglib) (path, ei, -1);
+      ret = elf_w (load_debuginfo) (path, ei, -1);
       if (ret == 0)
         {
           mi_munmap (prev_image, prev_size);
@@ -612,14 +616,14 @@ elf_w (load_debuglib) (const char* file, struct elf_image *ei, int is_local)
       strcpy (newname, basedir);
       strcat (newname, "/");
       strcat (newname, linkbuf);
-      ret = elf_w (load_debuglib) (newname, ei, -1);
+      ret = elf_w (load_debuginfo) (newname, ei, -1);
 
       if (ret == -1)
 	{
 	  strcpy (newname, basedir);
 	  strcat (newname, "/.debug/");
 	  strcat (newname, linkbuf);
-	  ret = elf_w (load_debuglib) (newname, ei, -1);
+	  ret = elf_w (load_debuginfo) (newname, ei, -1);
 	}
 
       if (ret == -1 && is_local == 1)
@@ -628,7 +632,7 @@ elf_w (load_debuglib) (const char* file, struct elf_image *ei, int is_local)
 	  strcat (newname, basedir);
 	  strcat (newname, "/");
 	  strcat (newname, linkbuf);
-	  ret = elf_w (load_debuglib) (newname, ei, -1);
+	  ret = elf_w (load_debuginfo) (newname, ei, -1);
 	}
 
       if (ret == -1)
