@@ -120,7 +120,7 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local,
   ei.image = NULL;
   *load_offset = 0;
 
-  ret = elf_w (load_debuglib) (file, &ei, is_local);
+  ret = elf_w (load_debuginfo) (file, &ei, is_local);
   if (ret != 0)
     return ret;
 
