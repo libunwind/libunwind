@@ -82,7 +82,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
   if (write)
     {
       Debug (16, "mem[%x] <- %x\n", addr, *val);
-      *(unw_word_t *) addr = *val;
+      memcpy (addr, val, sizeof(unw_word_t));
     }
   else
     {
@@ -93,7 +93,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
           Debug (16, "mem[%#010lx] -> invalid\n", (long)addr);
           return -1;
         }
-      *val = *(unw_word_t *) addr;
+      memcpy (val, addr, sizeof(unw_word_t));
       Debug (16, "mem[%x] -> %x\n", addr, *val);
     }
   return 0;
@@ -114,12 +114,12 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
   if (write)
     {
-      *(unw_word_t *) addr = *val;
+      memcpy (addr, val, sizeof(unw_word_t));
       Debug (12, "%s <- %x\n", unw_regname (reg), *val);
     }
   else
     {
-      *val = *(unw_word_t *) addr;
+      memcpy (val, addr, sizeof(unw_word_t));
       Debug (12, "%s -> %x\n", unw_regname (reg), *val);
     }
   return 0;
