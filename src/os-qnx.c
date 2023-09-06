@@ -266,9 +266,14 @@ _get_remote_elf_image(struct elf_image *ei,
           if (path)
             {
               strncpy(path, debug_info.i.path, pathlen);
+              path[pathlen - 1] = '\0';
             }
 
-          ret = elf_map_image(ei, path);
+          if (ei)
+            ret = elf_map_image(ei, path);
+          else
+            ret = strlen (debug_info.i.path) >= pathlen ? -UNW_ENOMEM : UNW_ESUCCESS;
+
           break;
         }
     }
@@ -304,12 +309,16 @@ tdep_get_elf_image(struct elf_image *ei, pid_t pid, unw_word_t ip,
           if (path)
             {
               strncpy (path, cbi.path, pathlen);
+              path[pathlen - 1] = '\0';
             }
 
           *mapoff = cbi.offset;
           *segbase = cbi.segbase;
 
-          ret = elf_map_image (ei, cbi.path);
+          if (ei)
+            ret = elf_map_image (ei, cbi.path);
+          else
+            ret = strlen (cbi.path) >= pathlen ? -UNW_ENOMEM : UNW_ESUCCESS;
         }
     }
 

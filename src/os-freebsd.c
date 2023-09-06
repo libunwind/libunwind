@@ -136,8 +136,12 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
      if (path)
        {
          strncpy(path, kv->kve_path, pathlen);
+         path[pathlen - 1] = '\0';
        }
-     ret = elf_map_image (ei, kv->kve_path);
+     if (ei)
+       ret = elf_map_image (ei, kv->kve_path);
+     else
+       ret = strlen (kv->kve_path) >= pathlen ? -UNW_ENOMEM : UNW_ESUCCESS:;
      break;
   }
   free_mem(buf, len1);

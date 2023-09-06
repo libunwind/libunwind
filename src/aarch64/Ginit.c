@@ -225,6 +225,12 @@ static unw_word_t empty_ptrauth_mask(unw_addr_space_t addr_space_unused, void *a
   return 0;
 }
 
+static int
+get_static_elf_filename (unw_addr_space_t as, unw_word_t ip, char *buf, size_t buf_len, unw_word_t *offp, void *arg)
+{
+  return _Uelf64_get_elf_filename(as, getpid(), ip, buf, buf_len, offp);
+}
+
 HIDDEN void
 aarch64_local_addr_space_init (void)
 {
@@ -243,6 +249,7 @@ aarch64_local_addr_space_init (void)
   local_addr_space.acc.access_fpreg = access_fpreg;
   local_addr_space.acc.resume = aarch64_local_resume;
   local_addr_space.acc.get_proc_name = get_static_proc_name;
+  local_addr_space.acc.get_elf_filename = get_static_elf_filename;
   local_addr_space.acc.ptrauth_insn_mask = empty_ptrauth_mask;
   local_addr_space.big_endian = target_is_big_endian();
   unw_flush_cache (&local_addr_space, 0, 0);

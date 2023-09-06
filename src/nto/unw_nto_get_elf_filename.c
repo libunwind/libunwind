@@ -1,6 +1,4 @@
 /*
- * Copyright 2020, 2022-2023 QNX Blackberry Limited.
- *
  * This file is part of libunwind.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -22,23 +20,32 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
-#include "libunwind-nto.h"
+#include "unw_nto_internal.h"
 
+#include <limits.h>
+#include <stdio.h>
 
-/**
- * Instance of the NTO accessor struct.
- */
-unw_accessors_t unw_nto_accessors =
+int unw_nto_get_elf_filename (unw_addr_space_t  as,
+                              unw_word_t        ip,
+                              char             *buf,
+                              size_t            buf_len,
+                              unw_word_t       *offp,
+                              void             *arg)
 {
-  .find_proc_info          = unw_nto_find_proc_info,
-  .put_unwind_info         = unw_nto_put_unwind_info,
-  .get_dyn_info_list_addr  = unw_nto_get_dyn_info_list_addr,
-  .access_mem              = unw_nto_access_mem,
-  .access_reg              = unw_nto_access_reg,
-  .access_fpreg            = unw_nto_access_fpreg,
-  .resume                  = unw_nto_resume,
-  .get_proc_name           = unw_nto_get_proc_name,
-  .get_proc_ip_range       = unw_nto_get_proc_ip_range,
-  .get_elf_filename        = unw_nto_get_elf_filename,
-};
+  unw_nto_internal_t *uni = (unw_nto_internal_t *)arg;
+  char path[PATH_MAX] = {0};
+  size_t path_len = sizeof (path);
+  int ret = -UNW_ENOINFO;
+#if UNW_ELF_CLASS == UNW_ELFCLASS64
+  ret = _Uelf64_get_elf_filename (as, uni->pid, ip, path, path_len, offp);
+#elif UNW_ELF_CLASS == UNW_ELFCLASS32
+  ret = _Uelf32_get_elf_filename (as, uni->pid, ip, path, path_len, offp);
+#else
+# error no valid ELF class defined
+#endif
 
+  if (ret >= 0)
+      snprintf (buf, buf_len, "%s", path);
+
+  return ret;
+}
