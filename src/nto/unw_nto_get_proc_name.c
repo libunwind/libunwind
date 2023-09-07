@@ -67,3 +67,22 @@ int unw_nto_get_proc_name (unw_addr_space_t  as,
   return ret;
 }
 
+int unw_nto_get_proc_ip_range (unw_addr_space_t  as,
+                               unw_word_t        ip,
+                               unw_word_t       *start,
+                               unw_word_t       *end,
+                               void *arg)
+{
+  unw_nto_internal_t *uni = (unw_nto_internal_t *)arg;
+  int ret = -UNW_ENOINFO;
+
+#if UNW_ELF_CLASS == UNW_ELFCLASS64
+  ret = _Uelf64_get_proc_ip_range (as, uni->pid, ip, start, end);
+#elif UNW_ELF_CLASS == UNW_ELFCLASS32
+  ret = _Uelf32_get_proc_ip_range (as, uni->pid, ip, start, end);
+#else
+# error no valid ELF class defined
+#endif
+
+  return ret;
+}
