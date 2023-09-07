@@ -113,9 +113,10 @@ elf_w (string_table) (const struct elf_image *ei, int section)
 }
 
 static int
-elf_w (lookup_symbol_closeness) (const struct symbol_lookup_context *context,
-                                int (*callback)(const struct symbol_lookup_context *context,
-                                                const struct symbol_info *syminfo, void *data),
+elf_w (lookup_symbol_closeness) (unw_addr_space_t as UNUSED,
+                                 const struct symbol_lookup_context *context,
+                                 int (*callback)(const struct symbol_lookup_context *context,
+                                                 const struct symbol_info *syminfo, void *data),
                                  void *data)
 {
   struct elf_image *ei = context->ei;
@@ -213,7 +214,7 @@ elf_w (lookup_symbol_callback)(const struct symbol_lookup_context *context,
 }
 
 static int
-elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
+elf_w (lookup_symbol) (unw_addr_space_t as,
                        unw_word_t ip, struct elf_image *ei,
                        Elf_W (Addr) load_offset,
                        char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
@@ -231,7 +232,8 @@ elf_w (lookup_symbol) (unw_addr_space_t as UNUSED,
       .buf = buf, 
       .buf_len = buf_len,
     };
-  return elf_w (lookup_symbol_closeness) (&context,
+  return elf_w (lookup_symbol_closeness) (as,
+                                          &context,
                                           elf_w (lookup_symbol_callback),
                                           &data);
 }
@@ -256,7 +258,7 @@ elf_w (lookup_ip_range_callback)(const struct symbol_lookup_context *context,
 }
 
 static int
-elf_w (lookup_ip_range)(unw_addr_space_t as UNUSED,
+elf_w (lookup_ip_range)(unw_addr_space_t as,
                         unw_word_t ip, struct elf_image *ei,
                         Elf_W (Addr) load_offset, Elf_W (Addr) *start_ip,
                         Elf_W (Addr) *end_ip, Elf_W (Addr) *min_dist)
@@ -274,7 +276,8 @@ elf_w (lookup_ip_range)(unw_addr_space_t as UNUSED,
       .start_ip = start_ip,
       .end_ip = end_ip
     };
-  return elf_w (lookup_symbol_closeness) (&context,
+  return elf_w (lookup_symbol_closeness) (as,
+                                          &context,
                                           elf_w (lookup_ip_range_callback),
                                           &data);
 }
