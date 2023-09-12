@@ -104,6 +104,10 @@ do_backtrace (void)
 	  }
 #endif
 	  printf ("\n");
+
+          name[0] = '\0';
+          if (unw_get_elf_filename (&cursor, name, sizeof (name), &off) == UNW_ESUCCESS)
+                printf ("\t[%s+0x%lx]\n", name, (long) off);
 	}
 
       ret = unw_step (&cursor);
