@@ -55,6 +55,7 @@ static const int nerrors_max = 100;
 int nerrors;
 int verbose;
 int print_names = 1;
+int print_elf_filename;
 
 enum
   {
@@ -130,6 +131,14 @@ do_backtrace (void)
 #endif
       if (verbose)
 	printf ("\n");
+
+      if (print_elf_filename)
+        {
+          if ((ret = unw_get_elf_filename(&c, buf, sizeof (buf), &off)) != UNW_ESUCCESS)
+            panic ("unw_get_elf_filename(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
+          else if (verbose)
+              printf ("\t[%s+0x%lx]\n", buf, (long) off);
+        }
 
       ret = unw_step (&c);
       if (ret < 0)
@@ -210,6 +219,9 @@ main (int argc, char **argv)
 	else if (strcmp (argv[optind], "-n") == 0)
 	  /* Don't look-up and print symbol names.  */
 	  ++optind, print_names = 0;
+        else if (strcmp (argv[optind], "-f") == 0)
+	  /* Print elf filenames. */
+          ++optind, print_elf_filename = 1;
 	else
 	  fprintf(stderr, "unrecognized option: %s\n", argv[optind++]);
         if (optind >= argc)
