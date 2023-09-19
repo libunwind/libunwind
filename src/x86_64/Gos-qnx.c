@@ -22,6 +22,8 @@
  * OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
+#include "config.h"
+
 #include "unwind_i.h"
 #include "ucontext_i.h"
 #include <sys/neutrino.h>
@@ -65,6 +67,15 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   unw_addr_space_t as = c->dwarf.as;
   unw_accessors_t *a = unw_get_accessors_int (as);
   unw_word_t ip = c->dwarf.ip;
+  int retval = 1;
+
+#if CONSERVATIVE_CHECKS
+  int val = 0;
+  if (c->dwarf.as == unw_local_addr_space) {
+    val = dwarf_get_validate(&c->dwarf);
+    dwarf_set_validate(&c->dwarf, 1);
+  }
+#endif
 
   unw_word_t w = 0;
   for (size_t i = 0; i != sizeof(sig)/sizeof(sig[0]); ++i)
@@ -72,21 +83,30 @@ unw_is_signal_frame (unw_cursor_t *cursor)
       size_t byte_index = i % sizeof(unw_word_t);
       if (0 == byte_index)
         {
-          int ret = a->access_mem (as, ip, &w, 0, NULL);
+          int ret = a->access_mem (as, ip, &w, 0, c->dwarf.as_arg);
           if (ret < 0)
             {
-              return 0;
+              retval = 0;
+              break;
             }
-	  ip += sizeof(w);
+          ip += sizeof(w);
         }
 
       if (sig[i] != (w&0xff))
         {
-          return 0;
+          retval = 0;
+          break;
         }
       w >>= 8;
     }
-  return 1;
+
+#if CONSERVATIVE_CHECKS
+  if (c->dwarf.as == unw_local_addr_space) {
+    dwarf_set_validate(&c->dwarf, val);
+  }
+#endif
+
+  return retval;
 }
 
 
@@ -109,7 +129,7 @@ x86_64_handle_signal_frame (unw_cursor_t *cursor)
   unw_word_t        uc_ptr_addr = sp + offsetof(struct _sighandler_info, context);
 
   ucontext_t *context = NULL;
-  int ret = a->access_mem (as, uc_ptr_addr, (unw_word_t*)&context, 0, NULL);
+  int ret = a->access_mem (as, uc_ptr_addr, (unw_word_t*)&context, 0, c->dwarf.as_arg);
   if (ret < 0)
     {
       return -UNW_EBADFRAME;
@@ -138,6 +158,9 @@ x86_64_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.loc[R14] = DWARF_VAL_LOC (&c->dwarf, context->uc_mcontext.cpu.r14);
   c->dwarf.loc[R15] = DWARF_VAL_LOC (&c->dwarf, context->uc_mcontext.cpu.r15);
   c->dwarf.loc[RIP] = DWARF_VAL_LOC (&c->dwarf, context->uc_mcontext.cpu.rip);
+
+  dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &c->dwarf.cfa);
+  dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
 
   return 0;
 }
