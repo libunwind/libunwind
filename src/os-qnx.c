@@ -189,7 +189,7 @@ _get_remote_elf_image(struct elf_image *ei,
       fprintf(stderr, "error %d opening procfs as file for pid %d: %s\n",
               errno, pid, strerror(errno));
       close(ctl_fd);
-      return ret;
+      return -UNW_ENOINFO;
     }
 
   int map_count = _get_map_count(ctl_fd);
@@ -198,7 +198,9 @@ _get_remote_elf_image(struct elf_image *ei,
   if (maps == NULL)
     {
       fprintf(stderr, "error %d in malloc(%zu): %s", errno, maps_size, strerror(errno));
-      return 0;
+      close (as_fd);
+      close (ctl_fd);
+      return -UNW_ENOINFO;
     }
 
   int nmaps = 0;
@@ -207,10 +209,13 @@ _get_remote_elf_image(struct elf_image *ei,
     {
       fprintf(stderr, "error %d in devctl(DCMD_PROC_MAPINFO): %s", ret, strerror(ret));
       free(maps);
-      return 0;
+      close (as_fd);
+      close (ctl_fd);
+      return -UNW_ENOINFO;
     }
 
-  for (int i = 0; i < nmaps; ++i)
+  int i = 0;
+  for (; i < nmaps; ++i)
     {
       if (maps[i].flags & (MAP_ELF | PROT_EXEC))
         {
@@ -281,7 +286,7 @@ _get_remote_elf_image(struct elf_image *ei,
   free(maps);
   close(as_fd);
   close(ctl_fd);
-  return ret;
+  return i == nmaps ? -UNW_ENOINFO : ret;
 }
 
 
