@@ -122,6 +122,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
 {
   struct elf_image *ei = context->ei;
   Elf_W (Addr) load_offset = context->load_offset;
+  Elf_W (Addr) file_offset = 0;
   Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Sym) *sym = NULL, *symtab = NULL;
   Elf_W (Phdr) *phdr;
@@ -135,7 +136,11 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
 
   phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
   for (i = 0; i < ehdr->e_phnum; ++i)
-    if (phdr[i].p_type == PT_DYNAMIC)
+    if (phdr[i].p_type == PT_PHDR)
+      {
+        file_offset = phdr[i].p_vaddr - phdr[i].p_offset;
+      }
+    else if (phdr[i].p_type == PT_DYNAMIC)
       {
         dyn = (Elf_W (Dyn) *) ((char *)ei->image + phdr[i].p_offset);
         break;
@@ -149,16 +154,16 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
       switch (dyn->d_tag)
         {
         case DT_SYMTAB:
-          symtab = (Elf_W (Sym) *) ((char *) ei->image + dyn->d_un.d_ptr);
+          symtab = (Elf_W (Sym) *) ((char *) ei->image + dyn->d_un.d_ptr - file_offset);
           break;
         case DT_STRTAB:
-          strtab = (const char *) ((char *) ei->image + dyn->d_un.d_ptr);
+          strtab = (const char *) ((char *) ei->image + dyn->d_un.d_ptr - file_offset);
           break;
         case DT_HASH:
-          hash = (Elf_W (Word) *) ((char *) ei->image + dyn->d_un.d_ptr);
+          hash = (Elf_W (Word) *) ((char *) ei->image + dyn->d_un.d_ptr - file_offset);
           break;
         case DT_GNU_HASH:
-          gnu_hash = (Elf_W (Word) *) ((char *) ei->image + dyn->d_un.d_ptr);
+          gnu_hash = (Elf_W (Word) *) ((char *) ei->image + dyn->d_un.d_ptr - file_offset);
           break;
         default:
           break;
