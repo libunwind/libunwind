@@ -52,7 +52,7 @@ endif #!ARCH_IA64
 
 if ARCH_AARCH64
   check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal   \
-                         aarch64-test-plt
+                         aarch64-test-plt aarch64-test-frame-record
 endif
 
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt \
@@ -191,6 +191,7 @@ Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
 Garm64_test_sve_signal_SOURCES = Garm64-test-sve-signal.c
 Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
 aarch64_test_plt_SOURCES = aarch64-test-plt.c
+aarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 
 if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
  Garm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
@@ -302,3 +303,4 @@ Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
 Garm64_test_sve_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Larm64_test_sve_signal_LDADD = $(LIBUNWIND_local)
 aarch64_test_plt_LDADD = $(LIBUNWIND)
+aarch64_test_frame_record_LDADD = $(LIBUNWIND)

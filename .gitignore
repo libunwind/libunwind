@@ -84,5 +84,6 @@ tests/[GL]x64-test-dwarf-expressions
 tests/x64-unwind-badjmp-signal-frame
 tests/[GL]arm64-test-sve-signal
 tests/aarch64-test-plt
+tests/aarch64-test-frame-record
 tests/*.log
 tests/*.trs

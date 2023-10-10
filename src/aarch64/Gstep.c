@@ -29,6 +29,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "ucontext_i.h"
 #include "unwind_i.h"
 
+static const int WSIZE = sizeof (unw_word_t);
+
 /* Recognise PLT entries such as:
   40ddf0:       b0000570        adrp    x16, 4ba000 <_GLOBAL_OFFSET_TABLE_+0x2a8>
   40ddf4:       f9433611        ldr     x17, [x16,#1640]
@@ -146,6 +148,213 @@ is_plt_entry (struct dwarf_cursor *c)
     {
       return 0;
     }
+}
+
+typedef enum frame_record_location
+  {
+    NONE,           /* frame record creation has not been detected, use LR */
+    AT_SP_OFFSET,   /* frame record creation has been detected, but FP
+                       update not detected */
+    AT_FP,          /* frame record creation and FP update detected */
+  } frame_record_location_t;
+
+typedef struct frame_state
+  {
+    frame_record_location_t loc;
+    int32_t offset;
+  } frame_state_t;
+
+/* Recognise when a frame record storing FP+LR has been created and whether FP
+   has been updated to point to the frame record. For example:
+  4183d4:       a9bd7bfd        stp     x29, x30, [sp,#-48]!    <= FP+LR stored
+  4183d8:       d2800005        mov     x5, #0x0
+  4183dc:       d2800004        mov     x4, #0x0
+  4183e0:       910003fd        mov     x29, sp                 <= FP updated
+  4183e4:       a90153f3        stp     x19, x20, [sp,#16]
+  ...
+  418444:       a94153f3        ldp     x19, x20, [sp,#16]
+  418448:       f94013f5        ldr     x21, [sp,#32]
+  41844c:       a8c37bfd        ldp     x29, x30, [sp],#48      <= FP+LR retrieved
+  418450:       d65f03c0        ret
+*/
+static frame_state_t
+get_frame_state (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  unw_accessors_t *a = unw_get_accessors (c->dwarf.as);
+  unw_word_t w, start_ip, ip, offp;
+  frame_state_t fs;
+  fs.loc = NONE;
+  fs.offset = 0;
+
+  /* PLT entries do not create frame records */
+  if (is_plt_entry (&c->dwarf))
+    return fs;
+
+  /* Use get_proc_name to find start_ip of procedure */
+  char name[128];
+  if (((*a->get_proc_name) (c->dwarf.as, c->dwarf.ip, name, sizeof(name), &offp, c->dwarf.as_arg)) != 0)
+    return fs;
+
+  start_ip = c->dwarf.ip - offp;
+
+  /* Check for frame record instructions since the start of the procedure (start_ip).
+   * access_mem reads WSIZE bytes, so two instructions are checked in each iteration
+   */
+  for (ip = start_ip; ip < c->dwarf.ip; ip += WSIZE)
+    {
+      if ((*a->access_mem) (c->dwarf.as, ip, &w, 0, c->dwarf.as_arg) < 0)
+        return fs;
+
+      if (fs.loc == NONE)
+        {
+          /* Check that a 64-bit store pair (STP) instruction storing FP and LR
+             has been executed, which would indicate that a frame record has been
+             created and that the LR value is saved therein.
+
+             From the ARM Architecture Reference Manual (ARMv8), the format of the
+             64-bit STP instruction is
+
+             | 10 | 101 | 0 | 0XX | 0 |   imm7  |  Rt2  |   Rn  |   Rt  |
+
+             where X can be 0/1 above to indicate the instruction variant (post-
+             index, pre-index or signed offset). imm7 is a 7-bit signed immediate
+             offset. The following should be asserted for this check
+
+             Rt2 == LR (x30) => 0b11110
+             Rn  == SP (x31) => 0b11111
+             Rt  == FP (x29) => 0b11101.
+
+             Hence the bitmask should be constructed to assert that the instruction
+             is
+
+             | 10 | 101 | 0 | 0XX | 0 | XXXXXXX | 11110 | 11111 | 11101 |
+
+             So using a bitmask of 0xfe407fff, the masked instruction would be
+             0xa8007bfd */
+          if ((((w & 0xfe407fff00000000) == 0xa8007bfd00000000) && (c->dwarf.ip > ip + 4))
+           || (((w & 0x00000000fe407fff) == 0x00000000a8007bfd) && (c->dwarf.ip > ip)))
+            {
+              fs.loc = AT_SP_OFFSET;
+
+              /* If the signed offset variant of the STP instruction is detected,
+                 the frame record may not be currently pointed to by SP. Extract
+                 the offset from the STP instruction.
+
+                 From the ARM Architecture Reference Manual (ARMv8), the format of
+                 the signed offset variant of the 64-bit STP instruction is
+
+                 | 10 | 101 | 0 | 010 | 0 | imm7 | Rt2 | Rn | Rt |
+
+                 Hence the bitmask should be constructed to assert that the
+                 instruction is
+
+                 | 10 | 101 | 0 | 010 | 0 | XXXXXXX | 11110 | 11111 | 11101 |
+
+                 So using a bitmask of 0xffc07fff, the masked instruction would
+                 be 0xa9007bdf. The offset value is (imm7 * 8) */
+              if (((w & 0xffc07fff00000000) == 0xa9007bfd00000000) && (c->dwarf.ip > ip + 4))
+                {
+                  uint32_t abs_offset = (w & 0x001f800000000000) >> 47;
+                  fs.offset = ((w & 0x0020000000000000)? -abs_offset : abs_offset) * 8;
+                }
+              else if (((w & 0x00000000ffc07fff) == 0x00000000a9007bfd) && (c->dwarf.ip > ip))
+                {
+                  uint32_t abs_offset = (w & 0x00000000001f8000) >> 15;
+                  fs.offset = ((w & 0x0000000000200000)? -abs_offset : abs_offset) * 8;
+                }
+              else
+                fs.offset = 0;
+
+              Debug (4, "ip=0x%lx => frame record stored at SP+0x%x\n", ip, fs.offset);
+            }
+        }
+
+      if (fs.loc == AT_SP_OFFSET)
+        {
+          /* If the STP instruction has been executed, but not the instruction
+             to update FP, then the SP (with offset) should be used to find the
+             frame record, otherwise the FP should be used as there are no
+             guarantees that the SP is pointing to the frame record after the FP
+             has been updated.
+
+             Two methods for updating the FP have been seen in practice. The
+             first is a MOV instruction. From the ARM Architecture Reference
+             Manual (ARMv8), the 64-bit MOV (to/from SP) instruction to update
+             FP (x29) is 0x910003fd.
+
+             The second is an ADD instruction taking SP and FP as the source and
+             destination registers, respectively. From the ARM Architecture
+             Reference Manual (ARMv8), the 64-bit ADD (immediate) instruction is
+
+             | 1 | 0 | 0 | 10001 | shift |     imm12    |   Rn  |   Rd  |
+
+             where the values of shift and imm12 are irrelevant for this check.
+             The following should be asserted
+
+             Rn == SP (x31) => 0b11111
+             Rd == FP (x29) => 0b11101.
+
+             Hence the bitmask should be constructed to assert that the instruction
+             is
+
+             | 1 | 0 | 0 | 10001 |   XX  | XXXXXXXXXXXX | 11111 | 11101 |
+
+             So using a bitmask of 0xff0003ff, the masked instruction would be
+             0x910003fd.
+
+             Since the MOV instruction is an alias for ADD, it is sufficient to
+             only check for the latter case. */
+          if ((((w & 0xff0003ff00000000) == 0x910003fd00000000) && (c->dwarf.ip > ip + 4))
+           || (((w & 0x00000000ff0003ff) == 0x00000000910003fd) && (c->dwarf.ip > ip)))
+            {
+              fs.loc = AT_FP;
+              fs.offset = 0;
+
+              Debug (4, "ip=0x%lx => frame record stored at FP\n", ip);
+            }
+        }
+      else if (fs.loc == AT_FP)
+        {
+          /* Check that a 64-bit load pair (LDP) instruction to restore FP and LR has been
+             executed, which would indicate that a branch or return instruction is about to
+             be executed and that FP is pointing to the caller's frame record instead. The
+             LR should be examined for the return address. In this case, the RA must have
+             already been authenticated.
+
+             From the ARM Architecture Reference Manual (ARMv8), the format of the 64-bit
+             LDP instruction is
+
+             | 10 | 101 | 0 | 0XX | 1 |   imm7  |  Rt2  |   Rn  |   Rt  |
+
+             where X can be 0/1 above to indicate the instruction variant (post-index, pre-
+             index or signed offset). imm7 is a 7-bit signed immediate offset, which is
+             irrelevant for this check. However, the following should be asserted
+
+             Rt2 == LR (x30) => 0b11110
+             Rn  == SP (x31) => 0b11111
+             Rt  == FP (x29) => 0b11101.
+
+             Hence the bitmask should be constructed to assert that the instruction is
+
+             | 10 | 101 | 0 | 0XX | 1 | XXXXXXX | 11110 | 11111 | 11101 |
+
+             So using a bitmask of 0xfe407fff, the masked instruction would be 0xa8407bfd */
+          if ((((w & 0xfe407fff00000000) == 0xa8407bfd00000000) && (c->dwarf.ip > ip + 4))
+           || (((w & 0x00000000fe407fff) == 0x00000000a8407bfd) && (c->dwarf.ip > ip)))
+            {
+              fs.loc = NONE;
+              fs.offset = 0;
+
+              Debug (4, "ip=0x%lx => frame record has been loaded, use LR\n", ip);
+            }
+        }
+    }
+
+  Debug (3, "[start_ip = 0x%lx, ip=0x%lx) => loc = %d, offset = %d\n",
+            start_ip, c->dwarf.ip, fs.loc, fs.offset);
+
+  return fs;
 }
 
 #if defined __QNX__
@@ -385,7 +594,7 @@ unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int validate = c->validate;
-  unw_word_t fp;
+  unw_word_t fp = 0;
   int ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx))\n",
@@ -460,47 +669,76 @@ unw_step (unw_cursor_t *cursor)
 #endif
       else
         {
-	  /* Try use frame pointer (X29). */
+	  /* Try use frame record. */
           c->frame_info.frame_type = UNW_AARCH64_FRAME_GUESSED;
+	}
 
-          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &fp);
-	  if (likely (ret == 0))
-	    {
-	      if (fp == 0)
-	        {
-		  /* Procedure Call Standard for the ARM 64-bit Architecture (AArch64)
-		   * specifies that the end of the frame record chain is indicated by
-		   * the address zero in the address for the previous frame.
-		   */
-		  c->dwarf.ip = 0;
-		  Debug (2, "NULL frame pointer X29 loc, returning 0\n");
-		  return 0;
-	        }
+      frame_state_t fs = get_frame_state(cursor);
 
-	      Debug (2, "fallback, x29 = 0x%016lx\n", fp);
-	      for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
-		c->dwarf.loc[i] = DWARF_NULL_LOC;
+      /* Prefer using frame record. The LR value is stored at an offset of
+         8 into the frame record.  */
+      if (fs.loc != NONE)
+        {
+          if (fs.loc == AT_FP)
+            {
+              /* X29 points to frame record.  */
+              ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &fp);
+              if (unlikely (ret == 0))
+                {
+                  if (fp == 0)
+                    {
+                      /* Procedure Call Standard for the ARM 64-bit Architecture (AArch64)
+                       * specifies that the end of the frame record chain is indicated by
+                       * the address zero in the address for the previous frame.
+                       */
+                      c->dwarf.ip = 0;
+                      Debug (2, "NULL frame pointer X29 loc, returning 0\n");
+                      return 0;
+                    }
+                }
 
-	      c->dwarf.loc[UNW_AARCH64_SP]  = DWARF_MEM_LOC (c->dwarf, fp);
-	      c->dwarf.loc[UNW_AARCH64_X30] = DWARF_MEM_LOC (c->dwarf, fp + 8);
+              for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+                c->dwarf.loc[i] = DWARF_NULL_LOC;
 
-	      /* Set SP/CFA and PC/IP.  */
-	      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &c->dwarf.cfa);
-	      if (ret < 0)
-	        return ret;
-	      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
-	      if (ret == 0)
-	        {
-	          ret = 1;
-	          c->dwarf.loc[UNW_AARCH64_X29] = c->dwarf.loc[UNW_AARCH64_SP];
-	          c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
-		}
-	      Debug (2, "fallback, CFA = 0x%016lx, IP = 0x%016lx returning %d\n",
-	        c->dwarf.cfa, c->dwarf.ip, ret);
-	      return ret;
-	    }
+              /* Frame record holds X29 and X30 values.  */
+              c->dwarf.loc[UNW_AARCH64_X29] = DWARF_MEM_LOC (c->dwarf, fp);
+              c->dwarf.loc[UNW_AARCH64_X30] = DWARF_MEM_LOC (c->dwarf, fp + 8);
+            }
+          else
+            {
+              /* Frame record stored but not pointed to by X29, use SP.  */
+              unw_word_t sp;
+              ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &sp);
+              if (ret < 0)
+                return ret;
+
+              for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+                c->dwarf.loc[i] = DWARF_NULL_LOC;
+
+              c->frame_info.cfa_reg_offset = fs.offset;
+              c->frame_info.cfa_reg_sp = 1;
+
+              c->dwarf.loc[UNW_AARCH64_X29] = DWARF_MEM_LOC (c->dwarf, sp + fs.offset);
+              c->dwarf.loc[UNW_AARCH64_X30] = DWARF_MEM_LOC (c->dwarf, sp + fs.offset + 8);
+            }
+
+          c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
+
+          /* Set SP/CFA and PC/IP.  */
+          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.cfa);
+          if (ret < 0)
+            return ret;
+          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
+          if (ret == 0)
+            {
+              ret = 1;
+            }
+          Debug (2, "fallback, CFA = 0x%016lx, IP = 0x%016lx returning %d\n",
+            c->dwarf.cfa, c->dwarf.ip, ret);
+          return ret;
         }
-      /* Use link register (X30). */
+
+      /* No frame record, fallback to link register (X30).  */
       c->frame_info.cfa_reg_offset = 0;
       c->frame_info.cfa_reg_sp = 0;
       c->frame_info.fp_cfa_offset = -1;
