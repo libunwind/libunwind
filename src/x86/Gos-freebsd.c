@@ -111,6 +111,7 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
     struct sigframe *sf;
     uintptr_t uc_addr;
     struct dwarf_loc esp_loc;
+    int i;
 
     sf = (struct sigframe *)c->dwarf.cfa;
     uc_addr = (uintptr_t)&(sf->sf_uc);
