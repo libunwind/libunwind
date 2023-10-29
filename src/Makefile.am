@@ -151,12 +151,14 @@ libunwind_coredump_la_SOURCES =                \
 	coredump/_UPT_get_dyn_info_list_addr.c \
 	coredump/_UPT_put_unwind_info.c        \
 	coredump/_UPT_resume.c
+libunwind_coredump_la_CFLAGS =                 \
+	$(LIBLZMA_CFLAGS) $(LIBZ_CFLAGS)
 libunwind_coredump_la_LDFLAGS =                \
 	$(COMMON_SO_LDFLAGS)                   \
 	-version-info $(COREDUMP_SO_VERSION)
 libunwind_coredump_la_LIBADD =                 \
 	libunwind-$(arch).la                   \
-	$(LIBLZMA) $(LIBZ)
+	$(LIBLZMA_LIBS) $(LIBZ_LIBS)
 
 ### libunwind-nto:
 noinst_HEADERS += nto/unw_nto_internal.h
@@ -197,9 +199,11 @@ libunwind_ptrace_la_SOURCES =                  \
 	ptrace/_UPT_put_unwind_info.c          \
 	ptrace/_UPT_reg_offset.c               \
 	ptrace/_UPT_resume.c
+libunwind_ptrace_la_CFLAGS =                   \
+	$(LIBLZMA_CFLAGS) $(LIBZ_CFLAGS)
 libunwind_ptrace_la_LIBADD =                   \
 	libunwind-$(arch).la                   \
-	$(LIBLZMA) $(LIBZ)
+	$(LIBLZMA_LIBS) $(LIBZ_LIBS)
 
 ### libunwind-setjmp:
 noinst_HEADERS += setjmp/setjmp_i.h
@@ -313,7 +317,11 @@ libunwind_dwarf_local_la_SOURCES =             \
 	dwarf/Lget_proc_info_in_range.c        \
 	dwarf/Lparser.c                        \
 	dwarf/Lpe.c
-libunwind_dwarf_local_la_LIBADD = libunwind-dwarf-common.la
+libunwind_dwarf_local_la_CFLAGS =          \
+	$(LIBZ_CFLAGS)
+libunwind_dwarf_local_la_LIBADD =          \
+	libunwind-dwarf-common.la              \
+	$(LIBZ_LIBS)
 
 libunwind_dwarf_generic_la_SOURCES =           \
 	dwarf/Gexpr.c                          \
@@ -323,7 +331,11 @@ libunwind_dwarf_generic_la_SOURCES =           \
 	dwarf/Gget_proc_info_in_range.c        \
 	dwarf/Gparser.c                        \
 	dwarf/Gpe.c
-libunwind_dwarf_generic_la_LIBADD = libunwind-dwarf-common.la
+libunwind_dwarf_generic_la_CFLAGS =        \
+	$(LIBZ_CFLAGS)
+libunwind_dwarf_generic_la_LIBADD =        \
+	libunwind-dwarf-common.la              \
+	$(LIBZ_LIBS)
 
 if USE_DWARF
  noinst_LTLIBRARIES += libunwind-dwarf-common.la libunwind-dwarf-generic.la
@@ -338,9 +350,12 @@ noinst_HEADERS += elf32.h elf64.h elfxx.h
 libunwind_elf32_la_SOURCES = elf32.c
 libunwind_elf64_la_SOURCES = elf64.c
 libunwind_elfxx_la_SOURCES = elfxx.c
-libunwind_elf32_la_LIBADD  = $(LIBLZMA) $(LIBZ)
-libunwind_elf64_la_LIBADD  = $(LIBLZMA) $(LIBZ)
-libunwind_elfxx_la_LIBADD  = $(LIBLZMA) $(LIBZ)
+libunwind_elf32_la_CFLAGS  = $(LIBLZMA_CFLAGS) $(LIBZ_CFLAGS)
+libunwind_elf64_la_CFLAGS  = $(LIBLZMA_CFLAGS) $(LIBZ_CFLAGS)
+libunwind_elfxx_la_CFLAGS  = $(LIBLZMA_CFLAGS) $(LIBZ_CFLAGS)
+libunwind_elf32_la_LIBADD  = $(LIBLZMA_LIBS) $(LIBZ_LIBS)
+libunwind_elf64_la_LIBADD  = $(LIBLZMA_LIBS) $(LIBZ_LIBS)
+libunwind_elfxx_la_LIBADD  = $(LIBLZMA_LIBS) $(LIBZ_LIBS)
 
 noinst_LTLIBRARIES += $(libunwind_elf_libs)
 libunwind_la_LIBADD += $(libunwind_elf_libs)
@@ -1242,7 +1257,8 @@ endif
 libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -XCClinker -nostdlib \
 			$(LDFLAGS_STATIC_LIBCXA) -version-info $(SOVERSION)
 libunwind_la_LIBADD  += -lc $(LIBCRTS)
-libunwind_la_LIBADD += $(LIBLZMA) $(LIBZ)
+libunwind_la_CFLAGS = $(LIBLZMA_CFLAGS) $(LIBZ_CFLAGS)
+libunwind_la_LIBADD += $(LIBLZMA_LIBS) $(LIBZ_LIBS)
 
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
