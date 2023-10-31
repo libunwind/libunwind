@@ -34,6 +34,10 @@ extern "C" {
 #include <inttypes.h>
 #include <ucontext.h>
 
+#ifndef UNW_EMPTY_STRUCT
+#  define UNW_EMPTY_STRUCT uint8_t unused;
+#endif
+
 #define UNW_TARGET      loongarch64
 #define UNW_TARGET_LOONGARCH64 1
 
@@ -109,7 +113,7 @@ loongarch64_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  */
-    char unused;
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_save_loc_t;
 
@@ -119,7 +123,7 @@ typedef ucontext_t unw_tdep_context_t;
 typedef struct
   {
     /* no loongarch64-specific auxiliary proc-info */
-    char unused;
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_proc_info_t;
 

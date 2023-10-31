@@ -39,6 +39,10 @@ extern "C" {
 #include <inttypes.h>
 #include <ucontext.h>
 
+#ifndef UNW_EMPTY_STRUCT
+#  define UNW_EMPTY_STRUCT uint8_t unused;
+#endif
+
 #define UNW_TARGET              ppc32
 #define UNW_TARGET_PPC32        1
 
@@ -175,6 +179,7 @@ ppc32_regnum_t;
 typedef struct unw_tdep_save_loc
   {
     /* Additional target-dependent info on a save location.  */
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_save_loc_t;
 
@@ -192,6 +197,7 @@ typedef ucontext_t unw_tdep_context_t;
 typedef struct
   {
     /* no ppc32-specific auxiliary proc-info */
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_proc_info_t;
 

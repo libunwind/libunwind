@@ -29,6 +29,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <inttypes.h>
 #include <ucontext.h>
 
+#ifndef UNW_EMPTY_STRUCT
+#  define UNW_EMPTY_STRUCT uint8_t unused;
+#endif
+
 #if defined(__cplusplus) || defined(c_plusplus)
 extern "C" {
 #endif
@@ -83,6 +87,7 @@ unw_tdep_fpreg_t;
 typedef struct
   {
     /* no ia64-specific auxiliary proc-info */
+    UNW_EMPTY_STRUCT
   }
 unw_tdep_proc_info_t;
 
