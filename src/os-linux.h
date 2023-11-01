@@ -119,10 +119,10 @@ scan_hex (char *cp, unsigned long *valp)
       digit = *cp;
       if ((digit - '0') <= 9)
         digit -= '0';
-      else if ((digit - 'a') < 6)
-        digit -= 'a' - 10;
       else if ((digit - 'A') < 6)
         digit -= 'A' - 10;
+      else if ((digit - 'a') < 6)
+        digit -= 'a' - 10;
       else
         break;
       val = (val << 4) | digit;
