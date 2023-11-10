@@ -54,6 +54,9 @@ void handle_sigsegv(int signal UNUSED, siginfo_t *info UNUSED, void *ucontext UN
   unw_cursor_t cursor; unw_context_t uc;
   unw_word_t ip, sp, offset;
   char name[1000];
+#if __linux
+  int current_is_signal_frame = 0;
+#endif
   int found_signal_frame = 0;
   int i = 0;
   char *names[] = {
@@ -72,9 +75,22 @@ void handle_sigsegv(int signal UNUSED, siginfo_t *info UNUSED, void *ucontext UN
     {
       if (unw_is_signal_frame(&cursor))
         {
+#if __linux__
+          current_is_signal_frame = 1;
+#endif
           found_signal_frame = 1;
         }
+      else
+      {
+#if __linux__
+        current_is_signal_frame = 0;
+#endif
+      }
+#if __linux__
+      if (!current_is_signal_frame && found_signal_frame)
+#else
       if (found_signal_frame)
+#endif
         {
           unw_get_reg(&cursor, UNW_REG_IP, &ip);
           unw_get_reg(&cursor, UNW_REG_SP, &sp);

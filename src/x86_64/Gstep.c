@@ -305,6 +305,10 @@ unw_step (unw_cursor_t *cursor)
       if (c->dwarf.ip == prev_ip && c->dwarf.cfa == prev_cfa)
         return -UNW_EBADFRAME;
     }
+
+  if (ret > 0 && unw_is_signal_frame(cursor))
+      c->dwarf.use_prev_instr = 0;
+
   Debug (2, "returning %d\n", ret);
   return ret;
 }

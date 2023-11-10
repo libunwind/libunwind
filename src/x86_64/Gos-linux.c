@@ -81,11 +81,41 @@ tdep_reuse_frame (struct dwarf_cursor *dw, int frame)
          ? c->frame_info.cfa_reg_offset : 0));
 }
 
+/*
+ * still need sniff signal_frame here, because sigcontext_format only update
+ * only next unw_step or call unw_get_proc_info, it means if current
+ * actually is signal frame, this api still return false.
+ */
 int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  return c->sigcontext_format != X86_64_SCF_NONE;
+  unw_word_t w0, w1, ip;
+  unw_addr_space_t as;
+  unw_accessors_t *a;
+  void *arg;
+  int ret;
+
+  as = c->dwarf.as;
+  a = unw_get_accessors_int (as);
+  arg = c->dwarf.as_arg;
+
+  /*
+   *  48 c7 c0 0f 00 00 00    mov    $0xf,%rax
+   *  0f 05                   syscall
+   *  0f 1f 80 00 00 00 00    nopl   0x0(%rax)
+   */
+  ip = c->dwarf.ip;
+  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
+    return 0;
+
+  if (w0 == 0x0f0000000fc0c748 && w1 == 0x00000000801f0f05)
+   {
+     c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+     return 1;
+   }
+  return 0;
 }
 
 HIDDEN int
