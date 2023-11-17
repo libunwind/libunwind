@@ -37,6 +37,7 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
+#include <stdint.h>
 #include <ucontext.h>
 
 #ifndef UNW_EMPTY_STRUCT
@@ -71,9 +72,11 @@ extern "C" {
 #if __WORDSIZE==32
 typedef uint32_t unw_word_t;
 typedef int32_t unw_sword_t;
+#define UNW_WORD_MAX UINT32_MAX
 #else
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
+#define UNW_WORD_MAX UINT64_MAX
 #endif
 
 typedef double unw_tdep_fpreg_t;

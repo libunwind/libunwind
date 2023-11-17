@@ -32,6 +32,7 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
+#include <stdint.h>
 #include <ucontext.h>
 
 #ifndef UNW_EMPTY_STRUCT
@@ -56,6 +57,8 @@ typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
 
 typedef long double unw_tdep_fpreg_t;
+
+#define UNW_WORD_MAX UINT64_MAX
 
 typedef enum
   {
