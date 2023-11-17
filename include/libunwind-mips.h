@@ -30,6 +30,7 @@ extern "C" {
 #endif
 
 #include <inttypes.h>
+#include <stdint.h>
 #include <ucontext.h>
 
 #ifdef mips
@@ -59,8 +60,10 @@ extern "C" {
    ABIs, and 64-bit wide for N64 ABI. */
 #if _MIPS_SIM == _ABI64
 typedef uint64_t unw_word_t;
+# define UNW_WORD_MAX UINT64_MAX
 #else
 typedef uint32_t unw_word_t;
+# define UNW_WORD_MAX UINT32_MAX
 #endif
 typedef int32_t unw_sword_t;
 

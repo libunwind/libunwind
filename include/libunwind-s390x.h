@@ -57,6 +57,8 @@ typedef int64_t unw_sword_t;
 
 typedef double unw_tdep_fpreg_t;
 
+#define UNW_WORD_MAX UINT64_MAX
+
 typedef enum
   {
     /* general purpose registers */

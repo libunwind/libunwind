@@ -34,6 +34,7 @@ extern "C" {
 
 #include <sys/types.h>
 #include <inttypes.h>
+#include <stdint.h>
 #include <ucontext.h>
 
 #ifndef UNW_EMPTY_STRUCT
@@ -56,9 +57,11 @@ extern "C" {
 #if __riscv_xlen == 32
 typedef uint32_t unw_word_t;
 typedef int32_t unw_sword_t;
+# define UNW_WORD_MAX UINT32_MAX
 #elif __riscv_xlen == 64
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
+# define UNW_WORD_MAX UINT64_MAX
 #endif
 
 #if __riscv_flen == 64
