@@ -431,6 +431,10 @@ unw_step (unw_cursor_t *cursor)
 	  Debug (2, "NULL frame pointer X29 loc, returning 0\n");
 	  return 0;
         }
+      else
+        {
+          ret = 1;
+        }
     }
 
   if (unlikely (ret < 0))
@@ -497,31 +501,37 @@ unw_step (unw_cursor_t *cursor)
 		}
 	      Debug (2, "fallback, CFA = 0x%016lx, IP = 0x%016lx returning %d\n",
 	        c->dwarf.cfa, c->dwarf.ip, ret);
-	      return ret;
 	    }
         }
-      /* Use link register (X30). */
-      c->frame_info.cfa_reg_offset = 0;
-      c->frame_info.cfa_reg_sp = 0;
-      c->frame_info.fp_cfa_offset = -1;
-      c->frame_info.lr_cfa_offset = -1;
-      c->frame_info.sp_cfa_offset = -1;
-      c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
-      c->dwarf.loc[UNW_AARCH64_X30] = DWARF_NULL_LOC;
-      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_PC]))
+
+      if (ret < 0)
         {
-          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
-          if (ret < 0)
+          /* Use link register (X30). */
+          c->frame_info.cfa_reg_offset = 0;
+          c->frame_info.cfa_reg_sp = 0;
+          c->frame_info.fp_cfa_offset = -1;
+          c->frame_info.lr_cfa_offset = -1;
+          c->frame_info.sp_cfa_offset = -1;
+          c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
+          c->dwarf.loc[UNW_AARCH64_X30] = DWARF_NULL_LOC;
+          if (!DWARF_IS_NULL_LOC (c->dwarf.loc[UNW_AARCH64_PC]))
+          {
+            ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
+            if (ret < 0)
             {
               Debug (2, "failed to get pc from link register: %d\n", ret);
               return ret;
             }
-          Debug (2, "link register (x30) = 0x%016lx\n", c->dwarf.ip);
-          ret = 1;
+            Debug (2, "link register (x30) = 0x%016lx\n", c->dwarf.ip);
+            ret = 1;
+          }
+          else
+            c->dwarf.ip = 0;
         }
-      else
-        c->dwarf.ip = 0;
     }
+
+  if (ret > 0 && unw_is_signal_frame(cursor))
+      c->dwarf.use_prev_instr = 0;
 
   return (c->dwarf.ip == 0) ? 0 : 1;
 }

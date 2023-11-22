@@ -270,7 +270,8 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t as UNUSED,
                sym < symtab_end;
                sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
             {
-              if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
+              if ((ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
+                    || ELF_W (ST_TYPE) (sym->st_info) == STT_NOTYPE)
                   && sym->st_shndx != SHN_UNDEF)
                 {
                   val = sym->st_value;
@@ -315,9 +316,11 @@ elf_w (lookup_symbol_callback)(const struct symbol_lookup_context *context,
 {
   int ret = -UNW_ENOINFO;
   struct symbol_callback_data *d = data;
+  // On x86_64 glibc, the st_size of __restore_rt is 0
+  bool quirk = (context->ip == syminfo->start_ip) && !syminfo->sym->st_size;
 
-  if (context->ip < syminfo->start_ip ||
-      context->ip >= (syminfo->start_ip + syminfo->sym->st_size))
+  if (!quirk && (context->ip < syminfo->start_ip ||
+      context->ip >= (syminfo->start_ip + syminfo->sym->st_size)))
     return -UNW_ENOINFO;
 
   if ((Elf_W (Addr)) (context->ip - syminfo->start_ip) < *(context->min_dist))
