@@ -40,6 +40,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <unistd.h>
 #include <libunwind.h>
 
+#include "ident.h"
+
 #define panic(...)				\
 	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
@@ -206,7 +208,6 @@ foo (long val UNUSED)
 void
 bar (long v)
 {
-  extern long f (long);
   int arr[v];
   arr[0] = 0;
 

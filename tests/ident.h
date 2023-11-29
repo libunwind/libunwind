@@ -20,10 +20,9 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  * SOFTWARE.
  */
-#include "ident.h"
+#ifndef LIBUNWIND_TESTS_IDENT_H
+#define LIBUNWIND_TESTS_IDENT_H
 
-long
-f (long val)
-{
-  return val;
-}
+extern long f (long val);
+
+#endif /* LIBUNWIND_TESTS_IDENT_H */

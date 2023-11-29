@@ -166,6 +166,7 @@ endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
+noinst_HEADERS = ident.h
 
 Lia64_test_readonly_SOURCES = Lia64-test-readonly.c ia64-test-readonly-asm.S
 Gia64_test_readonly_SOURCES = Gia64-test-readonly.c ia64-test-readonly-asm.S
