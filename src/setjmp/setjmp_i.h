@@ -23,6 +23,9 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#ifndef libunwind_setjmp_setjmp_i_h
+#define libunwind_setjmp_setjmp_i_h
+
 #include "libunwind_i.h"
 
 #if UNW_TARGET_IA64
@@ -116,3 +119,5 @@ resume_restores_sigmask (unw_cursor_t *c UNUSED, unw_word_t *wp  UNUSED)
 }
 
 #endif /* !UNW_TARGET_IA64 */
+
+#endif /* libunwind_setjmp_setjmp_i_h */
