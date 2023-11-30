@@ -70,12 +70,22 @@ endif
 if !ARCH_IA64
  check_PROGRAMS_cdep += Ltest-init-local-signal
 endif
+if ARCH_PPC32
+  # https://github.com/libunwind/libunwind/issues/560
+  XFAIL_TESTS += Ltest-init-local-signal
+  # https://github.com/libunwind/libunwind/issues/670
+  XFAIL_TESTS += test-async-sig
+endif #ARCH_PPC32
 
 # Tests that exercise unw_resume, which is only unsupported on some targets
 if ENABLE_UNW_RESUME_TESTS
 check_PROGRAMS_cdep += Gtest-exc Ltest-exc \
                        Gtest-resume-sig Ltest-resume-sig \
                        Gtest-resume-sig-rt Ltest-resume-sig-rt
+if ARCH_PPC32
+  # https://github.com/libunwind/libunwind/issues/559
+  XFAIL_TESTS += Gtest-exc Ltest-exc
+endif #ARCH_PPC32
 endif
 
 if BUILD_PTRACE
@@ -83,6 +93,7 @@ if BUILD_PTRACE
  check_PROGRAMS_cdep += test-ptrace
  noinst_PROGRAMS_cdep += mapper test-ptrace-misc
 if ARCH_X86
+ # https://github.com/libunwind/libunwind/issues/392
  XFAIL_TESTS += test-ptrace
 endif
 endif
@@ -96,6 +107,11 @@ if SUPPORT_CXX_EXCEPTIONS
 endif
 # Temporarily XFAIL this test for riscv64 until #519 is fixed
 if ARCH_RISCV
+  # https://github.com/libunwind/libunwind/issues/519
+  XFAIL_TESTS += Ltest-cxx-exceptions
+endif
+if ARCH_PPC32
+  # https://github.com/libunwind/libunwind/issues/561
   XFAIL_TESTS += Ltest-cxx-exceptions
 endif
 
@@ -198,6 +214,7 @@ if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
  Garm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
  Larm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
 endif
+# https://github.com/libunwind/libunwind/issues/512
 XFAIL_TESTS += Garm64-test-sve-signal Larm64-test-sve-signal
 
 Gtest_init_SOURCES = Gtest-init.cxx
