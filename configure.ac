@@ -54,7 +54,7 @@ dnl Checks for libraries.
 AC_MSG_NOTICE([--- Checking for libraries ---])
 save_LDFLAGS="$LDFLAGS"
 save_LIBS="$LIBS"
-LDFLAGS+=" -nostdlib"
+LDFLAGS="${LDFLAGS} -nostdlib"
 AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
                [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
                       [AC_SUBST([LIBCRTS], ["$ac_cv_search__Unwind_Resume"])])],
