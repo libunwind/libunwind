@@ -36,7 +36,7 @@ jobs:
           - { CFLAGS: -O0 }
           - { CFLAGS: -O3 }
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
 
       - name: Setup
         if: ${{ matrix.target.arch }} = 'i686'
@@ -95,7 +95,7 @@ jobs:
           - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 10 }
 
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@f43a0e5ff2bd294095638e18286ca9a3d1956744 # v3.6.0
       - name: Install QEMU
         # this ensure install latest qemu on ubuntu, apt get version is old
         env:
