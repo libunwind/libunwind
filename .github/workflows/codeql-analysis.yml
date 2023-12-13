@@ -10,6 +10,9 @@ on:
       # Runs automatically on the twelfth of every month at 16:26
     - cron: '26 16 12 * *'
 
+permissions:
+  contents: read
+
 jobs:
   analyze:
     name: Analyze
