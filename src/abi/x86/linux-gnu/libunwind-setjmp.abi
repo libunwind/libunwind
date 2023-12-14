@@ -1,0 +1,28 @@
+<abi-corpus version='2.2' architecture='elf-intel-80386' soname='libunwind-setjmp.so.0'>
+  <elf-needed>
+    <dependency name='libunwind-x86.so.8'/>
+    <dependency name='libc.so.6'/>
+  </elf-needed>
+  <elf-function-symbols>
+    <elf-symbol name='_UI_longjmp_cont' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UI_siglongjmp_cont' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-function-symbols>
+  <abi-instr address-size='32' path='../../src/mi/init.c' language='LANG_C99'>
+    <type-decl name='long int' size-in-bits='32' id='type-id-1'/>
+    <class-decl name='__sigset_t' size-in-bits='1024' is-struct='yes' naming-typedef-id='type-id-2' visibility='default' id='type-id-3'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__val' type-id='type-id-4' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__sigset_t' type-id='type-id-3' id='type-id-2'/>
+    <typedef-decl name='intrmask_t' type-id='type-id-5' id='type-id-6'/>
+    <typedef-decl name='sigset_t' type-id='type-id-2' id='type-id-5'/>
+    <type-decl name='unsigned int' size-in-bits='32' id='type-id-7'/>
+    <type-decl name='unsigned long int' size-in-bits='32' id='type-id-8'/>
+    <array-type-def dimensions='1' type-id='type-id-8' size-in-bits='1024' id='type-id-4'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-7' id='type-id-9'/>
+    </array-type-def>
+    <var-decl name='_UIx86_full_mask' type-id='type-id-6' visibility='default'/>
+    <var-decl name='unw_page_size' type-id='type-id-1' visibility='default'/>
+  </abi-instr>
+</abi-corpus>
