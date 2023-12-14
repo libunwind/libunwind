@@ -42,23 +42,30 @@ jobs:
         if: ${{ matrix.target.arch }} = 'i686'
         run: |
           sudo apt update
-          sudo apt install -y g++-12-multilib
+          sudo apt install -y g++-12-multilib abigail-tools
 
       - name: Configure
         run: |
           set -x
           autoreconf -i
-          ./configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }}
+          mkdir build
+          cd build
+          ../configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }}
         env:
           CC: ${{ matrix.toolchain.CC }}
           CXX: ${{ matrix.toolchain.CXX }}
-          CFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -Wall -Wextra"
-          CXXFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -Wall -Wextra"
+          CFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -g -Wall -Wextra"
+          CXXFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -g -Wall -Wextra"
           LDFLAGS: ${{ matrix.target.CFLAGS }}
 
       - name: Build
         run: |
-          make -j8
+          make -C build -j
+
+      - name: Check ABI
+        if: ${{ success() }}
+        run:
+          make -C build/src abi-check
 
       - name: Test (native)
         if: ${{ success() }}
@@ -66,12 +73,12 @@ jobs:
           set -x
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
-          make check -j8
+          make -C build check -j8
 
       - name: Show Logs
         if: ${{ failure() }}
         run: |
-          cat tests/test-suite.log 2>/dev/null
+          cat build/tests/test-suite.log 2>/dev/null
 
   build-gnu-cross:
     runs-on: ubuntu-22.04
@@ -109,42 +116,58 @@ jobs:
       - name: Install ${{ matrix.config.host }} Toolchain
         run: |
           sudo apt update
-          sudo apt install g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} -y
+          sudo apt install -y g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} abigail-tools
 
       - name: Configure with ${{ matrix.config.cc }}
         run: |
           set -x
           autoreconf -i
-          BUILD=x86_64-linux-gnu
-          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver="$(pwd)/libtool execute $(pwd)/scripts/qemu-test-driver" --enable-debug
+          mkdir build
+          cd build
+          ../configure --build=$(config/config.guess) \
+                       --host=${{ matrix.config.host }} \
+                       --with-testdriver="$(pwd)/libtool execute $(pwd)/../scripts/qemu-test-driver" \
+                       --enable-debug
         env:
           CC: ${{ matrix.config.host }}-gcc-${{ matrix.config.gccver }}
           CXX: ${{ matrix.config.host }}-g++-${{ matrix.config.gccver }}
 
       - name: Build
         run: |
-          make -j8
+          make -C build -j
         env:
-          CFLAGS: "-Wall -Wextra"
+          CFLAGS: "-Wall -Wextra -g -Og"
 
       - name: ABI Check
         run: |
-            cd tests && ./check-namespace.sh
+            case ${{ matrix.config.target }} in
+            aarch64|riscv*|s390x|x86*)
+                make -C build/src abi-check
+                ;;
+            *)
+                srcdir=$(pwd)
+                cd build/tests
+                ${srcdir}/tests/run-check-namespace
+                ;;
+            esac
 
       - name: Test
         run: |
           set -x
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
-          CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" QEMU_LD_PREFIX="$CROSS_LIB"
+          cd build
+          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
+                     QEMU_LD_PREFIX="$CROSS_LIB" \
+                     LDFLAGS="-L$CROSS_LIB/lib"
         env:
           UNW_DEBUG_LEVEL: 4
+          CROSS_LIB: "/usr/${{ matrix.config.host }}"
 
       - name: Show Logs
         if: ${{ failure() }}
         run: |
-          cat tests/test-suite.log 2>/dev/null
+          cat build/tests/test-suite.log 2>/dev/null
 
   build-musl-native:
     runs-on: ubuntu-latest

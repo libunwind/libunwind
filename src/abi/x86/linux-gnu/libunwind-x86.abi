@@ -1,0 +1,1203 @@
+<abi-corpus version='2.2' architecture='elf-intel-80386' soname='libunwind-x86.so.8'>
+  <elf-needed>
+    <dependency name='libc.so.6'/>
+  </elf-needed>
+  <elf-function-symbols>
+    <elf-symbol name='_Ux86_apply_reg_state' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_create_addr_space' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_destroy_addr_space' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_dwarf_find_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_dwarf_search_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_flush_cache' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_accessors' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_elf_filename' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_elf_filename_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_elf_image' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_exe_image_path' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_proc_info' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_proc_info_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_proc_info_in_range' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_proc_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_proc_name_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_get_save_loc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_init_local' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_resume' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_set_cache_size' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_set_caching_policy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_set_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_set_iterate_phdr_function' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_set_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_step' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-function-symbols>
+  <elf-variable-symbols>
+    <elf-symbol name='_Ux86_local_addr_space' size='4' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-variable-symbols>
+  <abi-instr address-size='32' path='../../src/dwarf/Gfind_proc_info-lsb.c' language='LANG_C99'>
+    <type-decl name='signed char' size-in-bits='8' id='type-id-1'/>
+    <class-decl name='table_entry' size-in-bits='64' is-struct='yes' visibility='default' id='type-id-2'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='start_ip_offset' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='fde_offset' type-id='type-id-3' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_info' size-in-bits='416' is-struct='yes' visibility='default' id='type-id-4'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='next' type-id='type-id-5' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='prev' type-id='type-id-5' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='start_ip' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='end_ip' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='gp' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='format' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='pad' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='load_offset' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='u' type-id='type-id-7' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_op' size-in-bits='96' is-struct='yes' visibility='default' id='type-id-8'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='tag' type-id='type-id-9' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='qp' type-id='type-id-9' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='reg' type-id='type-id-10' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='when' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='val' type-id='type-id-6' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_proc_info' size-in-bits='160' is-struct='yes' visibility='default' id='type-id-11'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='name_ptr' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='handler' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='flags' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='pad0' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='regions' type-id='type-id-13' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_region_info' size-in-bits='192' is-struct='yes' visibility='default' id='type-id-14'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='next' type-id='type-id-15' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='insn_count' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='op_count' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='op' type-id='type-id-16' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_remote_table_info' size-in-bits='128' is-struct='yes' visibility='default' id='type-id-17'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='name_ptr' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='segbase' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='table_len' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='table_data' type-id='type-id-6' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_table_info' size-in-bits='128' is-struct='yes' visibility='default' id='type-id-18'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='name_ptr' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='segbase' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='table_len' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='table_data' type-id='type-id-19' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__int16_t' type-id='type-id-20' id='type-id-21'/>
+    <typedef-decl name='__int32_t' type-id='type-id-22' id='type-id-23'/>
+    <typedef-decl name='__int8_t' type-id='type-id-1' id='type-id-24'/>
+    <typedef-decl name='int16_t' type-id='type-id-21' id='type-id-10'/>
+    <typedef-decl name='int32_t' type-id='type-id-23' id='type-id-3'/>
+    <typedef-decl name='int8_t' type-id='type-id-24' id='type-id-9'/>
+    <typedef-decl name='unw_dyn_info_t' type-id='type-id-4' id='type-id-25'/>
+    <typedef-decl name='unw_dyn_op_t' type-id='type-id-8' id='type-id-26'/>
+    <typedef-decl name='unw_dyn_proc_info_t' type-id='type-id-11' id='type-id-27'/>
+    <typedef-decl name='unw_dyn_region_info_t' type-id='type-id-14' id='type-id-28'/>
+    <typedef-decl name='unw_dyn_remote_table_info_t' type-id='type-id-17' id='type-id-29'/>
+    <typedef-decl name='unw_dyn_table_info_t' type-id='type-id-18' id='type-id-30'/>
+    <union-decl name='__anonymous_union__' size-in-bits='160' is-anonymous='yes' visibility='default' id='type-id-7'>
+      <data-member access='public'>
+        <var-decl name='pi' type-id='type-id-27' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='ti' type-id='type-id-30' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='rti' type-id='type-id-29' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <array-type-def dimensions='1' type-id='type-id-26' size-in-bits='96' id='type-id-16'>
+      <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-31' id='type-id-32'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-4' size-in-bits='32' id='type-id-5'/>
+    <pointer-type-def type-id='type-id-25' size-in-bits='32' id='type-id-33'/>
+    <pointer-type-def type-id='type-id-14' size-in-bits='32' id='type-id-15'/>
+    <pointer-type-def type-id='type-id-28' size-in-bits='32' id='type-id-13'/>
+    <function-decl name='_Ux86_dwarf_search_unwind_table' mangled-name='_Ux86_dwarf_search_unwind_table' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_dwarf_search_unwind_table'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <parameter type-id='type-id-33' name='di'/>
+      <parameter type-id='type-id-35' name='pi'/>
+      <parameter type-id='type-id-22' name='need_unwind_info'/>
+      <parameter type-id='type-id-36' name='arg'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+    <function-type size-in-bits='32' id='type-id-37'>
+      <parameter type-id='type-id-38'/>
+      <parameter type-id='type-id-39'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-40'>
+      <parameter type-id='type-id-41'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/dwarf/Gfind_unwind_table.c' language='LANG_C99'>
+    <class-decl name='elf_dyn_info' size-in-bits='896' is-struct='yes' visibility='default' id='type-id-42'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ei' type-id='type-id-43' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='di_cache' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='di_debug' type-id='type-id-25' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <pointer-type-def type-id='type-id-42' size-in-bits='32' id='type-id-44'/>
+    <function-decl name='_Ux86_dwarf_find_unwind_table' mangled-name='_Ux86_dwarf_find_unwind_table' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_dwarf_find_unwind_table'>
+      <parameter type-id='type-id-44' name='edi'/>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-45' name='path'/>
+      <parameter type-id='type-id-6' name='segbase'/>
+      <parameter type-id='type-id-6' name='mapoff'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/dwarf/Gget_proc_info_in_range.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_proc_info_in_range' mangled-name='_Ux86_get_proc_info_in_range' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_proc_info_in_range'>
+      <parameter type-id='type-id-6' name='start_ip'/>
+      <parameter type-id='type-id-6' name='end_ip'/>
+      <parameter type-id='type-id-6' name='eh_frame_table'/>
+      <parameter type-id='type-id-6' name='eh_frame_table_len'/>
+      <parameter type-id='type-id-6' name='exidx_frame_table'/>
+      <parameter type-id='type-id-6' name='exidx_frame_table_len'/>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <parameter type-id='type-id-35' name='pi'/>
+      <parameter type-id='type-id-22' name='need_unwind_info'/>
+      <parameter type-id='type-id-36' name='arg'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/dwarf/global.c' language='LANG_C99'>
+    <class-decl name='mempool' size-in-bits='352' is-struct='yes' visibility='default' id='type-id-46'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='lock' type-id='type-id-47' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='obj_size' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='chunk_size' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='reserve' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='num_free' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='free_list' type-id='type-id-48' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='object' size-in-bits='32' is-struct='yes' visibility='default' id='type-id-49'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='next' type-id='type-id-48' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <pointer-type-def type-id='type-id-49' size-in-bits='32' id='type-id-48'/>
+    <var-decl name='dwarf_reg_state_pool' type-id='type-id-46' visibility='default'/>
+    <var-decl name='dwarf_cie_info_pool' type-id='type-id-46' visibility='default'/>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gdestroy_addr_space.c' language='LANG_C99'>
+    <function-decl name='_Ux86_destroy_addr_space' mangled-name='_Ux86_destroy_addr_space' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_destroy_addr_space'>
+      <parameter type-id='type-id-34' name='as'/>
+      <return type-id='type-id-50'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gget_accessors.c' language='LANG_C99'>
+    <typedef-decl name='unw_accessors_t' type-id='type-id-51' id='type-id-52'/>
+    <pointer-type-def type-id='type-id-52' size-in-bits='32' id='type-id-53'/>
+    <function-decl name='_Ux86_get_accessors' mangled-name='_Ux86_get_accessors' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_accessors'>
+      <parameter type-id='type-id-34' name='as'/>
+      <return type-id='type-id-53'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gget_elf_filename.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_elf_filename_by_ip' mangled-name='_Ux86_get_elf_filename_by_ip' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_elf_filename_by_ip'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <parameter type-id='type-id-54' name='buf'/>
+      <parameter type-id='type-id-39' name='buf_len'/>
+      <parameter type-id='type-id-19' name='offp'/>
+      <parameter type-id='type-id-36' name='arg'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+    <function-decl name='_Ux86_get_elf_filename' mangled-name='_Ux86_get_elf_filename' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_elf_filename'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-54' name='buf'/>
+      <parameter type-id='type-id-39' name='buf_len'/>
+      <parameter type-id='type-id-19' name='offp'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gget_fpreg.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_fpreg' mangled-name='_Ux86_get_fpreg' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_fpreg'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-22' name='regnum'/>
+      <parameter type-id='type-id-56' name='valp'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gget_proc_info_by_ip.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_proc_info_by_ip' mangled-name='_Ux86_get_proc_info_by_ip' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_proc_info_by_ip'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <parameter type-id='type-id-35' name='pi'/>
+      <parameter type-id='type-id-36' name='as_arg'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gget_proc_name.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_proc_name_by_ip' mangled-name='_Ux86_get_proc_name_by_ip' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_proc_name_by_ip'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <parameter type-id='type-id-54' name='buf'/>
+      <parameter type-id='type-id-39' name='buf_len'/>
+      <parameter type-id='type-id-19' name='offp'/>
+      <parameter type-id='type-id-36' name='arg'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+    <function-decl name='_Ux86_get_proc_name' mangled-name='_Ux86_get_proc_name' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_proc_name'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-54' name='buf'/>
+      <parameter type-id='type-id-39' name='buf_len'/>
+      <parameter type-id='type-id-19' name='offp'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gget_reg.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_reg' mangled-name='_Ux86_get_reg' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_reg'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-22' name='regnum'/>
+      <parameter type-id='type-id-19' name='valp'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gset_cache_size.c' language='LANG_C99'>
+    <function-decl name='_Ux86_set_cache_size' mangled-name='_Ux86_set_cache_size' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_set_cache_size'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-39' name='size'/>
+      <parameter type-id='type-id-22' name='flag'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gset_caching_policy.c' language='LANG_C99'>
+    <function-decl name='_Ux86_set_caching_policy' mangled-name='_Ux86_set_caching_policy' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_set_caching_policy'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-57' name='policy'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gset_fpreg.c' language='LANG_C99'>
+    <function-decl name='_Ux86_set_fpreg' mangled-name='_Ux86_set_fpreg' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_set_fpreg'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-22' name='regnum'/>
+      <parameter type-id='type-id-58' name='val'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gset_iterate_phdr_function.c' language='LANG_C99'>
+    <function-decl name='_Ux86_set_iterate_phdr_function' mangled-name='_Ux86_set_iterate_phdr_function' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_set_iterate_phdr_function'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-59' name='function'/>
+      <return type-id='type-id-50'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/Gset_reg.c' language='LANG_C99'>
+    <function-decl name='_Ux86_set_reg' mangled-name='_Ux86_set_reg' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_set_reg'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-22' name='regnum'/>
+      <parameter type-id='type-id-6' name='valp'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/flush_cache.c' language='LANG_C99'>
+    <array-type-def dimensions='1' type-id='type-id-60' size-in-bits='152' id='type-id-61'>
+      <subrange length='19' lower-bound='0' upper-bound='18' type-id='type-id-31' id='type-id-62'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-60' size-in-bits='192' id='type-id-63'>
+      <subrange length='24' lower-bound='0' upper-bound='23' type-id='type-id-31' id='type-id-64'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-65' size-in-bits='12288' id='type-id-66'>
+      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-31' id='type-id-67'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-68' size-in-bits='102400' id='type-id-69'>
+      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-31' id='type-id-67'/>
+    </array-type-def>
+    <enum-decl name='unw_caching_policy_t' naming-typedef-id='type-id-57' id='type-id-70'>
+      <underlying-type type-id='type-id-71'/>
+      <enumerator name='UNW_CACHE_NONE' value='0'/>
+      <enumerator name='UNW_CACHE_GLOBAL' value='1'/>
+      <enumerator name='UNW_CACHE_PER_THREAD' value='2'/>
+    </enum-decl>
+    <type-decl name='short int' size-in-bits='16' id='type-id-20'/>
+    <class-decl name='Elf32_Phdr' size-in-bits='256' is-struct='yes' naming-typedef-id='type-id-72' visibility='default' id='type-id-73'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='p_type' type-id='type-id-74' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='p_offset' type-id='type-id-75' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='p_vaddr' type-id='type-id-76' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='p_paddr' type-id='type-id-76' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='p_filesz' type-id='type-id-74' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='p_memsz' type-id='type-id-74' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='p_flags' type-id='type-id-74' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='p_align' type-id='type-id-74' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__pthread_internal_slist' size-in-bits='32' is-struct='yes' visibility='default' id='type-id-77'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__next' type-id='type-id-78' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__pthread_mutex_s' size-in-bits='192' is-struct='yes' visibility='default' id='type-id-79'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__lock' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='__count' type-id='type-id-31' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='__owner' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='__kind' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='__nusers' type-id='type-id-31' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='' type-id='type-id-80' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dl_phdr_info' size-in-bits='320' is-struct='yes' visibility='default' id='type-id-81'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='dlpi_addr' type-id='type-id-76' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='dlpi_name' type-id='type-id-45' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='dlpi_phdr' type-id='type-id-82' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='dlpi_phnum' type-id='type-id-83' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='dlpi_adds' type-id='type-id-84' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='dlpi_subs' type-id='type-id-84' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='dlpi_tls_modid' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='dlpi_tls_data' type-id='type-id-36' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_reg_cache_entry' size-in-bits='96' is-struct='yes' visibility='default' id='type-id-85'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ip' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='coll_chain' type-id='type-id-86' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='48'>
+        <var-decl name='hint' type-id='type-id-86' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='valid' type-id='type-id-86' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='65'>
+        <var-decl name='signal_frame' type-id='type-id-86' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_reg_only_state' size-in-bits='768' is-struct='yes' visibility='default' id='type-id-87'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='where' type-id='type-id-61' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='val' type-id='type-id-88' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_reg_state' size-in-bits='800' is-struct='yes' visibility='default' id='type-id-89'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ret_addr_column' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='reg' type-id='type-id-90' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_rs_cache' size-in-bits='119168' is-struct='yes' visibility='default' id='type-id-91'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='lock' type-id='type-id-47' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='rr_head' type-id='type-id-86' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='208'>
+        <var-decl name='log_size' type-id='type-id-86' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='prev_log_size' type-id='type-id-86' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='hash' type-id='type-id-92' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='generation' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='buckets' type-id='type-id-93' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='links' type-id='type-id-94' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='default_hash' type-id='type-id-95' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='4480'>
+        <var-decl name='default_buckets' type-id='type-id-69' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='106880'>
+        <var-decl name='default_links' type-id='type-id-66' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_accessors' size-in-bits='352' is-struct='yes' visibility='default' id='type-id-51'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='find_proc_info' type-id='type-id-96' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='put_unwind_info' type-id='type-id-97' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='get_dyn_info_list_addr' type-id='type-id-98' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='access_mem' type-id='type-id-99' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='access_reg' type-id='type-id-100' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='access_fpreg' type-id='type-id-101' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='resume' type-id='type-id-102' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='get_proc_name' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='get_elf_filename' type-id='type-id-103' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='get_proc_ip_range' type-id='type-id-104' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='ptrauth_insn_mask' type-id='type-id-105' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_addr_space' size-in-bits='119712' is-struct='yes' visibility='default' id='type-id-106'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='acc' type-id='type-id-51' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='iterate_phdr_function' type-id='type-id-59' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='caching_policy' type-id='type-id-57' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='416'>
+        <var-decl name='cache_generation' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='dyn_generation' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='dyn_info_list_addr' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='global_cache' type-id='type-id-91' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='119680'>
+        <var-decl name='debug_frames' type-id='type-id-107' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_cursor' size-in-bits='4064' is-struct='yes' visibility='default' id='type-id-108'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='opaque' type-id='type-id-109' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_debug_frame_list' size-in-bits='256' is-struct='yes' visibility='default' id='type-id-110'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='start' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='end' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='load_offset' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='debug_frame' type-id='type-id-54' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='debug_frame_size' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='index' type-id='type-id-111' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='index_size' type-id='type-id-39' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='next' type-id='type-id-107' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_proc_info' size-in-bits='320' is-struct='yes' visibility='default' id='type-id-112'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='start_ip' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='end_ip' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='lsda' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='handler' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='gp' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='flags' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='format' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='unwind_info_size' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='unwind_info' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='extra' type-id='type-id-113' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_tdep_proc_info_t' size-in-bits='8' is-struct='yes' naming-typedef-id='type-id-113' visibility='default' id='type-id-114'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='unused' type-id='type-id-115' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__3' size-in-bits='32' is-struct='yes' is-anonymous='yes' visibility='default' id='type-id-116'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__espins' type-id='type-id-20' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='__eelision' type-id='type-id-20' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__1' size-in-bits='80' is-struct='yes' is-anonymous='yes' visibility='default' id='type-id-117'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='b' type-id='type-id-118' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__2' size-in-bits='128' is-struct='yes' is-anonymous='yes' visibility='default' id='type-id-119'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='b' type-id='type-id-120' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__anonymous_struct__' size-in-bits='32' is-struct='yes' is-anonymous='yes' visibility='default' id='type-id-121'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='b' type-id='type-id-122' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='Elf32_Addr' type-id='type-id-12' id='type-id-76'/>
+    <typedef-decl name='Elf32_Half' type-id='type-id-123' id='type-id-83'/>
+    <typedef-decl name='Elf32_Off' type-id='type-id-12' id='type-id-75'/>
+    <typedef-decl name='Elf32_Phdr' type-id='type-id-73' id='type-id-72'/>
+    <typedef-decl name='Elf32_Word' type-id='type-id-12' id='type-id-74'/>
+    <typedef-decl name='__pthread_slist_t' type-id='type-id-77' id='type-id-124'/>
+    <typedef-decl name='__uint16_t' type-id='type-id-86' id='type-id-125'/>
+    <typedef-decl name='__uint8_t' type-id='type-id-126' id='type-id-127'/>
+    <typedef-decl name='dwarf_reg_cache_entry_t' type-id='type-id-85' id='type-id-65'/>
+    <typedef-decl name='dwarf_reg_only_state_t' type-id='type-id-87' id='type-id-90'/>
+    <typedef-decl name='dwarf_reg_state_t' type-id='type-id-89' id='type-id-68'/>
+    <typedef-decl name='pthread_mutex_t' type-id='type-id-128' id='type-id-47'/>
+    <typedef-decl name='uint16_t' type-id='type-id-125' id='type-id-123'/>
+    <typedef-decl name='uint8_t' type-id='type-id-127' id='type-id-115'/>
+    <typedef-decl name='unw_addr_space_t' type-id='type-id-129' id='type-id-34'/>
+    <typedef-decl name='unw_caching_policy_t' type-id='type-id-70' id='type-id-57'/>
+    <typedef-decl name='unw_cursor_t' type-id='type-id-108' id='type-id-130'/>
+    <typedef-decl name='unw_fpreg_t' type-id='type-id-131' id='type-id-58'/>
+    <typedef-decl name='unw_iterate_phdr_callback_t' type-id='type-id-132' id='type-id-41'/>
+    <typedef-decl name='unw_iterate_phdr_func_t' type-id='type-id-133' id='type-id-59'/>
+    <typedef-decl name='unw_proc_info_t' type-id='type-id-112' id='type-id-134'/>
+    <typedef-decl name='unw_regnum_t' type-id='type-id-22' id='type-id-135'/>
+    <typedef-decl name='unw_tdep_fpreg_t' type-id='type-id-136' id='type-id-131'/>
+    <typedef-decl name='unw_tdep_proc_info_t' type-id='type-id-114' id='type-id-113'/>
+    <array-type-def dimensions='1' type-id='type-id-115' size-in-bits='80' id='type-id-118'>
+      <subrange length='10' lower-bound='0' upper-bound='9' type-id='type-id-31' id='type-id-137'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-115' size-in-bits='128' id='type-id-120'>
+      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-31' id='type-id-138'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-115' size-in-bits='32' id='type-id-122'>
+      <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-31' id='type-id-139'/>
+    </array-type-def>
+    <union-decl name='pthread_mutex_t' size-in-bits='192' naming-typedef-id='type-id-47' visibility='default' id='type-id-128'>
+      <data-member access='public'>
+        <var-decl name='__data' type-id='type-id-79' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='__size' type-id='type-id-63' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='__align' type-id='type-id-140' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <union-decl name='unw_tdep_fpreg_t' size-in-bits='128' naming-typedef-id='type-id-131' visibility='default' id='type-id-136'>
+      <data-member access='public'>
+        <var-decl name='val32' type-id='type-id-121' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='val80' type-id='type-id-117' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='val128' type-id='type-id-119' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <union-decl name='__anonymous_union__1' size-in-bits='32' is-anonymous='yes' visibility='default' id='type-id-80'>
+      <data-member access='public'>
+        <var-decl name='__elision_data' type-id='type-id-116' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='__list' type-id='type-id-124' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <type-decl name='unnamed-enum-underlying-type-32' is-anonymous='yes' size-in-bits='32' alignment-in-bits='32' id='type-id-71'/>
+    <type-decl name='unsigned char' size-in-bits='8' id='type-id-126'/>
+    <type-decl name='unsigned long long int' size-in-bits='64' id='type-id-84'/>
+    <type-decl name='unsigned short int' size-in-bits='16' id='type-id-86'/>
+    <array-type-def dimensions='1' type-id='type-id-86' size-in-bits='4096' id='type-id-95'>
+      <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-31' id='type-id-141'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-6' size-in-bits='4064' id='type-id-109'>
+      <subrange length='127' lower-bound='0' upper-bound='126' type-id='type-id-31' id='type-id-142'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-6' size-in-bits='608' id='type-id-88'>
+      <subrange length='19' lower-bound='0' upper-bound='18' type-id='type-id-31' id='type-id-62'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-77' size-in-bits='32' id='type-id-78'/>
+    <qualified-type-def type-id='type-id-72' const='yes' id='type-id-143'/>
+    <pointer-type-def type-id='type-id-143' size-in-bits='32' id='type-id-82'/>
+    <qualified-type-def type-id='type-id-60' const='yes' id='type-id-144'/>
+    <pointer-type-def type-id='type-id-144' size-in-bits='32' id='type-id-45'/>
+    <pointer-type-def type-id='type-id-81' size-in-bits='32' id='type-id-38'/>
+    <pointer-type-def type-id='type-id-65' size-in-bits='32' id='type-id-94'/>
+    <pointer-type-def type-id='type-id-68' size-in-bits='32' id='type-id-93'/>
+    <pointer-type-def type-id='type-id-37' size-in-bits='32' id='type-id-132'/>
+    <pointer-type-def type-id='type-id-145' size-in-bits='32' id='type-id-101'/>
+    <pointer-type-def type-id='type-id-146' size-in-bits='32' id='type-id-100'/>
+    <pointer-type-def type-id='type-id-147' size-in-bits='32' id='type-id-103'/>
+    <pointer-type-def type-id='type-id-148' size-in-bits='32' id='type-id-96'/>
+    <pointer-type-def type-id='type-id-149' size-in-bits='32' id='type-id-99'/>
+    <pointer-type-def type-id='type-id-150' size-in-bits='32' id='type-id-104'/>
+    <pointer-type-def type-id='type-id-151' size-in-bits='32' id='type-id-102'/>
+    <pointer-type-def type-id='type-id-152' size-in-bits='32' id='type-id-98'/>
+    <pointer-type-def type-id='type-id-40' size-in-bits='32' id='type-id-133'/>
+    <pointer-type-def type-id='type-id-2' size-in-bits='32' id='type-id-111'/>
+    <pointer-type-def type-id='type-id-153' size-in-bits='32' id='type-id-105'/>
+    <pointer-type-def type-id='type-id-86' size-in-bits='32' id='type-id-92'/>
+    <pointer-type-def type-id='type-id-106' size-in-bits='32' id='type-id-129'/>
+    <pointer-type-def type-id='type-id-130' size-in-bits='32' id='type-id-55'/>
+    <pointer-type-def type-id='type-id-110' size-in-bits='32' id='type-id-107'/>
+    <pointer-type-def type-id='type-id-58' size-in-bits='32' id='type-id-56'/>
+    <pointer-type-def type-id='type-id-134' size-in-bits='32' id='type-id-35'/>
+    <pointer-type-def type-id='type-id-6' size-in-bits='32' id='type-id-19'/>
+    <pointer-type-def type-id='type-id-154' size-in-bits='32' id='type-id-97'/>
+    <function-decl name='_Ux86_flush_cache' mangled-name='_Ux86_flush_cache' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_flush_cache'>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-6' name='lo'/>
+      <parameter type-id='type-id-6' name='hi'/>
+      <return type-id='type-id-50'/>
+    </function-decl>
+    <function-type size-in-bits='32' id='type-id-145'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-135'/>
+      <parameter type-id='type-id-56'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-146'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-135'/>
+      <parameter type-id='type-id-19'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-147'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-6'/>
+      <parameter type-id='type-id-54'/>
+      <parameter type-id='type-id-39'/>
+      <parameter type-id='type-id-19'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-148'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-6'/>
+      <parameter type-id='type-id-35'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-149'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-6'/>
+      <parameter type-id='type-id-19'/>
+      <parameter type-id='type-id-22'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-150'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-6'/>
+      <parameter type-id='type-id-19'/>
+      <parameter type-id='type-id-19'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-151'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-55'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-152'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-19'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-153'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-6'/>
+    </function-type>
+    <function-type size-in-bits='32' id='type-id-154'>
+      <parameter type-id='type-id-34'/>
+      <parameter type-id='type-id-35'/>
+      <parameter type-id='type-id-36'/>
+      <return type-id='type-id-50'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/init.c' language='LANG_C99'>
+    <type-decl name='long int' size-in-bits='32' id='type-id-140'/>
+    <class-decl name='__sigset_t' size-in-bits='1024' is-struct='yes' naming-typedef-id='type-id-155' visibility='default' id='type-id-156'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__val' type-id='type-id-157' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__sigset_t' type-id='type-id-156' id='type-id-155'/>
+    <typedef-decl name='intrmask_t' type-id='type-id-158' id='type-id-159'/>
+    <typedef-decl name='sigset_t' type-id='type-id-155' id='type-id-158'/>
+    <array-type-def dimensions='1' type-id='type-id-160' size-in-bits='1024' id='type-id-157'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-31' id='type-id-161'/>
+    </array-type-def>
+    <var-decl name='_UIx86_full_mask' type-id='type-id-159' visibility='default'/>
+    <var-decl name='unw_page_size' type-id='type-id-140' visibility='default'/>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/mi/strerror.c' language='LANG_C99'>
+    <function-decl name='_Ux86_strerror' mangled-name='_Ux86_strerror' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_strerror'>
+      <parameter type-id='type-id-22' name='err_code'/>
+      <return type-id='type-id-45'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/os-linux.c' language='LANG_C99'>
+    <type-decl name='char' size-in-bits='8' id='type-id-60'/>
+    <type-decl name='int' size-in-bits='32' id='type-id-22'/>
+    <class-decl name='elf_image' size-in-bits='64' is-struct='yes' visibility='default' id='type-id-43'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='image' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='size' type-id='type-id-39' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='__pid_t' type-id='type-id-22' id='type-id-162'/>
+    <typedef-decl name='__uint32_t' type-id='type-id-31' id='type-id-163'/>
+    <typedef-decl name='pid_t' type-id='type-id-162' id='type-id-164'/>
+    <typedef-decl name='size_t' type-id='type-id-31' id='type-id-39'/>
+    <typedef-decl name='uint32_t' type-id='type-id-163' id='type-id-12'/>
+    <typedef-decl name='unw_word_t' type-id='type-id-12' id='type-id-6'/>
+    <type-decl name='unsigned int' size-in-bits='32' id='type-id-31'/>
+    <type-decl name='unsigned long int' size-in-bits='32' id='type-id-160'/>
+    <pointer-type-def type-id='type-id-60' size-in-bits='32' id='type-id-54'/>
+    <pointer-type-def type-id='type-id-43' size-in-bits='32' id='type-id-165'/>
+    <pointer-type-def type-id='type-id-160' size-in-bits='32' id='type-id-166'/>
+    <function-decl name='_Ux86_get_elf_image' mangled-name='_Ux86_get_elf_image' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_elf_image'>
+      <parameter type-id='type-id-165' name='ei'/>
+      <parameter type-id='type-id-164' name='pid'/>
+      <parameter type-id='type-id-6' name='ip'/>
+      <parameter type-id='type-id-166' name='segbase'/>
+      <parameter type-id='type-id-166' name='mapoff'/>
+      <parameter type-id='type-id-54' name='path'/>
+      <parameter type-id='type-id-39' name='pathlen'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+    <function-decl name='_Ux86_get_exe_image_path' mangled-name='_Ux86_get_exe_image_path' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_exe_image_path'>
+      <parameter type-id='type-id-54' name='path'/>
+      <return type-id='type-id-50'/>
+    </function-decl>
+    <type-decl name='void' id='type-id-50'/>
+    <pointer-type-def type-id='type-id-50' id='type-id-36'/>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gapply_reg_state.c' language='LANG_C99'>
+    <function-decl name='_Ux86_apply_reg_state' mangled-name='_Ux86_apply_reg_state' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_apply_reg_state'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-36' name='reg_states_data'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gcreate_addr_space.c' language='LANG_C99'>
+    <function-decl name='_Ux86_create_addr_space' mangled-name='_Ux86_create_addr_space' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_create_addr_space'>
+      <parameter type-id='type-id-53' name='a'/>
+      <parameter type-id='type-id-22' name='byte_order'/>
+      <return type-id='type-id-34'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gget_proc_info.c' language='LANG_C99'>
+    <function-decl name='_Ux86_get_proc_info' mangled-name='_Ux86_get_proc_info' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_proc_info'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-35' name='pi'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gget_save_loc.c' language='LANG_C99'>
+    <enum-decl name='unw_save_loc_type' id='type-id-167'>
+      <underlying-type type-id='type-id-71'/>
+      <enumerator name='UNW_SLT_NONE' value='0'/>
+      <enumerator name='UNW_SLT_MEMORY' value='1'/>
+      <enumerator name='UNW_SLT_REG' value='2'/>
+    </enum-decl>
+    <class-decl name='unw_save_loc' size-in-bits='96' is-struct='yes' visibility='default' id='type-id-168'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='type' type-id='type-id-169' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='u' type-id='type-id-170' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='extra' type-id='type-id-171' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_tdep_save_loc' size-in-bits='8' is-struct='yes' visibility='default' id='type-id-172'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='unused' type-id='type-id-115' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='unw_save_loc_t' type-id='type-id-168' id='type-id-173'/>
+    <typedef-decl name='unw_save_loc_type_t' type-id='type-id-167' id='type-id-169'/>
+    <typedef-decl name='unw_tdep_save_loc_t' type-id='type-id-172' id='type-id-171'/>
+    <union-decl name='__anonymous_union__' size-in-bits='32' is-anonymous='yes' visibility='default' id='type-id-170'>
+      <data-member access='public'>
+        <var-decl name='addr' type-id='type-id-6' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='regnum' type-id='type-id-135' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <pointer-type-def type-id='type-id-173' size-in-bits='32' id='type-id-174'/>
+    <function-decl name='_Ux86_get_save_loc' mangled-name='_Ux86_get_save_loc' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_get_save_loc'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-22' name='reg'/>
+      <parameter type-id='type-id-174' name='sloc'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gglobal.c' language='LANG_C99'>
+    <type-decl name='atomic_bool' size-in-bits='8' id='type-id-175'/>
+    <array-type-def dimensions='1' type-id='type-id-176' size-in-bits='152' id='type-id-177'>
+      <subrange length='19' lower-bound='0' upper-bound='18' type-id='type-id-31' id='type-id-62'/>
+    </array-type-def>
+    <qualified-type-def type-id='type-id-115' const='yes' id='type-id-176'/>
+    <var-decl name='_Ux86_dwarf_to_unw_regnum_map' type-id='type-id-177' visibility='default'/>
+    <var-decl name='_Ux86_init_done' type-id='type-id-175' visibility='default'/>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Ginit.c' language='LANG_C99'>
+    <var-decl name='_Ux86_local_addr_space' type-id='type-id-34' mangled-name='_Ux86_local_addr_space' visibility='default' elf-symbol-id='_Ux86_local_addr_space'/>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Ginit_local.c' language='LANG_C99'>
+    <array-type-def dimensions='1' type-id='type-id-178' size-in-bits='640' id='type-id-179'>
+      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-31' id='type-id-180'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-181' size-in-bits='608' id='type-id-182'>
+      <subrange length='19' lower-bound='0' upper-bound='18' type-id='type-id-31' id='type-id-62'/>
+    </array-type-def>
+    <class-decl name='_libc_fpreg' size-in-bits='80' is-struct='yes' visibility='default' id='type-id-178'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='significand' type-id='type-id-183' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='exponent' type-id='type-id-86' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='_libc_fpstate' size-in-bits='896' is-struct='yes' visibility='default' id='type-id-184'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='cw' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='sw' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='tag' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='ipoff' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='cssel' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='dataoff' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='datasel' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='_st' type-id='type-id-179' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='864'>
+        <var-decl name='status' type-id='type-id-160' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='mcontext_t' size-in-bits='704' is-struct='yes' naming-typedef-id='type-id-185' visibility='default' id='type-id-186'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='gregs' type-id='type-id-187' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='608'>
+        <var-decl name='fpregs' type-id='type-id-188' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='oldmask' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='672'>
+        <var-decl name='cr2' type-id='type-id-160' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='stack_t' size-in-bits='96' is-struct='yes' naming-typedef-id='type-id-189' visibility='default' id='type-id-190'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ss_sp' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='ss_flags' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='ss_size' type-id='type-id-39' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='ucontext_t' size-in-bits='2912' is-struct='yes' visibility='default' id='type-id-191'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='uc_flags' type-id='type-id-160' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='uc_link' type-id='type-id-192' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='uc_stack' type-id='type-id-189' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='uc_mcontext' type-id='type-id-185' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='864'>
+        <var-decl name='uc_sigmask' type-id='type-id-158' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1888'>
+        <var-decl name='__fpregs_mem' type-id='type-id-184' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2784'>
+        <var-decl name='__ssp' type-id='type-id-193' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='fpregset_t' type-id='type-id-194' id='type-id-188'/>
+    <typedef-decl name='greg_t' type-id='type-id-22' id='type-id-181'/>
+    <typedef-decl name='gregset_t' type-id='type-id-182' id='type-id-187'/>
+    <typedef-decl name='mcontext_t' type-id='type-id-186' id='type-id-185'/>
+    <typedef-decl name='stack_t' type-id='type-id-190' id='type-id-189'/>
+    <typedef-decl name='ucontext_t' type-id='type-id-191' id='type-id-195'/>
+    <array-type-def dimensions='1' type-id='type-id-160' size-in-bits='128' id='type-id-193'>
+      <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-31' id='type-id-139'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-86' size-in-bits='64' id='type-id-183'>
+      <subrange length='4' lower-bound='0' upper-bound='3' type-id='type-id-31' id='type-id-139'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-184' size-in-bits='32' id='type-id-194'/>
+    <pointer-type-def type-id='type-id-191' size-in-bits='32' id='type-id-192'/>
+    <pointer-type-def type-id='type-id-195' size-in-bits='32' id='type-id-196'/>
+    <function-decl name='_Ux86_init_local' mangled-name='_Ux86_init_local' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_init_local'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-196' name='uc'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+    <function-decl name='_Ux86_init_local2' mangled-name='_Ux86_init_local2' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_init_local2'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-196' name='uc'/>
+      <parameter type-id='type-id-22' name='flag'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Ginit_remote.c' language='LANG_C99'>
+    <function-decl name='_Ux86_init_remote' mangled-name='_Ux86_init_remote' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_init_remote'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-34' name='as'/>
+      <parameter type-id='type-id-36' name='as_arg'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gos-linux.c' language='LANG_C99'>
+    <function-decl name='_Ux86_is_signal_frame' mangled-name='_Ux86_is_signal_frame' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_is_signal_frame'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Greg_states_iterate.c' language='LANG_C99'>
+    <typedef-decl name='unw_reg_states_callback' type-id='type-id-197' id='type-id-198'/>
+    <pointer-type-def type-id='type-id-199' size-in-bits='32' id='type-id-197'/>
+    <function-decl name='_Ux86_reg_states_iterate' mangled-name='_Ux86_reg_states_iterate' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_reg_states_iterate'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <parameter type-id='type-id-198' name='cb'/>
+      <parameter type-id='type-id-36' name='token'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+    <function-type size-in-bits='32' id='type-id-199'>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-39'/>
+      <parameter type-id='type-id-6'/>
+      <parameter type-id='type-id-6'/>
+      <return type-id='type-id-22'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gresume.c' language='LANG_C99'>
+    <function-decl name='_Ux86_resume' mangled-name='_Ux86_resume' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_resume'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/Gstep.c' language='LANG_C99'>
+    <function-decl name='_Ux86_step' mangled-name='_Ux86_step' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_step'>
+      <parameter type-id='type-id-55' name='cursor'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/is_fpreg.c' language='LANG_C99'>
+    <function-decl name='_Ux86_is_fpreg' mangled-name='_Ux86_is_fpreg' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_is_fpreg'>
+      <parameter type-id='type-id-22' name='regnum'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='32' path='../../src/x86/regname.c' language='LANG_C99'>
+    <function-decl name='_Ux86_regname' mangled-name='_Ux86_regname' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_Ux86_regname'>
+      <parameter type-id='type-id-135' name='reg'/>
+      <return type-id='type-id-45'/>
+    </function-decl>
+  </abi-instr>
+</abi-corpus>

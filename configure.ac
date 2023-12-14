@@ -541,6 +541,20 @@ if test x$have__builtin_unreachable = xyes; then
 fi
 AC_MSG_RESULT([$have__builtin_unreachable])
 
+AC_CHECK_TOOL([ABICHECK], [abidw])
+AS_IF([test "$ABICHECK" = ":"],, [
+    abicheck_version=$($ABICHECK --version | sed -n 's/[[^ ]]* \([[0-9]]\).*/\1/p')
+    AC_MSG_WARN([$ABICHECK version $abicheck_version])
+    AS_IF([test $abicheck_version -ge 2],
+          [ABIDIFF=abidiff],
+          [AC_MSG_WARN([$ABICHECK is version $abicheck_version, need at least 2.0])
+           ABICHECK=":"
+           ABIDIFF=":"]
+    )
+])
+AC_SUBST(ABICHECK)
+AC_SUBST(ABIDIFF)
+
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 

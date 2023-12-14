@@ -121,3 +121,6 @@ MAINTAINERCLEANFILES = \
 	include/config.h.in \
 	include/config.h.in~
 
+abi-check:
+	cd src && $(MAKE) $(AM_MAKEFLAGS) $@
+

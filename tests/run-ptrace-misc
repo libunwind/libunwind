@@ -20,5 +20,5 @@
 # OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 # SOFTWARE.
 #
-dir="$(dirname $0)"
-"${dir}/test-ptrace" -c -t "${dir}/test-ptrace-misc"
+bindir=$(pwd)
+"${bindir}/test-ptrace" -c -t "${bindir}/test-ptrace-misc"
