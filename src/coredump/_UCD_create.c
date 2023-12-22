@@ -38,7 +38,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #endif
 #include <sys/procfs.h> /* struct elf_prstatus */
 
-#include "_UCD_lib.h"
 #include "_UCD_internal.h"
 
 

@@ -19,42 +19,17 @@
  * libraries can be determined by ldd (at least on linux).
  */
 
-#include "compiler.h"
-
-#undef _GNU_SOURCE
-#define _GNU_SOURCE 1
-#undef __USE_GNU
-#define __USE_GNU 1
-
-#include <assert.h>
-#include <ctype.h>
-#include <dirent.h>
 #include <errno.h>
-#include <fcntl.h>
-#include <inttypes.h>
-#include <setjmp.h>
+#include <limits.h>
 #include <signal.h>
+#include <stdarg.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdarg.h>
-#include <stddef.h>
 #include <string.h>
 #include <syslog.h>
-#include <sys/poll.h>
-#include <sys/mman.h>
-#include <sys/socket.h>
-#include <sys/stat.h>
-#include <sys/time.h>
-#include <sys/types.h>
-#include <sys/wait.h>
-#include <sys/param.h>
-#include <termios.h>
-#include <time.h>
 #include <unistd.h>
-#include <stdbool.h>
-#include <limits.h>
-#include <pwd.h>
-#include <grp.h>
+
+#include "compiler.h"
 
 /* For SIGSEGV handler code */
 #if HAVE_EXECINFO_H

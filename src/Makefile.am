@@ -131,7 +131,6 @@ endif
 
 ### libunwind-coredump:
 noinst_HEADERS += coredump/_UCD_internal.h     \
-                  coredump/_UCD_lib.h          \
                   coredump/ucd_file_table.h
 libunwind_coredump_la_SOURCES =                \
 	coredump/_UCD_access_mem.c             \

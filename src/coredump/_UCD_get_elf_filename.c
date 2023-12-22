@@ -19,7 +19,6 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 */
-#include "_UCD_lib.h"
 #include "_UCD_internal.h"
 
 #if defined(HAVE_ELF_H)
