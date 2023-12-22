@@ -27,7 +27,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <sys/elf.h>
 #endif
 
-#include "_UCD_lib.h"
 #include "_UCD_internal.h"
 #include "ucd_file_table.h"
 
