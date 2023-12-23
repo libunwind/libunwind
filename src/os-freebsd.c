@@ -164,7 +164,7 @@ tdep_get_exe_image_path (char *path)
 
   error = sysctl(mib, 4, path, &len, NULL, 0);
   if (error == -1)
-	  path[0] = 0;
+    path[0] = 0;
 }
 
 #endif
