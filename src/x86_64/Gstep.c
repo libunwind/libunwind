@@ -111,7 +111,8 @@ unw_step (unw_cursor_t *cursor)
               code.  */
 
       unw_word_t invalid_prev_rip = 0;
-      unw_word_t prev_ip = c->dwarf.ip, prev_cfa = c->dwarf.cfa;
+      unw_word_t prev_ip = c->dwarf.ip;
+      unw_word_t prev_cfa = c->dwarf.cfa;
       struct dwarf_loc rbp_loc = DWARF_NULL_LOC, rsp_loc = DWARF_NULL_LOC, rip_loc = DWARF_NULL_LOC;
 
       /* We could get here because of missing/bad unwind information.
@@ -149,8 +150,9 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
           c->dwarf.cfa += 8;
         }
-      else if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+      else if (prev_ip == 0 || (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP])))
         {
+          Debug (2, "End of call chain detected\n");
           for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
             c->dwarf.loc[i] = DWARF_NULL_LOC;
         }
@@ -167,7 +169,7 @@ unw_step (unw_cursor_t *cursor)
             }
 
           unw_word_t not_used;
-          invalid_prev_rip = dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, prev_ip), &not_used);
+          invalid_prev_rip = dwarf_get (&c->dwarf,  DWARF_MEM_LOC (c->dwarf, prev_ip), &not_used);
 
           if (!rbp && invalid_prev_rip == 0)
             {
@@ -187,43 +189,55 @@ unw_step (unw_cursor_t *cursor)
               int rip_fixup_success = 0;
               if (invalid_prev_rip != 0)
                 {
-                    Debug (2, "Previous RIP 0x%lx was invalid, attempting fixup\n", prev_ip);
+                    Debug (2, "Previous RIP %#010lx was invalid, attempting fixup\n", prev_ip);
                     unw_word_t rsp;
                     ret = dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &rsp);
+                    Debug (2, "get rsp %#010lx returned %d\n", rsp, ret);
 
                     /*Test to see if what we think is the previous RIP is valid*/
                     unw_word_t new_ip = 0;
                     if (dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip) == 0)
                       {
-                        Debug (2, "RSP 0x%lx looks valid\n", rsp);
-                        if ((ret = dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used)) == 0)
+                        Debug (2, "RSP %#010lx (%#010lx) looks valid\n", rsp, new_ip);
+                        if (new_ip == 0x00000000)
                           {
-                            Debug (2, "new_ip 0x%lx looks valid\n", new_ip);
+                            Debug (2, "End of call chain detected\n");
                             rip_fixup_success = 1;
-                            c->frame_info.cfa_reg_offset = 8;
-                            c->frame_info.cfa_reg_rsp = -1;
-                            c->frame_info.rbp_cfa_offset = -1;
-                            c->frame_info.rsp_cfa_offset = -1;
-                            c->frame_info.frame_type = UNW_X86_64_FRAME_OTHER;
-                            /*
-                             * The call should have pushed RIP to the stack
-                             * and since there was no preamble RSP hasn't been
-                             * touched so RIP should be at RSP.
-                             */
-                            c->dwarf.cfa += 8;
-                            /* Optimised x64 binaries don't use RBP it seems? */
-                            rbp_loc = c->dwarf.loc[RBP];
-                            rsp_loc = DWARF_VAL_LOC (c, rsp + 8);
-                            rip_loc = DWARF_LOC (rsp, 0);
+                            rbp_loc = DWARF_NULL_LOC;
+                            rsp_loc = DWARF_NULL_LOC;
+                            rip_loc = DWARF_NULL_LOC;
                           }
                         else
                           {
-                            Debug (2, "new_ip 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used) != 0\n", new_ip);
+                            if ((ret = dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used)) == 0)
+                              {
+                                Debug (2, "new_ip %#010lx looks valid\n", new_ip);
+                                rip_fixup_success = 1;
+                                c->frame_info.cfa_reg_offset = 8;
+                                c->frame_info.cfa_reg_rsp = -1;
+                                c->frame_info.rbp_cfa_offset = -1;
+                                c->frame_info.rsp_cfa_offset = -1;
+                                c->frame_info.frame_type = UNW_X86_64_FRAME_OTHER;
+                                /*
+                                 * The call should have pushed RIP to the stack
+                                 * and since there was no preamble RSP hasn't been
+                                 * touched so RIP should be at RSP.
+                                 */
+                                c->dwarf.cfa += 8;
+                                /* Optimised x64 binaries don't use RBP it seems? */
+                                rbp_loc = c->dwarf.loc[RBP];
+                                rsp_loc = DWARF_VAL_LOC (c, rsp + 8);
+                                rip_loc = DWARF_LOC (rsp, 0);
+                              }
+                            else
+                              {
+                                Debug (2, "new_ip %#010lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip_addr), &new_ip) != 0\n", new_ip);
+                              }
                           }
                       }
                     else
                       {
-                        Debug (2, "rsp 0x%lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip) != 0\n", rsp);
+                        Debug (2, "rsp %#010lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip_addr) != 0\n", rsp);
                       }
                   }
               /*
@@ -260,7 +274,6 @@ unw_step (unw_cursor_t *cursor)
                   c->frame_info.cfa_reg_offset = 16;
                   c->frame_info.rbp_cfa_offset = -16;
                   c->dwarf.cfa += 16;
-
                 }
             }
           /* Mark all registers unsaved */
