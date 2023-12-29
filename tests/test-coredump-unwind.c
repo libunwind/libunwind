@@ -26,29 +26,17 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <syslog.h>
+#include <ucontext.h>
 #include <unistd.h>
 
 #include "compiler.h"
-
-/* For SIGSEGV handler code */
-#if HAVE_EXECINFO_H
-# include <execinfo.h>
-#else
-  extern int backtrace (void **, int);
-#endif
-#include <ucontext.h>
-
 #include <libunwind-coredump.h>
-
 
 /* Utility logging functions */
 
 enum {
     LOGMODE_NONE = 0,
     LOGMODE_STDIO = (1 << 0),
-    LOGMODE_SYSLOG = (1 << 1),
-    LOGMODE_BOTH = LOGMODE_SYSLOG + LOGMODE_STDIO,
 };
 const char *msg_prefix = "";
 const char *msg_eol = "\n";
@@ -119,10 +107,6 @@ static void verror_msg_helper(const char *s,
       ssize_t written UNUSED = write(STDERR_FILENO, msg, used + msgeol_len);
     }
   msg[used] = '\0'; /* remove msg_eol (usually "\n") */
-  if (flags & LOGMODE_SYSLOG)
-    {
-      syslog(LOG_ERR, "%s", msg + prefix_len);
-    }
   free(msg);
 }
 
@@ -137,14 +121,6 @@ void log_msg(const char *s, ...)
 #undef log
 #define log(...) log_msg(__VA_ARGS__)
 
-void error_msg(const char *s, ...)
-{
-  va_list p;
-  va_start(p, s);
-  verror_msg_helper(s, p, NULL, logmode);
-  va_end(p);
-}
-
 void error_msg_and_die(const char *s, ...)
 {
   va_list p;
@@ -154,91 +130,8 @@ void error_msg_and_die(const char *s, ...)
   xfunc_die();
 }
 
-void perror_msg(const char *s, ...)
-{
-  va_list p;
-  va_start(p, s);
-  /* Guard against "<error message>: Success" */
-  verror_msg_helper(s, p, errno ? strerror(errno) : NULL, logmode);
-  va_end(p);
-}
-
-void perror_msg_and_die(const char *s, ...)
-{
-  va_list p;
-  va_start(p, s);
-  /* Guard against "<error message>: Success" */
-  verror_msg_helper(s, p, errno ? strerror(errno) : NULL, logmode);
-  va_end(p);
-  xfunc_die();
-}
-
-void die_out_of_memory(void)
-{
-  error_msg_and_die("Out of memory, exiting");
-}
-
 /* End of utility logging functions */
 
-
-
-static
-void handle_sigsegv(int sig, siginfo_t *info, void *ucontext)
-{
-  long ip = 0;
-  ucontext_t *uc UNUSED;
-
-  uc = ucontext;
-#if defined(__linux__)
-#ifdef UNW_TARGET_X86
-	ip = uc->uc_mcontext.gregs[REG_EIP];
-#elif defined(UNW_TARGET_X86_64)
-	ip = uc->uc_mcontext.gregs[REG_RIP];
-#elif defined(UNW_TARGET_ARM)
-	ip = uc->uc_mcontext.arm_pc;
-#endif
-#elif defined(__FreeBSD__)
-#ifdef __i386__
-	ip = uc->uc_mcontext.mc_eip;
-#elif defined(__amd64__)
-	ip = uc->uc_mcontext.mc_rip;
-#else
-#error Port me
-#endif
-#else
-#error Port me
-#endif
-  dprintf(2, "signal:%d address:0x%lx ip:0x%lx\n",
-			sig,
-			/* this is void*, but using %p would print "(null)"
-			 * even for ptrs which are not exactly 0, but, say, 0x123:
-			 */
-			(long)info->si_addr,
-			ip);
-
-  {
-    /* glibc extension */
-    void *array[50];
-    int size UNUSED = backtrace(array, 50);
-#if defined __linux__ && HAVE_EXECINFO_H
-    backtrace_symbols_fd(array, size, 2);
-#endif
-  }
-
-  _exit(1);
-}
-
-static void install_sigsegv_handler(void)
-{
-  struct sigaction sa;
-  memset(&sa, 0, sizeof(sa));
-  sa.sa_sigaction = handle_sigsegv;
-  sa.sa_flags = SA_SIGINFO;
-  sigaction(SIGSEGV, &sa, NULL);
-  sigaction(SIGILL, &sa, NULL);
-  sigaction(SIGFPE, &sa, NULL);
-  sigaction(SIGBUS, &sa, NULL);
-}
 
 int
 main(int argc UNUSED, char **argv)
@@ -254,8 +147,6 @@ main(int argc UNUSED, char **argv)
   int test_cur = 0;
   long test_start_ips[TEST_FRAMES];
   char test_names[TEST_FRAMES][TEST_NAME_LEN];
-
-  install_sigsegv_handler();
 
   const char *progname = strrchr(argv[0], '/');
   if (progname)
