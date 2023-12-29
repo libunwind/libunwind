@@ -64,6 +64,7 @@ AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
 LIBS="$save_LIBS"
 LDFLAGS="$save_LDFLAGS"
 AC_SEARCH_LIBS([__uc_get_grs], [uca])
+AC_SEARCH_LIBS([getcontext], [ucontext])
 
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \

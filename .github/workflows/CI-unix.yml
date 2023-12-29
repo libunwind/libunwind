@@ -19,9 +19,9 @@ on:
       - master
 
 jobs:
-  build-native:
+  build-gnu-native:
     runs-on: ubuntu-22.04
-    name: build-${{ matrix.toolchain.compiler }}-${{ matrix.target.arch }}${{ matrix.optimization.CFLAGS }}
+    name: ${{ matrix.target.arch }}-linux-gnu (native) ${{ matrix.toolchain.compiler }} ${{ matrix.optimization.CFLAGS }}
 
     strategy:
       fail-fast: false
@@ -73,9 +73,9 @@ jobs:
         run: |
           cat tests/test-suite.log 2>/dev/null
 
-  build-cross:
+  build-gnu-cross:
     runs-on: ubuntu-22.04
-    name: build-cross-${{ matrix.config.target }}
+    name: ${{ matrix.config.target }}-linux-gnu (cross)
 
     strategy:
       fail-fast: false
@@ -145,3 +145,61 @@ jobs:
         if: ${{ failure() }}
         run: |
           cat tests/test-suite.log 2>/dev/null
+
+  build-musl-native:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.arch }}-linux-musl (native)
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, ppc64le, riscv64, x86_64]
+
+    steps:
+      - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
+
+      - name: Set up Alpine Linux
+        uses: jirutka/setup-alpine@458376dba160dbd7efc44d56247bd6c22efacdd3 # v1.1.4
+        with:
+          branch: edge
+          arch: ${{ matrix.arch }}
+          packages: >
+            autoconf 
+            automake 
+            build-base 
+            libtool 
+            libucontext-dev
+            linux-headers
+            xz-dev
+          shell-name: alpine.sh
+
+      - name: Configure
+        run: |
+          set -x
+          gcc --version
+          autoreconf -i
+          ./configure --enable-debug
+        env:
+          CFLAGS: -g -O0 -Wall -Wextra
+          CXXFLAGS: -g -O0
+          LDFLAGS: -g -O0
+        shell: alpine.sh {0}
+
+      - name: Build
+        run: |
+          make -j
+        shell: alpine.sh {0}
+
+      - name: Test
+        if: ${{ success() }}
+        run: |
+          make check
+        env:
+          UNW_DEBUG_LEVEL: 5
+        shell: alpine.sh {0}
+
+      - name: Show Logs
+        if: ${{ failure() }}
+        run: |
+          cat tests/test-suite.log 2>/dev/null
+        shell: alpine.sh {0}
