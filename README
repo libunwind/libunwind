@@ -1,5 +1,27 @@
 # libunwind
 
+**libunwind** is a portable and efficient C API for determining the current call
+chain of ELF program threads of execution and for resuming execution at any point
+in that call chain. The API supports both local (same process) and remote (other
+process) operation.
+
+The API ise useful in a number of applications, including but not limited to the
+following.
+- **program introspection**
+    Either for error messages showing a back trace of the call chain leading to
+    a problem or for performance monitoring and analysis.
+- **debugging**
+    Whether the debugging and analysis of the call chain of a remote program or
+    the post-mortem analysis of a coredump.
+- **language runtime exception handling**
+    **libunwind** optionally provides an alternative implementation of the
+    Itanium exception handling ABI used by many popular toolchains.
+- **alternative `setjmp()`/`longjmp()`**
+    **libunwind** optionally provides an alternative implementation of the
+    `setjmp()`/`longjmp()` functionality of the C standard library.
+
+## Supported Systems
+
 [![CI - Unix](https://github.com/libunwind/libunwind/actions/workflows/CI-unix.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-unix.yml)
 [![CI - Windows](https://github.com/libunwind/libunwind/actions/workflows/CI-win.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-win.yml)
 
@@ -54,7 +76,7 @@ such dependencies
 |    s390x     |     p      |      p     |
 |    sh        |     r      |            |
 |    x86       |     p      |      r     |
-|    x86_64    |     p      |      p     |
+|    x86\_64   |     p      |      p     |
 
 ## General Build Instructions
 
