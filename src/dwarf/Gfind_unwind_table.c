@@ -167,6 +167,10 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
                                              &fde_count, NULL)) < 0)
         return -UNW_ENOINFO;
 
+      /* A value of DW_EH_PE_omit indicates the binary search table is not present. */
+      if (hdr->table_enc == DW_EH_PE_omit)
+        return -UNW_ENOINFO;
+
       if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
         {
     #if 1
