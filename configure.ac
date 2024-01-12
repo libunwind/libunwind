@@ -2,7 +2,7 @@ dnl Process this file with autoconf to produce a configure script.
 
 define(pkg_major, 1)
 define(pkg_minor, 8)
-define(pkg_extra, 0-rc1)
+define(pkg_extra, 0)
 define(pkg_maintainer, https://github.com/libunwind/libunwind)
 define(mkvers, $1.$2.$3)
 
