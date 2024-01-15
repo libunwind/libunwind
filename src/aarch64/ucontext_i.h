@@ -23,7 +23,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef libunwind_src_aarch64_ucontext_i_h
 #define libunwind_src_aarch64_ucontext_i_h
 
-#if defined __FreeBSD__
+#if defined __FreeBSD__ || defined __APPLE__
 
 #define	UC_MCONTEXT_OFF			0x10
 #define	SC_GPR_OFF			0x00
