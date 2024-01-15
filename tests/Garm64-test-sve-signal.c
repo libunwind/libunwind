@@ -9,10 +9,15 @@
 #include <libunwind.h>
 #include <signal.h>
 #include <stdio.h>
+#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <time.h>
 #include <unistd.h>
+
+#if defined(__linux__)
+#include <sys/auxv.h>
+#endif
 
 int64_t z[100];
 
@@ -96,8 +101,22 @@ int64_t square(svint64_t z0)
   return res;
 }
 
+bool has_sve(void) {
+#if defined(__linux__)
+  return (getauxval(AT_HWCAP) & HWCAP_SVE) ? true : false;
+#else
+  printf("Cannot determine if SVE is present, assuming it is not\n");
+  return false;
+#endif
+}
+
 int main()
 {
+  if (!has_sve()) {
+    printf("SVE not available, skipping\n");
+    return 77;
+  }
+
   signal(SIGUSR1, signal_handler);
   for (unsigned int i = 0; i < sizeof(z) / sizeof(z[0]); ++i)
     z[i] = rand();
