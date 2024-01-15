@@ -42,7 +42,7 @@ static const int WSIZE = sizeof (unw_word_t);
 static int
 is_plt_entry (struct dwarf_cursor *c)
 {
-  unw_word_t w0, w1;
+  unw_word_t w0 = 0, w1 = 0;
   unw_accessors_t *a;
 
   if (c->as->big_endian)
