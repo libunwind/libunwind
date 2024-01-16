@@ -1247,9 +1247,38 @@ AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
 AM_CCASFLAGS = $(AM_CPPFLAGS)
 noinst_HEADERS += unwind/unwind-internal.h
 
-EXTRA_DIST = $(libunwind_la_EXTRAS_ia64)
+EXTRA_DIST = $(libunwind_la_EXTRAS_ia64) abi
 
 MAINTAINERCLEANFILES = Makefile.in
+
+#
+# ABI checks
+#
+# Running the ABI checks require configuring with CFLAGS="-g -Og" and running
+# the targets explicitly with `make -C src abi-check`. The result is output in a
+# file with the `.abidiff` extension.
+#
+# This also requires libabigail tools of at least version 2.0 to be installed.
+#
+.la.abi:
+	$(AM_V_GEN) soname=$$(sed -n -e "s#dlname='\(.*\)\.[0-9]*'#\1#p" $<); \
+	if test -n "$$soname"; then \
+		abidw .libs/$${soname} \
+		      --no-show-locs \
+		      --no-comp-dir-path \
+		      --no-corpus-path \
+		      --drop-undefined-syms \
+		      --drop-private-types \
+		      --out-file $@; \
+	fi
+
+abi_srcdir = "$(top_srcdir)/src/abi/$(arch)/$(target_os)"
+.abi.abidiff:
+	$(AM_V_GEN) abidiff -l "$(abi_srcdir)/$<" "$<" >$@ || cat $@
+
+abi-check: $(lib_LTLIBRARIES:.la=.abidiff) 
+
+.PHONY: abi-check
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets
