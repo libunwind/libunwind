@@ -24,12 +24,11 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "offsets.h"
-#include <endian.h>
 
 	.text
 
 #if _MIPS_SIM == _ABIO32
-# if __BYTE_ORDER == __BIG_ENDIAN
+# if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
 #  define OFFSET 4
 # else
 #  define OFFSET 0
