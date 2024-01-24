@@ -58,8 +58,9 @@ unw_get_proc_info_in_range (unw_word_t        start_ip,
     if (eh_frame_table != 0) {
         unw_accessors_t *a = unw_get_accessors_int (as);
 
-        struct dwarf_eh_frame_hdr* exhdr = NULL;
-        if ((*a->access_mem)(as, eh_frame_table, (unw_word_t*)&exhdr, 0, arg) < 0) {
+        struct dwarf_eh_frame_hdr exhdr1;
+        struct dwarf_eh_frame_hdr* exhdr = &exhdr1;
+        if ((*a->access_mem)(as, eh_frame_table, (unw_word_t*)exhdr, 0, arg) < 0) {
             return -UNW_EINVAL;
         }
 
