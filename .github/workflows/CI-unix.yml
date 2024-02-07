@@ -116,7 +116,7 @@ jobs:
           set -x
           autoreconf -i
           BUILD=x86_64-linux-gnu
-          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver=$(pwd)/scripts/qemu-test-driver --enable-debug
+          ./configure --build=$BUILD --host=${{ matrix.config.host }} --with-testdriver="$(pwd)/libtool execute $(pwd)/scripts/qemu-test-driver" --enable-debug
         env:
           CC: ${{ matrix.config.host }}-gcc-${{ matrix.config.gccver }}
           CXX: ${{ matrix.config.host }}-g++-${{ matrix.config.gccver }}
@@ -129,7 +129,7 @@ jobs:
 
       - name: ABI Check
         run: |
-            cd tests && ./run-check-namespace
+            cd tests && ./check-namespace.sh
 
       - name: Test
         run: |
@@ -137,7 +137,7 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           CROSS_LIB="/usr/${{ matrix.config.host }}"
-          make -j8 check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" LDFLAGS="-L$CROSS_LIB/lib -static" QEMU_LD_PREFIX="$CROSS_LIB"
+          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" QEMU_LD_PREFIX="$CROSS_LIB"
         env:
           UNW_DEBUG_LEVEL: 4
 
