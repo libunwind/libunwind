@@ -1,13 +1,46 @@
+##
+## tests/Makefile.am
+##
+## Process this file with **automake** to produce a Makefile.in
+##
+
+#
+# This file is part of libunwind.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in all
+# copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+# Test binaries and scripts get installed here
+testdir = ${pkglibexecdir}
+
 AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
 AM_CFLAGS = -fno-optimize-sibling-calls
 
 LOG_DRIVER = $(SHELL) $(UNW_TESTDRIVER)
 
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
-		run-check-namespace run-coredump-unwind \
+		run-coredump-unwind \
 		run-coredump-unwind-mdi check-namespace.sh.in \
+		test-runner.in \
 		Gtest-nomalloc.c
 
+CLEANFILES = test-runner
 MAINTAINERCLEANFILES = Makefile.in
 
 noinst_PROGRAMS_arch =
@@ -19,7 +52,7 @@ check_PROGRAMS_common = test-proc-info test-static-link \
 			test-strerror
 check_SCRIPTS_arch =
 check_SCRIPTS_cdep =
-check_SCRIPTS_common =	run-check-namespace
+check_SCRIPTS_common =	check-namespace.sh
 
 XFAIL_TESTS =
 
@@ -105,14 +138,13 @@ endif
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
 endif
-# Temporarily XFAIL this test for riscv64 until #519 is fixed
-if ARCH_RISCV
-  # https://github.com/libunwind/libunwind/issues/519
-  XFAIL_TESTS += Ltest-cxx-exceptions
-endif
 if ARCH_PPC32
   # https://github.com/libunwind/libunwind/issues/561
   XFAIL_TESTS += Ltest-cxx-exceptions
+endif
+
+if ARCH_IA64
+ check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
 endif
 
 if OS_LINUX
@@ -148,10 +180,6 @@ if !CROSS_BUILD
  TESTS += $(check_SCRIPTS)
 endif
 
-if ARCH_IA64
- check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
-endif
-
 # Use if arch defines but does not support PTRACE_SINGLESTEP
 # ptrace request used in the tests.
 XFAIL_TESTS_PTRACE_SINGLESTEP = run-ptrace-mapper run-ptrace-misc
@@ -183,6 +211,18 @@ endif
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
 noinst_HEADERS = ident.h
+
+do_test_subst = sed -e 's,[@]TESTS[@],$(TESTS),g' \
+                    -e 's,[@]XFAIL_TESTS[@],$(XFAIL_TESTS),g' \
+                    -e 's,[@]LIBDIR[@],$(libdir),g' \
+                    -e 's,[@]ARCH[@],$(arch),g'
+test-runner: test-runner.in Makefile
+	$(AM_V_GEN)$(do_test_subst) <$(srcdir)/test-runner.in >$@
+	@chmod +x test-runner
+
+# Make the test binaries installable
+test_PROGRAMS = ${check_PROGRAMS} ${noinst_PROGRAMS}
+test_SCRIPTS  = ${check_SCRIPTS} test-runner
 
 Lia64_test_readonly_SOURCES = Lia64-test-readonly.c ia64-test-readonly-asm.S
 Gia64_test_readonly_SOURCES = Gia64-test-readonly.c ia64-test-readonly-asm.S
