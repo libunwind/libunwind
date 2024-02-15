@@ -7,8 +7,8 @@
 #include "libunwind_i.h"
 
 #undef unw_get_accessors_int
-unw_accessors_t *unw_get_accessors_int (unw_addr_space_t) { return NULL; }
-int dwarf_step (struct dwarf_cursor*) { return 0; }
+unw_accessors_t *unw_get_accessors_int (unw_addr_space_t unused) { return NULL; }
+int dwarf_step (struct dwarf_cursor* unused) { return 0; }
 #include "ppc64/Gstep.c"
 
 enum
