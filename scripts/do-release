@@ -1,0 +1,168 @@
+#!/bin/sh
+#
+# Generate a release tarball
+#
+# Copyright 2024 Stephen M. Webb  <stephen.webb@bregmasoft.ca>
+#
+# This file is a part of the libunwind project.
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# This permission notice shall be included in all copies or substantial portions
+# of the Software.
+# 
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+# SOFTWARE.
+#
+
+progname="$0"
+start_dir="$(pwd)"
+src_dir="${start_dir}"
+keep_working_dir=n
+ext_list="gzip"
+valid_exts="gzip bzip2 xz zip"
+
+print_usage()
+{
+    printf "usage: %s: OPTIONS\n" "$progname"
+    printf "   Roll source release tarballs\n\n"
+    printf "   -h, --help        print this message and exit\n"
+    printf "   -k, --keep        do not delete temporary working directory\n"
+    printf "   -s, --source      location of source directory [current working direcctory]\n"
+    printf "   -x, --extensions  list of tarball compression types [gzip]\n"
+    printf "                     valid extension are the following: %s\n" "$valid_exts"
+}
+
+do_cleanup()
+{
+    cd "$start_dir"
+    if [ $keep_working_dir != y ]; then
+        rm -rf "$working_dir"
+    fi
+}
+
+validate_extensions()
+{
+    for valid_ext in $valid_exts; do
+        if [ "$1" = "$valid_ext" ]; then
+            return 1
+        fi
+    done
+    return 0
+}
+
+do_setup()
+{
+    options=$(getopt --options='hks:x:' \
+                     --longoptions='help,keep,source:extensions:' \
+                     --name "$progname" \
+                     -- "$@")
+    if [ $? -ne 0 ]; then
+        print_usage
+        exit 1
+    fi
+
+    eval set -- "$options"
+    while true; do
+        case "$1" in
+            -h|--help)
+                print_usage
+                exit 0
+                ;;
+            -k|--keep)
+                keep_working_dir=y
+                shift
+                ;;
+            -s|--source)
+                src_dir=$(readlink -f "$2")
+                shift 2
+                ;;
+            -x|--extensions)
+                for ext in $2; do
+                    if validate_extensions $ext; then
+                        printf "invalid extension %s" "$ext\n"
+                        print_usage
+                        exit 1
+                    fi
+                done
+                ext_list="$2"
+                shift 2
+                ;;
+            --)
+                shift
+                break
+                ;;
+            *)
+                print_usage
+                exit 1
+                ;;
+        esac
+    done
+
+    working_dir=$(mktemp -p "${start_dir}" -d)
+    trap do_cleanup 0
+}
+
+#
+# Regenerate the autotools files and update the config scripts to the latest
+# upstream
+#
+do_source_updates()
+{
+    upstream_url='https://git.savannah.gnu.org/gitweb/?p=config.git;a=blob_plain'
+
+    cd "${src_dir}"
+    autoreconf -if
+    wget -O config/config.guess "${upstream_url};f=config.guess;hb=HEAD"
+    wget -O config/config.sub "${upstream_url};f=config.sub;hb=HEAD"
+}
+
+#
+# Generate the tarball(s)
+#
+do_tarball()
+{
+    cd "${working_dir}"
+    "${src_dir}/configure"
+
+    cd "$working_dir"
+    for ext in $ext_list; do
+        make dist-${ext}
+    done
+
+    for cmp in $ext_list; do
+        case $cmp in
+            gzip)
+                ext=tar.gz
+                ;;
+            bzip2)
+                ext=tar.bz2
+                ;;
+            xz)
+                ext=tar.xz
+                ;;
+            zip)
+                ext=zip
+                ;;
+            *)
+                printf "unknown extension: %s\n" "$cmp"
+                ;;
+        esac
+        mv *.${ext} "$start_dir"
+    done
+}
+
+
+do_setup "$@"
+do_source_updates
+do_tarball
