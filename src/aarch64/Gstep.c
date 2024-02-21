@@ -42,7 +42,7 @@ static const int WSIZE = sizeof (unw_word_t);
 static int
 is_plt_entry (struct dwarf_cursor *c)
 {
-  unw_word_t w0, w1;
+  unw_word_t w0 = 0, w1 = 0;
   unw_accessors_t *a;
 
   if (c->as->big_endian)
@@ -255,12 +255,12 @@ get_frame_state (unw_cursor_t *cursor)
                  be 0xa9007bdf. The offset value is (imm7 * 8) */
               if (((w & 0xffc07fff00000000) == 0xa9007bfd00000000) && (c->dwarf.ip > ip + 4))
                 {
-                  uint32_t abs_offset = (w & 0x001f800000000000) >> 47;
+                  int32_t abs_offset = (w & 0x001f800000000000) >> 47;
                   fs.offset = ((w & 0x0020000000000000)? -abs_offset : abs_offset) * 8;
                 }
               else if (((w & 0x00000000ffc07fff) == 0x00000000a9007bfd) && (c->dwarf.ip > ip))
                 {
-                  uint32_t abs_offset = (w & 0x00000000001f8000) >> 15;
+                  int32_t abs_offset = (w & 0x00000000001f8000) >> 15;
                   fs.offset = ((w & 0x0000000000200000)? -abs_offset : abs_offset) * 8;
                 }
               else
