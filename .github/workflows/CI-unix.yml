@@ -159,7 +159,7 @@ jobs:
       - uses: actions/checkout@b4ffde65f46336ab88eb53be808477a3936bae11 # v4.1.1
 
       - name: Set up Alpine Linux
-        uses: jirutka/setup-alpine@458376dba160dbd7efc44d56247bd6c22efacdd3 # v1.1.4
+        uses: jirutka/setup-alpine@359b91e094d3dc6292e4b627abb84d8856ab7ef2 # v1.2.0
         with:
           branch: edge
           arch: ${{ matrix.arch }}
