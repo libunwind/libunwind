@@ -94,6 +94,18 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore pipe2 sigaltstack execvpe)
 
+AC_MSG_CHECKING([if -latomic is required])
+  AC_LINK_IFELSE([AC_LANG_PROGRAM([[
+                        #include <stdatomic.h>
+                        atomic_bool ab_ = 0;
+                    ]],[[
+                        atomic_load(&ab_);
+                    ]])],
+                 [use_libatomic=no],
+                 [use_libatomic=yes])
+AC_MSG_RESULT([$use_libatomic])
+AS_IF([test "$use_libatomic" = "yes"],[LIBS="-latomic $LIBS"])
+
 AC_MSG_CHECKING([if building with AltiVec])
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #ifndef __ALTIVEC__
