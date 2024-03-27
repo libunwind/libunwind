@@ -151,7 +151,7 @@ arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c)
  * arm_exidx_apply_cmd that applies the command onto the dwarf_cursor.
  */
 HIDDEN int
-arm_exidx_decode (const uint8_t *buf, uint8_t len, struct dwarf_cursor *c)
+arm_exidx_decode (const uint8_t *buf, int len, struct dwarf_cursor *c)
 {
 #define READ_OP() *buf++
   assert(buf != NULL);
@@ -317,9 +317,9 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
     {
       Debug (2, "%p compact model %d [%8.8x]\n", (void *)addr,
              (data >> 24) & 0x7f, data);
-      buf[nbuf++] = data >> 16;
-      buf[nbuf++] = data >> 8;
-      buf[nbuf++] = data;
+      buf[nbuf++] = (uint8_t) (data >> 16);
+      buf[nbuf++] = (uint8_t) (data >> 8);
+      buf[nbuf++] = (uint8_t) data;
     }
   else
     {
@@ -342,9 +342,11 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
               extbl_data += 4;
             }
           else
-            buf[nbuf++] = data >> 16;
-          buf[nbuf++] = data >> 8;
-          buf[nbuf++] = data;
+            {
+              buf[nbuf++] = (uint8_t) (data >> 16);
+            }
+          buf[nbuf++] = (uint8_t) (data >> 8);
+          buf[nbuf++] = (uint8_t) data;
         }
       else
         {
@@ -357,9 +359,9 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
                                        c->as_arg) < 0)
             return -UNW_EINVAL;
           n_table_words = data >> 24;
-          buf[nbuf++] = data >> 16;
-          buf[nbuf++] = data >> 8;
-          buf[nbuf++] = data;
+          buf[nbuf++] = (uint8_t) (data >> 16);
+          buf[nbuf++] = (uint8_t) (data >> 8);
+          buf[nbuf++] = (uint8_t) data;
           extbl_data += 8;
         }
       assert (n_table_words <= 5);
@@ -370,10 +372,10 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
                                        c->as_arg) < 0)
             return -UNW_EINVAL;
           extbl_data += 4;
-          buf[nbuf++] = data >> 24;
-          buf[nbuf++] = data >> 16;
-          buf[nbuf++] = data >> 8;
-          buf[nbuf++] = data >> 0;
+          buf[nbuf++] = (uint8_t) (data >> 24);
+          buf[nbuf++] = (uint8_t) (data >> 16);
+          buf[nbuf++] = (uint8_t) (data >> 8);
+          buf[nbuf++] = (uint8_t) data;
         }
     }
 

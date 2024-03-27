@@ -10,6 +10,7 @@ set(PKG_EXTRA "-rc2")
 set(PACKAGE_STRING "libunwind")
 set(PACKAGE_BUGREPORT "")
 
+set(CMAKE_COMPILE_WARNING_AS_ERROR ON)
 
 if ('$ENV{TARGET}' STREQUAL 'x86_64-linux-gnu')
   set(TARGET_AMD64 1)
@@ -38,7 +39,7 @@ elseif ('$ENV{TARGET}' STREQUAL 'loongarch64-linux-gnu')
   add_definitions(-D__loongarch64)
   add_definitions(-D__linux__)
 else ()
-  message(FATAL_ERROR "Unrecognize value in environment variable TARGET")
+  message(FATAL_ERROR "Unrecognize value in environment variable TARGET: $ENV{TARGET}")
 endif ()
 
 include(CheckCSourceCompiles)
@@ -58,11 +59,6 @@ if ("${CMAKE_GENERATOR}" MATCHES "^Visual Studio.*$")
   # Warnings in release builds
   add_compile_options(-wd4068) # ignore unknown pragma warnings (gcc pragmas)
   add_compile_options(-wd4334) # 32-bit shift implicitly converted to 64 bits
-
-  # Disable warning due to incorrect format specifier in debugging printf via the Debug macro
-  add_compile_options(-wd4311) # pointer truncation from 'unw_word_t *' to 'long'
-  add_compile_options(-wd4475) # 'fprintf' : length modifier 'L' cannot be used
-  add_compile_options(-wd4477) # fprintf argument type
 
   # Windows builds will only support remote unwind
   add_definitions(-DUNW_REMOTE_ONLY)
