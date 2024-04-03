@@ -104,6 +104,7 @@ elf_map_image (struct elf_image *ei, const char *path)
   if (!elf_w (valid_object) (ei))
   {
     mi_munmap(ei->image, ei->size);
+    ei->image = NULL;
     return -1;
   }
 
