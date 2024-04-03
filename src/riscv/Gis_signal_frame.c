@@ -57,7 +57,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 
   ip = c->dwarf.ip;
 
-  if (!ip || !a->access_mem || (ip & (sizeof(unw_word_t) - 1)))
+  if (!ip || !a->access_mem)
     return 0;
 
   if ((ret = (*a->access_mem) (as, ip, &i0, 0, arg)) < 0)
