@@ -484,12 +484,12 @@ fi
 AC_MSG_RESULT([$intel_compiler])
 
 AC_MSG_CHECKING([if building on Solaris then define __EXTENSIONS__ macro])
-if $OS_SOLARIS; then
+AM_COND_IF([OS_SOLARIS],[
   CFLAGS="${CFLAGS} -D__EXTENSIONS__"
   AC_MSG_RESULT([yes])
-else
+],[
   AC_MSG_RESULT([no])
-fi
+])
 
 AC_MSG_CHECKING([for QCC compiler])
 AS_CASE([$CC], [qcc*|QCC*], [qcc_compiler=yes], [qcc_compiler=no])
