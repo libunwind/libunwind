@@ -148,12 +148,6 @@ target_is_big_endian(void)
 # define unreachable() do { } while (1)
 #endif
 
-#ifdef DEBUG
-# define UNW_DEBUG      1
-#else
-# undef UNW_DEBUG
-#endif
-
 /* Make it easy to write thread-safe code which may or may not be
    linked against libpthread.  The macros below can be used
    unconditionally and if -lpthread is around, they'll call the

@@ -287,17 +287,14 @@ AC_MSG_CHECKING([if debug support should be built])
 AC_ARG_ENABLE([debug],
               [AS_HELP_STRING([--enable-debug],
                               [enable debug support (slows down execution)
+                              CAUTION: changes the ABI
                                @<:@default=no@:>@])],
-              [],
+              [AC_SUBST([UNW_DEBUG_CPPFLAGS], ["-DUNW_DEBUG=1"])],
               [enable_debug=no]
 )
 AC_MSG_RESULT([$enable_debug])
-AS_IF([test x$enable_debug = xyes],
-      [CPPFLAGS="${CPPFLAGS} -DDEBUG"],
-      [CPPFLAGS="${CPPFLAGS} -DNDEBUG"]
-)
 
-AC_MSG_CHECKING([if C++ exception support should be built])
+AC_MSG_CHECKING([if C++ exception support shouldm  be built])
 AC_ARG_ENABLE([cxx_exceptions],
               [AS_HELP_STRING([--enable-cxx-exceptions],
                               [use libunwind to handle C++ exceptions

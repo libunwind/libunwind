@@ -29,7 +29,7 @@
 # Test binaries and scripts get installed here
 testdir = ${pkglibexecdir}
 
-AM_CPPFLAGS = -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
+AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
 AM_CFLAGS = -fno-optimize-sibling-calls
 
 LOG_DRIVER = $(SHELL) $(UNW_TESTDRIVER)
