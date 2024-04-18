@@ -543,8 +543,6 @@ if test x$have__builtin_unreachable = xyes; then
 fi
 AC_MSG_RESULT([$have__builtin_unreachable])
 
-CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
-
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
