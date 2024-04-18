@@ -25,6 +25,12 @@ SOVERSION=9:0:1		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 COREDUMP_SO_VERSION=0:0:0
 
+AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
+              $(UNW_REMOTE_CPPFLAGS) \
+              $(UNW_TARGET_CPPFLAGS) \
+              -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
+AM_CFLAGS = $(UNW_EXTRA_CFLAGS)
+
 #
 # Don't link with start-files since we don't use any constructors/destructors:
 #
@@ -1243,10 +1249,6 @@ libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -XCClinker -nostdlib \
 libunwind_la_LIBADD  += -lc $(LIBCRTS)
 libunwind_la_LIBADD += $(LIBLZMA) $(LIBZ)
 
-AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
-              $(UNW_REMOTE_CPPFLAGS) \
-              $(UNW_TARGET_CPPFLAGS) \
-              -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
 noinst_HEADERS += unwind/unwind-internal.h
 
 EXTRA_DIST = $(libunwind_la_EXTRAS_ia64)

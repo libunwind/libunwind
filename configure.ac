@@ -476,14 +476,18 @@ AC_SUBST([LIBZ])
 AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlibdebuginfo = xyes)
 
 AC_MSG_CHECKING([for Intel compiler])
-AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[]], [[#ifndef __INTEL_COMPILER
-#error choke me
-#endif]])],[intel_compiler=yes],[intel_compiler=no])
-
-if test x$GCC = xyes -a x$intel_compiler != xyes; then
-  CFLAGS="${CFLAGS} -fexceptions -Wall -Wsign-compare"
-fi
+AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
+        [],
+        [#ifndef __INTEL_COMPILER
+         #error choke me
+         #endif
+        ])],
+    [intel_compiler=yes],
+    [intel_compiler=no])
 AC_MSG_RESULT([$intel_compiler])
+if test x$GCC = xyes -a x$intel_compiler != xyes; then
+    AC_SUBST([UNW_EXTRA_CFLAGS],["-fexceptions -Wall -Wsign-compare"])
+fi
 
 AC_MSG_CHECKING([for QCC compiler])
 AS_CASE([$CC], [qcc*|QCC*], [qcc_compiler=yes], [qcc_compiler=no])
