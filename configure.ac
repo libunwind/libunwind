@@ -63,7 +63,12 @@ AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h asm/vsyscall.h endian.h sys/e
 		sys/types.h sys/procfs.h sys/ptrace.h sys/syscall.h byteswap.h elf.h \
 		sys/elf.h link.h sys/link.h)
 
-CPPFLAGS="${CPPFLAGS} -D_GNU_SOURCE"
+dnl Set target-specific compile flags
+AS_CASE([$target_os],
+        [*-gnu],    [UNW_TARGET_CPPFLAGS="-D_GNU_SOURCE"],
+        [solaris*], [UNW_TARGET_CPPFLAGS="-D__EXTENSIONS__"]
+)
+AC_SUBST([UNW_TARGET_CPPFLAGS])
 
 AC_MSG_NOTICE([--- Checking for available types ---])
 AC_CHECK_MEMBERS([struct dl_phdr_info.dlpi_subs],,,[#include <link.h>])
@@ -385,12 +390,12 @@ AM_CONDITIONAL(USE_DWARF, [test x$use_dwarf = xyes])
 AC_MSG_RESULT([$use_dwarf])
 
 AC_MSG_CHECKING([whether to restrict build to remote support])
-if test x$target_arch != x$host_arch; then
-  CPPFLAGS="${CPPFLAGS} -DUNW_REMOTE_ONLY"
+AM_COND_IF([REMOTE_ONLY],[
+  AC_SUBST([UNW_REMOTE_CPPFLAGS], [-DUNW_REMOTE_ONLY])
   remote_only=yes
-else
+],[
   remote_only=no
-fi
+])
 AC_MSG_RESULT([$remote_only])
 
 AC_MSG_CHECKING([whether to load .debug_frame sections])
@@ -479,14 +484,6 @@ if test x$GCC = xyes -a x$intel_compiler != xyes; then
   CFLAGS="${CFLAGS} -fexceptions -Wall -Wsign-compare"
 fi
 AC_MSG_RESULT([$intel_compiler])
-
-AC_MSG_CHECKING([if building on Solaris then define __EXTENSIONS__ macro])
-if $OS_SOLARIS; then
-  CFLAGS="${CFLAGS} -D__EXTENSIONS__"
-  AC_MSG_RESULT([yes])
-else
-  AC_MSG_RESULT([no])
-fi
 
 AC_MSG_CHECKING([for QCC compiler])
 AS_CASE([$CC], [qcc*|QCC*], [qcc_compiler=yes], [qcc_compiler=no])
