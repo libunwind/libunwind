@@ -96,7 +96,7 @@ stands for ``unwind via ptrace\&''\&.
 .PP
 An application that wants to use the libunwind
 ptrace remote needs to 
-take the folowing steps. 
+take the following steps. 
 .PP
 .TP
 1.
