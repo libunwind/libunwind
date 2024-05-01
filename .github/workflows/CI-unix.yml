@@ -36,7 +36,7 @@ jobs:
           - { CFLAGS: -O0 }
           - { CFLAGS: -O3 }
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
       - name: Setup
         if: ${{ matrix.target.arch }} = 'i686'
@@ -95,7 +95,7 @@ jobs:
           - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 10 }
 
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
       - name: Install QEMU
         # this ensure install latest qemu on ubuntu, apt get version is old
         env:
@@ -156,7 +156,7 @@ jobs:
         arch: [aarch64, ppc64le, riscv64, x86_64]
 
     steps:
-      - uses: actions/checkout@9bb56186c3b09b4f86b1c65136769dd318469633 # v4.1.2
+      - uses: actions/checkout@0ad4b8fadaa221de15dcec353f45205ec38ea70b # v4.1.4
 
       - name: Set up Alpine Linux
         uses: jirutka/setup-alpine@359b91e094d3dc6292e4b627abb84d8856ab7ef2 # v1.2.0
