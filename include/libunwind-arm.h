@@ -288,7 +288,7 @@ unw_tdep_context_t;
     "mov r0, #0\n\t"                                                                            \
     "stmia %[base]!, {r0-r15}\n\t"                                                              \
     VSTMIA                                                                                      \
-    : [r0] "=r" (r0) : [base] "r" (unw_base) : "memory");                                       \
+    : [r0] "=r" (r0), [base] "+r" (unw_base) : : "memory");                                     \
   (int)r0; })
 #else /* __thumb__ */
 #define unw_tdep_getcontext(uc) ({                                        \
