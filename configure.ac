@@ -65,8 +65,8 @@ AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h asm/vsyscall.h endian.h sys/e
 
 dnl Set target-specific compile flags
 AS_CASE([$target_os],
-        [*-gnu],    [UNW_TARGET_CPPFLAGS="-D_GNU_SOURCE"],
-        [solaris*], [UNW_TARGET_CPPFLAGS="-D__EXTENSIONS__"]
+        [*-gnu|*-gnueabi*], [UNW_TARGET_CPPFLAGS="-D_GNU_SOURCE"],
+        [solaris*],         [UNW_TARGET_CPPFLAGS="-D__EXTENSIONS__"]
 )
 AC_SUBST([UNW_TARGET_CPPFLAGS])
 
