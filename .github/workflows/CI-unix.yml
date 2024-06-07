@@ -147,7 +147,7 @@ jobs:
             *)
                 srcdir=$(pwd)
                 cd build/tests
-                ${srcdir}/tests/run-check-namespace
+                ./check-namespace.sh
                 ;;
             esac
 
