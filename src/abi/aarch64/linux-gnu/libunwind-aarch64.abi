@@ -28,6 +28,7 @@
     <elf-symbol name='_Uaarch64_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Uaarch64_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Uaarch64_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Uaarch64_is_plt_entry' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Uaarch64_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Uaarch64_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Uaarch64_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
@@ -41,6 +42,7 @@
     <elf-symbol name='_Uaarch64_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-function-symbols>
   <elf-variable-symbols>
+    <elf-symbol name='_UIaarch64_debug_level' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Uaarch64_local_addr_space' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-variable-symbols>
   <abi-instr address-size='64' path='../../src/aarch64/Gapply_reg_state.c' language='LANG_C99'>
@@ -225,6 +227,10 @@
     </function-decl>
   </abi-instr>
   <abi-instr address-size='64' path='../../src/aarch64/Gstep.c' language='LANG_C99'>
+    <function-decl name='_Uaarch64_is_plt_entry' mangled-name='_Uaarch64_is_plt_entry' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uaarch64_is_plt_entry'>
+      <parameter type-id='type-id-1' name='uc'/>
+      <return type-id='type-id-3'/>
+    </function-decl>
     <function-decl name='_Uaarch64_step' mangled-name='_Uaarch64_step' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uaarch64_step'>
       <parameter type-id='type-id-1' name='cursor'/>
       <return type-id='type-id-3'/>
@@ -1077,6 +1083,7 @@
       <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-29' id='type-id-178'/>
     </array-type-def>
     <var-decl name='_UIaarch64_full_mask' type-id='type-id-177' visibility='default'/>
+    <var-decl name='_UIaarch64_debug_level' type-id='type-id-159' mangled-name='_UIaarch64_debug_level' visibility='default' elf-symbol-id='_UIaarch64_debug_level'/>
     <var-decl name='unw_page_size' type-id='type-id-159' visibility='default'/>
   </abi-instr>
   <abi-instr address-size='64' path='../../src/mi/strerror.c' language='LANG_C99'>

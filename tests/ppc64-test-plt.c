@@ -1,15 +1,34 @@
-/*
+/**
  * Unittest PPC64 is_plt_entry function by inspecting output at
  * different points in a mock PLT address space.
  */
-
+/*
+ * This file is part of libunwind.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ */
 #include "dwarf.h"
 #include "libunwind_i.h"
 
 #undef unw_get_accessors_int
 unw_accessors_t *unw_get_accessors_int (unw_addr_space_t unused) { return NULL; }
 int dwarf_step (struct dwarf_cursor* unused) { return 0; }
-#include "ppc64/Gstep.c"
 
 enum
 {
@@ -67,98 +86,100 @@ main ()
   mock_address_space.big_endian = 0;
   mock_address_space.acc.access_mem = &access_mem;
 
-  struct dwarf_cursor c;
-  c.as = &mock_address_space;
-  c.as_arg = &test_instructions;
+  struct cursor cursor;
+  struct dwarf_cursor *dwarf = &cursor.dwarf;
+  struct unw_cursor *c = (struct unw_cursor *)(&cursor);
+  dwarf->as = &mock_address_space;
+  dwarf->as_arg = &test_instructions;
 
   /* ip at std r2,24(r1) */
-  c.ip = (unw_word_t) (test_instructions + ip_std);
-  if (!is_plt_entry(&c)) return -1;
+  dwarf->ip = (unw_word_t) (test_instructions + ip_std);
+  if (!unw_is_plt_entry(c)) return -1;
 
   /* ld uses a different offset */
   test_instructions[ip_ld] = 0xe9820000;
-  if (!is_plt_entry(&c)) return -1;
+  if (!unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_ld is not a ld instruction */
   test_instructions[ip_ld] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_mtctr is not a mtctr instruction */
   test_instructions[ip_mtctr] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_bctr is not a bctr instruction */
   test_instructions[ip_bctr] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip at ld r12,-30928(r2) */
-  c.ip = (unw_word_t) (test_instructions + ip_ld);
-  if (!is_plt_entry(&c)) return -1;
+  dwarf->ip = (unw_word_t) (test_instructions + ip_ld);
+  if (!unw_is_plt_entry(c)) return -1;
 
   /* ip_std is not a std instruction */
   test_instructions[ip_std] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_mtctr is not a mtctr instruction */
   test_instructions[ip_mtctr] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_bctr is not a bctr instruction */
   test_instructions[ip_bctr] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip at mtctr r12 */
-  c.ip = (unw_word_t) (test_instructions + ip_mtctr);
-  if (!is_plt_entry(&c)) return -1;
+  dwarf->ip = (unw_word_t) (test_instructions + ip_mtctr);
+  if (!unw_is_plt_entry(c)) return -1;
 
   /* ip_std is not a std instruction */
   test_instructions[ip_std] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_ld is not a ld instruction */
   test_instructions[ip_ld] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_bctr is not a bctr instruction */
   test_instructions[ip_bctr] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip at bctr */
-  c.ip = (unw_word_t) (test_instructions + ip_bctr);
-  if (!is_plt_entry(&c)) return -1;
+  dwarf->ip = (unw_word_t) (test_instructions + ip_bctr);
+  if (!unw_is_plt_entry(c)) return -1;
 
   /* ip_std is not a std instruction */
   test_instructions[ip_std] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_ld is not a ld instruction */
   test_instructions[ip_ld] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip_mtctr is not a mtctr instruction */
   test_instructions[ip_mtctr] = 0xf154f00d;
-  if (is_plt_entry(&c)) return -1;
+  if (unw_is_plt_entry(c)) return -1;
   memcpy(test_instructions, plt_instructions, sizeof(test_instructions));
 
   /* ip at non-PLT instruction */
-  c.ip = (unw_word_t) (test_instructions + ip_guard0);
-  if (is_plt_entry(&c)) return -1;
+  dwarf->ip = (unw_word_t) (test_instructions + ip_guard0);
+  if (unw_is_plt_entry(c)) return -1;
 
   /* ip at another non-PLT instruction */
-  c.ip = (unw_word_t) (test_instructions + ip_guard1);
-  if (is_plt_entry(&c)) return -1;
+  dwarf->ip = (unw_word_t) (test_instructions + ip_guard1);
+  if (unw_is_plt_entry(c)) return -1;
 
   return 0;
 }

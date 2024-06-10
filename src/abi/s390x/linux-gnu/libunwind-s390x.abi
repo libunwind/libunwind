@@ -27,6 +27,7 @@
     <elf-symbol name='_Us390x_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Us390x_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Us390x_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Us390x_is_plt_entry' type='func-type' binding='weak-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Us390x_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Us390x_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Us390x_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
@@ -40,6 +41,7 @@
     <elf-symbol name='_Us390x_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-function-symbols>
   <elf-variable-symbols>
+    <elf-symbol name='_UIs390x_debug_level' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Us390x_local_addr_space' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-variable-symbols>
   <abi-instr address-size='64' path='../../src/dwarf/Gfind_proc_info-lsb.c' language='LANG_C99'>
@@ -349,6 +351,12 @@
       <parameter type-id='type-id-55' name='cursor'/>
       <parameter type-id='type-id-22' name='regnum'/>
       <parameter type-id='type-id-19' name='valp'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='../../src/mi/Gis_plt_entry.c' language='LANG_C99'>
+    <function-decl name='_Us390x_is_plt_entry' mangled-name='_Us390x_is_plt_entry' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Us390x_is_plt_entry'>
+      <parameter type-id='type-id-55' name='c'/>
       <return type-id='type-id-22'/>
     </function-decl>
   </abi-instr>
@@ -867,6 +875,7 @@
       <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-31' id='type-id-153'/>
     </array-type-def>
     <var-decl name='_UIs390x_full_mask' type-id='type-id-152' visibility='default'/>
+    <var-decl name='_UIs390x_debug_level' type-id='type-id-133' mangled-name='_UIs390x_debug_level' visibility='default' elf-symbol-id='_UIs390x_debug_level'/>
     <var-decl name='unw_page_size' type-id='type-id-133' visibility='default'/>
   </abi-instr>
   <abi-instr address-size='64' path='../../src/mi/strerror.c' language='LANG_C99'>
