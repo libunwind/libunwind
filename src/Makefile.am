@@ -21,7 +21,7 @@
 #
 
 # Set the DSO versions
-SOVERSION=9:0:1		# See comments at end of file.
+SOVERSION=10:0:2		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 COREDUMP_SO_VERSION=0:0:0
 
@@ -244,6 +244,7 @@ libunwind_la_SOURCES_generic =                 \
 	mi/Gget_proc_info_by_ip.c              \
 	mi/Gget_proc_name.c                    \
 	mi/Gget_reg.c                          \
+	mi/Gis_plt_entry.c                     \
 	mi/Gput_dynamic_unwind_info.c          \
 	mi/Gset_cache_size.c                   \
 	mi/Gset_caching_policy.c               \
@@ -295,6 +296,7 @@ libunwind_la_SOURCES_local_nounwind =          \
 	mi/Lget_proc_info_by_ip.c              \
 	mi/Lget_proc_name.c                    \
 	mi/Lget_reg.c                          \
+	mi/Lis_plt_entry.c                     \
 	mi/Lput_dynamic_unwind_info.c          \
 	mi/Lset_cache_size.c                   \
 	mi/Lset_caching_policy.c               \

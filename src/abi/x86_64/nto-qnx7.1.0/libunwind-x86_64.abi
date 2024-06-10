@@ -1,8 +1,8 @@
-<abi-corpus version='2.2' architecture='elf-amd-x86_64' soname='libunwind-x86_64.so.9'>
+<abi-corpus version='2.2' architecture='elf-amd-x86_64' soname='libunwind-x86_64.so.10'>
   <elf-needed>
     <dependency name='liblzma.so.5'/>
     <dependency name='libz.so.2'/>
-    <dependency name='libunwind.so.9'/>
+    <dependency name='libunwind.so.10'/>
     <dependency name='libc.so.5'/>
   </elf-needed>
   <elf-function-symbols>
@@ -29,6 +29,7 @@
     <elf-symbol name='_Ux86_64_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_64_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_64_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_64_is_plt_entry' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_64_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_64_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_64_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
@@ -42,6 +43,7 @@
     <elf-symbol name='_Ux86_64_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-function-symbols>
   <elf-variable-symbols>
+    <elf-symbol name='_UIx86_64_debug_level' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_64_local_addr_space' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-variable-symbols>
   <abi-instr address-size='64' path='../../src/dwarf/Gfind_proc_info-lsb.c' language='LANG_C99'>
@@ -830,6 +832,7 @@
     <typedef-decl name='sigset_t' type-id='type-id-150' id='type-id-149'/>
     <type-decl name='unsigned int' size-in-bits='32' id='type-id-82'/>
     <var-decl name='_UIx86_64_full_mask' type-id='type-id-152' visibility='default'/>
+    <var-decl name='_UIx86_64_debug_level' type-id='type-id-148' mangled-name='_UIx86_64_debug_level' visibility='default' elf-symbol-id='_UIx86_64_debug_level'/>
     <var-decl name='unw_page_size' type-id='type-id-148' visibility='default'/>
   </abi-instr>
   <abi-instr address-size='64' path='../../src/mi/strerror.c' language='LANG_C99'>
@@ -1222,6 +1225,10 @@
     </function-decl>
   </abi-instr>
   <abi-instr address-size='64' path='../../src/x86_64/Gstep.c' language='LANG_C99'>
+    <function-decl name='_Ux86_64_is_plt_entry' mangled-name='_Ux86_64_is_plt_entry' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Ux86_64_is_plt_entry'>
+      <parameter type-id='type-id-58' name='uc'/>
+      <return type-id='type-id-22'/>
+    </function-decl>
     <function-decl name='_Ux86_64_step' mangled-name='_Ux86_64_step' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Ux86_64_step'>
       <parameter type-id='type-id-58' name='cursor'/>
       <return type-id='type-id-22'/>

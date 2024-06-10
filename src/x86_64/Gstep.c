@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
      3bdf6: 68 ae 03 00 00    pushq  $0x3ae
      3bdfb: e9 00 c5 ff ff    jmpq   38300 <_init+0x18> */
 static int
-is_plt_entry (struct dwarf_cursor *c)
+_is_plt_entry (struct dwarf_cursor *c)
 {
   unw_word_t w0, w1;
   unw_accessors_t *a;
@@ -51,6 +51,12 @@ is_plt_entry (struct dwarf_cursor *c)
 
   Debug (14, "ip=0x%lx => 0x%016lx 0x%016lx, ret = %d\n", c->ip, w0, w1, ret);
   return ret;
+}
+
+int
+unw_is_plt_entry (unw_cursor_t *uc)
+{
+	return _is_plt_entry (&((struct cursor *)uc)->dwarf);
 }
 
 int
@@ -140,7 +146,7 @@ unw_step (unw_cursor_t *cursor)
               return 0;
             }
         }
-      else if (is_plt_entry (&c->dwarf))
+      else if (_is_plt_entry (&c->dwarf))
         {
           /* Like regular frame, CFA = RSP+8, RA = [CFA-8], no regs saved. */
           Debug (2, "found plt entry\n");
