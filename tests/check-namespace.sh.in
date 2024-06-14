@@ -143,6 +143,7 @@ check_local_unw_abi () {
     match _UL${plat}_init_local
     match _UL${plat}_init_local2
     match _UL${plat}_init_remote
+    match _UL${plat}_is_plt_entry
     match _UL${plat}_is_signal_frame
     match _UL${plat}_local_addr_space
     match _UL${plat}_resume
@@ -259,6 +260,7 @@ check_generic_unw_abi () {
     match _U${plat}_init_local
     match _U${plat}_init_local2
     match _U${plat}_init_remote
+    match _U${plat}_is_plt_entry
     match _U${plat}_is_signal_frame
     match _U${plat}_local_addr_space
     match _U${plat}_regname
