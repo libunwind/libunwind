@@ -58,6 +58,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #elif defined(__QNX__)
 
+#define SI_UCONTEXT_OFF 0x38
 #define UC_MCONTEXT_OFF   48
 #define SC_GPR_OFF         0
 #define SC_X29_OFF       232

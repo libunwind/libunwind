@@ -2,7 +2,7 @@
    Copyright (C) 2008 CodeSourcery
    Copyright (C) 2011-2013 Linaro Limited
    Copyright (C) 2012 Tommi Rantala <tt.rantala@gmail.com>
-   Copyright 2022 Blackberry Limited.
+   Copyright 2022,2024 Blackberry Limited.
 
 This file is part of libunwind.
 
@@ -518,18 +518,45 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int i, ret;
-  unw_word_t sc_addr, sp, sp_addr = c->dwarf.cfa;
-  struct dwarf_loc sp_loc = DWARF_LOC (sp_addr, 0);
-
-  if ((ret = dwarf_get (&c->dwarf, sp_loc, &sp)) < 0)
-    return -UNW_EUNSPEC;
+  unw_word_t sp_addr = c->dwarf.cfa;
+  unw_word_t sc_addr;
 
   ret = unw_is_signal_frame (cursor);
-  Debug(1, "unw_is_signal_frame()=%d\n", ret);
   if (ret > 0)
     {
       c->sigcontext_format = SCF_FORMAT;
+#if defined(__QNXNTO__)
+      /*
+       * The QNX signal trampoline receives a pointer to a _sighandler_info
+       * struct in r19, which it breaks apart and passes the relevant args to
+       * the signal handler in r0, r1, and r2 folowing the ARM AAPCS64
+       * convention, regardless of whether SA_SIGINFO is specified in sa_flags.
+       * Since r0-2 are not preserved registers, their value is
+       * lost by the time the unwinder gets here, but r19 is preserved so it
+       * should still be valid. If full DWARF unwinding has happened.
+       */
+      unw_word_t x19;
+      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X19], &x19);
+      if ((ret < 0) || (x19 == 0UL))
+        {
+          return -UNW_EUNSPEC;
+        }
+
+      ret = dwarf_get (&c->dwarf,
+                       DWARF_MEM_LOC (c->dwarf, x19 + SI_UCONTEXT_OFF),
+                       &sc_addr);
+      if (ret < 0)
+        {
+          return -UNW_EUNSPEC;
+        }
+
+      sc_addr += UC_MCONTEXT_OFF;
+#else
+      /*
+       * For non-QNX OSes the mcontext is expected to be on the signal stack,
+       */
       sc_addr = sp_addr + sizeof (siginfo_t) + UC_MCONTEXT_OFF;
+#endif
     }
   else
     return -UNW_EUNSPEC;
@@ -611,6 +638,7 @@ unw_step (unw_cursor_t *cursor)
 
   /* Check if this is a signal frame. */
   ret = unw_is_signal_frame (cursor);
+  Debug(1, "unw_is_signal_frame()=%d\n", ret);
   if (ret > 0)
     return aarch64_handle_signal_frame (cursor);
   else if (unlikely (ret < 0))
