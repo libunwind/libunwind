@@ -245,6 +245,18 @@ trace_init_addr (unw_tdep_frame_t *f,
   d->loc[UNW_AARCH64_PC] = DWARF_REG_LOC (d, UNW_AARCH64_PC);
   c->frame_info = *f;
 
+#if defined(__QNXNTO__)
+  /**
+   * Without slow DWARF unwinding the signal context gets lost, so skip.
+   */
+  if (unw_is_signal_frame (cursor))
+    {
+      f->frame_type = UNW_AARCH64_FRAME_SIGRETURN;
+      f->last_frame = -1;
+      return f;
+    }
+#endif
+
   if (likely(dwarf_put (d, d->loc[UNW_AARCH64_X29], fp) >= 0)
       && likely(dwarf_put (d, d->loc[UNW_AARCH64_SP], sp) >= 0)
       && likely(dwarf_put (d, d->loc[UNW_AARCH64_PC], pc) >= 0)
@@ -470,7 +482,16 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
        enough bad unwind info floating around that we need to trust
        what unw_step() previously said, in potentially bogus frames. */
     if (f->last_frame)
-      break;
+      {
+#if defined(__QNXNTO__)
+        if (f->frame_type == UNW_AARCH64_FRAME_SIGRETURN)
+          {
+            Debug (3, "frame is a signal trampoline, stopping.\n");
+            ret = -UNW_ESTOPUNWIND;
+          }
+#endif
+        break;
+      }
 
     /* Evaluate CFA and registers for the next frame. */
     switch (f->frame_type)
@@ -497,6 +518,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       else
         {
           /* Cached frame has no LR and neither do we. */
+          Debug (3, "frame has no link register, stopping.\n");
           return -UNW_ESTOPUNWIND;
         }
       if (likely(ret >= 0) && likely(f->fp_cfa_offset != -1))
@@ -537,6 +559,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       /* We cannot trace through this frame, give up and tell the
           caller we had to stop.  Data collected so far may still be
           useful to the caller, so let it know how far we got.  */
+      Debug (3, "frame has unknown type, stopping.\n");
       ret = -UNW_ESTOPUNWIND;
       break;
     }

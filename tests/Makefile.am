@@ -88,9 +88,10 @@ if ARCH_AARCH64
                          aarch64-test-plt aarch64-test-frame-record
 endif
 
- check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt \
+ check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt				 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
+			Gtest-sig-context Ltest-sig-context		 \
 			Gtest-trace Ltest-trace				 \
 			Ltest-mem-validate				 \
 			test-async-sig test-flush-cache test-init-remote \
@@ -240,8 +241,8 @@ aarch64_test_plt_SOURCES = aarch64-test-plt.c
 aarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 
 if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
- Garm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
- Larm64_test_sve_signal_CFLAGS = -fno-inline -march=armv8-a+sve
+ Garm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve
+ Larm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve
 endif
 XFAIL_TESTS += Garm64-test-sve-signal Larm64-test-sve-signal
 
@@ -304,6 +305,7 @@ Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) $(BACKTRACELIB)
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Gtest_sig_context_LDADD = $(LIBUNWIND) 
 Gperf_simple_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_trace_LDADD=$(LIBUNWIND) $(LIBUNWIND_local)
 Gperf_trace_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
@@ -318,6 +320,7 @@ Ltest_nomalloc_LDADD = $(LIBUNWIND_local) $(DLLIB)
 Ltest_nocalloc_LDADD = $(LIBUNWIND_local) $(DLLIB) $(PTHREADS_LIB)
 Ltest_resume_sig_LDADD = $(LIBUNWIND_local)
 Ltest_resume_sig_rt_LDADD = $(LIBUNWIND_local)
+Ltest_sig_context_LDADD = $(LIBUNWIND_local)
 Lperf_simple_LDADD = $(LIBUNWIND_local)
 Ltest_trace_LDADD = $(LIBUNWIND_local)
 Lperf_trace_LDADD = $(LIBUNWIND_local)
