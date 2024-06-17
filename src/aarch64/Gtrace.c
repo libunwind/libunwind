@@ -290,6 +290,16 @@ trace_lookup (unw_cursor_t *cursor,
   uint64_t slot = ((pc * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
   unw_tdep_frame_t *frame;
 
+#if defined(__QNXNTO__)
+  /**
+   * Without slow DWARF unwinding the signal context gets lost, so bail.
+   */
+  if (unw_is_signal_frame (cursor))
+    {
+      return NULL;
+    }
+#endif
+
   for (i = 0; i < 16; ++i)
   {
     frame = &cache->frames[slot];
