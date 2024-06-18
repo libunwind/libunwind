@@ -60,7 +60,7 @@ typedef struct
   \note The current implementation only supports little endian modes.
 */
 static int
-is_plt_entry (struct dwarf_cursor *c)
+_is_plt_entry (struct dwarf_cursor *c)
 {
   unw_word_t w0, w1;
   unw_accessors_t *a;
@@ -171,6 +171,14 @@ is_plt_entry (struct dwarf_cursor *c)
     }
 }
 
+
+int
+unw_is_plt_entry (unw_cursor_t *uc)
+{
+	return _is_plt_entry (&((struct cursor *)uc)->dwarf);
+}
+
+
 int
 unw_step (unw_cursor_t * cursor)
 {
@@ -200,7 +208,7 @@ unw_step (unw_cursor_t * cursor)
       if (likely (unw_is_signal_frame (cursor) <= 0))
         {
           /* DWARF failed. */
-          if (is_plt_entry (&c->dwarf))
+          if (_is_plt_entry (&c->dwarf))
             {
               Debug (2, "found plt entry\n");
 
