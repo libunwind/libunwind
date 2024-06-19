@@ -291,9 +291,9 @@ _get_remote_elf_image(struct elf_image *ei,
 
 
 int
-tdep_get_elf_image(struct elf_image *ei, pid_t pid, unw_word_t ip,
+tdep_get_elf_image(unw_addr_space_t as, struct elf_image *ei, pid_t pid, unw_word_t ip,
                    unsigned long *segbase, unsigned long *mapoff,
-                   char *path, size_t pathlen)
+                   char *path, size_t pathlen, void *arg)
 {
   int ret = -UNW_ENOINFO;
   if (pid != getpid())
