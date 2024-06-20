@@ -368,6 +368,7 @@ struct elf_image
   {
     void *image;                /* pointer to mmap'd image */
     size_t size;                /* (file-) size of the image */
+    int mapped;                 /* whether image was mmap'd */
   };
 
 struct elf_dyn_info
