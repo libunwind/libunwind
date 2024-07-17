@@ -505,6 +505,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       else
         {
           /* Cached frame has no LR and neither do we. */
+          Debug (1, "returning -UNW_ESTOPUNWIND, depth %d\n", depth);
+          *size = depth;
           return -UNW_ESTOPUNWIND;
         }
       if (likely(ret >= 0) && likely(f->fp_cfa_offset != -1))
@@ -542,6 +544,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       /* We cannot trace through this frame, give up and tell the
           caller we had to stop.  Data collected so far may still be
           useful to the caller, so let it know how far we got.  */
+	  Debug (1, "returning -UNW_ESTOPUNWIND, depth %d\n", depth);
+	  *size = depth;
       ret = -UNW_ESTOPUNWIND;
       break;
     }
@@ -557,9 +561,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     buffer[depth++] = (void *) (pc - d->use_prev_instr);
   }
 
-#if UNW_DEBUG
   Debug (1, "returning %d, depth %d\n", ret, depth);
-#endif
   *size = depth;
   return ret;
 }

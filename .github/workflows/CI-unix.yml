@@ -50,7 +50,7 @@ jobs:
           autoreconf -i
           mkdir build
           cd build
-          ../configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }}
+          ../configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }} --enable-debug
         env:
           CC: ${{ matrix.toolchain.CC }}
           CXX: ${{ matrix.toolchain.CXX }}
@@ -74,6 +74,8 @@ jobs:
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           make -C build check -j8
+        env:
+          UNW_DEBUG_LEVEL: 4
 
       - name: Show Logs
         if: ${{ failure() }}
