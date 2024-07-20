@@ -1,64 +1,64 @@
 ACLOCAL_AMFLAGS = -I m4
-include_HEADERS = include/libunwind-dynamic.h
+include_HEADERS = include/api/libunwind-dynamic.h
 
 if BUILD_PTRACE
-include_HEADERS += include/libunwind-ptrace.h
+include_HEADERS += include/api/libunwind-ptrace.h
 endif BUILD_PTRACE
 
 if BUILD_COREDUMP
-include_HEADERS += include/libunwind-coredump.h
+include_HEADERS += include/api/libunwind-coredump.h
 endif BUILD_COREDUMP
 if BUILD_NTO
-include_HEADERS += include/libunwind-nto.h
+include_HEADERS += include/api/libunwind-nto.h
 endif BUILD_NTO
 if ARCH_AARCH64
-include_HEADERS += include/libunwind-aarch64.h
+include_HEADERS += include/api/libunwind-aarch64.h
 endif
 if ARCH_ARM
-include_HEADERS += include/libunwind-arm.h
+include_HEADERS += include/api/libunwind-arm.h
 endif
 if ARCH_IA64
-include_HEADERS += include/libunwind-ia64.h
+include_HEADERS += include/api/libunwind-ia64.h
 endif
 if ARCH_HPPA
-include_HEADERS += include/libunwind-hppa.h
+include_HEADERS += include/api/libunwind-hppa.h
 endif
 if ARCH_MIPS
-include_HEADERS += include/libunwind-mips.h
+include_HEADERS += include/api/libunwind-mips.h
 endif
 if ARCH_X86
-include_HEADERS += include/libunwind-x86.h
+include_HEADERS += include/api/libunwind-x86.h
 endif
 if ARCH_X86_64
-include_HEADERS += include/libunwind-x86_64.h
+include_HEADERS += include/api/libunwind-x86_64.h
 endif
 if ARCH_PPC32
-include_HEADERS += include/libunwind-ppc32.h
+include_HEADERS += include/api/libunwind-ppc32.h
 endif
 if ARCH_PPC64
-include_HEADERS += include/libunwind-ppc64.h
+include_HEADERS += include/api/libunwind-ppc64.h
 endif
 if ARCH_SH
-include_HEADERS += include/libunwind-sh.h
+include_HEADERS += include/api/libunwind-sh.h
 endif
 if ARCH_S390X
-include_HEADERS += include/libunwind-s390x.h
+include_HEADERS += include/api/libunwind-s390x.h
 endif
 if ARCH_RISCV
-include_HEADERS += include/libunwind-riscv.h
+include_HEADERS += include/api/libunwind-riscv.h
 endif
 if ARCH_LOONGARCH64
-include_HEADERS += include/libunwind-loongarch64.h
+include_HEADERS += include/api/libunwind-loongarch64.h
 endif
 
 if !REMOTE_ONLY
-include_HEADERS += include/libunwind.h
+include_HEADERS += include/api/libunwind.h
 if BUILD_UNWIND_HEADER
-include_HEADERS += include/unwind.h
+include_HEADERS += include/api/unwind.h
 endif
 endif
 
-nodist_include_HEADERS = include/libunwind-common.h
+nodist_include_HEADERS = include/api/libunwind-common.h
 
 SUBDIRS = src
 
