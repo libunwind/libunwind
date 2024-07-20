@@ -263,7 +263,6 @@ libunwind_la_SOURCES_generic =                 \
 	mi/Gget_proc_info_by_ip.c              \
 	mi/Gget_proc_name.c                    \
 	mi/Gget_reg.c                          \
-	mi/Gis_plt_entry.c                     \
 	mi/Gput_dynamic_unwind_info.c          \
 	mi/Gset_cache_size.c                   \
 	mi/Gset_caching_policy.c               \
@@ -315,7 +314,6 @@ libunwind_la_SOURCES_local_nounwind =          \
 	mi/Lget_proc_info_by_ip.c              \
 	mi/Lget_proc_name.c                    \
 	mi/Lget_reg.c                          \
-	mi/Lis_plt_entry.c                     \
 	mi/Lput_dynamic_unwind_info.c          \
 	mi/Lset_cache_size.c                   \
 	mi/Lset_caching_policy.c               \
@@ -510,6 +508,7 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_arm_common)     \
 	$(libunwind_la_SOURCES_arm_os_local)   \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	arm/Lapply_reg_state.c                 \
 	arm/Lcreate_addr_space.c               \
 	arm/Lex_tables.c                       \
@@ -533,6 +532,7 @@ libunwind_arm_la_SOURCES =                     \
 	$(libunwind_la_SOURCES_arm_common)     \
 	$(libunwind_la_SOURCES_arm_os)         \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	arm/Gapply_reg_state.c                 \
 	arm/Gcreate_addr_space.c               \
 	arm/Gex_tables.c                       \
@@ -571,6 +571,7 @@ if ARCH_HPPA
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_hppa_common)    \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	hppa/getcontext.S                      \
 	hppa/Lapply_reg_state.c                \
 	hppa/Lcreate_addr_space.c              \
@@ -594,6 +595,7 @@ endif # ARCH_HPPA
 libunwind_hppa_la_SOURCES =                    \
 	$(libunwind_la_SOURCES_hppa_common)    \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	hppa/Gapply_reg_state.c                \
 	hppa/Gcreate_addr_space.c              \
 	hppa/Gget_proc_info.c                  \
@@ -647,6 +649,7 @@ Lcursor_i.h: mk_Lcursor_i.s
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_ia64_common)    \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	ia64/dyn_info_list.S                   \
 	ia64/getcontext.S                      \
 	ia64/Lapply_reg_state.c                \
@@ -680,6 +683,7 @@ endif # ARCH_IA64
 libunwind_ia64_la_SOURCES =                    \
 	$(libunwind_la_SOURCES_ia64_common)    \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	ia64/Gapply_reg_state.c                \
 	ia64/Gcreate_addr_space.c              \
 	ia64/Gfind_unwind_table.c              \
@@ -722,6 +726,7 @@ if ARCH_LOONGARCH64
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_loongarch64_common) \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	loongarch64/getcontext.S               \
 	loongarch64/Lapply_reg_state.c         \
 	loongarch64/Lcreate_addr_space.c       \
@@ -744,6 +749,7 @@ endif # ARCH_LOONGARCH64
 libunwind_loongarch64_la_SOURCES =             \
 	$(libunwind_la_SOURCES_loongarch64_common) \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	loongarch64/Gapply_reg_state.c         \
 	loongarch64/Gcreate_addr_space.c       \
 	loongarch64/Gget_proc_info.c           \
@@ -781,6 +787,7 @@ if ARCH_MIPS
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_mips_common)    \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	mips/getcontext.S                      \
 	mips/Lapply_reg_state.c                \
 	mips/Lcreate_addr_space.c              \
@@ -802,6 +809,7 @@ endif # ARCH_MIPS
 libunwind_mips_la_SOURCES =                    \
 	$(libunwind_la_SOURCES_mips_common)    \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	mips/Gapply_reg_state.c                \
 	mips/Gcreate_addr_space.c              \
 	mips/Gget_proc_info.c                  \
@@ -858,6 +866,7 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_ppc32_common)   \
 	$(libunwind_la_SOURCES_local)          \
 	$(libunwind_la_SOURCES_ppc)            \
+	mi/Lis_plt_entry.c                     \
 	ppc32/Lapply_reg_state.c               \
 	ppc32/Lcreate_addr_space.c             \
 	ppc32/Lglobal.c                        \
@@ -877,6 +886,7 @@ libunwind_ppc32_la_SOURCES =                   \
 	$(libunwind_la_SOURCES_ppc32_common)   \
 	$(libunwind_la_SOURCES_generic)        \
 	$(libunwind_ppc_la_SOURCES_ppc_generic)\
+	mi/Gis_plt_entry.c                     \
 	ppc32/Gapply_reg_state.c               \
 	ppc32/Gcreate_addr_space.c             \
 	ppc32/Gglobal.c                        \
@@ -961,6 +971,7 @@ if ARCH_RISCV
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_riscv_common)   \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	riscv/getcontext.S                     \
 	riscv/Lapply_reg_state.c               \
 	riscv/Lcreate_addr_space.c             \
@@ -984,6 +995,7 @@ endif # ARCH_RISCV
 libunwind_riscv_la_SOURCES =                   \
 	$(libunwind_la_SOURCES_riscv_common)   \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	riscv/Gapply_reg_state.c               \
 	riscv/Gcreate_addr_space.c             \
 	riscv/Gget_proc_info.c                 \
@@ -1021,6 +1033,7 @@ if ARCH_ALPHA
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_alpha_common)   \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	alpha/getcontext.S                     \
 	alpha/Lapply_reg_state.c               \
 	alpha/Lcreate_addr_space.c             \
@@ -1044,6 +1057,7 @@ endif # ARCH_ALPHA
 libunwind_alpha_la_SOURCES =                   \
 	$(libunwind_la_SOURCES_alpha_common)   \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	alpha/Gapply_reg_state.c               \
 	alpha/Gcreate_addr_space.c             \
 	alpha/Gget_proc_info.c                 \
@@ -1080,6 +1094,7 @@ if ARCH_S390X
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_s390x_common)   \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	s390x/getcontext.S                     \
 	s390x/Lapply_reg_state.c               \
 	s390x/Lcreate_addr_space.c             \
@@ -1103,6 +1118,7 @@ endif # ARCH_S390X
 libunwind_s390x_la_SOURCES =                   \
 	$(libunwind_la_SOURCES_s390x_common)   \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	s390x/Gapply_reg_state.c               \
 	s390x/Gcreate_addr_space.c             \
 	s390x/Gget_proc_info.c                 \
@@ -1140,6 +1156,7 @@ if ARCH_SH
 libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_sh_common)      \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	sh/Lapply_reg_state.c                  \
 	sh/Lcreate_addr_space.c                \
 	sh/Lget_proc_info.c                    \
@@ -1159,6 +1176,7 @@ endif # ARCH_SH
 libunwind_sh_la_SOURCES =                      \
 	$(libunwind_la_SOURCES_sh_common)      \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	sh/Gapply_reg_state.c                  \
 	sh/Gcreate_addr_space.c                \
 	sh/Gget_proc_info.c                    \
@@ -1197,6 +1215,7 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_x86_common)     \
 	$(libunwind_la_SOURCES_x86_os_local)   \
 	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
 	x86/Lapply_reg_state.c                 \
 	x86/Lcreate_addr_space.c               \
 	x86/Lget_proc_info.c                   \
@@ -1220,6 +1239,7 @@ libunwind_x86_la_SOURCES =                     \
 	$(libunwind_la_SOURCES_x86_common)     \
 	$(libunwind_la_SOURCES_x86_os)         \
 	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
 	x86/Gapply_reg_state.c                 \
 	x86/Gcreate_addr_space.c               \
 	x86/Gget_proc_info.c                   \
