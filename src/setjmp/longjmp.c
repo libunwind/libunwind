@@ -47,10 +47,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
    Doing so is possible, but doesn't appear to be worth the trouble,
    so we simply defer to glibc longjmp here.  */
-#define _longjmp __nonworking__longjmp
-#define longjmp __nonworking_longjmp
-static void _longjmp (jmp_buf env, int val);
-static void longjmp (jmp_buf env, int val);
+#define SKIP_LONGJMP
 #endif
 #endif /* __GLIBC__ */
 
@@ -58,6 +55,7 @@ static void longjmp (jmp_buf env, int val);
 #define	_JB_STK_SHIFT	0
 #endif
 
+#ifndef SKIP_LONGJMP
 void
 _longjmp (jmp_buf env, int val)
 {
@@ -113,3 +111,5 @@ longjmp (jmp_buf env, int val)
 }
 
 #endif /* __GNUC__ */
+
+#endif /* SKIP_LONGJMP */
