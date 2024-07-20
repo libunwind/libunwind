@@ -32,7 +32,7 @@
  * This weakly-defined version of this public API function does nothing other
  * than always return false.
  */
-WEAK int
+int
 unw_is_plt_entry (unw_cursor_t *c UNUSED)
 {
 	return 0;
