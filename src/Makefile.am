@@ -29,7 +29,8 @@ AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
               $(UNW_TARGET_CPPFLAGS) \
               $(UNW_CET_CFLAGS) \
-              -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
+              -I$(top_srcdir)/include -I$(top_srcdir)/include/api \
+              -I$(top_builddir)/include/api -I$(top_srcdir)/include/tdep-$(arch) -I.
 AM_CFLAGS = $(UNW_EXTRA_CFLAGS)
 
 AM_LDFLAGS = $(LD_FLAGS_UNW_CET)
