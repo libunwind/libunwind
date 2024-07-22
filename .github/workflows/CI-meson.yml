@@ -79,7 +79,8 @@ jobs:
           --${{ matrix.toolchain.type }}-file
           .github/meson/${{ matrix.toolchain.type }}/${{ matrix.toolchain.machinefile }}.ini
           ${{ matrix.setup.args }} --buildtype ${{ matrix.setup.buildtype }}
-          --warnlevel 2 --fatal-meson-warnings
+          -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled --warnlevel 2
+          --fatal-meson-warnings
           builddir
 
       - name: Show Logs
@@ -141,7 +142,8 @@ jobs:
         run: >-
           meson setup
           ${{ matrix.setup.args }} --buildtype ${{ matrix.setup.buildtype }}
-          --warnlevel 2 --fatal-meson-warnings
+          -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled --warnlevel 2
+          --fatal-meson-warnings
           builddir
         shell: alpine.sh {0}
 
@@ -195,7 +197,8 @@ jobs:
           meson setup
           --cross-file .github/meson/cross-target/${{ matrix.config.triple }}.ini
           ${{ matrix.setup.args }} --buildtype ${{ matrix.setup.buildtype }}
-          --warnlevel 2 --fatal-meson-warnings
+          -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled --warnlevel 2
+          --fatal-meson-warnings
           builddir
 
       - name: Show Logs
