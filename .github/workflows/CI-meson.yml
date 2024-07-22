@@ -1,0 +1,217 @@
+name: CI - Meson
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '**'
+      - '!README'
+      - '!INSTALL'
+      - '!NEWS'
+      - '!doc/**'
+      - '!.**'
+      - '.github/workflows/CI-meson.yml'
+  push:
+    branches:
+      - v[0-9].*
+      - master
+
+jobs:
+  build-gnu:
+    runs-on: ubuntu-22.04
+    name: ${{ matrix.toolchain.machinefile }} (${{ matrix.setup.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        toolchain:
+          - {type: native, machinefile: gcc12,                                                                abicheck: true }
+          - {type: native, machinefile: clang13,                                                              abicheck: true }
+          - {type: cross,  machinefile: i686-linux-gnu-gcc12,          packages: g++-12-multilib,             abicheck: true }
+          - {type: cross,  machinefile: i686-linux-gnu-clang13,        packages: g++-12-multilib,             abicheck: true }
+          - {type: cross,  machinefile: arm-linux-gnueabi-gcc12,       packages: g++-12-arm-linux-gnueabi                    }
+          - {type: cross,  machinefile: arm-linux-gnueabihf-gcc12,     packages: g++-12-arm-linux-gnueabihf                  }
+          - {type: cross,  machinefile: aarch64-linux-gnu-gcc12,       packages: g++-12-aarch64-linux-gnu,    abicheck: true }
+          - {type: cross,  machinefile: riscv64-linux-gnu-gcc12,       packages: g++-12-riscv64-linux-gnu                    }
+          - {type: cross,  machinefile: powerpc-linux-gnu-gcc12,       packages: g++-12-powerpc-linux-gnu                    }
+          - {type: cross,  machinefile: powerpc64-linux-gnu-gcc12,     packages: g++-12-powerpc64-linux-gnu                  }
+          - {type: cross,  machinefile: powerpc64le-linux-gnu-gcc12,   packages: g++-12-powerpc64le-linux-gnu                }
+          - {type: cross,  machinefile: s390x-linux-gnu-gcc12,         packages: g++-12-s390x-linux-gnu,      abicheck: true }
+          - {type: cross,  machinefile: mips-linux-gnu-gcc10,          packages: g++-10-mips-linux-gnu                       }
+          - {type: cross,  machinefile: mips64-linux-gnuabi64-gcc10,   packages: g++-10-mips64-linux-gnuabi64                }
+          - {type: cross,  machinefile: mipsel-linux-gnu-gcc10,        packages: g++-10-mipsel-linux-gnu                     }
+          - {type: cross,  machinefile: mips64el-linux-gnuabi64-gcc10, packages: g++-10-mips64el-linux-gnuabi64              }
+        setup:
+          - {name: debug,   buildtype: debug,   args: -Ddebug_logs=true }
+          - {name: release, buildtype: release, args: -Ddebug_logs=true }
+          - {name: abi,     buildtype: debug,   args: -Doptimization=g, abicheck: true }
+        exclude:
+          - toolchain: {abicheck: false}
+            setup: {name: abi}
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Install Meson
+        run: |
+          pipx install 'meson >=1.0.0,<2'
+          pipx install ninja
+
+      - name: Install toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y ${{ matrix.toolchain.packages }} abigail-tools
+
+      - name: Install QEMU
+        if: ${{ matrix.toolchain.type == 'cross' && ! startsWith(matrix.toolchain.machinefile, 'i686-linux-gnu-') }}
+        # this ensure install latest qemu on ubuntu, apt get version is old
+        env:
+          QEMU_SRC: "http://archive.ubuntu.com/ubuntu/pool/universe/q/qemu"
+          QEMU_VER: "qemu-user-static_7\\.2.*_amd64.deb$"
+        run: |
+          DEB=`curl -s $QEMU_SRC/ | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 | grep $QEMU_VER | tail -1`
+          wget $QEMU_SRC/$DEB
+          sudo dpkg -i $DEB
+
+      - name: Setup
+        run: >-
+          meson setup
+          --${{ matrix.toolchain.type }}-file
+          .github/meson/${{ matrix.toolchain.type }}/${{ matrix.toolchain.machinefile }}.ini
+          ${{ matrix.setup.args }} --buildtype ${{ matrix.setup.buildtype }}
+          --warnlevel 2 --fatal-meson-warnings
+          builddir
+
+      - name: Show Logs
+        if: ${{ failure() }}
+        run: cat builddir/meson-logs/meson-log.txt
+
+      - name: Build
+        run: meson compile -C builddir
+
+      - name: Check ABI
+        if: ${{ success() && matrix.toolchain.abicheck && matrix.setup.abicheck }}
+        run: meson compile -C builddir --ninja-args=-k0 abi-check
+        continue-on-error: true
+
+      - name: Test (native)
+        run: |
+          set -x
+          sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          ulimit -c unlimited
+          meson test -C builddir --print-errorlogs
+
+      - name: Upload test logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testlogs-gnu-${{ matrix.toolchain.machinefile }}-${{ matrix.setup.name }}
+          path: builddir/meson-logs/testlog.txt
+          compression-level: 9
+
+
+  build-musl:
+    runs-on: ubuntu-latest
+    name: ${{ matrix.arch }}-linux-musl (${{ matrix.setup.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, ppc64le, riscv64, x86_64]
+        setup:
+          - {name: debug,   buildtype: debug,   args: -Ddebug_logs=true }
+          - {name: release, buildtype: release, args: -Ddebug_logs=true }
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - name: Set up Alpine Linux
+        id: alpine
+        uses: jirutka/setup-alpine@359b91e094d3dc6292e4b627abb84d8856ab7ef2 # v1.2.0
+        with:
+          branch: edge
+          arch: ${{ matrix.arch }}
+          packages: >
+            build-base
+            libucontext-dev
+            linux-headers
+            meson
+            xz-dev
+          shell-name: alpine.sh
+
+      - name: Setup
+        run: >-
+          meson setup
+          ${{ matrix.setup.args }} --buildtype ${{ matrix.setup.buildtype }}
+          --warnlevel 2 --fatal-meson-warnings
+          builddir
+        shell: alpine.sh {0}
+
+      - name: Show Logs
+        if: ${{ failure() }}
+        run: cat builddir/meson-logs/meson-log.txt
+
+      - name: Build
+        run: meson compile -C builddir
+        shell: alpine.sh {0}
+
+      - name: Test
+        run: meson test -C builddir --print-errorlogs
+        shell: alpine.sh {0}
+
+      - name: Upload test logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testlogs-musl-${{ matrix.arch }}-${{ matrix.setup.name }}
+          path: builddir/meson-logs/testlog.txt
+          compression-level: 9
+
+
+  build-windows:
+    runs-on: windows-${{ matrix.config.server }}
+    name: ${{ matrix.config.arch }}-windows to ${{ matrix.config.triple }} (${{ matrix.setup.name }})
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {arch: win32, server: 2022, triple: arm-linux-gnueabihf}
+          - {arch: x64,   server: 2022, triple: aarch64-linux-gnu}
+          - {arch: x64,   server: 2022, triple: x86_64-linux-gnu}
+        setup:
+          - {name: debug,   buildtype: debug }
+          - {name: release, buildtype: release }
+    steps:
+      - uses: actions/checkout@692973e3d937129bcbf40652eb9f2f61becf3332 # v4.1.7
+
+      - uses: ilammy/msvc-dev-cmd@0b201ec74fa43914dc39ae48a89fd1d8cb592756 # v1.13.0
+        with:
+          arch: ${{ matrix.config.arch }}
+
+      - name: Install Meson
+        run: pipx install 'meson >=1.0.0,<2'
+
+      - name: Setup
+        shell: cmd
+        run: >-
+          meson setup
+          --cross-file .github/meson/cross-target/${{ matrix.config.triple }}.ini
+          ${{ matrix.setup.args }} --buildtype ${{ matrix.setup.buildtype }}
+          --warnlevel 2 --fatal-meson-warnings
+          builddir
+
+      - name: Show Logs
+        if: ${{ failure() }}
+        run: cat builddir/meson-logs/meson-log.txt
+
+      - name: Build
+        run: meson compile -C builddir
+
+      - name: Test
+        run: meson test -C builddir --print-errorlogs
+
+      - name: Upload test logs
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: testlogs-windows-${{ matrix.config.arch }}-${{ matrix.config.triple }}-${{ matrix.setup.name }}
+          path: builddir/meson-logs/testlog.txt
+          compression-level: 9
