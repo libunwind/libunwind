@@ -544,10 +544,9 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       /* We cannot trace through this frame, give up and tell the
           caller we had to stop.  Data collected so far may still be
           useful to the caller, so let it know how far we got.  */
-	  Debug (1, "returning -UNW_ESTOPUNWIND, depth %d\n", depth);
-	  *size = depth;
-      ret = -UNW_ESTOPUNWIND;
-      break;
+      Debug (1, "returning -UNW_ESTOPUNWIND, depth %d\n", depth);
+      *size = depth;
+      return -UNW_ESTOPUNWIND;
     }
 
     Debug (4, "new cfa 0x%lx pc 0x%lx sp 0x%lx fp 0x%lx\n",

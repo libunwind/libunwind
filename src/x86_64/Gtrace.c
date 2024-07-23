@@ -540,9 +540,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
          useful to the caller, so let it know how far we got.  */
       Debug (1, "returning UNW_ESTOPUNWIND, depth %d\n", depth);
       *size = depth;
-      ret = -UNW_ESTOPUNWIND;
-      return ret;
-      break;
+      return -UNW_ESTOPUNWIND;
     }
 
     Debug (4, "new cfa 0x%lx rip 0x%lx rsp 0x%lx rbp 0x%lx\n",
