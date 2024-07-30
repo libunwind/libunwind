@@ -819,10 +819,10 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
           const char prefix[] = "/usr/lib/debug/.build-id/";
 
           /* See "man 5 elf" for notes about alignment in Nhdr */
-          const Elf_W(Nhdr) *nhdr = (const ElfW(Nhdr) *) notes;
-          const ElfW(Word) namesz = nhdr->n_namesz;
-          const ElfW(Word) descsz = nhdr->n_descsz;
-          const ElfW(Word) nameasz = UNW_ALIGN(namesz, 4); /* Aligned size */
+          const Elf_W(Nhdr) *nhdr = (const Elf_W(Nhdr) *) notes;
+          const Elf_W(Word) namesz = nhdr->n_namesz;
+          const Elf_W(Word) descsz = nhdr->n_descsz;
+          const Elf_W(Word) nameasz = UNW_ALIGN(namesz, 4); /* Aligned size */
           const char *name = (const char *) (nhdr + 1);
           const uint8_t *desc = (const uint8_t *) name + nameasz;
           unsigned j;
