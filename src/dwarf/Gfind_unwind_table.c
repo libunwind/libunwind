@@ -114,13 +114,13 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
 
   if (peh_hdr)
     {
-      if (pdyn)
+      Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)elf_w (get_program_segment) (&edi->ei, pdyn, NULL);
+      if (dyn)
         {
           /* For dynamically linked executables and shared libraries,
              DT_PLTGOT is the value that data-relative addresses are
              relative to for that object.  We call this the "gp".  */
-                Elf_W(Dyn) *dyn = (Elf_W(Dyn) *)(pdyn->p_offset
-                                                 + (char *) edi->ei.image);
+
           for (; dyn->d_tag != DT_NULL; ++dyn)
             if (dyn->d_tag == DT_PLTGOT)
               {
@@ -136,8 +136,13 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
            absolute.  */
         edi->di_cache.gp = 0;
 
-      hdr = (struct dwarf_eh_frame_hdr *) (peh_hdr->p_offset
-                                           + (char *) edi->ei.image);
+      hdr = (struct dwarf_eh_frame_hdr *) elf_w (get_program_segment) (&edi->ei, peh_hdr, NULL);
+      if (!hdr)
+        {
+          Debug (1, "table `%s' missing\n", path);
+          return -UNW_ENOINFO;
+        }
+
       if (hdr->version != DW_EH_VERSION)
         {
           Debug (1, "table `%s' has unexpected version %d\n",
