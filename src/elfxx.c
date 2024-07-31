@@ -142,7 +142,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
       }
     else if (phdr[i].p_type == PT_DYNAMIC)
       {
-        dyn = (Elf_W (Dyn) *) ((char *)ei->image + phdr[i].p_offset);
+        dyn = (Elf_W (Dyn) *) elf_w (get_program_segment) (ei, &phdr[i], NULL);
         break;
       }
 
@@ -811,8 +811,7 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
       if (phdr->p_type != PT_NOTE)
         continue;
 
-      notes = ((const uint8_t *) ehdr) + phdr->p_offset;
-      notes_end = notes + phdr->p_memsz;
+      notes = elf_w (get_program_segment) (ei, phdr, &notes_end);
 
       while(notes < notes_end)
         {

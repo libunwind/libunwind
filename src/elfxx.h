@@ -110,3 +110,21 @@ elf_map_image (struct elf_image *ei, const char *path)
 
   return 0;
 }
+
+static inline const uint8_t* elf_w (get_program_segment) (const struct elf_image *ei,
+  const Elf_W (Phdr) *phdr, const uint8_t** end)
+{
+  const uint8_t* result = NULL;
+
+  if (end)
+    *end = NULL;
+
+  if (!ei || !ei->image || !phdr || phdr->p_filesz == 0 || phdr->p_offset > ei->size)
+    return NULL;
+
+  result = ((const uint8_t*)ei->image) + phdr->p_offset;
+  if (end)
+    *end = result + phdr->p_filesz;
+
+  return result;
+}
