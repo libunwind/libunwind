@@ -534,6 +534,7 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei, struct elf_image *mdi)
     .free   = xz_free,
     .opaque = &allocator_data
   };
+  memset (&allocator_data, 0, sizeof(allocator_data));
 
   shdr = elf_w (find_section) (ei, ".gnu_debugdata");
   if (!shdr)
