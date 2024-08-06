@@ -56,6 +56,7 @@ extern int _UPT_get_proc_name (unw_addr_space_t, unw_word_t, char *, size_t,
 extern int _UPT_get_elf_filename (unw_addr_space_t, unw_word_t, char *, size_t,
                                   unw_word_t *, void *);
 extern int _UPT_resume (unw_addr_space_t, unw_cursor_t *, void *);
+extern unw_word_t _UPT_ptrauth_insn_mask (unw_addr_space_t, void *);
 extern unw_accessors_t _UPT_accessors;
 
 

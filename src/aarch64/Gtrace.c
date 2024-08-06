@@ -495,6 +495,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       if (likely(f->lr_cfa_offset != -1))
         {
           ACCESS_MEM_FAST(ret, c->validate, d, cfa + f->lr_cfa_offset, pc);
+          if (likely(ret >= 0))
+            pc = tdep_strip_ptrauth_insn_mask(cursor, pc);
         }
       else if (lr != 0)
         {
@@ -524,7 +526,10 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
 
       ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_PC_OFF, pc);
       if (likely(ret >= 0))
-        ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_X29_OFF, fp);
+        {
+          pc = tdep_strip_ptrauth_insn_mask(cursor, pc);
+          ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_X29_OFF, fp);
+        }
       if (likely(ret >= 0))
         ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_SP_OFF, sp);
       /* Save the link register here in case we end up in a function that

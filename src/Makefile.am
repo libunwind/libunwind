@@ -201,7 +201,8 @@ libunwind_ptrace_la_SOURCES =                  \
 	ptrace/_UPT_get_elf_filename.c         \
 	ptrace/_UPT_put_unwind_info.c          \
 	ptrace/_UPT_reg_offset.c               \
-	ptrace/_UPT_resume.c
+	ptrace/_UPT_resume.c                   \
+	ptrace/_UPT_ptrauth_insn_mask.c
 libunwind_ptrace_la_LIBADD =                   \
 	libunwind-$(arch).la                   \
 	$(LIBLZMA) $(LIBZ)
@@ -436,7 +437,8 @@ libunwind_la_SOURCES =                         \
 	aarch64/Lresume.c                      \
 	aarch64/Lstash_frame.c                 \
 	aarch64/Lstep.c                        \
-	aarch64/Ltrace.c
+	aarch64/Ltrace.c                       \
+	aarch64/Lstrip_ptrauth_insn_mask.c
 
 libunwind_setjmp_la_SOURCES +=                 \
 	aarch64/longjmp.S                      \
@@ -461,7 +463,8 @@ libunwind_aarch64_la_SOURCES =                 \
 	aarch64/Gresume.c                      \
 	aarch64/Gstash_frame.c                 \
 	aarch64/Gstep.c                        \
-	aarch64/Gtrace.c
+	aarch64/Gtrace.c                       \
+	aarch64/Gstrip_ptrauth_insn_mask.c
 libunwind_aarch64_la_LDFLAGS =                 \
 	$(COMMON_SO_LDFLAGS)                   \
 	-version-info $(SOVERSION)
