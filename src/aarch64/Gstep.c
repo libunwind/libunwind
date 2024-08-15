@@ -640,7 +640,11 @@ unw_step (unw_cursor_t *cursor)
   ret = unw_is_signal_frame (cursor);
   Debug(1, "unw_is_signal_frame()=%d\n", ret);
   if (ret > 0)
-    return aarch64_handle_signal_frame (cursor);
+    {
+      c->dwarf.next_to_signal_frame = 0;
+      c->dwarf.cfa_is_unreliable = 0;
+      return aarch64_handle_signal_frame (cursor);
+    }
   else if (unlikely (ret < 0))
     {
       /* IP points to non-mapped memory. */
@@ -651,8 +655,10 @@ unw_step (unw_cursor_t *cursor)
     }
 
   /* Try DWARF-based unwinding... */
+  c->dwarf.next_to_signal_frame = c->sigcontext_format == SCF_FORMAT;
   c->sigcontext_format = AARCH64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
+  c->dwarf.cfa_is_unreliable = c->dwarf.next_to_signal_frame ? 1 : 0;
   Debug(1, "dwarf_step()=%d\n", ret);
 
   /* Restore default memory validation state */
