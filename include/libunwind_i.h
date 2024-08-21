@@ -220,7 +220,7 @@ do {                                            \
 static ALWAYS_INLINE void *
 mi_mmap (void *addr, size_t len, int prot, int flags, int fd, off_t offset)
 {
-#if defined(SYS_mmap) && !defined(__i386__)
+#if defined(SYS_mmap) && !defined(__i386__) && !defined(__s390x__)
   /* Where supported, bypass libc and invoke the syscall directly. */
 # if defined(__FreeBSD__) // prefer over syscall on *BSD
   long int ret = __syscall (SYS_mmap, addr, len, prot, flags, fd, offset);
