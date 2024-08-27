@@ -38,6 +38,7 @@ include/tdep/libunwind_i.h
 
 tests/[GL]test-bt
 tests/[GL]test-concurrent
+tests/[GL]test-concurrent-dl
 tests/[GL]test-dyn1
 tests/[GL]test-exc
 tests/[GL]test-init
