@@ -33,6 +33,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "libunwind_i.h"
 #include "os-linux.h"
 
+#define VDSO_NAME "[vdso]"
+
 int
 tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
                     unsigned long *segbase, unsigned long *mapoff,
@@ -102,7 +104,19 @@ tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
   if (stat(full_path, &st) || !S_ISREG(st.st_mode))
     strcpy(full_path, mi.path);
 
-  rc = elf_map_image (ei, full_path);
+  if (strcmp(mi.path, VDSO_NAME) == 0)
+    {
+      /* N.B. Assumes vDSO is described in one entry in maps */
+      ei->image = (void*) *segbase;
+      ei->size = (void*) hi - ei->image;
+      ei->mapped = 0;
+
+      rc = elf_w (valid_object) (ei) ? 0 : -1;
+    }
+  else
+    {
+      rc = elf_map_image (ei, full_path);
+    }
 
   if (!path)
     free (full_path);
