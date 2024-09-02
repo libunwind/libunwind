@@ -43,6 +43,7 @@ tests/[GL]test-exc
 tests/[GL]test-init
 tests/[GL]test-resume-sig
 tests/[GL]test-resume-sig-rt
+tests/[GL]test-sig-context
 tests/[GL]perf-simple
 tests/Ltest-nomalloc
 tests/Ltest-nocalloc
@@ -60,6 +61,7 @@ tests/test-flush-cache
 tests/test-init-remote
 tests/test-mem
 tests/test-ptrace
+tests/test-runner
 tests/test-setjmp
 tests/test-strerror
 tests/test-proc-info
