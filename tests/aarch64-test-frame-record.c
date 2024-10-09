@@ -6,6 +6,9 @@
 #include "dwarf.h"
 #include "libunwind_i.h"
 
+#include <stdlib.h>
+
+unw_accessors_t * unw_get_accessors_int (unw_addr_space_t as) { abort(); }
 int unw_is_signal_frame (unw_cursor_t *cursor) { return 0; }
 int dwarf_step (struct dwarf_cursor *c) { return 0; }
 #include "aarch64/Gstep.c"

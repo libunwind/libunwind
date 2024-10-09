@@ -1,40 +1,40 @@
 # man pages that go into section 3:
-man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
-	libunwind-coredump.man \
-	libunwind-ptrace.man \
-	libunwind-setjmp.man			\
-	libunwind-nto.man \
-	unw_apply_reg_state.man						\
-	unw_backtrace.man						\
-	unw_flush_cache.man						\
-	unw_get_accessors.man						\
-	unw_get_proc_info.man						\
-	unw_get_proc_info_by_ip.man					\
-	unw_get_proc_info_in_range.man					\
-	unw_get_proc_name.man						\
-	unw_get_proc_name_by_ip.man					\
-	unw_get_fpreg.man						\
-	unw_get_reg.man							\
-	unw_getcontext.man						\
-	unw_init_local.man unw_init_remote.man				\
-	unw_init_local2.man						\
-	unw_is_fpreg.man						\
-	unw_is_signal_frame.man						\
-	unw_create_addr_space.man					\
-	unw_destroy_addr_space.man					\
-	unw_regname.man unw_resume.man					\
-	unw_reg_states_iterate.man					\
-	unw_set_caching_policy.man					\
-	unw_set_iterate_phdr_function.man				\
-	unw_set_cache_size.man						\
-	unw_set_fpreg.man						\
-	unw_set_reg.man							\
-	unw_step.man							\
-	unw_strerror.man						\
-	_U_dyn_register.man						\
-	_U_dyn_cancel.man         \
-	unw_get_elf_filename.man			\
-	unw_get_elf_filename_by_ip.man
+man3_MANS = libunwind.3 libunwind-dynamic.3 libunwind-ia64.3	\
+	libunwind-coredump.3 \
+	libunwind-ptrace.3 \
+	libunwind-setjmp.3			\
+	libunwind-nto.3 \
+	unw_apply_reg_state.3						\
+	unw_backtrace.3						\
+	unw_flush_cache.3						\
+	unw_get_accessors.3						\
+	unw_get_proc_info.3						\
+	unw_get_proc_info_by_ip.3					\
+	unw_get_proc_info_in_range.3					\
+	unw_get_proc_name.3						\
+	unw_get_proc_name_by_ip.3					\
+	unw_get_fpreg.3						\
+	unw_get_reg.3							\
+	unw_getcontext.3						\
+	unw_init_local.3 unw_init_remote.3				\
+	unw_init_local2.3						\
+	unw_is_fpreg.3						\
+	unw_is_signal_frame.3						\
+	unw_create_addr_space.3					\
+	unw_destroy_addr_space.3					\
+	unw_regname.3 unw_resume.3					\
+	unw_reg_states_iterate.3					\
+	unw_set_caching_policy.3					\
+	unw_set_iterate_phdr_function.3				\
+	unw_set_cache_size.3						\
+	unw_set_fpreg.3						\
+	unw_set_reg.3							\
+	unw_step.3							\
+	unw_strerror.3						\
+	_U_dyn_register.3						\
+	_U_dyn_cancel.3         \
+	unw_get_elf_filename.3			\
+	unw_get_elf_filename_by_ip.3
 
 EXTRA_DIST = NOTES libunwind.trans					\
 	libunwind.tex libunwind-dynamic.tex libunwind-ia64.tex		\
@@ -77,19 +77,19 @@ L2P	= pdflatex
 L2M_CMD	= $(L2M) -t $(srcdir)/libunwind.trans
 L2H_CMD	= $(L2M) -H -t $(srcdir)/libunwind.trans
 
-.tex.man:
+.tex.3:
 	$(AM_V_GEN)$(L2M_CMD) $< $@
 	-cp $@ $(srcdir)/$@
 
 html-local:
 	for n in $(man3_MANS); do					\
-		page=`basename $$n .man`;				\
+		page=`basename $$n .3`;				\
 		$(L2H_CMD) $(srcdir)/$$page.tex "$$page(3).raw";	\
 	done
 
 pdf-local:
 	for n in $(man3_MANS); do					\
-		page=`basename $$n .man`;				\
+		page=`basename $$n .3`;				\
 		$(L2P) $(srcdir)/$$page.tex "$$page(3).pdf";		\
 	done
 
