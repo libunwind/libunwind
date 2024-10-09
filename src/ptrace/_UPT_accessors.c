@@ -35,5 +35,6 @@ unw_accessors_t _UPT_accessors =
     .access_fpreg               = _UPT_access_fpreg,
     .resume                     = _UPT_resume,
     .get_proc_name              = _UPT_get_proc_name,
-    .get_elf_filename           = _UPT_get_elf_filename
+    .get_elf_filename           = _UPT_get_elf_filename,
+    .ptrauth_insn_mask          = _UPT_ptrauth_insn_mask
   };
