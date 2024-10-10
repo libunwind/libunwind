@@ -286,7 +286,7 @@ x86_r_uc_addr (ucontext_t *uc, int reg)
 }
 
 HIDDEN int
-x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+x86_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UNUSED)
 {
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = c->uc;

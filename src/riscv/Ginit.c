@@ -76,14 +76,14 @@ tdep_uc_addr (unw_context_t *uc, int reg)
 # endif /* UNW_LOCAL_ONLY */
 
 static void
-put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
+put_unwind_info (unw_addr_space_t as UNUSED, unw_proc_info_t *proc_info UNUSED, void *arg UNUSED)
 {
   /* it's a no-op */
 }
 
 static int
-get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
-                        void *arg)
+get_dyn_info_list_addr (unw_addr_space_t as UNUSED, unw_word_t *dyn_info_list_addr,
+                        void *arg UNUSED)
 {
 #ifndef UNW_LOCAL_ONLY
 # pragma weak _U_dyn_info_list_addr
@@ -97,7 +97,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 
 
 static int
-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val, int write,
             void *arg)
 {
   if (write)
@@ -122,7 +122,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 }
 
 static int
-access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
+access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val, int write,
             void *arg)
 {
   unw_word_t *addr;
@@ -153,7 +153,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 }
 
 static int
-access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *fpval, int write,
+access_fpreg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_fpreg_t *fpval, int write,
             void *arg)
 {
   struct cursor *c = (struct cursor *)arg;
@@ -188,7 +188,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *fpval, int wri
 static int
 get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
                       char *buf, size_t buf_len, unw_word_t *offp,
-                      void *arg)
+                      void *arg UNUSED)
 {
   return elf_w (get_proc_name) (as, getpid (), ip, buf, buf_len, offp);
 }
@@ -196,7 +196,7 @@ get_static_proc_name (unw_addr_space_t as, unw_word_t ip,
 static int
 get_static_elf_filename (unw_addr_space_t as, unw_word_t ip,
                       char *buf, size_t buf_len, unw_word_t *offp,
-                      void *arg)
+                      void *arg UNUSED)
 {
   return elf_w (get_elf_filename) (as, getpid (), ip, buf, buf_len, offp);
 }

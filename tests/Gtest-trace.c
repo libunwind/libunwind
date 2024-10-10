@@ -74,10 +74,10 @@ struct {
 	char const *name;
 	void       *addresses[MAX_BACKTRACE_SIZE];
 } trace[] = {
-	{ "unw_step" },
-	{ "backtrace" },
-	{ "unw_backtrace" },
-	{ "unw_backtrace2" }
+	{ "unw_step", {0} },
+	{ "backtrace", {0} },
+	{ "unw_backtrace", {0} },
+	{ "unw_backtrace2", {0} }
 };
 
 unw_cursor_t cursor;
