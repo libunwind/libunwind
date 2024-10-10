@@ -712,7 +712,7 @@ elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
 }
 
 HIDDEN int
-elf_w (get_elf_filename) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
+elf_w (get_elf_filename) (unw_addr_space_t as UNUSED, pid_t pid, unw_word_t ip,
                           char *buf, size_t buf_len, unw_word_t *offp)
 {
   unsigned long segbase, mapoff;

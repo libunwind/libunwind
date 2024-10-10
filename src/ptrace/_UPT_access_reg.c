@@ -325,7 +325,7 @@ _UPT_access_reg (UNUSED unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 # include <sys/user.h>
 
 int
-_UPT_access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
+_UPT_access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
                  int write, void *arg)
 {
   struct UPT_info *ui = arg;
