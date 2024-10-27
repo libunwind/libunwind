@@ -37,6 +37,10 @@ int
 unw_init_remote (unw_cursor_t *cursor, unw_addr_space_t as, void *as_arg)
 {
 #ifdef UNW_LOCAL_ONLY
+  // to suppress warning (unused)
+  (void)cursor;
+  (void)as;
+  (void)as_arg;
   return -UNW_EINVAL;
 #else /* !UNW_LOCAL_ONLY */
   struct cursor *c = (struct cursor *) cursor;
