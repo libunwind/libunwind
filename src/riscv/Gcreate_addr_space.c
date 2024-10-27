@@ -27,14 +27,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-#ifdef UNW_LOCAL_ONLY
-#define LOCAL_UNUSED UNUSED
-#else
-#define LOCAL_UNUSED
-#endif
-
 unw_addr_space_t
-unw_create_addr_space (unw_accessors_t *a LOCAL_UNUSED, int byte_order LOCAL_UNUSED)
+unw_create_addr_space (unw_accessors_t *a, int byte_order)
 {
 #ifdef UNW_LOCAL_ONLY
   return NULL;
