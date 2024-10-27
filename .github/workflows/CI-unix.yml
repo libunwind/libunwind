@@ -78,6 +78,7 @@ jobs:
           UNW_DEBUG_LEVEL: 4
 
       - name: Show Logs
+        if: ${{ failure() }}
         run: |
           cat build/tests/test-suite.log 2>/dev/null
 
