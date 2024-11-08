@@ -542,7 +542,7 @@ fi
 AC_MSG_RESULT([$have__builtin_unreachable])
 
 AC_CHECK_TOOL([ABICHECK], [abidw])
-AS_IF([test "$ABICHECK" = ":"],, [
+AS_IF([test x"$ABICHECK" != "x"], [
     abicheck_version=$($ABICHECK --version | sed -n 's/[[^ ]]* \([[0-9]]\).*/\1/p')
     AC_MSG_WARN([$ABICHECK version $abicheck_version])
     AS_IF([test $abicheck_version -ge 2],
