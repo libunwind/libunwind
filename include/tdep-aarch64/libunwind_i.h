@@ -293,6 +293,7 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 #define tdep_reuse_frame(c,frame)       do {} while(0)
 #define tdep_stash_frame                UNW_OBJ(tdep_stash_frame)
 #define tdep_trace                      UNW_OBJ(tdep_trace)
+#define tdep_strip_ptrauth_insn_mask    UNW_OBJ(tdep_strip_ptrauth_insn_mask)
 
 #ifdef UNW_LOCAL_ONLY
 # define tdep_find_proc_info(c,ip,n)                            \
@@ -332,5 +333,6 @@ extern int tdep_trace (unw_cursor_t *cursor, void **addresses, int *n);
 extern void tdep_stash_frame (struct dwarf_cursor *c,
                               struct dwarf_reg_state *rs);
 extern int tdep_getcontext_trace (unw_context_t *);
+extern unw_word_t tdep_strip_ptrauth_insn_mask (unw_cursor_t *cursor, unw_word_t ip);
 
 #endif /* AARCH64_LIBUNWIND_I_H */

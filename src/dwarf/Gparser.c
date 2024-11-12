@@ -796,41 +796,6 @@ aarch64_negate_ra_sign_state(dwarf_state_record_t *sr)
 }
 
 static unw_word_t
-aarch64_strip_pac_remote(unw_accessors_t *a, unw_addr_space_t as, void *arg, unw_word_t old_ip)
-{
-  if (a->ptrauth_insn_mask)
-    {
-      unw_word_t ip, insn_mask;
-
-      insn_mask = a->ptrauth_insn_mask(as, arg);
-      ip = old_ip & (~insn_mask);
-
-      Debug(15, "stripping pac from address, before: %lx, after: %lx\n", old_ip, ip);
-      return ip;
-    }
-  else
-    {
-      Debug(15, "return address %lx might be signed, but no means to obtain mask\n", old_ip);
-      return old_ip;
-    }
-}
-
-static unw_word_t
-aarch64_strip_pac_local(unw_word_t in_addr)
-{
-  unw_word_t out_addr = in_addr;
-
-#if defined(__aarch64__) && !defined(UNW_REMOTE_ONLY)
-  // Strip the PAC with XPACLRI instruction
-  register unsigned long long x30 __asm__("x30") = in_addr;
-  __asm__("hint 0x7" : "+r" (x30));
-  out_addr = x30;
-#endif
-
-  return out_addr;
-}
-
-static unw_word_t
 aarch64_get_ra_sign_state(struct dwarf_reg_state *rs)
 {
    return rs->reg.val[UNW_AARCH64_RA_SIGN_STATE];
@@ -975,14 +940,7 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 #ifdef UNW_TARGET_AARCH64
     if (aarch64_get_ra_sign_state(rs))
       {
-        if (c->as != unw_local_addr_space)
-          {
-            ip = aarch64_strip_pac_remote(a, as, arg, ip);
-          }
-        else
-          {
-            ip = aarch64_strip_pac_local(ip);
-          }
+        ip = tdep_strip_ptrauth_insn_mask ((unw_cursor_t*)c, ip);
       }
 #endif
     c->ip = ip;

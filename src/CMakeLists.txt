@@ -29,7 +29,7 @@ SET(libunwind_ptrace_la_SOURCES
     ptrace/_UPT_find_proc_info.c ptrace/_UPT_get_dyn_info_list_addr.c
     ptrace/_UPT_put_unwind_info.c ptrace/_UPT_get_proc_name.c
     ptrace/_UPT_reg_offset.c ptrace/_UPT_resume.c
-    ptrace/_UPT_get_elf_filename.c
+    ptrace/_UPT_get_elf_filename.c ptrace/_UPT_ptrauth_insn_mask.c
 )
 
 SET(libunwind_coredump_la_SOURCES
@@ -202,7 +202,7 @@ SET(libunwind_la_SOURCES_aarch64
     aarch64/Linit_local.c aarch64/Linit_remote.c
     aarch64/Lis_signal_frame.c aarch64/Lregs.c aarch64/Lresume.c
     aarch64/Lstash_frame.c aarch64/Lstep.c aarch64/Ltrace.c
-    aarch64/getcontext.S
+    aarch64/Lstrip_ptrauth_insn_mask.c aarch64/getcontext.S
 )
 
 SET(libunwind_aarch64_la_SOURCES_aarch64
@@ -214,6 +214,7 @@ SET(libunwind_aarch64_la_SOURCES_aarch64
     aarch64/Ginit_local.c aarch64/Ginit_remote.c
     aarch64/Gis_signal_frame.c aarch64/Gregs.c aarch64/Gresume.c
     aarch64/Gstash_frame.c aarch64/Gstep.c aarch64/Gtrace.c
+    aarch64/Gstrip_ptrauth_insn_mask.c
 )
 
 # The list of files that go into libunwind and libunwind-arm:
