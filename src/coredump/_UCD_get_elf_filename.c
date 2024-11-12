@@ -71,7 +71,7 @@ _get_text_offset (uint8_t *image)
 }
 
 static int
-elf_w (CD_get_elf_filename) (struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip,
+elf_w (CD_get_elf_filename) (struct UCD_info *ui, unw_addr_space_t as UNUSED, unw_word_t ip,
                              char *buf, size_t buf_len, unw_word_t *offp)
 {
   int ret = UNW_ESUCCESS;
