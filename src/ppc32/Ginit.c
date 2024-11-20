@@ -42,6 +42,13 @@ static struct unw_addr_space local_addr_space;
 
 unw_addr_space_t unw_local_addr_space = &local_addr_space;
 
+/* glibc and musl disagree over the layout of this struct */
+#ifdef __GLIBC__
+#define _UC_MCONTEXT_REGS(x) x->uc_mcontext.uc_regs
+#else
+#define _UC_MCONTEXT_REGS(x) x->uc_regs
+#endif
+
 static void *
 uc_addr (ucontext_t *uc, int reg)
 {
@@ -49,7 +56,7 @@ uc_addr (ucontext_t *uc, int reg)
 
   if ((unsigned) (reg - UNW_PPC32_R0) < 32)
 #if defined(__linux__)
-    addr = &uc->uc_mcontext.uc_regs->gregs[reg - UNW_PPC32_R0];
+    addr = _UC_MCONTEXT_REGS(&uc)->gregs[reg - UNW_PPC32_R0];
 #elif defined(__FreeBSD__)
     addr = &uc->uc_mcontext.mc_gpr[reg - UNW_PPC32_R0];
 #endif
@@ -58,7 +65,7 @@ uc_addr (ucontext_t *uc, int reg)
   if ( ((unsigned) (reg - UNW_PPC32_F0) < 32) &&
        ((unsigned) (reg - UNW_PPC32_F0) >= 0) )
 #if defined(__linux__)
-    addr = &uc->uc_mcontext.uc_regs->fpregs.fpregs[reg - UNW_PPC32_F0];
+    addr = _UC_MCONTEXT_REGS(&uc)->fpregs.fpregs[reg - UNW_PPC32_F0];
  #elif defined(__FreeBSD__)
     addr = &uc->uc_mcontext.mc_fpreg[reg - UNW_PPC32_F0];
 #endif
@@ -85,7 +92,7 @@ uc_addr (ucontext_t *uc, int reg)
           return NULL;
         }
 #if defined(__linux__)
-      addr = &uc->uc_mcontext.uc_regs->gregs[gregs_idx];
+      addr = _UC_MCONTEXT_REGS(&uc)->gregs[gregs_idx];
 #elif defined(__FreeBSD__)
       addr = &uc->uc_mcontext.mc_gpr[gregs_idx];
 #endif
