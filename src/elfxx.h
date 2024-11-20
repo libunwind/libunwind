@@ -108,6 +108,7 @@ elf_map_image (struct elf_image *ei, const char *path)
     return -1;
   }
 
+  ei->mapped = 1;
   return 0;
 }
 
