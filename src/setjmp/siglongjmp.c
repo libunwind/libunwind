@@ -52,14 +52,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    Doing so is possible, but doesn't appear to be worth the trouble,
    so we simply defer to glibc siglongjmp here.  */
 
-#define siglongjmp __nonworking_siglongjmp
-static void siglongjmp (sigjmp_buf env, int val) UNUSED;
+#define SKIP_SIGLONGJMP
 #endif
 #endif /* __GLIBC_PREREQ */
 
 #ifndef _JB_STK_SHIFT
 #define	_JB_STK_SHIFT	0
 #endif
+
+#ifndef SKIP_SIGLONGJMP
 
 void
 siglongjmp (sigjmp_buf env, int val)
@@ -133,3 +134,5 @@ siglongjmp (sigjmp_buf env, int val)
 
   abort ();
 }
+
+#endif /* SKIP_SIGLONGJMP */

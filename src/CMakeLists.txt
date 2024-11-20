@@ -2,9 +2,11 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 # other source files
 include_directories(../include/tdep)
+include_directories(../include/api)
 include_directories(../include)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../include/tdep)
 include_directories(${CMAKE_CURRENT_BINARY_DIR}/../include)
+include_directories(${CMAKE_CURRENT_BINARY_DIR}/../include/api)
 
 if(TARGET_ARM)
     # Ensure that the remote and local unwind code can reside in the same binary without name clashing
