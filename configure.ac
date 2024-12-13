@@ -441,38 +441,46 @@ if test x$enable_msabi_support = xyes; then
 fi
 AC_MSG_RESULT([$enable_msabi_support])
 
-LIBLZMA=
 AC_MSG_CHECKING([whether to support LZMA-compressed symbol tables])
 AC_ARG_ENABLE(minidebuginfo,
 AS_HELP_STRING([--enable-minidebuginfo], [Enables support for LZMA-compressed symbol tables]),, [enable_minidebuginfo=auto])
 AC_MSG_RESULT([$enable_minidebuginfo])
-if test x$enable_minidebuginfo != xno; then
-   AC_CHECK_LIB([lzma], [lzma_mf_is_supported],
-   [LIBLZMA=-llzma
-    AC_DEFINE([HAVE_LZMA], [1], [Define if you have liblzma])
+AS_IF([test x$enable_minidebuginfo != xno], [
+  PKG_CHECK_MODULES([LIBLZMA], [liblzma],
+   [AC_DEFINE([HAVE_LZMA], [1], [Define if you have liblzma])
     enable_minidebuginfo=yes],
-   [if test x$enable_minidebuginfo = xyes; then
-      AC_MSG_FAILURE([liblzma not found])
-    fi])
-fi
-AC_SUBST([LIBLZMA])
+   [ORIG_LIBS="$LIBS"
+    LIBS="$LIBLZMA_LIBS"
+    AC_SEARCH_LIBS([lzma_mf_is_supported], [lzma],
+     [LIBLZMA_LIBS="$LIBS"
+      AC_DEFINE([HAVE_LZMA], [1], [Define if you have liblzma])
+      enable_minidebuginfo=yes],
+     [if test x$enable_minidebuginfo = xyes; then
+        AC_MSG_FAILURE([liblzma not found])
+      fi])
+    LIBS="$ORIG_LIBS"])
+])
 AM_CONDITIONAL(HAVE_LZMA, test x$enable_minidebuginfo = xyes)
 
-LIBZ=
 AC_MSG_CHECKING([whether to support ZLIB-compressed symbol tables])
 AC_ARG_ENABLE(zlibdebuginfo,
 AS_HELP_STRING([--enable-zlibdebuginfo], [Enables support for ZLIB-compressed symbol tables]),, [enable_zlibdebuginfo=auto])
 AC_MSG_RESULT([$enable_zlibdebuginfo])
-if test x$enable_zlibdebuginfo != xno; then
-   AC_CHECK_LIB([z], [uncompress],
-   [LIBZ=-lz
-    AC_DEFINE([HAVE_ZLIB], [1], [Define if you have libz])
+AS_IF([test x$enable_zlibdebuginfo != xno], [
+  PKG_CHECK_MODULES([LIBZ], [zlib],
+   [AC_DEFINE([HAVE_ZLIB], [1], [Define if you have libz])
     enable_zlibdebuginfo=yes],
-   [if test x$enable_zlibdebuginfo = xyes; then
-      AC_MSG_FAILURE([libz not found])
-    fi])
-fi
-AC_SUBST([LIBZ])
+   [ORIG_LIBS="$LIBS"
+    LIBS="$LIBZ_LIBS"
+    AC_SEARCH_LIBS([uncompress], [z],
+     [LIBZ_LIBS="$LIBS"
+      AC_DEFINE([HAVE_ZLIB], [1], [Define if you have libz])
+      enable_zlibdebuginfo=yes],
+     [if test x$enable_zlibdebuginfo = xyes; then
+        AC_MSG_FAILURE([libz not found])
+      fi])
+    LIBS="$ORIG_LIBS"])
+])
 AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlibdebuginfo = xyes)
 
 AC_MSG_CHECKING([for Intel compiler])
