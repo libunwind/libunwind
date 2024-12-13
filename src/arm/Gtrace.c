@@ -423,7 +423,11 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   sp = cfa = d->cfa;
   ACCESS_MEM_FAST(ret, 0, d, DWARF_GET_LOC(d->loc[UNW_ARM_R7]), r7);
   assert(ret == 0);
-  lr = 0;
+
+  /* In case of unwinding from ucontext_t, we can look at the link
+     register value. On ARM, the register R14 acts as the link register */
+  ACCESS_MEM_FAST(ret, 0, d, DWARF_GET_LOC(d->loc[UNW_ARM_R14]), lr);
+  assert(ret == 0);
 
   /* Get frame cache. */
   if (unlikely(! (cache = trace_cache_get())))
@@ -441,7 +445,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   while (depth < maxdepth)
   {
     pc -= d->use_prev_instr;
-    Debug (2, "depth %d cfa 0x%x pc 0x%x sp 0x%x r7 0x%x\n",
+    Debug (2, "depth %d cfa 0x%x pc 0x%x sp 0x%x r7 0x%x lr 0x%lx\n",
            depth, cfa, pc, sp, r7);
 
     /* See if we have this address cached.  If not, evaluate enough of
@@ -488,6 +492,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       else if (lr != 0)
       {
         /* Use the saved link register as the new pc. */
+        Debug(4, "use link register value 0x%lx as the new pc\n", lr);
         pc = lr;
         lr = 0;
       }
@@ -513,6 +518,10 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
          doesn't save the link register in the prologue, e.g. kill. */
       if (likely(ret >= 0))
         ACCESS_MEM_FAST(ret, c->validate, d, cfa + LINUX_SC_LR_OFF, lr);
+
+      Debug(4, "signal frame cfa 0x%lx pc 0x%lx r7 0x%lx sp 0x%lx lr 0x%lx\n",
+            cfa, pc, r7, sp, lr);
+
 #elif defined(__FreeBSD__)
       Dprintf ("%s: implement me\n", __FUNCTION__);
       ret = -UNW_ESTOPUNWIND;
@@ -540,8 +549,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       return -UNW_ESTOPUNWIND;
     }
 
-    Debug (4, "new cfa 0x%x pc 0x%x sp 0x%x r7 0x%x\n",
-           cfa, pc, sp, r7);
+    Debug (4, "new cfa 0x%x pc 0x%x sp 0x%x r7 0x%x lr 0x%lx\n",
+           cfa, pc, sp, r7, lr);
 
     /* If we failed or ended up somewhere bogus, stop. */
     if (unlikely(ret < 0 || pc < 0x4000))
