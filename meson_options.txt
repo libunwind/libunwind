@@ -1,0 +1,100 @@
+option(
+    'coredump',
+    type: 'feature',
+    value: 'auto',
+    description: 'build libunwind-coredump library',
+)
+option(
+    'ptrace',
+    type: 'feature',
+    value: 'auto',
+    description: 'build libunwind-ptrace library',
+)
+option(
+    'nto',
+    type: 'feature',
+    value: 'auto',
+    description: 'build libunwind-nto library',
+)
+option(
+    'setjmp',
+    type: 'feature',
+    value: 'auto',
+    description: 'build libunwind-setjmp library',
+)
+option(
+    'cxx_exceptions',
+    type: 'feature',
+    value: 'auto',
+    description: 'use libunwind to handle C++ exceptions',
+)
+option(
+    'documentation',
+    type: 'feature',
+    value: 'auto',
+    description: 'generate the man pages',
+)
+
+option(
+    'debug_frame',
+    type: 'feature',
+    value: 'auto',
+    description: 'Load the .debug_frame section if available',
+)
+
+option(
+    'weak_backtrace',
+    type: 'boolean',
+    value: true,
+    description: 'provide the weak \'backtrace\' symbol',
+)
+option(
+    'unwind_header',
+    type: 'boolean',
+    value: true,
+    description: 'export the \'unwind.h\' header',
+)
+option(
+    'per_thread_cache',
+    type: 'boolean',
+    value: false,
+    description: 'build with support for UNW_CACHE_PER_THREAD (whih imposes a high TLS memory usage)',
+)
+option(
+    'block_signals',
+    type: 'boolean',
+    value: true,
+    description: 'Block signals before performing mutex operations',
+)
+option(
+    'conservative_checks',
+    type: 'boolean',
+    value: true,
+    description: 'Validate all memory addresses before use',
+)
+option(
+    'msabi_support',
+    type: 'boolean',
+    value: false,
+    description: 'Support for Microsoft ABI extensions',
+)
+
+option(
+    'minidebuginfo',
+    type: 'feature',
+    value: 'auto',
+    description: 'Support for LZMA-compressed symbol tables',
+)
+option(
+    'zlibdebuginfo',
+    type: 'feature',
+    value: 'auto',
+    description: 'Support for ZLIB-compressed symbol tables',
+)
+
+option(
+    'debug_logs',
+    type: 'boolean',
+    value: false,
+    description: 'enable debug support (slows down execution) CAUTION: changes the ABI',
+)
