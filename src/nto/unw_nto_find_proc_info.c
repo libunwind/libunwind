@@ -75,7 +75,7 @@ int unw_nto_find_proc_info (unw_addr_space_t as,
                             &segbase,
                             &mapoff,
                             path,
-                            sizeof (path));
+                            sizeof (path), arg);
 
   if (ret >= 0)
     {

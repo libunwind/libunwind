@@ -261,9 +261,10 @@ extern void tdep_put_unwind_info (unw_addr_space_t as,
                                   unw_proc_info_t *pi, void *arg);
 extern void *tdep_uc_addr (ucontext_t *uc, unw_regnum_t regnum,
                            uint8_t *nat_bitnr);
-extern int tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
+extern int tdep_get_elf_image (unw_addr_space_t as, struct elf_image *ei, pid_t pid, unw_word_t ip,
                                unsigned long *segbase, unsigned long *mapoff,
-                               char *path, size_t pathlen);
+                               char *path, size_t pathlen,
+                               void *arg);
 extern void tdep_get_exe_image_path (char *path);
 extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
                             unw_word_t *valp, int write);
