@@ -142,7 +142,14 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
   if (write)
     return dwarf_put (&c->dwarf, loc, *valp);
   else
-    return dwarf_get (&c->dwarf, loc, valp);
+    {
+      int ret = dwarf_get (&c->dwarf, loc, valp);
+      if (reg == UNW_AARCH64_X30)
+        {
+          *valp = tdep_strip_ptrauth_insn_mask((unw_cursor_t*)c, *valp);
+        }
+      return ret;
+    }
 }
 
 HIDDEN int
