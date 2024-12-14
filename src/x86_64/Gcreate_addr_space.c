@@ -34,6 +34,9 @@ unw_addr_space_t
 unw_create_addr_space (unw_accessors_t *a UNUSED, int byte_order UNUSED)
 {
 #ifdef UNW_LOCAL_ONLY
+  // to suppress warning (unused)
+  (void)a;
+  (void)byte_order;
   return NULL;
 #else
   unw_addr_space_t as;

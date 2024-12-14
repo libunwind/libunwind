@@ -52,7 +52,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define SC_SP_OFF   "0x100"
 
 HIDDEN int
-aarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+aarch64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UNUSED)
 {
   struct cursor *c = (struct cursor *) cursor;
   unw_context_t *uc = c->uc;
