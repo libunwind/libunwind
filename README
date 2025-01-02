@@ -5,7 +5,7 @@ chain of ELF program threads of execution and for resuming execution at any poin
 in that call chain. The API supports both local (same process) and remote (other
 process) operation.
 
-The API ise useful in a number of applications, including but not limited to the
+The API is useful in a number of applications, including but not limited to the
 following.
 - **program introspection**
     Either for error messages showing a back trace of the call chain leading to
