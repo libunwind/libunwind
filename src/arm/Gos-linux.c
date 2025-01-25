@@ -121,6 +121,7 @@ arm_handle_signal_frame (unw_cursor_t *cursor)
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R15], &c->dwarf.ip);
 
   c->dwarf.pi_valid = 0;
+  c->dwarf.use_prev_instr = 0;
 
   return 1;
 }
