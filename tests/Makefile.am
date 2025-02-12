@@ -214,7 +214,7 @@ endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
 	$(noinst_PROGRAMS_arch)
-noinst_HEADERS = ident.h
+noinst_HEADERS = ident.h unw_test.h
 
 do_test_subst = sed -e 's,[@]TESTS[@],$(TESTS),g' \
                     -e 's,[@]XFAIL_TESTS[@],$(XFAIL_TESTS),g' \
