@@ -38,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
-      - name: Setup
+      - name: Install ${{ matrix.target.triple }} Toolchain
         if: ${{ matrix.target.arch }} = 'i686'
         run: |
           sudo apt update
@@ -105,20 +105,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-      - name: Install QEMU
-        # this ensure install latest qemu on ubuntu, apt get version is old
-        env:
-          QEMU_SRC: "http://archive.ubuntu.com/ubuntu/pool/universe/q/qemu"
-          QEMU_VER: "qemu-user-static_7\\.2.*_amd64.deb$"
-        run: |
-          DEB=`curl -s $QEMU_SRC/ | grep -o -E 'href="([^"#]+)"' | cut -d'"' -f2 | grep $QEMU_VER | tail -1`
-          wget $QEMU_SRC/$DEB
-          sudo dpkg -i $DEB
 
       - name: Install ${{ matrix.config.host }} Toolchain
         run: |
           sudo apt update
-          sudo apt install -y g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} abigail-tools
+          sudo apt install -y g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} \
+                              qemu-user-static \
+                              abigail-tools
 
       - name: Configure with ${{ matrix.config.cc }}
         run: |
