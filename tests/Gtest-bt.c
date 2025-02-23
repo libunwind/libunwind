@@ -48,6 +48,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define panic(...)				\
 	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
+#define MIN_FRAMES 3
 #define SIG_STACK_SIZE 0x100000
 
 int verbose;
@@ -65,6 +66,7 @@ do_backtrace (void)
 {
   unw_word_t ip, sp, off;
   unw_proc_info_t pi;
+  unsigned int num_frames = 0;
   int ret;
 
   if (verbose)
@@ -120,8 +122,16 @@ do_backtrace (void)
 		  ret, (long) ip);
 	  ++num_errors;
 	}
+
+      ++num_frames;
     }
   while (ret > 0);
+
+  if (num_frames < MIN_FRAMES) {
+         printf ("FAILURE: only found %u frames in the backtrace\n",
+                 num_frames);
+         ++num_errors;
+  }
 
   {
     void *buffer[20];
