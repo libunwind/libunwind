@@ -86,6 +86,10 @@ endif #ARCH X86_64
 endif #!ARCH_PPC64
 endif #!ARCH_IA64
 
+if ARCH_ARM
+  check_PROGRAMS_arch += Garm-test-debug-frame-bt Larm-test-debug-frame-bt
+endif
+
 if ARCH_AARCH64
   check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal   \
                          aarch64-test-plt aarch64-test-frame-record
@@ -249,6 +253,9 @@ Gx64_test_dwarf_expressions_SOURCES =  Gx64-test-dwarf-expressions.c \
 Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
 																			 x64-test-dwarf-expressions.S
 
+Garm_test_debug_frame_bt_SOURCES = Garm-test-debug-frame-bt.c ident.c
+Larm_test_debug_frame_bt_SOURCES = Larm-test-debug-frame-bt.c ident.c
+
 Garm64_test_sve_signal_SOURCES = Garm64-test-sve-signal.c
 Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
 aarch64_test_plt_SOURCES = aarch64-test-plt.c
@@ -363,6 +370,9 @@ ppc64_test_plt_LDADD = $(LIBUNWIND)
 
 Gx64_test_dwarf_expressions_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Lx64_test_dwarf_expressions_LDADD = $(LIBUNWIND_local)
+
+Garm_test_debug_frame_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Larm_test_debug_frame_bt_LDADD = $(LIBUNWIND_local)
 
 Garm64_test_sve_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Larm64_test_sve_signal_LDADD = $(LIBUNWIND_local)
