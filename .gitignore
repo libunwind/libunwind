@@ -87,5 +87,6 @@ tests/x64-unwind-badjmp-signal-frame
 tests/[GL]arm64-test-sve-signal
 tests/aarch64-test-plt
 tests/aarch64-test-frame-record
+tests/[GL]arm-test-debug-frame-bt
 tests/*.log
 tests/*.trs
