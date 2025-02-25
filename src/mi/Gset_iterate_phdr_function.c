@@ -7,7 +7,7 @@
 void
 unw_set_iterate_phdr_function (unw_addr_space_t as, unw_iterate_phdr_func_t function)
 {
-  if (!tdep_init_done)
+  if (!atomic_load(&tdep_init_done))
     tdep_init ();
 
 #ifndef UNW_REMOTE_ONLY
