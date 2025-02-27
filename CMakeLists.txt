@@ -96,9 +96,8 @@ endif ()
 add_definitions(-DHAVE_CONFIG_H)
 
 configure_file(include/config.h.cmake.in ${CMAKE_CURRENT_BINARY_DIR}/include/config.h)
-configure_file(include/libunwind-common.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind-common.h)
-configure_file(include/libunwind.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/libunwind.h)
+configure_file(include/api/libunwind-common.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/api/libunwind-common.h)
+configure_file(include/api/libunwind.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/api/libunwind.h)
 configure_file(include/tdep/libunwind_i.h.in ${CMAKE_CURRENT_BINARY_DIR}/include/tdep/libunwind_i.h)
 
 add_subdirectory(src)
-

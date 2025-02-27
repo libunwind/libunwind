@@ -580,8 +580,8 @@ AC_SUBST(enable_debug_frame)
 
 
 AC_CONFIG_FILES(Makefile src/Makefile
-                include/libunwind-common.h
-                include/libunwind.h include/tdep/libunwind_i.h)
+                include/api/libunwind-common.h
+                include/api/libunwind.h include/tdep/libunwind_i.h)
 AC_CONFIG_FILES(src/unwind/libunwind.pc src/coredump/libunwind-coredump.pc
                 src/ptrace/libunwind-ptrace.pc src/setjmp/libunwind-setjmp.pc
                 src/libunwind-generic.pc)

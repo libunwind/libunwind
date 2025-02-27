@@ -32,7 +32,9 @@ testdir = ${pkglibexecdir}
 AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
               $(UNW_TARGET_CPPFLAGS) \
-              -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
+              -I$(top_srcdir)/include -I$(top_srcdir)/include/api \
+              -I$(top_builddir)/include/api \
+              -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
 AM_CFLAGS = $(UNW_EXTRA_CFLAGS) -g -fno-optimize-sibling-calls
 
 LOG_DRIVER = $(SHELL) $(UNW_TESTDRIVER)
