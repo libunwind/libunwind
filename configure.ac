@@ -431,6 +431,7 @@ if test x$enable_conservative_checks = xyes; then
   AC_DEFINE(CONSERVATIVE_CHECKS, 1,
 	[Define to 1 if you want every memory access validated])
 fi
+AM_CONDITIONAL(CONSERVATIVE_CHECKS, test x$enable_conservative_checks = xyes)
 AC_MSG_RESULT([$enable_conservative_checks])
 
 AC_MSG_CHECKING([whether to enable msabi support])
