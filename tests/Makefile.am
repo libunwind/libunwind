@@ -102,12 +102,22 @@ endif
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-sig-context Ltest-sig-context		 \
 			Gtest-trace Ltest-trace				 \
-			Ltest-mem-validate				 \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-reg-state Ltest-varargs		 \
 			Ltest-nomalloc Ltest-nocalloc Lrs-race
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
+
+# only enable Ltest-mem-validate on archs without conservative checks
+if !CONSERVATIVE_CHECKS
+ check_PROGRAMS_cdep += Ltest-mem-validate
+else #CONSERVATIVE_CHECKS
+if !ARCH_X86_64
+if !ARCH_S390X
+ check_PROGRAMS_cdep += Ltest-mem-validate
+endif
+endif
+endif
 
 # unw_init_local2() is not implemented on ia64
 if !ARCH_IA64
