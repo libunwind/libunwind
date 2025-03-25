@@ -251,12 +251,6 @@ trace_init_addr (unw_tdep_frame_t *f,
       && likely(dwarf_put (d, d->loc[UNW_ARM_R15], pc) >= 0)
       && likely((ret = unw_step (cursor)) >= 0))
     *f = c->frame_info;
-  #if defined (__QNX__)
-    if (unw_is_signal_frame (cursor))
-      {
-        return NULL;
-      }
-  #endif
 
   /* If unw_step() stopped voluntarily, remember that, even if it
      otherwise could not determine anything useful.  This avoids
