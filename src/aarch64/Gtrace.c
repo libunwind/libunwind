@@ -412,7 +412,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   struct cursor *c = (struct cursor *) cursor;
   struct dwarf_cursor *d = &c->dwarf;
   unw_trace_cache_t *cache;
-  unw_word_t fp, sp, pc, cfa, lr;
+  unw_word_t fp, sp, pc, cfa, lr = 0;
   int maxdepth = 0;
   int depth = 0;
   int ret;
@@ -431,11 +431,6 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   pc = d->ip;
   sp = cfa = d->cfa;
   ACCESS_MEM_FAST(ret, 0, d, DWARF_GET_LOC(d->loc[UNW_AARCH64_X29]), fp);
-  assert(ret == 0);
-
-  /* In case of unwinding from ucontext_t, we can look at the link
-     register value. */
-  ACCESS_MEM_FAST(ret, 0, d, DWARF_GET_LOC(d->loc[UNW_AARCH64_X30]), lr);
   assert(ret == 0);
 
   /* Get frame cache. */
