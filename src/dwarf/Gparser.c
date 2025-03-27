@@ -930,13 +930,11 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   /* DWARF spec says undefined return address location means end of stack. */
   if (DWARF_IS_NULL_LOC (c->loc[rs->ret_addr_column]))
     {
-      Debug(10, "-----ret addr column is nul\n");
       c->ip = 0;
     }
   else
   {
     ret = dwarf_get (c, c->loc[rs->ret_addr_column], &ip);
-    Debug(10, "----- reading ret addr column %d, ip %lx\n", ret, ip);
     if (ret < 0)
       return ret;
 #ifdef UNW_TARGET_AARCH64
@@ -947,7 +945,6 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
 #endif
     c->ip = ip;
   }
-  Debug(10, "----- getting ip %lx, ret %d\n", c->ip,ret);
   ret = (c->ip != 0) ? 1 : 0;
 
   /* XXX: check for ip to be code_aligned */
@@ -984,7 +981,6 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   else
     {
       ret = fetch_proc_info (c, c->ip);
-      Debug(10, "Fetch proc for ip %lx, ret %d\n", c->ip, ret);
       int next_use_prev_instr = c->use_prev_instr;
       if (ret >= 0)
 	{

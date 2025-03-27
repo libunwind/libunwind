@@ -294,7 +294,11 @@ trace_lookup (unw_cursor_t *cursor,
     addr = frame->virtual_address;
 
     /* Return if we found the address. */
-    if (likely(addr == rip) && rip != 0)
+    /*
+     if rip == 0, we may find an empty frame but not yet updated.
+     Do return it yet.
+     */
+    if (likely(addr == rip) && memcmp(frame, &empty_frame, sizeof(unw_tdep_frame_t) == 0))
     {
       Debug (4, "found address after %ld steps\n", i);
       return frame;
@@ -530,8 +534,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       rsp = cfa;
 
       /* Next frame needs to back up for unwind info lookup. */
-      if (rip != 0x0)
-         d->use_prev_instr = 1;
+      d->use_prev_instr = 1;
 
       break;
 
@@ -548,8 +551,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
            cfa, rip, rsp, rbp);
 
     /* If we failed or ended up somewhere bogus, stop. */
-    if (unlikely((ret < 0 || rip < 0x4000) && rip != 0)) {
-      Debug(1, "Break it bro\n");
+    if (unlikely((ret < 0 || rip < 0x4000) && rip != 0))
+    {
       break;
     }
 

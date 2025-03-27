@@ -80,8 +80,11 @@ unw_step (unw_cursor_t *cursor)
   c->sigcontext_format = X86_64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
-  Debug(10, "is signal frame %d, %lx\n", unw_is_signal_frame(cursor) > 0, c->dwarf.ip);
-  if (unw_is_signal_frame(cursor) > 0)
+  // If we are on a signal frame and the ip is 0x0, we might be in
+  // the case where null function pointer was used and crashed
+  // the app.
+  // Return non-zero value to continue unwinding. 
+  if (c->dwarf.ip == 0 && unw_is_signal_frame(cursor) > 0)
   {
     return 1;
   }
@@ -306,8 +309,9 @@ unw_step (unw_cursor_t *cursor)
         }
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RIP]))
         {
-          ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+          // GUESSED or STANDARD
           c->frame_info.frame_type = UNW_X86_64_FRAME_GUESSED;
+          ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
           Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
                      (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
                      (unsigned long long) c->dwarf.ip);
