@@ -293,19 +293,20 @@ trace_lookup (unw_cursor_t *cursor,
     frame = &cache->frames[slot];
     addr = frame->virtual_address;
 
+    int is_empty_frame = memcmp(frame, &empty_frame, sizeof(unw_tdep_frame_t)) == 0;
     /* Return if we found the address. */
     /*
-     if rip == 0, we may find an empty frame but not yet updated.
-     Do return it yet.
-     */
-    if (likely(addr == rip) && memcmp(frame, &empty_frame, sizeof(unw_tdep_frame_t) == 0))
+    In case rip == 0, we will have addr (virtual_address) be equal to rip,
+    but we need to check if the frame is an empty frame or not.
+    */
+    if (likely(addr == rip && !is_empty_frame))
     {
       Debug (4, "found address after %ld steps\n", i);
       return frame;
     }
 
-    /* If slot is empty, reuse it. */
-    if (likely(! addr))
+    /* If slot is empty or an empty frame (we might be in the case where addr == rip), reuse it. */
+    if (likely(! addr || is_empty_frame))
       break;
 
     /* Linear probe to next slot candidate, step = 1. */
