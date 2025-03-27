@@ -80,6 +80,12 @@ unw_step (unw_cursor_t *cursor)
   c->sigcontext_format = X86_64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
+  Debug(10, "is signal frame %d, %lx\n", unw_is_signal_frame(cursor) > 0, c->dwarf.ip);
+  if (unw_is_signal_frame(cursor) > 0)
+  {
+    return 1;
+  }
+
 #if CONSERVATIVE_CHECKS
   if (c->dwarf.as == unw_local_addr_space) {
     dwarf_set_validate(&c->dwarf, val);
@@ -156,7 +162,7 @@ unw_step (unw_cursor_t *cursor)
           c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
           c->dwarf.cfa += 8;
         }
-      else if (prev_ip == 0 || (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP])))
+      else if ((DWARF_IS_NULL_LOC (c->dwarf.loc[RBP])))
         {
           Debug (2, "End of call chain detected\n");
           for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
@@ -301,6 +307,7 @@ unw_step (unw_cursor_t *cursor)
       if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RIP]))
         {
           ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+          c->frame_info.frame_type = UNW_X86_64_FRAME_GUESSED;
           Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
                      (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
                      (unsigned long long) c->dwarf.ip);

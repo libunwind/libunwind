@@ -294,7 +294,7 @@ trace_lookup (unw_cursor_t *cursor,
     addr = frame->virtual_address;
 
     /* Return if we found the address. */
-    if (likely(addr == rip))
+    if (likely(addr == rip) && rip != 0)
     {
       Debug (4, "found address after %ld steps\n", i);
       return frame;
@@ -530,7 +530,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       rsp = cfa;
 
       /* Next frame needs to back up for unwind info lookup. */
-      d->use_prev_instr = 1;
+      if (rip != 0x0)
+         d->use_prev_instr = 1;
 
       break;
 
@@ -547,8 +548,10 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
            cfa, rip, rsp, rbp);
 
     /* If we failed or ended up somewhere bogus, stop. */
-    if (unlikely(ret < 0 || rip < 0x4000))
+    if (unlikely((ret < 0 || rip < 0x4000) && rip != 0)) {
+      Debug(1, "Break it bro\n");
       break;
+    }
 
     /* Record this address in stack trace. We skipped the first address. */
     buffer[depth++] = (void *) rip;
