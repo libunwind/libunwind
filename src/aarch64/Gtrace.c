@@ -305,15 +305,16 @@ trace_lookup (unw_cursor_t *cursor,
     frame = &cache->frames[slot];
     addr = frame->virtual_address;
 
+    int is_empty_frame = memcmp(frame, &empty_frame, sizeof(unw_tdep_frame_t)) == 0;
     /* Return if we found the address. */
-    if (likely(addr == pc))
+    if (likely(addr == pc && !is_empty_frame))
     {
       Debug (4, "found address after %ld steps\n", i);
       return frame;
     }
 
     /* If slot is empty, reuse it. */
-    if (likely(! addr))
+    if (likely(! addr || is_empty_frame))
       break;
 
     /* Linear probe to next slot candidate, step = 1. */
@@ -558,7 +559,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
            cfa, pc, sp, fp);
 
     /* If we failed or ended up somewhere bogus, stop. */
-    if (unlikely(ret < 0 || pc < 0x4000))
+    if (unlikely(ret < 0 || pc < 0x4000) && pc != 0)
       break;
 
     /* Record this address in stack trace. We skipped the first address. */
