@@ -335,4 +335,21 @@ extern void tdep_stash_frame (struct dwarf_cursor *c,
 extern int tdep_getcontext_trace (unw_context_t *);
 extern unw_word_t tdep_strip_ptrauth_insn_mask (unw_cursor_t *cursor, unw_word_t ip);
 
+typedef enum frame_record_location
+  {
+    NONE,           /* frame record creation has not been detected, use LR */
+    AT_SP_OFFSET,   /* frame record creation has been detected, but FP
+                       update not detected */
+    AT_FP,          /* frame record creation and FP update detected */
+  } frame_record_location_t;
+
+typedef struct frame_state
+  {
+    frame_record_location_t loc;
+    int32_t offset;
+  } frame_state_t;
+
+#define get_frame_state UNW_OBJ(get_frame_state)
+HIDDEN frame_state_t get_frame_state (unw_cursor_t *cursor);
+
 #endif /* AARCH64_LIBUNWIND_I_H */

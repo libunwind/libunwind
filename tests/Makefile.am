@@ -65,6 +65,7 @@ perf:
 
 else
  LIBUNWIND_local = $(top_builddir)/src/libunwind.la
+ LIBUNWIND_internal = $(top_builddir)/src/libunwind-local.la
 if ARCH_IA64
  noinst_PROGRAMS_arch += ia64-test-dyn1
  check_SCRIPTS_arch +=	run-ia64-test-dyn1
@@ -92,7 +93,8 @@ endif
 
 if ARCH_AARCH64
   check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal   \
-                         aarch64-test-plt aarch64-test-frame-record
+                         aarch64-test-plt \
+                         Laarch64-test-frame-record Gaarch64-test-frame-record
 endif
 
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt				 \
@@ -259,7 +261,8 @@ Larm_test_debug_frame_bt_SOURCES = Larm-test-debug-frame-bt.c ident.c
 Garm64_test_sve_signal_SOURCES = Garm64-test-sve-signal.c
 Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
 aarch64_test_plt_SOURCES = aarch64-test-plt.c
-aarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
+Laarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
+Gaarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 
 if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
  Garm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve
@@ -290,6 +293,7 @@ Ltest_trace_SOURCES = Ltest-trace.c ident.c
 Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
+LIBUNWIND_arch = $(top_builddir)/src/libunwind-arch-$(arch).la
 LIBUNWIND_ptrace = $(top_builddir)/src/libunwind-ptrace.la
 LIBUNWIND_coredump = $(top_builddir)/src/libunwind-coredump.la
 
@@ -377,4 +381,6 @@ Larm_test_debug_frame_bt_LDADD = $(LIBUNWIND_local)
 Garm64_test_sve_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Larm64_test_sve_signal_LDADD = $(LIBUNWIND_local)
 aarch64_test_plt_LDADD = $(LIBUNWIND)
-aarch64_test_frame_record_LDADD = $(LIBUNWIND)
+Laarch64_test_frame_record_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
+Laarch64_test_frame_record_LDADD = $(LIBUNWIND_internal)
+Gaarch64_test_frame_record_LDADD = $(LIBUNWIND_arch)

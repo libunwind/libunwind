@@ -8,7 +8,6 @@
 
 int unw_is_signal_frame (unw_cursor_t *cursor) { return 0; }
 int dwarf_step (struct dwarf_cursor *c) { return 0; }
-#include "aarch64/Gstep.c"
 
 static int procedure_size;
 

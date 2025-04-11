@@ -156,20 +156,6 @@ unw_is_plt_entry (unw_cursor_t *uc)
 	return _is_plt_entry (&((struct cursor *)uc)->dwarf);
 }
 
-typedef enum frame_record_location
-  {
-    NONE,           /* frame record creation has not been detected, use LR */
-    AT_SP_OFFSET,   /* frame record creation has been detected, but FP
-                       update not detected */
-    AT_FP,          /* frame record creation and FP update detected */
-  } frame_record_location_t;
-
-typedef struct frame_state
-  {
-    frame_record_location_t loc;
-    int32_t offset;
-  } frame_state_t;
-
 /* Recognise when a frame record storing FP+LR has been created and whether FP
    has been updated to point to the frame record. For example:
   4183d4:       a9bd7bfd        stp     x29, x30, [sp,#-48]!    <= FP+LR stored
@@ -183,7 +169,7 @@ typedef struct frame_state
   41844c:       a8c37bfd        ldp     x29, x30, [sp],#48      <= FP+LR retrieved
   418450:       d65f03c0        ret
 */
-static frame_state_t
+frame_state_t
 get_frame_state (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
