@@ -135,7 +135,7 @@ _UCD_get_threadinfo(struct UCD_info *ui, coredump_phdr_t *phdrs, unsigned phdr_s
 
   for (unsigned i = 0; i < phdr_size; ++i)
     {
-      Debug(8, "phdr[%03d]: type:%d", i, phdrs[i].p_type);
+      Debug(8, "phdr[%03d]: type:%d\n", i, phdrs[i].p_type);
       if (phdrs[i].p_type == PT_NOTE)
         {
           size_t thread_count = 0;
