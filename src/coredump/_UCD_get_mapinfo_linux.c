@@ -107,7 +107,7 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
                   ui->phdrs[p].p_backing_file_index = ucd_file_table_insert (&ui->ucd_file_table, strings);
                   Debug (3, "adding '%s' at index %d\n", strings, ui->phdrs[p].p_backing_file_index);
                 }
-                else
+              else
                 {
                   Debug (3, "ignoring path: '%s', due to (deleted) or len == 0\n", strings);
                 }
