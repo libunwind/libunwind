@@ -60,9 +60,14 @@ typedef struct core_nt_file_entry_s core_nt_file_entry_t;
 
 
 static const char   deleted[] = "(deleted)";
-static const size_t deleted_len = sizeof (deleted);
+static const size_t deleted_len = sizeof (deleted) - 1; // -1 removes the \0 like strlen does.
 static const size_t mapinfo_offset = sizeof (core_nt_file_hdr_t);
 
+static int _path_ends_with(const char* path, size_t path_len, const char* match, size_t match_len)
+{
+    if (path_len < match_len) return 0;
+    return memcmp(path + (path_len - match_len), match, match_len) == 0;
+}
 
 /**
  * Handle the CORE/NT_FILE note type.
@@ -97,10 +102,14 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
               && maps[i].start >= ui->phdrs[p].p_vaddr
               && maps[i].end <= ui->phdrs[p].p_vaddr + ui->phdrs[p].p_memsz)
             {
-              if (len > deleted_len && memcmp (strings + len - deleted_len, deleted, deleted_len))
+              if (len > 0 && !_path_ends_with(strings, len, deleted, deleted_len))
                 {
                   ui->phdrs[p].p_backing_file_index = ucd_file_table_insert (&ui->ucd_file_table, strings);
                   Debug (3, "adding '%s' at index %d\n", strings, ui->phdrs[p].p_backing_file_index);
+                }
+                else
+                {
+                  Debug (3, "ignoring path: '%s', due to (deleted) or len == 0\n", strings);
                 }
 
               break;
