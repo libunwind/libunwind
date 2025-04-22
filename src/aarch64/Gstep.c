@@ -40,7 +40,7 @@ static const int WSIZE = sizeof (unw_word_t);
   \note The current implementation only supports little endian modes.
 */
 static int
-is_plt_entry (struct dwarf_cursor *c)
+_is_plt_entry (struct dwarf_cursor *c)
 {
   unw_word_t w0 = 0, w1 = 0;
   unw_accessors_t *a;
@@ -150,6 +150,12 @@ is_plt_entry (struct dwarf_cursor *c)
     }
 }
 
+int
+unw_is_plt_entry (unw_cursor_t *uc)
+{
+	return _is_plt_entry (&((struct cursor *)uc)->dwarf);
+}
+
 typedef enum frame_record_location
   {
     NONE,           /* frame record creation has not been detected, use LR */
@@ -188,7 +194,7 @@ get_frame_state (unw_cursor_t *cursor)
   fs.offset = 0;
 
   /* PLT entries do not create frame records */
-  if (is_plt_entry (&c->dwarf))
+  if (_is_plt_entry (&c->dwarf))
     return fs;
 
   /* Use get_proc_name to find start_ip of procedure */
@@ -655,7 +661,7 @@ unw_step (unw_cursor_t *cursor)
           c->validate = 1;
         }
 
-      if (is_plt_entry (&c->dwarf))
+      if (_is_plt_entry (&c->dwarf))
         {
           Debug (2, "found plt entry\n");
           c->frame_info.frame_type = UNW_AARCH64_FRAME_STANDARD;

@@ -288,6 +288,7 @@ typedef int (*unw_iterate_phdr_func_t) (unw_iterate_phdr_callback_t, void *);
 #define unw_set_fpreg			UNW_OBJ(set_fpreg)
 #define unw_get_save_loc		UNW_OBJ(get_save_loc)
 #define unw_is_signal_frame		UNW_OBJ(is_signal_frame)
+#define unw_is_plt_entry        UNW_OBJ(is_plt_entry)
 #define unw_get_proc_name		UNW_OBJ(get_proc_name)
 #define unw_get_proc_name_by_ip		UNW_OBJ(get_proc_name_by_ip)
 #define unw_get_elf_filename		UNW_OBJ(get_elf_filename)
@@ -331,6 +332,7 @@ extern int unw_get_fpreg (unw_cursor_t *, int, unw_fpreg_t *);
 extern int unw_set_fpreg (unw_cursor_t *, int, unw_fpreg_t);
 extern int unw_get_save_loc (unw_cursor_t *, int, unw_save_loc_t *);
 extern int unw_is_signal_frame (unw_cursor_t *);
+extern int unw_is_plt_entry (unw_cursor_t *);
 extern int unw_get_proc_name (unw_cursor_t *, char *, size_t, unw_word_t *);
 extern int unw_get_proc_name_by_ip (unw_addr_space_t, unw_word_t, char *,
 				    size_t, unw_word_t *, void *);
