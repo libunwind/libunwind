@@ -980,6 +980,9 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
     }
   else
     {
+      if (cache)
+        put_rs_cache (c->as, cache, &saved_mask);
+
       ret = fetch_proc_info (c, c->ip);
       int next_use_prev_instr = c->use_prev_instr;
       if (ret >= 0)
@@ -993,6 +996,7 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
       put_unwind_info (c, &c->pi);
       c->use_prev_instr = next_use_prev_instr;
 
+      cache = get_rs_cache (c->as, &saved_mask);
       if (cache && ret >= 0)
 	{
 	  rs = rs_new (cache, c);
