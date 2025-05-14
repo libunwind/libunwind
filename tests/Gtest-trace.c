@@ -41,6 +41,7 @@
 #else
   extern int backtrace (void **, int);
 #endif
+#include <setjmp.h>
 #include <signal.h>
 #include <stdio.h>
 #include <stdlib.h>
@@ -82,6 +83,7 @@ struct {
 
 unw_cursor_t cursor;
 unw_context_t uc;
+sigjmp_buf calling_env;
 
 /**
  * Dump a backtrace (in verbose mode).
@@ -140,7 +142,7 @@ compare_backtraces(int step_count, int backtrace_count, enum test_id id)
  * differs from `unw_backtrace()`.
  */
 static void
-do_backtrace (void)
+do_backtrace (int (*check)(void**, int))
 {
   unw_word_t ip;
   int ret = -UNW_ENOINFO;
@@ -174,6 +176,13 @@ do_backtrace (void)
       printf ("FAILURE: unw_step() returned %d for ip=%#010lx\n", ret, (long) ip);
       ++num_errors;
     }
+
+  if (check != NULL && !check(trace[TEST_UNW_STEP].addresses, unw_step_depth))
+    {
+      printf("FAILURE: additional check failed\n");
+      ++num_errors;   
+    }
+
   dump_backtrace(unw_step_depth, TEST_UNW_STEP);
 
   /*
@@ -212,7 +221,7 @@ do_backtrace (void)
  * cached data).
  */
 void
-do_backtrace_with_context(void *context)
+do_backtrace_with_context(void *context, int (*check)(void**, int))
 {
   unw_word_t ip;
   int ret = -UNW_ENOINFO;
@@ -242,6 +251,13 @@ do_backtrace_with_context(void *context)
       printf ("FAILURE: unw_step() returned %d for ip=%#010lx\n", ret, (long) ip);
       ++num_errors;
     }
+
+  if (check != NULL && !check(trace[TEST_UNW_STEP].addresses, unw_step_depth))
+    {
+      printf("FAILURE: additional check failed\n");
+      ++num_errors;   
+    }
+
   dump_backtrace(unw_step_depth, TEST_UNW_STEP);
 
   /*
@@ -259,7 +275,7 @@ do_backtrace_with_context(void *context)
 void
 foo (long val UNUSED)
 {
-  do_backtrace ();
+  do_backtrace (NULL);
 }
 
 void
@@ -301,6 +317,8 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
       int sp;
       ucontext_t *ctxt UNUSED = context;
 
+      printf("***** backtrace from signal handler\n");
+
       printf ("sighandler: got signal %d, sp=%p", signal, (void *)&sp);
 #if UNW_TARGET_IA64
 # if defined(__linux__)
@@ -337,8 +355,45 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
       printf ("\n");
     }
 
-  do_backtrace();
-  do_backtrace_with_context(context);
+  do_backtrace(NULL);
+  do_backtrace_with_context(context, NULL);
+}
+
+static int
+check_for_null_address(void** frames, int size)
+{
+  int i = 0;
+  while (i < size && frames[i] != NULL)
+    {
+      i++;  
+    }
+  
+  if (i == size || i == size - 1)
+    {
+      printf("FAILURE: No NULL address in the callstack\n");
+      return 0;  
+    }
+
+  return frames[++i] != NULL;
+}
+
+void segv_handler(int signal, siginfo_t *siginfo UNUSED, void *context)
+{
+  if (verbose)
+  {
+    printf("\n\n***** backtrace in sigsegv handler caused by null function pointer\n");
+  }
+  do_backtrace(check_for_null_address);
+  do_backtrace_with_context(context, check_for_null_address);
+  longjmp(calling_env, 42);
+}
+
+void
+crash_application()
+{
+  typedef void (*pf)();
+  pf f = NULL;
+  f(); //boom
 }
 
 int
@@ -372,7 +427,6 @@ main (int argc, char **argv UNUSED)
         printf ("\nBacktrace across signal handler (iteration %d):\n", i+1);
       kill (getpid (), SIGTERM);
     }
-
 #ifdef HAVE_SIGALTSTACK
   if (verbose)
     printf ("\nBacktrace across signal handler on alternate stack:\n");
@@ -399,15 +453,37 @@ main (int argc, char **argv UNUSED)
       exit (-1);
     }
 
+  act.sa_sigaction = segv_handler;
+  if (sigaction (SIGSEGV, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
+  
+  for (int i = 0; i < repeat_count; ++i)
+  {
+    if (verbose)
+      printf("\nBacktrace from sigsegv handler (iteration %d):\n", i);
+    if (sigsetjmp (calling_env, 1) == 0)
+      {
+        crash_application();
+      }
+  }
+
+  if (num_errors > 0)
+    {
+      fprintf (stderr, "FAILURE: detected %d errors\n", num_errors);
+      exit (-1);
+    }
+
   if (verbose)
     printf ("SUCCESS.\n");
 
   signal (SIGTERM, SIG_DFL);
+  signal (SIGSEGV, SIG_DFL);
 #ifdef HAVE_SIGALTSTACK
   stk.ss_flags = SS_DISABLE;
   sigaltstack (&stk, NULL);
   free (stk.ss_sp);
 #endif /* HAVE_SIGALTSTACK */
+
 
   return 0;
 }
