@@ -286,7 +286,8 @@ unw_tdep_context_t;
   register unsigned long *unw_base __asm__ ("r1") = unw_ctx->regs;                              \
   __asm__ __volatile__ (                                                                        \
     "mov r0, #0\n\t"                                                                            \
-    "stmia %[base]!, {r0-r15}\n\t"                                                              \
+    "str r0, [%[base]], #4\n\t"                                                                 \
+    "stmia %[base]!, {r1-r15}\n\t"                                                              \
     VSTMIA                                                                                      \
     : [r0] "=r" (r0), [base] "+r" (unw_base) : : "memory");                                     \
   (int)r0; })
@@ -301,7 +302,8 @@ unw_tdep_context_t;
     "nop\n\t"                                                             \
     ".code 32\n\t"                                                        \
     "mov r0, #0\n\t"                                                      \
-    "stmia %[base]!, {r0-r14}\n\t"                                        \
+    "str r0, [%[base]], #4\n\t"                                           \
+    "stmia %[base]!, {r1-r14}\n\t"                                        \
     "adr r0, ret%=+1\n\t"                                                 \
     "stmia %[base]!, {r0}\n\t"                                            \
     VSTMIA                                                                \
