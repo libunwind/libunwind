@@ -250,6 +250,12 @@ trace_init_addr (unw_tdep_frame_t *f,
       && likely(dwarf_put (d, d->loc[UNW_AARCH64_PC], pc) >= 0)
       && likely((ret = unw_step (cursor)) >= 0))
     *f = c->frame_info;
+  #if defined (__QNX__)
+    if (unw_is_signal_frame (cursor))
+      {
+        return NULL;
+      }
+  #endif
 
   /* If unw_step() stopped voluntarily, remember that, even if it
      otherwise could not determine anything useful.  This avoids
@@ -412,7 +418,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   struct cursor *c = (struct cursor *) cursor;
   struct dwarf_cursor *d = &c->dwarf;
   unw_trace_cache_t *cache;
-  unw_word_t fp, sp, pc, cfa, lr;
+  unw_word_t fp, sp, pc, cfa, lr = 0;
   int maxdepth = 0;
   int depth = 0;
   int ret;
@@ -432,7 +438,6 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   sp = cfa = d->cfa;
   ACCESS_MEM_FAST(ret, 0, d, DWARF_GET_LOC(d->loc[UNW_AARCH64_X29]), fp);
   assert(ret == 0);
-  lr = 0;
 
   /* Get frame cache. */
   if (unlikely(! (cache = trace_cache_get())))
@@ -450,8 +455,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   while (depth < maxdepth)
   {
     pc -= d->use_prev_instr;
-    Debug (2, "depth %d cfa 0x%lx pc 0x%lx sp 0x%lx fp 0x%lx\n",
-           depth, cfa, pc, sp, fp);
+    Debug (2, "depth %d cfa 0x%lx pc 0x%lx sp 0x%lx fp 0x%lx, lr 0x%lx\n",
+           depth, cfa, pc, sp, fp, lr);
 
     /* See if we have this address cached.  If not, evaluate enough of
        the dwarf unwind information to fill the cache line data, or to
@@ -498,9 +503,13 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
           if (likely(ret >= 0))
             pc = tdep_strip_ptrauth_insn_mask(cursor, pc);
         }
-      else if (lr != 0)
+        // lr might have been set by the previous frame (sigreturn)
+        // but we might get here directly (uwn_backtrace2 for ex) and lr was not set.
+        // In that case, try reading from the Link Register (X30)
+      else if (lr != 0 || dwarf_get (d, d->loc[UNW_AARCH64_X30], &lr) >= 0)
         {
           /* Use the saved link register as the new pc. */
+          Debug(4, "use link register value 0x%lx as the new pc\n", lr);
           pc = lr;
           lr = 0;
         }
@@ -537,6 +546,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       if (likely(ret >= 0))
         ACCESS_MEM_FAST(ret, c->validate, d, cfa + SC_X30_OFF, lr);
 
+      Debug(4, "signal frame cfa 0x%lx pc 0x%lx fp 0x%lx sp 0x%lx lr 0x%lx\n",
+            cfa, pc, fp, sp, lr);
       /* Resume stack at signal restoration point. The stack is not
          necessarily continuous here, especially with sigaltstack(). */
       cfa = sp;
@@ -554,8 +565,8 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       return -UNW_ESTOPUNWIND;
     }
 
-    Debug (4, "new cfa 0x%lx pc 0x%lx sp 0x%lx fp 0x%lx\n",
-           cfa, pc, sp, fp);
+    Debug (4, "new cfa 0x%lx pc 0x%lx sp 0x%lx fp 0x%lx lr 0x%lx\n",
+           cfa, pc, sp, fp, lr);
 
     /* If we failed or ended up somewhere bogus, stop. */
     if (unlikely(ret < 0 || pc < 0x4000))
