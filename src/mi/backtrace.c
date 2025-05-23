@@ -67,7 +67,8 @@ unw_backtrace (void **buffer, int size)
   if (unlikely (unw_init_local (&cursor, &uc) < 0))
     return 0;
 
-  if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
+  int ret = tdep_trace (&cursor, buffer, &n);
+  if (unlikely (ret < 0 && ret != -UNW_ESTOPUNWIND))
     {
       unw_getcontext (&uc);
       return slow_backtrace (buffer, size, &uc, 0);
@@ -108,7 +109,8 @@ unw_backtrace2 (void **buffer, int size, unw_context_t* uc2, int flag)
 
   // returns the number of frames collected by tdep_trace or slow_backtrace
   // and add 1 to it (the one we retrieved above)
-  if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
+  int ret = tdep_trace (&cursor, buffer, &n);
+  if (unlikely (ret < 0 && ret != -UNW_ESTOPUNWIND))
     {
       return slow_backtrace (buffer, remaining_size, &uc, flag) + 1;
     }
