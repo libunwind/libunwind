@@ -146,6 +146,52 @@ _UCD_access_reg (unw_addr_space_t as,
        return -UNW_EINVAL;
      }
   }
+#elif defined(UNW_TARGET_RISCV)
+  if (regnum >= UNW_RISCV_X0 && regnum <= UNW_RISCV_X31) {
+    switch (regnum) {
+    case UNW_RISCV_X0:  *valp = 0;                                      break;
+    case UNW_RISCV_X1:  *valp = ui->prstatus->pr_reg.ra;                break;
+    case UNW_RISCV_X2:  *valp = ui->prstatus->pr_reg.sp;                break;
+    case UNW_RISCV_X3:  *valp = ui->prstatus->pr_reg.gp;                break;
+    case UNW_RISCV_X4:  *valp = ui->prstatus->pr_reg.tp;                break;
+    case UNW_RISCV_X5:  *valp = ui->prstatus->pr_reg.t[0];              break;
+    case UNW_RISCV_X6:  *valp = ui->prstatus->pr_reg.t[1];              break;
+    case UNW_RISCV_X7:  *valp = ui->prstatus->pr_reg.t[2];              break;
+    case UNW_RISCV_X8:  *valp = ui->prstatus->pr_reg.s[0];              break;
+    case UNW_RISCV_X9:  *valp = ui->prstatus->pr_reg.s[1];              break;
+    case UNW_RISCV_X10: *valp = ui->prstatus->pr_reg.a[0];              break;
+    case UNW_RISCV_X11: *valp = ui->prstatus->pr_reg.a[1];              break;
+    case UNW_RISCV_X12: *valp = ui->prstatus->pr_reg.a[2];              break;
+    case UNW_RISCV_X13: *valp = ui->prstatus->pr_reg.a[3];              break;
+    case UNW_RISCV_X14: *valp = ui->prstatus->pr_reg.a[4];              break;
+    case UNW_RISCV_X15: *valp = ui->prstatus->pr_reg.a[5];              break;
+    case UNW_RISCV_X16: *valp = ui->prstatus->pr_reg.a[6];              break;
+    case UNW_RISCV_X17: *valp = ui->prstatus->pr_reg.a[7];              break;
+    case UNW_RISCV_X18: *valp = ui->prstatus->pr_reg.s[2];              break;
+    case UNW_RISCV_X19: *valp = ui->prstatus->pr_reg.s[3];              break;
+    case UNW_RISCV_X20: *valp = ui->prstatus->pr_reg.s[4];              break;
+    case UNW_RISCV_X21: *valp = ui->prstatus->pr_reg.s[5];              break;
+    case UNW_RISCV_X22: *valp = ui->prstatus->pr_reg.s[6];              break;
+    case UNW_RISCV_X23: *valp = ui->prstatus->pr_reg.s[7];              break;
+    case UNW_RISCV_X24: *valp = ui->prstatus->pr_reg.s[8];              break;
+    case UNW_RISCV_X25: *valp = ui->prstatus->pr_reg.s[9];              break;
+    case UNW_RISCV_X26: *valp = ui->prstatus->pr_reg.s[10];             break;
+    case UNW_RISCV_X27: *valp = ui->prstatus->pr_reg.s[11];             break;
+    case UNW_RISCV_X28: *valp = ui->prstatus->pr_reg.t[3];              break;
+    case UNW_RISCV_X29: *valp = ui->prstatus->pr_reg.t[4];              break;
+    case UNW_RISCV_X30: *valp = ui->prstatus->pr_reg.t[5];              break;
+    case UNW_RISCV_X31: *valp = ui->prstatus->pr_reg.t[6];              break;
+    }
+  } else {
+    switch (regnum) {
+    case UNW_RISCV_PC:
+      *valp = ui->prstatus->pr_reg.sepc;
+      break;
+    default:
+      Debug(0, "bad regnum:%d\n", regnum);
+      return -UNW_EINVAL;
+    }
+  }
 
 #else
 #error Port me

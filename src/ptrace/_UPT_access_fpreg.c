@@ -93,6 +93,9 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 #elif defined(__powerpc__)
   if ((unsigned) reg < UNW_PPC32_F0 || (unsigned) reg > UNW_PPC32_F31)
     return -UNW_EBADREG;
+#elif defined(__riscv)
+  if ((unsigned) reg < UNW_RISCV_F0 || (unsigned) reg > UNW_RISCV_F31)
+    return -UNW_EBADREG;
 #else
 #error Fix me
 #endif
@@ -116,6 +119,8 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
           memcpy(&fpreg.fp_q[reg], val, sizeof(unw_fpreg_t));
 #elif defined(__powerpc__)
           memcpy(&fpreg.fpreg[reg], val, sizeof(unw_fpreg_t));
+#elif defined(__riscv)
+          memcpy(&fpreg.fp_x[reg], val, sizeof(unw_fpreg_t));
 #else
 #error Fix me
 #endif
@@ -136,6 +141,8 @@ _UPT_access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
           memcpy(val, &fpreg.fp_q[reg], sizeof(unw_fpreg_t));
 #elif defined(__powerpc__)
           memcpy(val, &fpreg.fpreg[reg], sizeof(unw_fpreg_t));
+#elif defined(__riscv)
+          memcpy(val, &fpreg.fp_x[reg], sizeof(unw_fpreg_t));
 #else
 #error Fix me
 #endif
