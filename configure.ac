@@ -324,8 +324,7 @@ AC_ARG_ENABLE([documentation],
 AC_MSG_RESULT([$enable_documentation])
 AC_PATH_PROG([LATEX2MAN],[latex2man])
 AS_IF([test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"], [
-  AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
-  enable_documentation="no";
+  AC_MSG_WARN([latex2man not found, unable to regenerate the manpages])
 ])
 AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
 AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
