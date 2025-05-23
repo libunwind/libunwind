@@ -72,8 +72,8 @@ EXTRA_DIST = NOTES libunwind.trans					\
 	unw_get_elf_filename_by_ip.tex	\
 	$(man3_MANS)
 
-L2M	= latex2man
-L2P	= pdflatex
+L2M	= ${LATEX2MAN}
+L2P	= ${PDFLATEX}
 L2M_CMD	= $(L2M) -t $(srcdir)/libunwind.trans
 L2H_CMD	= $(L2M) -H -t $(srcdir)/libunwind.trans
 
