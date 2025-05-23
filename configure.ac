@@ -317,18 +317,22 @@ AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
 
 AC_MSG_CHECKING([if documentation should be built])
 AC_ARG_ENABLE([documentation],
-	          [AS_HELP_STRING([--enable-documentation],
-	                          [enable generating the man pages @<:@default=yes@:>@])],
-	          [],
-	          [enable_documentation=yes])
+              [AS_HELP_STRING([--enable-documentation],
+                              [enable generating the man pages @<:@default=yes@:>@])],
+              [],
+              [enable_documentation=yes])
 AC_MSG_RESULT([$enable_documentation])
-AC_PATH_PROG([LATEX2MAN],[latex2man])
-AS_IF([test "x$LATEX2MAN" = "x" && test "x$enable_documentation" != "xno"], [
-  AC_MSG_WARN([latex2man not found. Install latex2man. Disabling docs.])
-  enable_documentation="no";
-])
 AM_CONDITIONAL([CONFIG_DOCS], [test x$enable_documentation != xno])
-AM_COND_IF([CONFIG_DOCS], [AC_CONFIG_FILES([doc/Makefile doc/common.tex])])
+AM_COND_IF([CONFIG_DOCS],
+           [AC_CONFIG_FILES([doc/Makefile doc/common.tex])
+            AC_PATH_PROG([LATEX2MAN],[latex2man],[:])
+            AS_IF([test "x$LATEX2MAN" = "x:"],
+                  [AC_MSG_WARN([latex2man not found. Can not build man pages.])])
+            AC_PATH_PROG([PDFLATEX],[pdflatex],[:])
+            AS_IF([test "x$PDFLATEX" = "x:"],
+                  [AC_MSG_WARN([pdflatex not found. Can not build PDF documentation.])])
+           ]
+)
 
 # Enable tests built around unw_resume, which is not supported on all targets
 AC_MSG_CHECKING([if we should enable unw_resume tests])
