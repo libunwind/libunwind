@@ -633,7 +633,11 @@ unw_step (unw_cursor_t *cursor)
       /* This is probably SIGBUS. */
       /* Try to load LR in IP to recover. */
       Debug(1, "Invalid address found in the call stack: 0x%lx\n", c->dwarf.ip);
-      dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
+      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
+      if (ret == 0)
+      {
+        return 1;
+      }
     }
 
   /* Try DWARF-based unwinding... */
