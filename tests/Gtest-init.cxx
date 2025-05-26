@@ -78,6 +78,11 @@ do_backtrace (void)
     }
   while ((ret = unw_step (&cursor)) > 0);
 
+#ifdef UNW_TARGET_ARM
+  if (ret == -UNW_ESTOPUNWIND)
+    return;
+#endif
+
   if (ret < 0)
     panic ("FAILURE: unw_step() returned %d\n", ret);
 }

@@ -65,6 +65,10 @@ handler (int sig UNUSED)
     }
   while ((ret = unw_step (&c)) > 0);
 
+#ifdef UNW_TARGET_ARM
+  if (ret == -UNW_ESTOPUNWIND)
+    return;
+#endif
   if (ret < 0)
     panic ("unw_step() returned %d\n", ret);
 }
