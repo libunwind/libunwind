@@ -346,7 +346,10 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
     }
 
   do_backtrace();
+#ifndef UNW_TARGET_ARM
+  /* UNW_INIT_SIGNAL_FRAME is not implemented on ARM. */
   do_backtrace_with_context(context);
+#endif
 }
 
 int
