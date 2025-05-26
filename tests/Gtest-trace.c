@@ -168,6 +168,10 @@ do_backtrace (void)
       trace[TEST_UNW_STEP].addresses[unw_step_depth++] = (void *) ip;
     }
   while ((ret = unw_step (&cursor)) > 0 && unw_step_depth < MAX_BACKTRACE_SIZE);
+#ifdef UNW_TARGET_ARM
+  if (ret == -UNW_ESTOPUNWIND)
+    ret = 0;
+#endif
   if (ret < 0)
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
@@ -236,6 +240,10 @@ do_backtrace_with_context(void *context)
       trace[TEST_UNW_STEP].addresses[unw_step_depth++] = (void *) ip;
     }
   while ((ret = unw_step (&cursor)) > 0 && unw_step_depth < MAX_BACKTRACE_SIZE);
+#ifdef UNW_TARGET_ARM
+  if (ret == -UNW_ESTOPUNWIND)
+    ret = 0;
+#endif
   if (ret < 0)
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);

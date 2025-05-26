@@ -61,6 +61,10 @@ do_backtrace (void)
 	printf ("%016lx (sp=%016lx)\n", (long) ip, (long) sp);
 
       ret = unw_step (&cursor);
+#ifdef UNW_TARGET_ARM
+      if (ret == -UNW_ESTOPUNWIND)
+        return;
+#endif
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);

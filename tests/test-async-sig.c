@@ -111,6 +111,10 @@ do_backtrace (int may_print, int get_proc_name)
 	printf ("%016lx %-32s (sp=%016lx)\n", (long) ip, buf, (long) sp);
 
       ret = unw_step (&cursor);
+#ifdef UNW_TARGET_ARM
+      if (ret == -UNW_ESTOPUNWIND)
+	break;
+#endif
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);

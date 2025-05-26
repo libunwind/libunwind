@@ -78,6 +78,10 @@ do_backtrace (void)
             printf (" [%s+0x%lx]\n", filename, (long) file_offset);
 
       ret = unw_step (&cursor);
+#ifdef UNW_TARGET_ARM
+      if (ret == -UNW_ESTOPUNWIND)
+        break;
+#endif
       if (ret < 0)
 	{
 	  unw_get_reg (&cursor, UNW_REG_IP, &ip);
