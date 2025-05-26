@@ -215,6 +215,8 @@ endif
 if ARCH_ARM
 # ARM Linux kernel >=2.6.39 removed PTRACE_SINGLESTEP emulation
 XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
+# UNW_INIT_SIGNAL_FRAME is not implemented on ARM
+XFAIL_TESTS += Ltest-init-local-signal Gtest-sig-context Ltest-sig-context
 endif
 
 if ARCH_LOONGARCH64
