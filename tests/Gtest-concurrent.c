@@ -36,6 +36,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <errno.h>
+#include <string.h>
 
 #define NTHREADS	128
 
@@ -48,7 +50,7 @@ int got_usr1, got_usr2;
 char *sigusr1_sp;
 
 void
-handler (int sig UNUSED)
+handler (int sig UNUSED, siginfo_t *siginfo UNUSED, void *context UNUSED)
 {
   unw_word_t ip;
   unw_context_t uc;
@@ -76,7 +78,12 @@ handler (int sig UNUSED)
 void *
 worker (void *arg UNUSED)
 {
-  signal (SIGUSR1, handler);
+  struct sigaction act;
+  memset (&act, 0, sizeof (act));
+  act.sa_sigaction = handler;
+  act.sa_flags = SA_SIGINFO;
+  if (sigaction (SIGUSR1, &act, NULL) < 0)
+    panic ("sigaction: %s\n", strerror (errno));
 
   if (verbose)
     printf ("sending SIGUSR1\n");
