@@ -171,7 +171,6 @@ check_local_unw_abi () {
 
     case ${plat} in
 	arm)
-	    match _U${plat}_getcontext
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_unwind_method
 	    match _UL${plat}_search_unwind_table

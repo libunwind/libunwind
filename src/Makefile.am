@@ -505,7 +505,6 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_arm_common)     \
 	$(libunwind_la_SOURCES_arm_os_local)   \
 	$(libunwind_la_SOURCES_local)          \
-	arm/getcontext.S                       \
 	arm/Lapply_reg_state.c                 \
 	arm/Lcreate_addr_space.c               \
 	arm/Lex_tables.c                       \
