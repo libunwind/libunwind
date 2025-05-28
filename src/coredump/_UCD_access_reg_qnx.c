@@ -126,7 +126,7 @@ _UCD_access_reg (unw_addr_space_t  as,
       return -UNW_EINVAL;
   }
 #elif defined(UNW_TARGET_ARM)
-  if (regnum >= UNW_ARM_R0 && regnum <= UNW_ARM_R16) {
+  if (regnum >= UNW_ARM_R0 && regnum <= UNW_ARM_R15) {
      *valp = ui->prstatus->greg.arm.gpr[regnum];
   } else {
        Debug(0, "bad regnum:%d\n", regnum);
