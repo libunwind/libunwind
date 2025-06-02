@@ -217,6 +217,10 @@ if ARCH_ARM
 XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
 # UNW_INIT_SIGNAL_FRAME is not implemented on ARM
 XFAIL_TESTS += Ltest-init-local-signal Gtest-sig-context Ltest-sig-context
+# Some glibc functions such as "read" don't have .EXIDX instructions.
+# This means that test-async-sig can fail randomly when
+# such functions are involved in the backtrace.
+XFAIL_TESTS += test-async-sig
 endif
 
 if ARCH_LOONGARCH64
