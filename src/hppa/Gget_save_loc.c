@@ -28,12 +28,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 int
 unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
 {
-  /* struct cursor *c = (struct cursor *) cursor; */
+  struct cursor *c = (struct cursor *) cursor;
   dwarf_loc_t loc;
 
-  loc = DWARF_NULL_LOC;         /* default to "not saved" */
-
-#warning FIX ME!
+  if (reg == UNW_HPPA_IP
+      || (reg != UNW_HPPA_GR && (unsigned) (reg - UNW_HPPA_GR) < 32))
+    loc = c->dwarf.loc[reg - UNW_HPPA_GR];
+  else
+    loc = DWARF_NULL_LOC;         /* default to "not saved" */
 
   memset (sloc, 0, sizeof (*sloc));
 

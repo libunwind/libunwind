@@ -54,7 +54,7 @@ _Uhppa_getcontext:
 	SPILL (27)		/* global-data pointer */
 	SPILL (30)		/* stack pointer */
 
-	ldo (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FR_OFF)(%r26), %r29
+	ldo (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FR_OFF+12*8)(%r26), %r29
 	fstds,ma %fr12, 8(%r29)
 	fstds,ma %fr13, 8(%r29)
 	fstds,ma %fr14, 8(%r29)
@@ -66,7 +66,10 @@ _Uhppa_getcontext:
 	fstds,ma %fr20, 8(%r29)
 	fstds    %fr21, 8(%r29)
 
-	bv,n	%r0(%rp)
+	stw %rp, (LINUX_UC_MCONTEXT_OFF+LINUX_SC_IAOQ_OFF)(%r26)
+
+	bv	%r0(%rp)
+	copy	%r0, %ret0
 	.procend
 #ifdef __linux__
 	/* We do not need executable stack.  */

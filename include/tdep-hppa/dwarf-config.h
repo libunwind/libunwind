@@ -33,7 +33,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 /* This matches the value used by GCC (see
    gcc/config/pa/pa32-regs.h:FIRST_PSEUDO_REGISTER), which leaves
    plenty of room for expansion.  */
-#define DWARF_NUM_PRESERVED_REGS        89
+#ifdef __LP64__
+#define DWARF_NUM_PRESERVED_REGS        62
+#else
+#define DWARF_NUM_PRESERVED_REGS        90
+#endif
 
 /* Return TRUE if the ADDR_SPACE uses big-endian byte-order.  */
 #define dwarf_is_big_endian(addr_space) 1
