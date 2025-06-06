@@ -37,7 +37,7 @@ This library supports several architecture/operating-system combinations:
 | Linux   | PPC64        | ✓      |
 | Linux   | SuperH       | ✓      |
 | Linux   | IA-64        | ✓      |
-| Linux   | PARISC       | Works well, but C library missing unwind-info |
+| Linux   | PA-RISC      | Works well, but C library missing unwind-info |
 | Linux   | MIPS         | ✓      |
 | Linux   | RISC-V       | 64-bit only |
 | Linux   | LoongArch    | 64-bit only |
@@ -160,14 +160,11 @@ The following tests are expected to fail on x86 Linux:
 
 ### Expected results on x86-64 Linux
 
-The following tests are expected to fail on x86-64 Linux:
+All tests are expected to pass on x86_64-linux-gnu.
 
-* `run-ptrace-misc` (see <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18748>
-  and <http://gcc.gnu.org/bugzilla/show_bug.cgi?id=18749>)
+### Expected results on PA-RISC Linux
 
-### Expected results on PARISC Linux
-
-The following tests are expected to fail on x86-64 Linux:
+The following tests are expected to fail on hppa-linux-gnu hosts:
 
 * `Gtest-bt` (backtrace truncated at `kill()` due to lack of unwind-info)
 * `Ltest-bt` (likewise)
@@ -195,9 +192,19 @@ only test programs that are known to work at this time are:
 * `tests/Gtest-resume-sig`
 * `tests/Ltest-resume-sig`
 
-### Expected results on PPC64 Linux
+### Expected results on ppc64-linux-gnu
 
-`make check` should run with no more than 10 out of 24 tests failed.
+`make check` currently has the following failures.
+
+* `Gtest-concurrent`
+* `Ltest-concurrent`
+* `Ltest-init-local-signal`
+* `Gtest-exc`
+* `Ltest-exc`
+* `Gtest-resume-sig`
+* `Ltest-resume-sig`
+* `Gtest-resume-sig-rt`
+* `Ltest-resume-sig-rt`
 
 ### Expected results on Solaris x86-64
 
