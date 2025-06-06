@@ -31,6 +31,9 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 {
   struct dwarf_loc loc;
 
+  if (unw_tdep_is_fpreg (reg))
+    return -UNW_EBADREG;
+
   switch (reg)
     {
     case UNW_HPPA_IP:
@@ -42,7 +45,6 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
 
     case UNW_HPPA_CFA:
-    case UNW_HPPA_SP:
       if (write)
         return -UNW_EREADONLYREG;
       *valp = c->dwarf.cfa;
@@ -58,9 +60,6 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       break;
     }
 
-  if ((unsigned) (reg - UNW_HPPA_GR) >= 32)
-    return -UNW_EBADREG;
-
   loc = c->dwarf.loc[reg];
 
   if (write)
@@ -75,7 +74,11 @@ tdep_access_fpreg (struct cursor *c, unw_regnum_t reg, unw_fpreg_t *valp,
 {
   struct dwarf_loc loc;
 
-  if ((unsigned) (reg - UNW_HPPA_FR) >= 32)
+#ifdef __LP64__
+  if ((unsigned) (reg - UNW_HPPA_FR) >= 28)
+#else
+  if ((unsigned) (reg - UNW_HPPA_FR) >= 56)
+#endif
     return -UNW_EBADREG;
 
   loc = c->dwarf.loc[reg];

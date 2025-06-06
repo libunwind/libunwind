@@ -57,7 +57,7 @@ _Uhppa_setcontext:
 	FILL (27)		/* global-data pointer */
 	FILL (30)		/* stack pointer */
 
-	ldo (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FR_OFF)(%r26), %r29
+	ldo (LINUX_UC_MCONTEXT_OFF+LINUX_SC_FR_OFF+8*12)(%r26), %r29
 	fldds,ma 8(%r29), %fr12
 	fldds,ma 8(%r29), %fr13
 	fldds,ma 8(%r29), %fr14
