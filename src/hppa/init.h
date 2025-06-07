@@ -28,10 +28,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 static inline int
 common_init (struct cursor *c, unsigned use_prev_instr)
 {
-  int ret;
+  int ret, i;
+
+  for (i = 0; i < 32; i++)
+    c->dwarf.loc[i] = DWARF_REG_LOC (&c->dwarf, UNW_HPPA_GR + i);
+  for (i = 32; i < DWARF_NUM_PRESERVED_REGS; i++)
+    c->dwarf.loc[i] = DWARF_NULL_LOC;
 
   c->dwarf.loc[UNW_HPPA_IP] = DWARF_REG_LOC (&c->dwarf, UNW_HPPA_IP);
-  c->dwarf.loc[UNW_HPPA_SP] = DWARF_REG_LOC (&c->dwarf, UNW_HPPA_SP);
 
   ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_HPPA_IP], &c->dwarf.ip);
   if (ret < 0)
@@ -41,7 +45,16 @@ common_init (struct cursor *c, unsigned use_prev_instr)
   if (ret < 0)
     return ret;
 
+  c->sigcontext_format = HPPA_SCF_NONE;
+  c->sigcontext_addr = 0;
+
+  c->dwarf.args_size = 0;
   c->dwarf.stash_frames = 0;
   c->dwarf.use_prev_instr = use_prev_instr;
+  c->dwarf.pi_valid = 0;
+  c->dwarf.pi_is_dynamic = 0;
+  c->dwarf.hint = 0;
+  c->dwarf.prev_rs = 0;
+
   return 0;
 }

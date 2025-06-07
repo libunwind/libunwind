@@ -74,7 +74,14 @@ typedef enum
 
     UNW_HPPA_FR = UNW_HPPA_GR + 32,
 
-    UNW_HPPA_IP = UNW_HPPA_FR + 32,     /* instruction pointer */
+#ifdef __LP64__
+     UNW_HPPA_SAR = UNW_HPPA_FR + 28,   /* sar */
+#else
+     UNW_HPPA_SAR = UNW_HPPA_FR + 56,   /* sar */
+#endif
+
+    UNW_HPPA_IP = UNW_HPPA_SAR + 1,     /* instruction pointer */
+    UNW_TDEP_LAST_REG = UNW_HPPA_IP,
 
     /* other "preserved" registers (fpsr etc.)... */
 
@@ -89,9 +96,7 @@ typedef enum
     UNW_HPPA_EH3 = UNW_HPPA_EH2 + 1,    /* alias for UNW_HPPA_GR + 31 */
 
     /* frame info (read-only) */
-    UNW_HPPA_CFA,
-
-    UNW_TDEP_LAST_REG = UNW_HPPA_IP,
+    UNW_HPPA_CFA = UNW_HPPA_SP,
 
     UNW_TDEP_IP = UNW_HPPA_IP,
     UNW_TDEP_SP = UNW_HPPA_SP,
@@ -111,7 +116,13 @@ unw_tdep_save_loc_t;
 /* On PA-RISC, we can directly use ucontext_t as the unwind context.  */
 typedef ucontext_t unw_tdep_context_t;
 
-#define unw_tdep_is_fpreg(r)            ((unsigned) ((r) - UNW_HPPA_FR) < 32)
+#ifdef __LP64__
+#define unw_tdep_is_fpreg(r) \
+ ((unsigned) ((r) - UNW_HPPA_GR) >= 32 && (unsigned) ((r) - UNW_HPPA_FR) < 28)
+#else
+#define unw_tdep_is_fpreg(r) \
+ ((unsigned) ((r) - UNW_HPPA_GR) >= 32 && (unsigned) ((r) - UNW_HPPA_FR) < 56)
+#endif
 
 #include "libunwind-dynamic.h"
 

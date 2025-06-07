@@ -7,8 +7,7 @@ _UI_siglongjmp_cont:
 _UI_longjmp_cont:
 	.proc
 	.callinfo
-#warning fix me
-	bv	%r0(%rp)
+	bv,n	%r0(%rp)
 	.procend
 #ifdef __linux__
 	/* We do not need executable stack.  */

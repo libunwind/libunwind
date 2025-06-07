@@ -40,6 +40,10 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   a = unw_get_accessors_int (as);
   arg = c->dwarf.as_arg;
 
+  ip = c->dwarf.ip & ~3;
+  if (!ip || !a->access_mem)
+    return 0;
+
   /* Check if IP points at sigreturn() sequence.  On Linux, this normally is:
 
     rt_sigreturn:
@@ -52,9 +56,6 @@ unw_is_signal_frame (unw_cursor_t *cursor)
 
        0x34190002 ldi 1, %r25
   */
-  ip = c->dwarf.ip;
-  if (!ip)
-    return 0;
   if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 4, &w1, 0, arg)) < 0
       || (ret = (*a->access_mem) (as, ip + 8, &w2, 0, arg)) < 0

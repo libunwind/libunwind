@@ -66,9 +66,10 @@ hppa_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   if (unlikely (c->sigcontext_format != HPPA_SCF_NONE))
     {
       struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+      void *sp = (void *)c->sigcontext_sp;
 
-      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
-      my_rt_sigreturn (sc, (sc->sc_flags & PARISC_SC_FLAG_IN_SYSCALL) != 0);
+      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sp);
+      my_rt_sigreturn (sp, (sc->sc_flags & PARISC_SC_FLAG_IN_SYSCALL) != 0);
     }
   else
     {
