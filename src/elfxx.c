@@ -26,9 +26,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+#include <limits.h>
 #include <stdio.h>
 #include <sys/param.h>
-#include <limits.h>
 
 #if HAVE_LZMA
 #include <lzma.h>
@@ -112,6 +112,20 @@ elf_w (string_table) (const struct elf_image *ei, int section)
   return ei->image + str_shdr->sh_offset;
 }
 
+static Elf_W (Off)
+dynamic_va_to_file_offset (Elf_W (Addr) va, Elf_W (Phdr) *phdr, size_t phnum)
+{
+  for (size_t i = 0; i < phnum; ++i)
+    {
+      if (phdr[i].p_type != PT_LOAD)
+        continue;
+
+      if (va >= phdr[i].p_vaddr && (va + sizeof(Elf_W (Addr))) < phdr[i].p_vaddr + phdr[i].p_filesz)
+        return phdr[i].p_offset + (va - phdr[i].p_vaddr);
+    }
+  return 0;
+}
+
 static int
 elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
                                     const struct symbol_lookup_context *context,
@@ -126,8 +140,9 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
   Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Sym) *sym = NULL, *symtab = NULL;
   Elf_W (Phdr) *phdr;
-  Elf_W (Word) sym_num;
-  Elf_W (Word) *hash = NULL, *gnu_hash = NULL;
+  Elf_W (Word) sym_num = 0;
+  Elf_W (Word) *hash = NULL;
+  uint32_t *gnu_hash = NULL;
   Elf_W (Addr) val;
   const char *strtab = NULL;
   int ret = -UNW_ENOINFO;
@@ -163,8 +178,11 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
           hash = (Elf_W (Word) *) ((char *) ei->image + dyn->d_un.d_ptr - file_offset);
           break;
         case DT_GNU_HASH:
-          gnu_hash = (Elf_W (Word) *) ((char *) ei->image + dyn->d_un.d_ptr - file_offset);
-          break;
+          {
+            Elf_W (Off) gh_file_offset = dynamic_va_to_file_offset (dyn->d_un.d_ptr, phdr, ehdr->e_phnum);
+            gnu_hash = (uint32_t *) ((char *) ei->image + gh_file_offset);
+            break;
+          }
         default:
           break;
         }
@@ -175,18 +193,27 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
 
   if (gnu_hash)
     {
-        uint32_t *buckets = gnu_hash + 4 + (gnu_hash[2] * sizeof(size_t)/4);
-        uint32_t *hashval;
-        for (i = sym_num = 0; i < gnu_hash[0]; i++)
-          if (buckets[i] > sym_num)
-            sym_num = buckets[i];
+      uint32_t nbuckets    = gnu_hash[0];
+      uint32_t symoffset   = gnu_hash[1];
+      uint32_t bloom_size  = gnu_hash[2];
+      Elf_W (Word) *bloom  = (Elf_W (Word) *) &gnu_hash[4];
+      uint32_t *buckets    = (uint32_t *) (bloom + bloom_size);
 
-        if (sym_num)
+      for (i = 0; i < nbuckets; i++)
+        if (buckets[i] != 0)
           {
-            hashval = buckets + gnu_hash[0] + (sym_num - gnu_hash[1]);
-            do sym_num++;
-            while (!(*hashval++ & 1));
+            if (buckets[i] < sym_num)
+              return -UNW_ENOINFO;
+            sym_num = buckets[i];
           }
+
+      if (sym_num)
+        {
+          uint32_t *hashval = buckets + nbuckets + (sym_num - symoffset);
+          do
+            sym_num++;
+          while (!(*hashval++ & 1));
+        }
     }
   else
     {
@@ -196,8 +223,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
   for (i = 0; i < sym_num; ++i)
     {
       sym = &symtab[i];
-      if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
-          && sym->st_shndx != SHN_UNDEF)
+      if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC && sym->st_shndx != SHN_UNDEF)
         {
           val = sym->st_value;
           if (sym->st_shndx != SHN_ABS)
