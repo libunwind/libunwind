@@ -90,18 +90,19 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 12 }
-          - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 12 }
           - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 12 }
-          - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 12 }
-          - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 12 }
-          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 12 }
-          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 12 }
-          - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 12 }
-          - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 10 }
+          - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 12 }
+          - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 12 }
+          - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 12 }
+          - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 10 }
           - {target: mips64,   host: mips64-linux-gnuabi64,   qemu: mips64,   gccver: 10 }
           - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 10 }
-          - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 10 }
+          - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 10 }
+          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 12 }
+          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 12 }
+          - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 12 }
+          - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 12 }
+          - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 12 }
 
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
