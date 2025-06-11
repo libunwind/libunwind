@@ -22,7 +22,7 @@
  */
 #include "_UPT_internal.h"
 
-#if defined(UNW_TARGET_AARCH64) && defined(__linux__) && defined(NT_ARM_PAC_MASK)
+#if defined(UNW_TARGET_AARCH64) && defined(NT_ARM_PAC_MASK)
 
 unw_word_t _UPT_ptrauth_insn_mask (UNUSED unw_addr_space_t as, void *arg)
 {
