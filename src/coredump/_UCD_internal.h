@@ -104,13 +104,13 @@ struct UCD_info
     char                   *coredump_filename; /* for error meesages only */
     coredump_phdr_t        *phdrs;             /* array, allocated */
     unsigned                phdrs_count;
+    int                     n_threads;
     ucd_file_table_t        ucd_file_table;
     void                   *note_phdr;         /* allocated or NULL */
     UCD_proc_status_t      *prstatus;          /* points inside note_phdr */
 #ifdef HAVE_ELF_FPREGSET_T
     elf_fpregset_t         *fpregset;
 #endif
-    int                     n_threads;
     struct UCD_thread_info *threads;
     struct elf_dyn_info     edi;
   };

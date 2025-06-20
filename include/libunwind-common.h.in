@@ -251,13 +251,13 @@ unw_save_loc_type_t;
 typedef struct unw_save_loc
   {
     unw_save_loc_type_t type;
+    unw_tdep_save_loc_t extra;	/* target-dependent additional information */
     union
       {
 	unw_word_t addr;	/* valid if type==UNW_SLT_MEMORY */
 	unw_regnum_t regnum;	/* valid if type==UNW_SLT_REG */
       }
     u;
-    unw_tdep_save_loc_t extra;	/* target-dependent additional information */
   }
 unw_save_loc_t;
 
