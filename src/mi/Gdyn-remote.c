@@ -118,8 +118,7 @@ intern_array (unw_addr_space_t as, unw_accessors_t *a,
   return 0;
 
  out:
-  if (data)
-    free (data);
+  free (data);
   return ret;
 }
 
