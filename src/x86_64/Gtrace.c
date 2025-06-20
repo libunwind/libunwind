@@ -69,7 +69,7 @@ trace_cache_free (void *arg)
   }
   tls_cache_destroyed = 1;
   tls_cache = NULL;
-  mi_munmap (cache->frames, (1u << cache->log_size) * sizeof(unw_tdep_frame_t));
+  mi_munmap (cache->frames, (1ULL << cache->log_size) * sizeof(unw_tdep_frame_t));
   mempool_free (&trace_cache_pool, cache);
   Debug(5, "freed cache %p\n", cache);
 }
@@ -98,7 +98,7 @@ trace_cache_buckets (size_t n)
 }
 
 /* Allocate and initialise hash table for frame cache lookups.
-   Returns the cache initialised with (1u << HASH_LOW_BITS) hash
+   Returns the cache initialised with (1ULL << HASH_LOW_BITS) hash
    buckets, or NULL if there was a memory allocation problem. */
 static unw_trace_cache_t *
 trace_cache_create (void)
@@ -120,7 +120,7 @@ trace_cache_create (void)
     return NULL;
   }
 
-  if (! (cache->frames = trace_cache_buckets(1u << HASH_MIN_BITS)))
+  if (! (cache->frames = trace_cache_buckets(1ULL << HASH_MIN_BITS)))
   {
     Debug(5, "failed to allocate buckets\n");
     mempool_free(&trace_cache_pool, cache);
@@ -140,9 +140,9 @@ trace_cache_create (void)
 static int
 trace_cache_expand (unw_trace_cache_t *cache)
 {
-  size_t old_size = (1u << cache->log_size);
+  size_t old_size = (1ULL << cache->log_size);
   size_t new_log_size = cache->log_size + 2;
-  unw_tdep_frame_t *new_frames = trace_cache_buckets (1u << new_log_size);
+  unw_tdep_frame_t *new_frames = trace_cache_buckets (1ULL << new_log_size);
 
   if (unlikely(! new_frames))
   {
@@ -284,7 +284,7 @@ trace_lookup (unw_cursor_t *cursor,
      important the hash table does not fill up, or performance falls
      off the cliff. */
   uint64_t i, addr;
-  uint64_t cache_size = 1u << cache->log_size;
+  uint64_t cache_size = 1ULL << cache->log_size;
   uint64_t slot = ((rip * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
   unw_tdep_frame_t *frame;
 
@@ -319,7 +319,7 @@ trace_lookup (unw_cursor_t *cursor,
     if (unlikely(trace_cache_expand (cache) < 0))
       return NULL;
 
-    cache_size = 1u << cache->log_size;
+    cache_size = 1ULL << cache->log_size;
     slot = ((rip * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
     frame = &cache->frames[slot];
     addr = frame->virtual_address;
