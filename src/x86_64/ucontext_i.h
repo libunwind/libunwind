@@ -21,6 +21,8 @@ NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
 LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+#ifndef unw_ucontext_i_h
+#define unw_ucontext_i_h
 
 #if defined __linux__
 #define UC_MCONTEXT_GREGS_R8    0x28
@@ -119,3 +121,18 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define FPREGS_OFFSET_MXCSR	0x18
 
 #endif
+
+/**
+ * Details for the GNU note.gnu.property extension.
+ *
+ * These are required for indicating the presence of the Intel Indirect Branch
+ * Tracking and Shadow Stack features (the Intel CET extension).
+ *
+ * https://software.intel.com/en-us/articles/intel-sdm
+ *
+ */
+#define NOTE_GNU_PROPERTY_SECTION_NAME ".note.gnu.property"
+#define NT_GNU_PROPERTY_TYPE_0                        5
+#define GNU_PROPERTY_X86_FEATURE_1_AND_LO    0xc0000002
+
+#endif /* unw_ucontext_i_h */

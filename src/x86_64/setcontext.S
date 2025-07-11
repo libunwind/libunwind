@@ -34,8 +34,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 */
 	.global _Ux86_64_setcontext
 	.type _Ux86_64_setcontext, @function
-
 _Ux86_64_setcontext:
+	.cfi_startproc
+#if defined(__CET__) && __CET__ & 0x01
+	endbr64
+#endif
 
 #if defined __linux__ || defined __sun
         /* restore fp state */
@@ -81,8 +84,30 @@ _Ux86_64_setcontext:
 	mov    UC_MCONTEXT_GREGS_RCX(%rdi),%rcx
 	mov    UC_MCONTEXT_GREGS_RDI(%rdi),%rdi
 	retq
+	.cfi_endproc
 
 	.size _Ux86_64_setcontext, . - _Ux86_64_setcontext
 
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits
+
+#if defined(__CET__)
+      /* ELF note indicating control-flow protection in effect */
+	.section NOTE_GNU_PROPERTY_SECTION_NAME,"a"
+	.align 8
+	.long 1f - 0f
+	.long 4f - 1f
+	.long NT_GNU_PROPERTY_TYPE_0
+0:
+	.string "GNU"
+1:
+	.align 8
+	.long GNU_PROPERTY_X86_FEATURE_1_AND_LO
+	.long 3f - 2f
+2:
+	.long __CET__ 
+3:
+	.align 8
+4:
+#endif
+
