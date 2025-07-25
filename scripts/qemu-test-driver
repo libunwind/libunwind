@@ -56,6 +56,7 @@ trs_file=  # Where to save the metadata of the test run.
 expect_failure=no
 color_tests=no
 enable_hard_errors=yes
+timeout=30
 verbose=no
 while test $# -gt 0; do
   case $1 in
@@ -68,6 +69,7 @@ while test $# -gt 0; do
   --expect-failure) expect_failure=$2; shift;;
   --enable-hard-errors) enable_hard_errors=$2; shift;;
   --qemu-arch) qemu_arch=$2; shift;;
+  --timeout) timeout=$2; shift;;
   --verbose) verbose=$2; shift;;
   --) shift; break;;
   -*) usage_error "invalid option: '$1'";;
@@ -112,7 +114,7 @@ qemu_cmd="qemu-${qemu_arch}-static"
 if test x$verbose != xno; then
   printf "%s\n" "${qemu_cmd} $@"
 fi
-${qemu_cmd} "$@" >$log_file 2>&1
+timeout -v ${timeout} ${qemu_cmd} "$@" >${log_file} 2>&1
 estatus=$?
 
 if test $enable_hard_errors = no && test $estatus -eq 99; then
@@ -122,12 +124,13 @@ else
 fi
 
 case $tweaked_estatus:$expect_failure in
-  0:yes) col=$red res=XPASS recheck=yes gcopy=yes;;
-  0:*)   col=$grn res=PASS  recheck=no  gcopy=no;;
-  77:*)  col=$blu res=SKIP  recheck=no  gcopy=yes;;
-  99:*)  col=$mgn res=ERROR recheck=yes gcopy=yes;;
-  *:yes) col=$lgn res=XFAIL recheck=no  gcopy=yes;;
-  *:*)   col=$red res=FAIL  recheck=yes gcopy=yes;;
+  0:yes) col=$red res=XPASS   recheck=yes gcopy=yes  ;;
+  0:*)   col=$grn res=PASS    recheck=no  gcopy=no  ;;
+  77:*)  col=$blu res=SKIP    recheck=no  gcopy=yes ;;
+  99:*)  col=$mgn res=ERROR   recheck=yes gcopy=yes ;;
+  124:*) col=$mgn res=TIMEOUT recheck=no  gcopy=yes ;;
+  *:yes) col=$lgn res=XFAIL   recheck=no  gcopy=yes ;;
+  *:*)   col=$red res=FAIL    recheck=yes gcopy=yes ;;
 esac
 
 # Report the test outcome and exit status in the logs, so that one can
