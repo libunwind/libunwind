@@ -22,7 +22,7 @@
  */
 #include "_UPT_internal.h"
 
-#ifdef UNW_TARGET_AARCH64
+#if defined(UNW_TARGET_AARCH64) && defined(NT_ARM_PAC_MASK)
 
 unw_word_t _UPT_ptrauth_insn_mask (UNUSED unw_addr_space_t as, void *arg)
 {
@@ -49,9 +49,10 @@ unw_word_t _UPT_ptrauth_insn_mask (UNUSED unw_addr_space_t as, void *arg)
 
 #else
 
-unw_word_t _UPT_ptrauth_insn_mask (unw_addr_space_t, void *)
+unw_word_t _UPT_ptrauth_insn_mask (UNUSED unw_addr_space_t as, UNUSED void *arg)
 {
   return 0;
 }
 
 #endif
+
