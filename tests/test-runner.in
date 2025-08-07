@@ -29,7 +29,7 @@ test_dir="$(dirname $0)"
 count=0
 printf "TAP version 14\n"
 for t in @TESTS@; do
-    "$test_dir/$t" >$t.out 2>$t.err
+    timeout 10s "$test_dir/$t" -v >$t.out 2>$t.err
     status=$?
     if [ $status = 77 ]; then
         printf "%d ok - %s # SKIP\n" $count "$t"
