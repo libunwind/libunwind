@@ -108,6 +108,10 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
           unw_accessors_t *a = unw_get_accessors_int (as);
           void *arg = c->dwarf.as_arg;
           unw_word_t addr = DWARF_GET_LOC (c->dwarf.loc[reg]);
+          if (addr == 0)
+            {
+              return -1;
+            }
           uint16_t val16;
 
           /*
