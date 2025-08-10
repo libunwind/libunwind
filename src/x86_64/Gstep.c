@@ -92,6 +92,8 @@ unw_step (unw_cursor_t *cursor)
       return ret;
     }
 
+  c->frames++;
+
   if (likely (ret >= 0))
     {
       /* x86_64 ABI specifies that end of call-chain is marked with a

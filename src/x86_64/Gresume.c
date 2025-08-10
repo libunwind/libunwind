@@ -37,6 +37,9 @@ x86_64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg
 {
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = dwarf_get_uc(&c->dwarf);
+#if defined __CET__ && (__CET__ & 2) != 0
+  uintptr_t frames = (uintptr_t) arg;
+#endif
 
   /* Ensure c->pi is up-to-date.  On x86-64, it's relatively common to
      be missing DWARF unwind info.  We don't want to fail in that
@@ -53,6 +56,7 @@ x86_64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg
     {
       Debug (8, "resuming at ip=%llx via setcontext()\n",
              (unsigned long long) c->dwarf.ip);
+      POP_SHADOW_STACK_FRAMES (frames);
       setcontext (uc);
     }
   return -UNW_EINVAL;
@@ -118,6 +122,13 @@ unw_resume (unw_cursor_t *cursor)
   if ((ret = establish_machine_state (c)) < 0)
     return ret;
 
-  return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
-                                     c->dwarf.as_arg);
+  ret = (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
+				    (void *) c->frames);
+#if defined __CET__ && (__CET__ & 2) != 0
+  /* NB: Disable tail call when shadow stack is enabled so that
+     _Ux86_64_setcontext can properly count the number of shadow
+     stack frames to pop.  */
+  __asm ("" ::: "memory");
+#endif
+  return ret;
 }
