@@ -51,6 +51,7 @@ unw_init_local_common (unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_i
 
   c->dwarf.as = unw_local_addr_space;
   c->dwarf.as_arg = dwarf_build_as_arg(uc, /*validate*/ 0);
+  c->frames = 0;
   return common_init (c, use_prev_instr);
 }
 
