@@ -33,6 +33,12 @@
 # these registers and cause this test to fail mysteriously.
 
 
+#if defined(__CET__)
+# include <cet.h>
+#else
+# define _CET_ENDBR
+#endif
+
 ########################################################
 # Test: Restoring a register using a DW_CFA_expression #
 # which uses implicit CFA pushed onto stack.           #
@@ -41,6 +47,7 @@
 .type DW_CFA_expression_testcase STT_FUNC
 DW_CFA_expression_testcase:
   .cfi_startproc
+  _CET_ENDBR
   push %r12
   .cfi_adjust_cfa_offset 8
   # Move our sentinel (known) value into non-volatile (Callee-saved) r12

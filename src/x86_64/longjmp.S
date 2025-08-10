@@ -23,9 +23,12 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+#include "ucontext_i.h"
+
 	.globl _UI_longjmp_cont
 	.type _UI_longjmp_cont, @function
 _UI_longjmp_cont:
+	_CET_ENDBR
 	push %rax		/* push target IP as return address */
 	mov %rdx, %rax		/* set up return-value */
 	retq
