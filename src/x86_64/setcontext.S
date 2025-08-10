@@ -75,6 +75,25 @@ _Ux86_64_setcontext:
 	mov    UC_MCONTEXT_GREGS_RCX(%rdi),%rcx
 	mov    UC_MCONTEXT_GREGS_RSP(%rdi),%rsp
 
+	/* Pop 2 shadow stack frames:
+
+#0  _Ux86_64_local_resume (as=0x7ffff7fb63c0 <local_addr_space>,
+    cursor=0x7fffffffd7b0, arg=0xf) at x86_64/Gresume.c:58
+#1  0x00007ffff7f9d44b in _Ux86_64_resume (cursor=0x7fffffffd7b0)
+    at x86_64/Gresume.c:123
+#2  0x00000000004007a8 in raise_exception () at Gtest-exc.c:90
+#3  0x00000000004008a2 in b (n=16) at Gtest-exc.c:146
+#4  0x0000000000400818 in a (n=0) at Gtest-exc.c:120
+
+	 */
+	xor	%ecx,%ecx
+	rdsspq	%rcx
+	test	%rcx,%rcx
+	jz	2f
+	mov	$2, %ecx
+	incsspq	%rcx
+
+2:
         /* push the return address on the stack */
 	mov    UC_MCONTEXT_GREGS_RIP(%rdi),%rcx
 	push   %rcx
