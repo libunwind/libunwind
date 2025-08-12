@@ -32,8 +32,11 @@ testdir = ${pkglibexecdir}
 AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
               $(UNW_TARGET_CPPFLAGS) \
+              $(UNW_CET_CFLAGS) \
               -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
 AM_CFLAGS = $(UNW_EXTRA_CFLAGS) -g -fno-optimize-sibling-calls
+
+AM_LDFLAGS = $(LD_FLAGS_UNW_CET)
 
 LOG_DRIVER = $(SHELL) $(UNW_TESTDRIVER)
 
@@ -267,9 +270,11 @@ ppc64_test_plt_SOURCES = ppc64-test-plt.c
 
 
 Gx64_test_dwarf_expressions_SOURCES =  Gx64-test-dwarf-expressions.c \
-																			 x64-test-dwarf-expressions.S
+  x64-test-dwarf-expressions.S
 Lx64_test_dwarf_expressions_SOURCES =  Lx64-test-dwarf-expressions.c \
-																			 x64-test-dwarf-expressions.S
+  x64-test-dwarf-expressions.S
+Gx64_test_dwarf_expressions_CFLAGS = $(UNW_CET_CFLAGS)
+Lx64_test_dwarf_expressions_CFLAGS = $(UNW_CET_CFLAGS)
 
 Garm_test_debug_frame_bt_SOURCES = Garm-test-debug-frame-bt.c ident.c
 Larm_test_debug_frame_bt_SOURCES = Larm-test-debug-frame-bt.c ident.c

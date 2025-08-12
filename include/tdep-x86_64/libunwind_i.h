@@ -80,6 +80,8 @@ struct cursor
   {
     struct dwarf_cursor dwarf;          /* must be first */
 
+    uintptr_t frames;                   /* Stack frames to pop.  */
+
     unw_tdep_frame_t frame_info;        /* quick tracing assist info */
 
     /* Format of sigcontext structure and address at which it is

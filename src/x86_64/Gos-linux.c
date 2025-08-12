@@ -150,6 +150,22 @@ x86_64_sigreturn (unw_cursor_t *cursor)
 
   Debug (8, "resuming at ip=%llx via sigreturn(%p)\n",
              (unsigned long long) c->dwarf.ip, sc);
+
+  /* Pop 4 shadow stack frames:
+
+#0  _Ux86_64_sigreturn (cursor=0x7fffffffc990) at x86_64/Gos-linux.c:144
+#1  0x00007ffff7f9d23f in _Ux86_64_local_resume (
+    as=0x7ffff7fb63c0 <local_addr_space>, cursor=0x7fffffffc990, arg=0x2)
+    at x86_64/Gresume.c:50
+#2  0x00007ffff7f9d44b in _Ux86_64_resume (cursor=0x7fffffffc990)
+    at x86_64/Gresume.c:123
+#3  0x000000000040094b in handler (sig=10) at Gtest-resume-sig.c:127
+#4  <signal handler called>
+#5  0x00007ffff7d80e7b in kill () from /lib64/libc.so.6
+
+   */
+  POP_SHADOW_STACK_FRAMES (4);
+
   __asm__ __volatile__ ("mov %0, %%rsp;"
                         "mov %1, %%rax;"
                         "syscall"

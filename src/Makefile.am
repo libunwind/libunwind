@@ -28,8 +28,11 @@ COREDUMP_SO_VERSION=0:0:0
 AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
               $(UNW_TARGET_CPPFLAGS) \
+              $(UNW_CET_CFLAGS) \
               -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I.
 AM_CFLAGS = $(UNW_EXTRA_CFLAGS)
+
+AM_LDFLAGS = $(LD_FLAGS_UNW_CET)
 
 #
 # Don't link with start-files since we don't use any constructors/destructors:

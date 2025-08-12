@@ -480,6 +480,43 @@ fi
 AC_SUBST([LIBZ])
 AM_CONDITIONAL(HAVE_ZLIB, test x$enable_zlibdebuginfo = xyes)
 
+AC_MSG_CHECKING([if -fcf-protection is on by default])
+AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+#if defined(__x86_64__) && defined(__CET__)
+# error CET is on by default
+#endif
+]])], [cet_on=no],[cet_on=yes])
+AC_MSG_RESULT([$cet_on])
+
+AC_MSG_CHECKING([whether to enable Intel CET support])
+AC_ARG_ENABLE(cet,
+AS_HELP_STRING([--enable-cet], [Enables support for Intel CET]),,
+	[enable_cet=auto])
+case x$enable_cet in
+  xyes)
+    AC_MSG_RESULT([$enable_cet])
+    AC_SUBST([UNW_CET_CFLAGS],["-mshstk -fcf-protection"])
+    AC_SUBST([LD_FLAGS_UNW_CET],["-Wl,-z,cet-report=error"])
+    ;;
+  xno)
+    if test $cet_on = yes; then
+	AC_MSG_RESULT([yes, ignoring --disable-cet since Intel CET is always enabled])
+	AC_SUBST([UNW_CET_CFLAGS],["-mshstk -fcf-protection"])
+	AC_SUBST([LD_FLAGS_UNW_CET],["-Wl,-z,cet-report=error"])
+	enable_cet=yes
+    else
+	AC_MSG_RESULT([$enable_cet])
+    fi
+    ;;
+  xauto)
+    AC_MSG_RESULT([$enable_cet])
+    if test $cet_on = yes; then
+	AC_SUBST([UNW_CET_CFLAGS],["-mshstk -fcf-protection"])
+	AC_SUBST([LD_FLAGS_UNW_CET],["-Wl,-z,cet-report=error"])
+    fi
+    ;;
+esac
+
 AC_MSG_CHECKING([for Intel compiler])
 AC_COMPILE_IFELSE([AC_LANG_PROGRAM(
         [],
