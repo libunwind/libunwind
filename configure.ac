@@ -81,17 +81,6 @@ AC_CHECK_TYPES([struct elf_prstatus, struct prstatus, procfs_status, elf_fpregse
 
 dnl Checks for libraries.
 AC_MSG_NOTICE([--- Checking for libraries ---])
-save_LDFLAGS="$LDFLAGS"
-save_LIBS="$LIBS"
-LDFLAGS="${LDFLAGS} -nostdlib"
-AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
-               [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
-                      [AC_SUBST([LIBCRTS], ["$ac_cv_search__Unwind_Resume"])])],
-               [],
-               [-lc]
-)
-LIBS="$save_LIBS"
-LDFLAGS="$save_LDFLAGS"
 AC_SEARCH_LIBS([__uc_get_grs], [uca])
 AC_SEARCH_LIBS([getcontext], [ucontext])
 
@@ -299,7 +288,7 @@ AC_ARG_ENABLE([debug],
 )
 AC_MSG_RESULT([$enable_debug])
 
-AC_MSG_CHECKING([if C++ exception support shouldm  be built])
+AC_MSG_CHECKING([if C++ exception support should be built])
 AC_ARG_ENABLE([cxx_exceptions],
               [AS_HELP_STRING([--enable-cxx-exceptions],
                               [use libunwind to handle C++ exceptions
@@ -314,6 +303,16 @@ AS_IF([test $enable_cxx_exceptions = check],
 )
 AC_MSG_RESULT([$enable_cxx_exceptions])
 AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
+AM_COND_IF([SUPPORT_CXX_EXCEPTIONS],
+           [save_LDFLAGS="$LDFLAGS"
+            LDFLAGS="${LDFLAGS} -nostdlib"
+            AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
+                           [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
+                                  [AC_SUBST([UNW_CRT_LIBADD],  ["-lc $ac_cv_search__Unwind_Resume"])
+                                   AC_SUBST([UNW_CRT_LDFLAGS], ["-WCClinker -nostdlib"])])]
+                           [-lc])
+            LDFLAGS="$save_LDFLAGS"]
+)
 
 AC_MSG_CHECKING([if documentation should be built])
 AC_ARG_ENABLE([documentation],

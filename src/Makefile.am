@@ -127,7 +127,7 @@ endif
 # If local unwinding is being built, link in the local unwinding functions
 libunwind_libadd =
 if !REMOTE_ONLY
-  libunwind_libadd += libunwind.la -lc
+  libunwind_libadd += libunwind.la
 endif
 
 ### pkg-config:
@@ -1264,10 +1264,13 @@ endif
 # Don't link with standard libraries, because those may mention
 # libunwind already.
 #
-libunwind_la_LDFLAGS =	$(COMMON_SO_LDFLAGS) -XCClinker -nostdlib \
-			$(LDFLAGS_STATIC_LIBCXA) -version-info $(SOVERSION)
-libunwind_la_LIBADD  += -lc $(LIBCRTS)
-libunwind_la_LIBADD += $(LIBLZMA) $(LIBZ)
+libunwind_la_LDFLAGS = $(COMMON_SO_LDFLAGS) \
+                       $(UNW_CRT_LDFLAGS) \
+                       $(LDFLAGS_STATIC_LIBCXA) \
+                       -version-info $(SOVERSION)
+libunwind_la_LIBADD += $(UNW_CRT_LIBADD) \
+                       $(LIBLZMA) \
+                       $(LIBZ)
 
 noinst_HEADERS += unwind/unwind-internal.h
 
