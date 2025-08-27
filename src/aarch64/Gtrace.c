@@ -573,7 +573,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
       break;
 
     /* Record this address in stack trace. We skipped the first address. */
-    buffer[depth++] = (void *) (pc - d->use_prev_instr);
+    buffer[depth++] = (void *) pc;
   }
 
   Debug (1, "returning %d, depth %d\n", ret, depth);
