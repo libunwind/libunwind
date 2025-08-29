@@ -25,9 +25,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _UI_longjmp_cont
 	.type _UI_longjmp_cont, @function
 _UI_longjmp_cont:
-#if defined(__linux__) || defined(__QNX__)
+#if defined(__GLIBC__) || defined(__QNX__)
 	ret
-#elif defined(__FreeBSD__)
+#elif defined(__FreeBSD__) || defined(__linux__)
 	.cfi_startproc
 	/*
 	 * x0 - return address
