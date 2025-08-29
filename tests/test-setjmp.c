@@ -209,6 +209,7 @@ main (int argc, char **argv UNUSED)
     }
 
   /* sigsetjmp(jbuf, 0) MUST NOT preserve signal mask: */
+  memset (sigjbuf, 0, sizeof(*sigjbuf));
   sigprocmask (SIG_SETMASK, (sigset_t *) &sigset1, NULL);
   if (sigsetjmp (sigjbuf, 0))
     {
