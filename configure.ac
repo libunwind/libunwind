@@ -298,7 +298,7 @@ AC_ARG_ENABLE([cxx_exceptions],
 )
 AS_IF([test $enable_cxx_exceptions = check],
       [AS_CASE([$target_arch],
-               [aarch64*|arm*|mips*|x86*|s390x*|loongarch64], [enable_cxx_exceptions=no],
+               [aarch64*|arm*|hppa*|mips*|x86*|s390x*|loongarch64], [enable_cxx_exceptions=no],
                [enable_cxx_exceptions=yes])]
 )
 AC_MSG_RESULT([$enable_cxx_exceptions])
