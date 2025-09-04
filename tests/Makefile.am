@@ -103,6 +103,7 @@ endif
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt				 \
 			Gtest-init Ltest-init				 \
 			Gtest-concurrent Ltest-concurrent		 \
+			Gtest-concurrent-dl                              \
 			Gtest-sig-context Ltest-sig-context		 \
 			Gtest-trace Ltest-trace				 \
 			test-async-sig test-flush-cache test-init-remote \
@@ -346,6 +347,7 @@ Ltest_init_local_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_concurrent_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) $(PTHREADS_LIB)
+Gtest_concurrent_dl_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) $(PTHREADS_LIB)
 x64_unwind_badjmp_signal_frame_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
