@@ -306,10 +306,12 @@ AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
 AM_COND_IF([SUPPORT_CXX_EXCEPTIONS],
            [save_LDFLAGS="$LDFLAGS"
             LDFLAGS="${LDFLAGS} -nostdlib"
-            AC_SEARCH_LIBS([_Unwind_Resume], [gcc_s gcc],
+            AC_SEARCH_LIBS([_Unwind_Resume],
+                           [gcc_s gcc],
                            [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
                                   [AC_SUBST([UNW_CRT_LIBADD],  ["-lc $ac_cv_search__Unwind_Resume"])
-                                   AC_SUBST([UNW_CRT_LDFLAGS], ["-WCClinker -nostdlib"])])]
+                                   AC_SUBST([UNW_CRT_LDFLAGS], ["-WCClinker -nostdlib"])])
+                           ],,
                            [-lc])
             LDFLAGS="$save_LDFLAGS"]
 )
