@@ -772,6 +772,127 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_ALPHA_R30] = 0x0f0,
     /* $31 is hardwired zero, no entry needed */
     [UNW_ALPHA_PC]  = 0x0f8     /* gregset index 31 */
+#elif defined(UNW_TARGET_SPARC64)
+    /* Global and output registers are available in pt_regs.  */
+
+    [UNW_SPARC64_G0]       = (0 * 8),
+    [UNW_SPARC64_G1]       = (1 * 8),
+    [UNW_SPARC64_G2]       = (2 * 8),
+    [UNW_SPARC64_G3]       = (3 * 8),
+    [UNW_SPARC64_G4]       = (4 * 8),
+    [UNW_SPARC64_G5]       = (5 * 8),
+    [UNW_SPARC64_G6]       = (6 * 8),
+    [UNW_SPARC64_G7]       = (7 * 8),
+
+    [UNW_SPARC64_O0]       = (8 * 8),
+    [UNW_SPARC64_O1]       = (9 * 8),
+    [UNW_SPARC64_O2]       = (10 * 8),
+    [UNW_SPARC64_O3]       = (11 * 8),
+    [UNW_SPARC64_O4]       = (12 * 8),
+    [UNW_SPARC64_O5]       = (13 * 8),
+    [UNW_SPARC64_O6]       = (14 * 8),
+    [UNW_SPARC64_O7]       = (15 * 8),
+
+    /* XXX    [UNW_SPARC64_PC]       = (17 * 8), */
+
+    /* Local and input registers are not available in pt_regs.  */
+
+    [UNW_SPARC64_L0]       = -1,
+    [UNW_SPARC64_L1]       = -1,
+    [UNW_SPARC64_L2]       = -1,
+    [UNW_SPARC64_L3]       = -1,
+    [UNW_SPARC64_L4]       = -1,
+    [UNW_SPARC64_L5]       = -1,
+    [UNW_SPARC64_L6]       = -1,
+    [UNW_SPARC64_L7]       = -1,
+
+    [UNW_SPARC64_I0]       = -1,
+    [UNW_SPARC64_I1]       = -1,
+    [UNW_SPARC64_I2]       = -1,
+    [UNW_SPARC64_I3]       = -1,
+    [UNW_SPARC64_I4]       = -1,
+    [UNW_SPARC64_I5]       = -1,
+    [UNW_SPARC64_I6]       = -1,
+    [UNW_SPARC64_I7]       = -1,
+
+    /* The 64 32-bit floating-point registers are available in the
+       structure returned by PTRACE_GETFPREGS  */
+
+    [UNW_SPARC64_F0]       = (0 * 4),
+    [UNW_SPARC64_F1]       = (1 * 4),
+    [UNW_SPARC64_F2]       = (2 * 4),
+    [UNW_SPARC64_F3]       = (3 * 4),
+    [UNW_SPARC64_F4]       = (4 * 4),
+    [UNW_SPARC64_F5]       = (5 * 4),
+    [UNW_SPARC64_F6]       = (6 * 4),
+    [UNW_SPARC64_F7]       = (7 * 4),
+    [UNW_SPARC64_F8]       = (8 * 4),
+    [UNW_SPARC64_F9]       = (9 * 4),
+    [UNW_SPARC64_F10]      = (10 * 4),
+    [UNW_SPARC64_F11]      = (11 * 4),
+    [UNW_SPARC64_F12]      = (12 * 4),
+    [UNW_SPARC64_F13]      = (13 * 4),
+    [UNW_SPARC64_F14]      = (14 * 4),
+    [UNW_SPARC64_F15]      = (15 * 4),
+    [UNW_SPARC64_F16]      = (16 * 4),
+    [UNW_SPARC64_F17]      = (17 * 4),
+    [UNW_SPARC64_F18]      = (18 * 4),
+    [UNW_SPARC64_F19]      = (19 * 4),
+    [UNW_SPARC64_F20]      = (20 * 4),
+    [UNW_SPARC64_F21]      = (21 * 4),
+    [UNW_SPARC64_F22]      = (22 * 4),
+    [UNW_SPARC64_F23]      = (23 * 4),
+    [UNW_SPARC64_F24]      = (24 * 4),
+    [UNW_SPARC64_F25]      = (25 * 4),
+    [UNW_SPARC64_F26]      = (26 * 4),
+    [UNW_SPARC64_F27]      = (27 * 4),
+    [UNW_SPARC64_F28]      = (28 * 4),
+    [UNW_SPARC64_F29]      = (29 * 4),
+    [UNW_SPARC64_F30]      = (30 * 4),
+    [UNW_SPARC64_F31]      = (31 * 4),
+    [UNW_SPARC64_F32]      = (32 * 4),
+    [UNW_SPARC64_F33]      = (33 * 4),
+    [UNW_SPARC64_F34]      = (34 * 4),
+    [UNW_SPARC64_F35]      = (35 * 4),
+    [UNW_SPARC64_F36]      = (36 * 4),
+    [UNW_SPARC64_F37]      = (37 * 4),
+    [UNW_SPARC64_F38]      = (38 * 4),
+    [UNW_SPARC64_F39]      = (39 * 4),
+    [UNW_SPARC64_F40]      = (40 * 4),
+    [UNW_SPARC64_F41]      = (41 * 4),
+    [UNW_SPARC64_F42]      = (42 * 4),
+    [UNW_SPARC64_F43]      = (43 * 4),
+    [UNW_SPARC64_F44]      = (44 * 4),
+    [UNW_SPARC64_F45]      = (45 * 4),
+    [UNW_SPARC64_F46]      = (46 * 4),
+    [UNW_SPARC64_F47]      = (47 * 4),
+    [UNW_SPARC64_F48]      = (48 * 4),
+    [UNW_SPARC64_F49]      = (49 * 4),
+    [UNW_SPARC64_F50]      = (50 * 4),
+    [UNW_SPARC64_F51]      = (51 * 4),
+    [UNW_SPARC64_F52]      = (52 * 4),
+    [UNW_SPARC64_F53]      = (53 * 4),
+    [UNW_SPARC64_F54]      = (54 * 4),
+    [UNW_SPARC64_F55]      = (55 * 4),
+    [UNW_SPARC64_F56]      = (56 * 4),
+    [UNW_SPARC64_F57]      = (57 * 4),
+    [UNW_SPARC64_F58]      = (58 * 4),
+    [UNW_SPARC64_F59]      = (59 * 4),
+    [UNW_SPARC64_F60]      = (60 * 4),
+    [UNW_SPARC64_F61]      = (61 * 4),
+    [UNW_SPARC64_F62]      = (62 * 4),
+    [UNW_SPARC64_F63]      = (63 * 4),
+
+    /* The following control and status registers are not available in
+       pt_regs.  */
+
+    [UNW_SPARC64_FCC0]     = -1,
+    [UNW_SPARC64_FCC1]     = -1,
+    [UNW_SPARC64_FCC2]     = -1,
+    [UNW_SPARC64_FCC3]     = -1,
+    [UNW_SPARC64_ICC]      = -1,
+    [UNW_SPARC64_SFP]      = -1,
+    [UNW_SPARC64_GSR]      = -1
 #else
 # error Fix me.
 #endif

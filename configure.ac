@@ -94,6 +94,12 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #endif
 ]])], [ppc_bits=64], [ppc_bits=32])
 
+dnl AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
+dnl #ifndef __sparc64__
+dnl # error choke
+dnl #endif
+dnl ]])], [sparc_bits=64], [sparc_bits=32])
+
 AC_DEFUN([SET_ARCH],[
     AS_CASE([$1],
         [aarch64*],[$2=aarch64],
@@ -103,6 +109,7 @@ AC_DEFUN([SET_ARCH],[
         [hppa*],[$2=hppa],
         [mips*],[$2=mips],
         [powerpc*],[$2=ppc$ppc_bits],
+        [sparc*],[$2=sparc64],
         [sh*],[$2=sh],
         [amd64],[$2=x86_64],
         [riscv*],[$2=riscv],
@@ -357,6 +364,8 @@ AM_CONDITIONAL(ARCH_X86, test x$target_arch = xx86)
 AM_CONDITIONAL(ARCH_X86_64, test x$target_arch = xx86_64)
 AM_CONDITIONAL(ARCH_PPC32, test x$target_arch = xppc32)
 AM_CONDITIONAL(ARCH_PPC64, test x$target_arch = xppc64)
+AM_CONDITIONAL(ARCH_SPARC, test x$target_arch = xsparc)
+AM_CONDITIONAL(ARCH_SPARC64, test x$target_arch = xsparc64)
 AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
 AM_CONDITIONAL(ARCH_S390X, test x$target_arch = xs390x)
 AM_CONDITIONAL(ARCH_RISCV, test x$target_arch = xriscv)
@@ -369,9 +378,9 @@ AM_CONDITIONAL(OS_SOLARIS, expr x$target_os : xsolaris >/dev/null)
 
 AC_MSG_CHECKING([for ELF helper width])
 AS_CASE([${target_arch}],
-        [arm|hppa|ppc32|x86|sh],           [use_elf32=yes; AC_MSG_RESULT([32])],
-        [aarch64|alpha|ia64|ppc64|x86_64|s390x], [use_elf64=yes; AC_MSG_RESULT([64])],
-        [mips|riscv|loongarch64],          [use_elfxx=yes; AC_MSG_RESULT([xx])],
+        [arm|hppa|ppc32|x86|sh|sparc],                    [use_elf32=yes; AC_MSG_RESULT([32])],
+        [aarch64|alpha|ia64|ppc64|x86_64|s390x|sparc64], [use_elf64=yes; AC_MSG_RESULT([64])],
+        [mips|riscv|loongarch64],                         [use_elfxx=yes; AC_MSG_RESULT([xx])],
         [AC_MSG_ERROR([Unknown ELF target: ${target_arch}])]
 )
 AM_CONDITIONAL(USE_ELF32, [test x$use_elf32 = xyes])
@@ -386,6 +395,12 @@ else
 fi
 AM_CONDITIONAL(USE_DWARF, [test x$use_dwarf = xyes])
 AC_MSG_RESULT([$use_dwarf])
+
+if test x$target_arch = xsparc64; then
+        libdir='${exec_prefix}/lib64'
+        AC_MSG_NOTICE([SPARC64 detected, lib will be installed ${libdir}]);
+        AC_SUBST([libdir])
+fi
 
 AC_MSG_CHECKING([whether to restrict build to remote support])
 AM_COND_IF([REMOTE_ONLY],[

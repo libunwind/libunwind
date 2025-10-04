@@ -93,6 +93,9 @@ endif
 if ARCH_SH
  lib_LTLIBRARIES += libunwind-sh.la
 endif
+if ARCH_SPARC64
+ lib_LTLIBRARIES += libunwind-sparc64.la
+endif
 if ARCH_X86
  lib_LTLIBRARIES += libunwind-x86.la
 endif
@@ -1180,6 +1183,69 @@ libunwind_sh_la_LIBADD =                       \
 	libunwind-dwarf-generic.la             \
 	libunwind-elf32.la                     \
 	$(libunwind_libadd)
+
+### target sparc64:
+
+# The list of files that go both into libunwind and libunwind-sparc64:
+
+noinst_HEADERS +=                              \
+        sparc64/init.h                           \
+        sparc64/ucontext_i.h                    \
+        sparc64/unwind_i.h
+libunwind_la_SOURCES_sparc64_common =            \
+        $(libunwind_la_SOURCES_common)         \
+        sparc64/is_fpreg.c                       \
+        sparc64/regname.c
+
+if ARCH_SPARC64
+# The list of files that go into libunwind:
+
+libunwind_local_la_SOURCES =               \
+        $(libunwind_la_SOURCES_sparc64_common)   \
+        $(libunwind_la_SOURCES_local)          \
+        sparc64/Lapply_reg_state.c               \
+        sparc64/Lcreate_addr_space.c             \
+        sparc64/Lget_proc_info.c                 \
+        sparc64/Lget_save_loc.c                  \
+        sparc64/Lglobal.c                        \
+        sparc64/Linit.c                          \
+        sparc64/Linit_local.c                    \
+        sparc64/Linit_remote.c                   \
+        sparc64/Lis_signal_frame.c               \
+        sparc64/Lregs.c                          \
+        sparc64/Lreg_states_iterate.c            \
+        sparc64/Lresume.c                        \
+        sparc64/Lstep.c                          \
+libunwind_setjmp_la_SOURCES +=                   \
+        sparc64/longjmp.S                        \
+        sparc64/siglongjmp.S
+endif # ARCH_SPARC64
+
+# The list of files that go into libunwind-sparc64:
+
+libunwind_sparc64_la_SOURCES =                   \
+        $(libunwind_la_SOURCES_sparc64_common)   \
+        $(libunwind_la_SOURCES_generic)        \
+        sparc64/Gapply_reg_state.c               \
+        sparc64/Gcreate_addr_space.c             \
+        sparc64/Gget_proc_info.c                 \
+        sparc64/Gget_save_loc.c                  \
+        sparc64/Gglobal.c                        \
+        sparc64/Ginit.c                          \
+        sparc64/Ginit_local.c                    \
+        sparc64/Ginit_remote.c                   \
+        sparc64/Gis_signal_frame.c               \
+        sparc64/Gregs.c                          \
+        sparc64/Greg_states_iterate.c            \
+        sparc64/Gresume.c                        \
+        sparc64/Gstep.c
+libunwind_sparc64_la_LDFLAGS =                   \
+        $(COMMON_SO_LDFLAGS)                   \
+        -version-info $(SOVERSION)
+libunwind_sparc64_la_LIBADD =                    \
+        libunwind-dwarf-generic.la             \
+        libunwind-elf64.la                     \
+        $(libunwind_libadd)
 
 ### target x86:
 # The list of files that go both into libunwind and libunwind-x86:
