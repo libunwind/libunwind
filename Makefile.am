@@ -50,6 +50,9 @@ endif
 if ARCH_LOONGARCH64
 include_HEADERS += include/libunwind-loongarch64.h
 endif
+if ARCH_SPARC64
+include_HEADERS += include/libunwind-sparc64.h
+endif
 
 if !REMOTE_ONLY
 include_HEADERS += include/libunwind.h

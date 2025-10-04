@@ -31,6 +31,8 @@
 # include "libunwind-riscv.h"
 #elif defined __loongarch64
 # include "libunwind-loongarch64.h"
+#elif defined __sparc__ && defined __arch64__
+# include "libunwind-sparc64.h"
 #else
 # error "Unsupported arch"
 #endif
