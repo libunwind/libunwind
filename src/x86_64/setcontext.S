@@ -71,10 +71,16 @@ _Ux86_64_setcontext:
 	mov    UC_MCONTEXT_GREGS_R15(%rdi),%r15
 	mov    UC_MCONTEXT_GREGS_RSI(%rdi),%rsi
 	mov    UC_MCONTEXT_GREGS_RDX(%rdi),%rdx
-	mov    UC_MCONTEXT_GREGS_RAX(%rdi),%rax
-	mov    UC_MCONTEXT_GREGS_RCX(%rdi),%rcx
-	mov    UC_MCONTEXT_GREGS_RSP(%rdi),%rsp
 
+	/* we must be careful to not read from *%rdi after adjusting %rsp,
+	   so we stash the post-restore RIP and RDI at post-restore RSP */
+	mov    UC_MCONTEXT_GREGS_RSP(%rdi),%rcx
+	mov    UC_MCONTEXT_GREGS_RIP(%rdi),%rax
+	mov    %rax,-0x8(%rcx)
+	mov    UC_MCONTEXT_GREGS_RDI(%rdi),%rax
+	mov    %rax,-0x10(%rcx)
+
+	mov    UC_MCONTEXT_GREGS_RAX(%rdi),%rax
 	/* Pop 2 shadow stack frames:
 
 #0  _Ux86_64_local_resume (as=0x7ffff7fb63c0 <local_addr_space>,
@@ -94,12 +100,12 @@ _Ux86_64_setcontext:
 	incsspq	%rcx
 
 2:
-        /* push the return address on the stack */
-	mov    UC_MCONTEXT_GREGS_RIP(%rdi),%rcx
-	push   %rcx
-
 	mov    UC_MCONTEXT_GREGS_RCX(%rdi),%rcx
-	mov    UC_MCONTEXT_GREGS_RDI(%rdi),%rdi
+
+	/* RDI and RIP are waiting for us at RSP-16 */
+	mov    UC_MCONTEXT_GREGS_RSP(%rdi),%rsp
+	sub    $0x10,%rsp
+	pop    %rdi
 	retq
 	.cfi_endproc
 
