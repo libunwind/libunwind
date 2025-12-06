@@ -38,6 +38,7 @@ extern "C" {
 
 #include <inttypes.h>
 #include <stdint.h>
+#include <sys/reg.h>
 #include <ucontext.h>
 
 #ifndef UNW_EMPTY_STRUCT
