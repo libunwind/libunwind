@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "offsets.h"
 
 	.text
+	.set nomips16
 
 #if _MIPS_SIM == _ABIO32
 # if __BYTE_ORDER__ == __ORDER_BIG_ENDIAN__
