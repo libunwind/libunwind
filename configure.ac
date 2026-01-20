@@ -532,6 +532,11 @@ if test x$GCC = xyes -a x$intel_compiler != xyes; then
     AC_SUBST([UNW_EXTRA_CFLAGS],["-fexceptions -Wall -Wsign-compare"])
 fi
 
+# Workaround for code generation bug in certain GCC versions for aarch64+sve
+if test x$GCC = xyes; then
+    AC_SUBST([UNW_EXTRA_SVE_FLAGS],["-fno-stack-clash-protection -fno-ipa-sra"])
+fi
+
 AC_MSG_CHECKING([for QCC compiler])
 AS_CASE([$CC], [qcc*|QCC*], [qcc_compiler=yes], [qcc_compiler=no])
 AC_MSG_RESULT([$qcc_compiler])

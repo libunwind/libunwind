@@ -57,7 +57,7 @@
 /**
  * Probe for SVE support in the host Linux kernel.
  */
-bool
+static bool
 sve_is_enabled (void)
 {
   return (getauxval (AT_HWCAP) & HWCAP_SVE) ? true : false;
@@ -71,7 +71,7 @@ sve_is_enabled (void)
 /**
  * Probe for SVE support in the host QNX OS kernel.
  */
-bool
+static bool
 sve_is_enabled (void)
 {
   return SYSPAGE_ENTRY (cpuinfo)->flags & AARCH64_CPU_FLAG_SVE;
@@ -83,7 +83,7 @@ sve_is_enabled (void)
 /**
  * Assume there is no SVE suppoirt in the host kernel.
  */
-bool
+static bool
 sve_is_enabled (void)
 {
   return false;
@@ -94,71 +94,65 @@ bool    verbose = false;
 
 int64_t z[100];
 
-void
+static void
 signal_handler (int signum)
 {
   unw_cursor_t  cursor;
   unw_context_t context;
 
-  const char *  expected[] = {
+  /*
+   * This is the sequencce of calls expected in the call stack.
+   */
+  static const char *  expected[] = {
     UNW_TEST_SIGNAL_FRAME, UNW_TEST_KILL_SYSCALL, "sum", "square", "main",
   };
+  static size_t expected_call_stack_size = sizeof (expected) / sizeof (expected[0]);
 
   unw_getcontext (&context);
   unw_init_local (&cursor, &context);
 
-  for (unsigned int depth = 0; depth < sizeof (expected) / sizeof (expected[0]); ++depth)
+  size_t depth = 0;
+  while (depth < expected_call_stack_size)
     {
       unw_word_t pc;
       int        unw_rc = unw_step (&cursor);
-      if (unw_rc <= 0)
+      if (unw_rc == 0)
         {
-          fprintf (stderr, "Frame: %d  unw_step error: %d\n", depth, unw_rc);
-          exit (UNW_TEST_EXIT_FAIL);
+            break;
         }
+	  UNW_TEST_ASSERT(unw_rc > 0, "Frame %zu:  unw_step error: %d\n", depth, unw_rc);
 
       unw_rc = unw_get_reg (&cursor, UNW_REG_IP, &pc);
-      if (pc == 0 || unw_rc != 0)
-        {
-          fprintf (stderr, "Frame: %d  unw_get_reg error: %d\n", depth, unw_rc);
-          exit (UNW_TEST_EXIT_FAIL);
-        }
+	  UNW_TEST_ASSERT(unw_rc == 0 || pc == 0, "Frame %zu: unw_get_reg error: %d\n", depth, unw_rc);
 
       char sym[256];
       unw_rc = unw_is_signal_frame (&cursor);
+	  UNW_TEST_ASSERT(unw_rc >= 0, "Frame: %zu  unw_is_signal_frame error: %d\n", depth, unw_rc);
       if (unw_rc > 0)
         {
           strcpy (sym, UNW_TEST_SIGNAL_FRAME);
-        }
-      else if (unw_rc < 0)
-        {
-          fprintf (stderr, "Frame: %d  unw_is_signal_frame error: %d\n", depth, unw_rc);
-          exit (UNW_TEST_EXIT_FAIL);
         }
       else
         {
           unw_word_t offset;
           unw_rc = unw_get_proc_name (&cursor, sym, sizeof (sym), &offset);
-          if (unw_rc)
-            {
-              fprintf (stderr, "Frame: %d  unw_get_proc_name error: %d\n", depth, unw_rc);
-              exit (UNW_TEST_EXIT_FAIL);
-            }
+	      UNW_TEST_ASSERT(unw_rc == 0, "Frame %zu: unw_get_proc_name error: %d\n", depth, unw_rc);
         }
       if (verbose)
         fprintf (stdout, " IP=%#010lx \"%s\"\n", (unsigned long)pc, sym);
 
-      if (strcmp (sym, expected[depth]) != 0)
-        {
-          fprintf (stderr, "Frame: %d  expected %s but found %s\n", depth, expected[depth], sym);
-          exit (UNW_TEST_EXIT_FAIL);
-        }
+	  UNW_TEST_ASSERT(strcmp (sym, expected[depth]) == 0,
+	  				  "Frame %zu: expected '%s' but found '%s'\n", depth, expected[depth], sym);
+
+      ++depth;
     }
+  UNW_TEST_ASSERT(depth == expected_call_stack_size,
+  				  "expected %zu frames but found %zu\n", expected_call_stack_size, depth);
 
   exit (UNW_TEST_EXIT_PASS);
 }
 
-int64_t
+static int64_t
 sum (svint64_t z0)
 {
   int64_t ret = svaddv_s64 (svptrue_b64 (), z0);
@@ -166,7 +160,7 @@ sum (svint64_t z0)
   return ret;
 }
 
-int64_t
+static int64_t
 square (svint64_t z0)
 {
   int64_t res = 0;
