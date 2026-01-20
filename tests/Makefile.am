@@ -286,11 +286,11 @@ Laarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 Gaarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 
 if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
- Garm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve
- Larm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve
+ Garm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve $(UNW_EXTRA_SVE_FLAGS)
+ Larm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve $(UNW_EXTRA_SVE_FLAGS)
 endif
 # https://github.com/libunwind/libunwind/issues/512
-XFAIL_TESTS += Garm64-test-sve-signal Larm64-test-sve-signal
+# XFAIL_TESTS += Garm64-test-sve-signal Larm64-test-sve-signal
 
 Gtest_init_SOURCES = Gtest-init.cxx
 Ltest_init_SOURCES = Ltest-init.cxx
