@@ -92,6 +92,10 @@ empty_rstate_stack(dwarf_stackable_reg_state_t **rs_stack)
 static void
 aarch64_negate_ra_sign_state(dwarf_state_record_t *sr);
 
+static int
+aarch64_fix_ip_on_func_return(struct dwarf_cursor *c, dwarf_state_record_t *sr,
+                              unw_word_t ip_def_cfa, unw_word_t ip_current);
+
 #endif
 
 /* Run a CFI program to update the register state.  */
@@ -118,6 +122,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
     }
   unw_accessors_t *a = unw_get_accessors_int (as);
   int ret = 0;
+  unw_word_t ip_def_cfa = 0;
 
   while (*ip <= end_ip && *addr < end_addr && ret >= 0)
     {
@@ -304,6 +309,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
             break;
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
           set_reg (sr, DWARF_CFA_OFF_COLUMN, 0, val);   /* NOT factored! */
+          ip_def_cfa = *ip;
           Debug (15, "CFA_def_cfa r%lu+0x%lx\n", (long) regnum, (long) val);
           break;
 
@@ -314,6 +320,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
           set_reg (sr, DWARF_CFA_OFF_COLUMN, 0,
                    val * dci->data_align);              /* factored! */
+          ip_def_cfa = *ip;
           Debug (15, "CFA_def_cfa_sf r%lu+0x%lx\n",
                  (long) regnum, (long) (val * dci->data_align));
           break;
@@ -322,6 +329,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
             break;
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
+          ip_def_cfa = 0;
           Debug (15, "CFA_def_cfa_register r%lu\n", (long) regnum);
           break;
 
@@ -329,6 +337,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
             break;
           set_reg (sr, DWARF_CFA_OFF_COLUMN, 0, val);   /* NOT factored! */
+          ip_def_cfa = 0;
           Debug (15, "CFA_def_cfa_offset 0x%lx\n", (long) val);
           break;
 
@@ -337,6 +346,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
             break;
           set_reg (sr, DWARF_CFA_OFF_COLUMN, 0,
                    val * dci->data_align);      /* factored! */
+          ip_def_cfa = 0;
           Debug (15, "CFA_def_cfa_offset_sf 0x%lx\n",
                  (long) (val * dci->data_align));
           break;
@@ -426,6 +436,17 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           break;
         }
     }
+#if defined(UNW_TARGET_AARCH64)
+  if (unlikely(c->next_to_signal_frame) &&
+      sr->rs_current.reg.val[DWARF_CFA_REG_COLUMN] == UNW_AARCH64_X29 &&
+      sr->rs_current.reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG &&
+      *ip < end_ip && end_ip != ~(unw_word_t) 0 && ret >= 0 &&
+      (long) sr->rs_current.reg.val[DWARF_CFA_OFF_COLUMN] > 0)
+    {
+      /* This function may be compiled by clang */
+      ret = aarch64_fix_ip_on_func_return(c, sr, ip_def_cfa, end_ip);
+    }
+#endif
 
   if (ret > 0)
     ret = 0;
@@ -795,6 +816,85 @@ aarch64_negate_ra_sign_state(dwarf_state_record_t *sr)
   set_reg(sr, UNW_AARCH64_RA_SIGN_STATE, DWARF_WHERE_SAME, ra_sign_state);
 }
 
+static int
+aarch64_fix_ip_on_func_return(struct dwarf_cursor *c, dwarf_state_record_t *sr,
+                              unw_word_t ip_def_cfa, unw_word_t ip_current)
+{
+  unw_accessors_t *a = unw_get_accessors (c->as);
+  unw_word_t addr;
+  unw_word_t w0;
+  unw_sword_t frame_size;
+  uint32_t inst;
+  int ret = 0;
+
+  if (sr->rs_current.reg.where[UNW_AARCH64_X29] != DWARF_WHERE_CFAREL ||
+      (long) sr->rs_current.reg.val[UNW_AARCH64_X29] >= 0)
+    Debug (15, "x29 is not under CFA at 0x%lx\n", (long) ip_current);
+  else if (!c->as->big_endian)
+    ret = 1;
+  if (ret == 0)
+    return ret;
+
+  struct instruction_entry
+    {
+      uint32_t pattern;
+      uint32_t mask;
+    };
+  const struct instruction_entry ret_inst = {0xd65f03c0, 0xffffffff};
+  const struct instruction_entry add_x29_sp_num = {0x910003e0, 0xffc003e0};
+  const struct instruction_entry mov_x29_sp = {0x910003fd, 0xffffffff};
+
+  addr = ip_current & ~(unw_word_t) 0x7;
+  if ((ret = (*a->access_mem) (c->as, addr, &w0, 0, c->as_arg)) < 0)
+    return ret;
+  inst = ip_current & 0x4 ? (uint32_t) (w0 >> 32) : w0 & 0xffffffff;
+  if (inst == ret_inst.pattern)
+    {
+      Debug (15, "mark initial on 'ret' inst at 0x%lx\n", (long) ip_current);
+      memcpy (&sr->rs_current, &sr->rs_initial, sizeof (sr->rs_initial));
+      return 1;
+    }
+
+  if (!ip_def_cfa)
+    {
+      Debug (15, "CFA is inited and modified at 0x%lx\n", (long) ip_current);
+      return 0;
+    }
+
+  const unw_word_t ip_may_set_x29 = ip_def_cfa - (unw_word_t) 4;
+  const unw_sword_t x29_offset = (unw_sword_t) sr->rs_current.reg.val[UNW_AARCH64_X29];
+  addr = ip_may_set_x29 & ~(unw_word_t) 0x7;
+  if ((ret = (*a->access_mem) (c->as, addr, &w0, 0, c->as_arg)) < 0)
+    return ret;
+  inst = ip_may_set_x29 & 0x4 ? (uint32_t) (w0 >> 32) : w0 & 0xffffffff;
+  if ((inst & add_x29_sp_num.mask) == add_x29_sp_num.pattern)
+    frame_size = ((unw_sword_t) ((inst & 0x003ffc00) >> 10)) - x29_offset;
+  else if (inst == mov_x29_sp.pattern)
+    frame_size = -x29_offset;
+  else
+    return 0;
+  /* frame_size is guaranteed to be a positive number */
+
+  unw_word_t sp, x29;
+  unw_get_reg (dwarf_to_cursor(c), UNW_AARCH64_X29, &x29);
+  unw_get_reg (dwarf_to_cursor(c), UNW_AARCH64_SP, &sp);
+  if (((unw_sword_t) (x29 - sp)) < frame_size)
+    return 0;
+
+  /* x29 has been restored by something like `ldp x29, x30, [sp, #0x**]`,
+     while sp hasn't */
+  Debug (15, "Recover x29, x30 and CFA by SP at 0x%lx\n", (long) ip_current);
+  set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, UNW_AARCH64_SP);
+  set_reg (sr, DWARF_CFA_OFF_COLUMN, 0, (unw_word_t) frame_size);
+  set_reg (sr, UNW_AARCH64_X29, DWARF_WHERE_SAME, 0);
+  set_reg (sr, UNW_AARCH64_SP, DWARF_WHERE_CFAREL, 0);
+
+  int where_x30 = sr->rs_current.reg.where[UNW_AARCH64_X30];
+  if (where_x30 != DWARF_WHERE_CFAREL)
+    Debug (15, "x30 (%d) doesn't follow cfa at 0x%lx\n", where_x30, (long) ip_current);
+  return 2;
+}
+
 static unw_word_t
 aarch64_get_ra_sign_state(struct dwarf_reg_state *rs)
 {
@@ -834,6 +934,18 @@ apply_reg_state (struct dwarf_cursor *c, struct dwarf_reg_state *rs)
   /* Evaluate the CFA first, because it may be referred to by other
      expressions.  */
 
+#if defined(UNW_TARGET_AARCH64)
+  if (unlikely(c->cfa_is_unreliable)
+      && (rs->reg.val[DWARF_CFA_REG_COLUMN] == TDEP_DWARF_SP)
+      && (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
+      && (UNW_AARCH64_X29 < ARRAY_SIZE(rs->reg.val))
+      && (rs->reg.where[UNW_AARCH64_X29] == DWARF_WHERE_CFAREL)
+      && (ret = unw_get_reg (dwarf_to_cursor(c), UNW_AARCH64_X29, &cfa)) >= 0)
+    {
+      cfa -= rs->reg.val[UNW_AARCH64_X29];
+    }
+  else
+#endif
   if (rs->reg.where[DWARF_CFA_REG_COLUMN] == DWARF_WHERE_REG)
     {
       /* CFA is equal to [reg] + offset: */

@@ -326,6 +326,8 @@ typedef struct dwarf_cursor
     unsigned int use_prev_instr :1; /* use previous (= call) or current (= signal) instruction? */
     unsigned int pi_valid :1;   /* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
+    unsigned int next_to_signal_frame :1;  /* is paused by signal or function call */
+    unsigned int cfa_is_unreliable :1;  /* usually is the parent frame of an interrupted frame */
     unw_proc_info_t pi;         /* info about current procedure */
 
     short hint; /* faster lookup of the rs cache */
