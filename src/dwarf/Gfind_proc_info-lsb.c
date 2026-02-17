@@ -493,8 +493,61 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
+typedef struct eh_frame_list_entry
+  {
+    struct eh_frame_list_entry *next;
+    Elf_W (Addr) eh_frame;
+    char filename[];
+  }
+eh_frame_list_entry_t;
+
+static define_lock (eh_frame_list_lock);
+static eh_frame_list_entry_t *eh_frame_list_head;
+
+/* Prepend entry to singly-linked list head.  */
+static void
+eh_frame_list_prepend (eh_frame_list_entry_t *entry)
+{
+  mutex_lock (&eh_frame_list_lock);
+  {
+    entry->next = eh_frame_list_head;
+    eh_frame_list_head = entry;
+  }
+  mutex_unlock (&eh_frame_list_lock);
+}
+
+/* Search singly linked list head for item with given filename.  */
+static eh_frame_list_entry_t*
+eh_frame_list_search (const char *filename)
+{
+  mutex_lock (&eh_frame_list_lock);
+  {
+    eh_frame_list_entry_t *entry = eh_frame_list_head;
+    while (entry)
+      {
+        if (strcmp (entry->filename, filename) == 0)
+          {
+            Debug (6, "cache: found matching %s at 0x%lx\n",
+                   entry->filename,
+                   entry->eh_frame);
+
+            mutex_unlock (&eh_frame_list_lock);
+            return entry;
+          }
+        Debug (6, "cache: %s at 0x%lx did not match\n",
+               entry->filename,
+               entry->eh_frame);
+        entry = entry->next;
+      }
+  }
+  mutex_unlock (&eh_frame_list_lock);
+
+  Debug (6, "cache: %s not in cache\n", filename);
+  return NULL;
+}
+
 static Elf_W (Addr)
-dwarf_find_eh_frame_section(struct dl_phdr_info *info)
+find_eh_frame_section (struct dl_phdr_info *info)
 {
   int rc;
   struct elf_image ei;
@@ -502,11 +555,19 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
   Elf_W (Shdr)* shdr;
   const char *file = info->dlpi_name;
   char exepath[PATH_MAX];
+  eh_frame_list_entry_t *eh_frame_list_entry;
 
   if (strlen(file) == 0)
     {
       tdep_get_exe_image_path(exepath);
       file = exepath;
+    }
+
+  /* Check if cached synthetic eh_frame header exists for this file.  */
+  eh_frame_list_entry = eh_frame_list_search (file);
+  if (eh_frame_list_entry)
+    {
+      return eh_frame_list_entry->eh_frame;
     }
 
   Debug (1, "looking for .eh_frame section in %s\n",
@@ -521,8 +582,15 @@ dwarf_find_eh_frame_section(struct dl_phdr_info *info)
     goto out;
 
   eh_frame = shdr->sh_addr + info->dlpi_addr;
-  Debug (4, "found .eh_frame at address %lx\n",
+  Debug (4, "found .eh_frame at address 0x%lx\n",
          eh_frame);
+
+  /* Cache synthetic eh_frame header */
+  GET_MEMORY (eh_frame_list_entry, sizeof (eh_frame_list_entry_t) + strlen (file) + 1);
+  strcpy (eh_frame_list_entry->filename, file);
+  eh_frame_list_entry->eh_frame = eh_frame;
+  eh_frame_list_entry->next = NULL;
+  eh_frame_list_prepend (eh_frame_list_entry);
 
 out:
   mi_munmap (ei.image, ei.size);
@@ -615,7 +683,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
     {
       Elf_W (Addr) eh_frame;
       Debug (1, "no .eh_frame_hdr section found\n");
-      eh_frame = dwarf_find_eh_frame_section (info);
+      eh_frame = find_eh_frame_section (info);
       if (eh_frame)
         {
           Debug (1, "using synthetic .eh_frame_hdr section for %s\n",
