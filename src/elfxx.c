@@ -671,7 +671,8 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
 
   ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp);
 
-  mi_munmap (ei.image, ei.size);
+  if (ei.mapped)
+    mi_munmap (ei.image, ei.size);
   ei.image = NULL;
 
   return ret;
