@@ -105,6 +105,7 @@ endif
 			Gtest-concurrent Ltest-concurrent		 \
 			Gtest-sig-context Ltest-sig-context		 \
 			Gtest-trace Ltest-trace				 \
+			Gtest-get_proc_name \
 			test-async-sig test-flush-cache test-init-remote \
 			test-mem test-reg-state Ltest-varargs		 \
 			Ltest-nomalloc Ltest-nocalloc Lrs-race
@@ -312,6 +313,7 @@ Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
+Gtest_get_proc_name_SOURCES = Gtest-get_proc_name.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_arch = $(top_builddir)/src/libunwind-arch-$(arch).la
@@ -349,6 +351,7 @@ Gtest_concurrent_LDADD = $(LIBUNWIND) $(LIBUNWIND_local) $(PTHREADS_LIB)
 x64_unwind_badjmp_signal_frame_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+Gtest_get_proc_name_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
