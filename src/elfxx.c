@@ -1,6 +1,7 @@
 /* libunwind - a platform-independent unwind library
    Copyright (C) 2003-2005 Hewlett-Packard Co
    Copyright (C) 2007 David Mosberger-Tang
+   Copyright 2026 Stephen M. Webb  <stephen.webb@bregmasoft.ca>
         Contributed by David Mosberger-Tang <dmosberger@gmail.com>
 
 This file is part of libunwind.
@@ -34,26 +35,35 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <lzma.h>
 #endif /* HAVE_LZMA */
 
+/**
+ * A collection of data regarding a function in an ELF image.
+ */
 struct symbol_info
 {
-  const char *strtab;
-  const Elf_W (Sym) *sym;
-  Elf_W (Addr) start_ip;
+  const char         *strtab;    /**< Pointer to the ELF image STRTAB section */
+  const Elf_W (Sym)  *sym;       /**< Pointer to an ELF image SYMTAB entry */
+  Elf_W (Addr)        start_ip;  /**< Pointer to the start address of a function */
 };
 
+/**
+ * A collection of data regarding an IP being looked up in an ELF image.
+ */
 struct symbol_lookup_context
 {
-  unw_addr_space_t as;
-  unw_word_t ip;
-  struct elf_image *ei;
-  Elf_W (Addr) load_offset;
-  Elf_W (Addr) *min_dist;
+  unw_addr_space_t   as;
+  unw_word_t         ip;
+  struct elf_image  *ei;
+  Elf_W (Addr)       load_offset;
+  Elf_W (Addr)      *min_dist;
 };
 
+/**
+ * A collection of data about where to write symbol information when it's found.
+ */
 struct symbol_callback_data
 {
-  char *buf;
-  size_t buf_len;
+  char   *buf;      /**< Pointer to a buffer to contain a NTCS */
+  size_t  buf_len;  /**< Number of bytes in `buf` */
 };
 
 struct ip_range_callback_data
@@ -61,6 +71,13 @@ struct ip_range_callback_data
   Elf_W (Addr) *start_ip;
   Elf_W (Addr) *end_ip;
 };
+
+/**
+ * Function signature for symtab lookup callbacks
+ */
+typedef int (*symtab_lookup_function_t)(const struct symbol_lookup_context *,
+                                        const struct symbol_info *,
+                                        void *);
 
 static Elf_W (Shdr)*
 elf_w (section_table) (const struct elf_image *ei)
@@ -127,11 +144,10 @@ dynamic_va_to_file_offset (Elf_W (Addr) va, Elf_W (Phdr) *phdr, size_t phnum)
 }
 
 static int
-elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
+elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSED,
                                     const struct symbol_lookup_context *context,
-                                    int (*callback)(const struct symbol_lookup_context *context,
-                                                    const struct symbol_info *syminfo, void *data),
-                                    void *data)
+                                    symtab_lookup_function_t            symtab_lookup,
+                                    void                               *data)
 
 {
   struct elf_image *ei = context->ei;
@@ -233,18 +249,21 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
           Debug (16, "0x%016lx info=0x%02x %s\n",
                  (long) val, sym->st_info, strtab + sym->st_name);
 
-          /* as long as found one, the return will be success*/
           struct symbol_info syminfo =
             {
               .strtab = strtab,
               .sym = sym,
               .start_ip = val
             };
-          if ((*callback) (context, &syminfo, data) == UNW_ESUCCESS)
+          ret = symtab_lookup (context, &syminfo, data);
+
+          /* Keep going if the IP is not found in this symtab entry. */
+          if (ret == -UNW_ENOINFO)
             {
-              if (ret != UNW_ESUCCESS)
-                ret = UNW_ESUCCESS;
+              continue;
             }
+
+          break;
         }
     }
 
@@ -252,11 +271,10 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t as UNUSED,
 }
 
 static int
-elf_w (lookup_symbol_closeness) (unw_addr_space_t as UNUSED,
+elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
                                  const struct symbol_lookup_context *context,
-                                 int (*callback)(const struct symbol_lookup_context *context,
-                                                 const struct symbol_info *syminfo, void *data),
-                                 void *data)
+                                 symtab_lookup_function_t            symtab_lookup,
+                                 void                               *data)
 {
   struct elf_image *ei = context->ei;
   Elf_W (Addr) load_offset = context->load_offset;
@@ -275,7 +293,7 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t as UNUSED,
   if (!shdr)
     return -UNW_ENOINFO;
 
-  for (i = 0; i < ehdr->e_shnum; ++i)
+  for (i = 0; i < ehdr->e_shnum && ret == -UNW_ENOINFO; ++i)
     {
       switch (shdr->sh_type)
         {
@@ -307,18 +325,21 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t as UNUSED,
                   Debug (16, "0x%016lx info=0x%02x %s\n",
                          (long) val, sym->st_info, strtab + sym->st_name);
 
-                  /* as long as found one, the return will be success*/
                   struct symbol_info syminfo =
                     {
-                      .strtab = strtab,
-                      .sym = sym,
+                      .strtab   = strtab,
+                      .sym      = sym,
                       .start_ip = val
                     };
-                  if ((*callback) (context, &syminfo, data) == UNW_ESUCCESS)
+                  ret = symtab_lookup (context, &syminfo, data);
+
+                  /* Keep going if the IP is not found in this symtab entry. */
+                  if (ret == -UNW_ENOINFO)
                     {
-                      if (ret != UNW_ESUCCESS)
-                        ret = UNW_ESUCCESS;
+                      continue;
                     }
+
+                  break;
                 }
             }
           break;
@@ -329,31 +350,54 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t as UNUSED,
       shdr = (Elf_W (Shdr) *) (((char *) shdr) + ehdr->e_shentsize);
     }
 
-  if (ret != UNW_ESUCCESS)
-    ret = elf_w (lookup_symbol_from_dynamic) (as, context, callback, data);
+  /* If it wasn't found in the ELF symtab, check the synamic symtab. */
+  if (ret == -UNW_ENOINFO)
+    ret = elf_w (lookup_symbol_from_dynamic) (as, context, symtab_lookup, data);
 
   return ret;
 }
 
+/**
+ * Finds the symbol in the symtab for an IP
+ * @param[in]  context  Information on the IP being looked up
+ * @param[in]  syminfo  Information on the SYMTAB entry found for the IP
+ * @param[in]  data     Information on where to put the symbol name found
+ *
+ * @returns -UNW_ENOINFO if the context does not match the symtab
+ * @returns -UNW_ENOMEM if the found symbol will not fit in the buffer
+ * @returns UNE_ESUCCESS otherwise
+ */
 static int
 elf_w (lookup_symbol_callback)(const struct symbol_lookup_context *context,
-                               const struct symbol_info *syminfo, void *data)
+                               const struct symbol_info           *syminfo,
+                               void                               *data)
 {
-  int ret = -UNW_ENOINFO;
   struct symbol_callback_data *d = data;
+  int ret = -UNW_ENOINFO;
 
-  if (context->ip < syminfo->start_ip ||
-      context->ip >= (syminfo->start_ip + syminfo->sym->st_size))
-    return -UNW_ENOINFO;
-
-  if ((Elf_W (Addr)) (context->ip - syminfo->start_ip) < *(context->min_dist))
+  if (context->ip >= syminfo->start_ip &&
+      context->ip < (syminfo->start_ip + syminfo->sym->st_size))
     {
-      *(context->min_dist) = (Elf_W (Addr)) (context->ip - syminfo->start_ip);
-      Debug (1, "candidate sym: %s@0x%lx\n", syminfo->strtab + syminfo->sym->st_name, syminfo->start_ip);
-      strncpy (d->buf, syminfo->strtab + syminfo->sym->st_name, d->buf_len);
-      d->buf[d->buf_len - 1] = '\0';
-      ret = (strlen (syminfo->strtab + syminfo->sym->st_name) >= d->buf_len
-             ? -UNW_ENOMEM : UNW_ESUCCESS);
+      if ((Elf_W (Addr)) (context->ip - syminfo->start_ip) < *(context->min_dist))
+        {
+          *(context->min_dist) = (Elf_W (Addr)) (context->ip - syminfo->start_ip);
+          char const* const sym_name     = syminfo->strtab + syminfo->sym->st_name;
+          size_t            sym_name_len = strlen(sym_name);
+          Debug (1, "candidate sym: %s@%#010lx\n", sym_name, syminfo->start_ip);
+          if (sym_name_len >= d->buf_len)
+            {
+              Debug (1, "symbol length %zu exceeds buffer of length %zu\n",
+                     sym_name_len+1, d->buf_len);
+              sym_name_len = d->buf_len - 1; /* adjust for null terminator */
+              ret = -UNW_ENOMEM; /* indicate truncation of symbol name */
+            }
+          else
+            {
+              ret = UNW_ESUCCESS;
+            }
+          memcpy(d->buf, sym_name, sym_name_len);
+          d->buf[sym_name_len] = 0; /* null terminate */
+        }
     }
 
   return ret;
