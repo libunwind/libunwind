@@ -654,14 +654,14 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
 
 HIDDEN int
 elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
-                       char *buf, size_t buf_len, unw_word_t *offp)
+                       char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
   unsigned long segbase, mapoff;
   struct elf_image ei;
   int ret;
   char file[PATH_MAX];
 
-  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, file, PATH_MAX);
+  ret = tdep_get_elf_image (as, &ei, pid, ip, &segbase, &mapoff, file, PATH_MAX, arg);
   if (ret < 0)
     return ret;
 
@@ -714,14 +714,14 @@ elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
 
 HIDDEN int
 elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
-                           unw_word_t *start, unw_word_t *end)
+                           unw_word_t *start, unw_word_t *end, void *arg)
 {
   unsigned long segbase, mapoff;
   struct elf_image ei;
   int ret;
   char file[PATH_MAX];
 
-  ret = tdep_get_elf_image (&ei, pid, ip, &segbase, &mapoff, file, PATH_MAX);
+  ret = tdep_get_elf_image (as, &ei, pid, ip, &segbase, &mapoff, file, PATH_MAX, arg);
   if (ret < 0)
     return ret;
 
@@ -739,13 +739,13 @@ elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
 
 HIDDEN int
 elf_w (get_elf_filename) (unw_addr_space_t as UNUSED, pid_t pid, unw_word_t ip,
-                          char *buf, size_t buf_len, unw_word_t *offp)
+                          char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
   unsigned long segbase, mapoff;
   int ret = UNW_ESUCCESS;
 
   // use NULL to no map elf image
-  ret = tdep_get_elf_image (NULL, pid, ip, &segbase, &mapoff, buf, buf_len);
+  ret = tdep_get_elf_image (as, NULL, pid, ip, &segbase, &mapoff, buf, buf_len, arg);
   if (ret < 0)
     return ret;
 

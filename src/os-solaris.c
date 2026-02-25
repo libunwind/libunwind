@@ -30,9 +30,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "os-linux.h" // using linux header for map_iterator implementation
 
 int
-tdep_get_elf_image (struct elf_image *ei, pid_t pid, unw_word_t ip,
+tdep_get_elf_image (unw_addr_space_t as, struct elf_image *ei, pid_t pid, unw_word_t ip,
                     unsigned long *segbase, unsigned long *mapoff,
-                    char *path, size_t pathlen)
+                    char *path, size_t pathlen, void *arg)
 {
   struct map_iterator mi;
   int found = 0, rc = UNW_ESUCCESS;

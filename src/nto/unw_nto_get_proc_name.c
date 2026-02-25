@@ -46,9 +46,9 @@ int unw_nto_get_proc_name (unw_addr_space_t  as,
   size_t path_len = sizeof (path);
   int ret = -UNW_ENOINFO;
 #if UNW_ELF_CLASS == UNW_ELFCLASS64
-  ret = _Uelf64_get_proc_name (as, uni->pid, ip, symbol, symbol_len, offp);
+  ret = _Uelf64_get_proc_name (as, uni->pid, ip, symbol, symbol_len, offp, NULL);
 #elif UNW_ELF_CLASS == UNW_ELFCLASS32
-  ret = _Uelf32_get_proc_name (as, uni->pid, ip, symbol, symbol_len, offp);
+  ret = _Uelf32_get_proc_name (as, uni->pid, ip, symbol, symbol_len, offp, NULL);
 #else
 # error no valid ELF class defined
 #endif
@@ -77,9 +77,9 @@ int unw_nto_get_proc_ip_range (unw_addr_space_t  as,
   int ret = -UNW_ENOINFO;
 
 #if UNW_ELF_CLASS == UNW_ELFCLASS64
-  ret = _Uelf64_get_proc_ip_range (as, uni->pid, ip, start, end);
+  ret = _Uelf64_get_proc_ip_range (as, uni->pid, ip, start, end, NULL);
 #elif UNW_ELF_CLASS == UNW_ELFCLASS32
-  ret = _Uelf32_get_proc_ip_range (as, uni->pid, ip, start, end);
+  ret = _Uelf32_get_proc_ip_range (as, uni->pid, ip, start, end, NULL);
 #else
 # error no valid ELF class defined
 #endif

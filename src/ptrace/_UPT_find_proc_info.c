@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "_UPT_internal.h"
 
 static int
-get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_word_t ip)
+get_unwind_info ( struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_word_t ip, void *arg)
 {
   unsigned long segbase, mapoff;
   char path[PATH_MAX];
@@ -58,8 +58,8 @@ get_unwind_info (struct elf_dyn_info *edi, pid_t pid, unw_addr_space_t as, unw_w
 
   invalidate_edi(edi);
 
-  if (tdep_get_elf_image (&edi->ei, pid, ip, &segbase, &mapoff, path,
-                          sizeof(path)) < 0)
+  if (tdep_get_elf_image (as, &edi->ei, pid, ip, &segbase, &mapoff, path,
+                          sizeof(path), arg) < 0)
     return -UNW_ENOINFO;
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
@@ -96,7 +96,7 @@ _UPT_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   struct UPT_info *ui = arg;
   int ret = -UNW_ENOINFO;
 
-  if (get_unwind_info (&ui->edi, ui->pid, as, ip) < 0)
+  if (get_unwind_info (&ui->edi, ui->pid, as, ip, arg) < 0)
     return -UNW_ENOINFO;
 
 #if UNW_TARGET_IA64
