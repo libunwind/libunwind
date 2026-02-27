@@ -27,7 +27,7 @@ AC_COPYRIGHT([
 
 define(pkg_major, 1)
 define(pkg_minor, 9)
-define(pkg_extra, -pre)
+define(pkg_extra, -rc1)
 define(pkg_maintainer, https://github.com/libunwind/libunwind)
 define(mkvers, $1.$2$3)
 AC_INIT([libunwind],[mkvers(pkg_major, pkg_minor, pkg_extra)],[pkg_maintainer])
