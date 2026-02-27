@@ -79,19 +79,22 @@ int unw_nto_find_proc_info (unw_addr_space_t as,
 
   if (ret >= 0)
     {
-      if (tdep_find_unwind_table (&uni->edi, as, path, segbase, mapoff, ip) >= 0)
+      ret = tdep_find_unwind_table (&uni->edi, as, path, segbase, mapoff, ip);
+      if (ret < UNW_ESUCCESS)
         {
-          if (uni->edi.di_cache.format != -1)
-            {
-              ret = tdep_search_unwind_table (as, ip, &uni->edi.di_cache,
-                                              pi, need_unwind_info, uni);
-            }
+          return ret;
+        }
 
-          if (ret == -UNW_ENOINFO && uni->edi.di_debug.format != -1)
-            {
-              ret = tdep_search_unwind_table (as, ip, &uni->edi.di_debug, pi,
-                                              need_unwind_info, uni);
-            }
+      if (uni->edi.di_cache.format != -1)
+        {
+          ret = tdep_search_unwind_table (as, ip, &uni->edi.di_cache,
+                                          pi, need_unwind_info, uni);
+        }
+
+      if (ret == -UNW_ENOINFO && uni->edi.di_debug.format != -1)
+        {
+          ret = tdep_search_unwind_table (as, ip, &uni->edi.di_debug,
+                                          pi, need_unwind_info, uni);
         }
     }
 
