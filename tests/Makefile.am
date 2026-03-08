@@ -107,6 +107,8 @@ endif
 			Gtest-trace Ltest-trace				 \
 			Gtest-get_proc_name \
 			test-async-sig test-flush-cache test-init-remote \
+			test-iterate-phdr-reentry			 \
+			test-iterate-phdr-cache-null			 \
 			test-mem test-reg-state Ltest-varargs		 \
 			Ltest-nomalloc Ltest-nocalloc Lrs-race
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
@@ -335,6 +337,8 @@ LIBUNWIND_setjmp = $(top_builddir)/src/libunwind-setjmp.la	\
 
 test_async_sig_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 test_flush_cache_LDADD = $(LIBUNWIND_local)
+test_iterate_phdr_reentry_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
+test_iterate_phdr_cache_null_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 test_init_remote_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_mem_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_reg_state_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
