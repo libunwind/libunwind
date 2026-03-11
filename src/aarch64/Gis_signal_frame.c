@@ -52,9 +52,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
  *  d63f0060        blr  x3
  *  aa1303e0        mov  x0, x19
  *  14xxxxxx        b    SignalReturn@plt
+ *
+ * On SDP 8 it might look more like this.
+ *
+ *  b9400260        ldr     w0, [x19]
+ *  d63f0060        blr     x3
+ *  aa1303e0        mov     x0, x19
+ *  17ffda7f        b       SignalReturn@plt
  */
 # define SIGNAL_RETURN 0x14000000aa1303e0
-# define HANDLER_CALL  0xd63f0060f9400260
+# define HANDLER_CALL  0xd63f0060b9400260
 #endif
 
 int
