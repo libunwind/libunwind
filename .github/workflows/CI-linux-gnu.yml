@@ -100,6 +100,7 @@ jobs:
       matrix:
         config:
           - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 14, container: ubuntu:26.04 }
+          - {target: alpha,    host: alpha-linux-gnu,         qemu: alpha,    gccver: 14: container: ubuntu:26.04 }
           - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 14, container: ubuntu:26.04 }
           - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 14, container: ubuntu:26.04 }
           - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 14, container: ubuntu:26.04 }

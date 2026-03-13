@@ -106,6 +106,7 @@ AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 AC_DEFUN([SET_ARCH],[
     AS_CASE([$1],
         [aarch64*],[$2=aarch64],
+        [alpha*],[$2=alpha],
         [arm*],[$2=arm],
         [i?86],[$2=x86],
         [hppa*],[$2=hppa],
@@ -298,7 +299,7 @@ AC_ARG_ENABLE([cxx_exceptions],
 )
 AS_IF([test $enable_cxx_exceptions = check],
       [AS_CASE([$target_arch],
-               [aarch64*|arm*|hppa*|mips*|x86*|s390x*|loongarch64], [enable_cxx_exceptions=no],
+               [aarch64*|alpha*|arm*|hppa*|mips*|x86*|s390x*|loongarch64], [enable_cxx_exceptions=no],
                [enable_cxx_exceptions=yes])]
 )
 AC_MSG_RESULT([$enable_cxx_exceptions])
@@ -356,6 +357,7 @@ AM_CONDITIONAL([XFAIL_PTRACE_TEST], [echo $CFLAGS | grep -q '\-m32\>'])
 AM_CONDITIONAL([CROSS_BUILD], [test x$build != x$host])
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
+AM_CONDITIONAL(ARCH_ALPHA, test x$target_arch = xalpha)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
 AM_CONDITIONAL(ARCH_IA64, test x$target_arch = xia64)
 AM_CONDITIONAL(ARCH_HPPA, test x$target_arch = xhppa)
@@ -377,7 +379,7 @@ AM_CONDITIONAL(OS_SOLARIS, expr x$target_os : xsolaris >/dev/null)
 AC_MSG_CHECKING([for ELF helper width])
 AS_CASE([${target_arch}],
         [arm|hppa|ppc32|x86|sh],           [use_elf32=yes; AC_MSG_RESULT([32])],
-        [aarch64|ia64|ppc64|x86_64|s390x], [use_elf64=yes; AC_MSG_RESULT([64])],
+        [aarch64|alpha|ia64|ppc64|x86_64|s390x], [use_elf64=yes; AC_MSG_RESULT([64])],
         [mips|riscv|loongarch64],          [use_elfxx=yes; AC_MSG_RESULT([xx])],
         [AC_MSG_ERROR([Unknown ELF target: ${target_arch}])]
 )

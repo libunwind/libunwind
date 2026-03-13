@@ -60,6 +60,9 @@ if ARCH_AARCH64
  lib_LTLIBRARIES += libunwind-aarch64.la
  noinst_LTLIBRARIES += libunwind-arch-aarch64.la
 endif
+if ARCH_ALPHA
+ lib_LTLIBRARIES += libunwind-alpha.la
+endif
 if ARCH_ARM
  lib_LTLIBRARIES += libunwind-arm.la
 endif
@@ -999,6 +1002,65 @@ libunwind_riscv_la_LDFLAGS =                   \
 	$(COMMON_SO_LDFLAGS)                   \
 	-version-info $(SOVERSION)
 libunwind_riscv_la_LIBADD =                    \
+	libunwind-dwarf-generic.la             \
+	libunwind-elf64.la                     \
+	$(libunwind_libadd)
+
+### target Alpha:
+# The list of files that go both into libunwind and libunwind-alpha:
+noinst_HEADERS +=                              \
+	alpha/init.h                           \
+	alpha/unwind_i.h
+libunwind_la_SOURCES_alpha_common =            \
+	$(libunwind_la_SOURCES_common)         \
+	alpha/is_fpreg.c                       \
+	alpha/regname.c
+
+if ARCH_ALPHA
+# The list of files that go into libunwind:
+libunwind_local_la_SOURCES =               \
+	$(libunwind_la_SOURCES_alpha_common)   \
+	$(libunwind_la_SOURCES_local)          \
+	alpha/getcontext.S                     \
+	alpha/Lapply_reg_state.c               \
+	alpha/Lcreate_addr_space.c             \
+	alpha/Lget_proc_info.c                 \
+	alpha/Lget_save_loc.c                  \
+	alpha/Lglobal.c                        \
+	alpha/Linit.c                          \
+	alpha/Linit_local.c                    \
+	alpha/Linit_remote.c                   \
+	alpha/Lis_signal_frame.c               \
+	alpha/Lregs.c                          \
+	alpha/Lreg_states_iterate.c            \
+	alpha/Lresume.c                        \
+	alpha/Lstep.c                          \
+	alpha/setcontext.S
+
+libunwind_setjmp_la_SOURCES += alpha/siglongjmp.S
+endif # ARCH_ALPHA
+
+# The list of files that go into libunwind-alpha:
+libunwind_alpha_la_SOURCES =                   \
+	$(libunwind_la_SOURCES_alpha_common)   \
+	$(libunwind_la_SOURCES_generic)        \
+	alpha/Gapply_reg_state.c               \
+	alpha/Gcreate_addr_space.c             \
+	alpha/Gget_proc_info.c                 \
+	alpha/Gget_save_loc.c                  \
+	alpha/Gglobal.c                        \
+	alpha/Ginit.c                          \
+	alpha/Ginit_local.c                    \
+	alpha/Ginit_remote.c                   \
+	alpha/Gis_signal_frame.c               \
+	alpha/Gregs.c                          \
+	alpha/Greg_states_iterate.c            \
+	alpha/Gresume.c                        \
+	alpha/Gstep.c
+libunwind_alpha_la_LDFLAGS =                   \
+	$(COMMON_SO_LDFLAGS)                   \
+	-version-info $(SOVERSION)
+libunwind_alpha_la_LIBADD =                    \
 	libunwind-dwarf-generic.la             \
 	libunwind-elf64.la                     \
 	$(libunwind_libadd)
