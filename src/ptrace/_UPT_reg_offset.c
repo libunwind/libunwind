@@ -734,6 +734,42 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_LOONGARCH64_R30] = LOONGARCH_EF_R30,
     [UNW_LOONGARCH64_R31] = LOONGARCH_EF_R31,
     [UNW_LOONGARCH64_PC]  = LOONGARCH_EF_CSR_ERA
+#elif defined(UNW_TARGET_ALPHA)
+    /* PTRACE_PEEKUSER on Alpha uses indices:
+       0-30 = GPRs $0-$30, 31 = $31 (zero), 32 = PC */
+    [UNW_ALPHA_R0]  = 0x000,
+    [UNW_ALPHA_R1]  = 0x008,
+    [UNW_ALPHA_R2]  = 0x010,
+    [UNW_ALPHA_R3]  = 0x018,
+    [UNW_ALPHA_R4]  = 0x020,
+    [UNW_ALPHA_R5]  = 0x028,
+    [UNW_ALPHA_R6]  = 0x030,
+    [UNW_ALPHA_R7]  = 0x038,
+    [UNW_ALPHA_R8]  = 0x040,
+    [UNW_ALPHA_R9]  = 0x048,
+    [UNW_ALPHA_R10] = 0x050,
+    [UNW_ALPHA_R11] = 0x058,
+    [UNW_ALPHA_R12] = 0x060,
+    [UNW_ALPHA_R13] = 0x068,
+    [UNW_ALPHA_R14] = 0x070,
+    [UNW_ALPHA_R15] = 0x078,
+    [UNW_ALPHA_R16] = 0x080,
+    [UNW_ALPHA_R17] = 0x088,
+    [UNW_ALPHA_R18] = 0x090,
+    [UNW_ALPHA_R19] = 0x098,
+    [UNW_ALPHA_R20] = 0x0a0,
+    [UNW_ALPHA_R21] = 0x0a8,
+    [UNW_ALPHA_R22] = 0x0b0,
+    [UNW_ALPHA_R23] = 0x0b8,
+    [UNW_ALPHA_R24] = 0x0c0,
+    [UNW_ALPHA_R25] = 0x0c8,
+    [UNW_ALPHA_R26] = 0x0d0,
+    [UNW_ALPHA_R27] = 0x0d8,
+    [UNW_ALPHA_R28] = 0x0e0,
+    [UNW_ALPHA_R29] = 0x0e8,
+    [UNW_ALPHA_R30] = 0x0f0,
+    /* $31 is hardwired zero, no entry needed */
+    [UNW_ALPHA_PC]  = 0x100     /* ptrace index 32 */
 #else
 # error Fix me.
 #endif

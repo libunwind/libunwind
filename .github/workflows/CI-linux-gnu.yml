@@ -97,6 +97,7 @@ jobs:
       matrix:
         config:
           - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 12 }
+          - {target: alpha,    host: alpha-linux-gnu,         qemu: alpha,    gccver: 12 }
           - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 12 }
           - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 12 }
           - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 12 }
