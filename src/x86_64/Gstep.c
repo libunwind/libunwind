@@ -1,38 +1,56 @@
-/* libunwind - a platform-independent unwind library
-   Copyright (C) 2002-2004 Hewlett-Packard Co
-        Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
-
-   Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
-
-This file is part of libunwind.
-
-Permission is hereby granted, free of charge, to any person obtaining
-a copy of this software and associated documentation files (the
-"Software"), to deal in the Software without restriction, including
-without limitation the rights to use, copy, modify, merge, publish,
-distribute, sublicense, and/or sell copies of the Software, and to
-permit persons to whom the Software is furnished to do so, subject to
-the following conditions:
-
-The above copyright notice and this permission notice shall be
-included in all copies or substantial portions of the Software.
-
-THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
-EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
-MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
-NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
-LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
-OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
-WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
-
+/**
+ * @file src/x86_64/Gstep.c
+ * @brief unw_step() for x86_64
+ */
+/*
+ * This file is part of libunwind - a platform-independent unwind library.
+ *   Copyright (C) 2002-2004 Hewlett-Packard Co
+ *       Contributed by David Mosberger-Tang <davidm@hpl.hp.com>
+ *       Modified for x86_64 by Max Asbock <masbock@us.ibm.com>
+ *   Copyright 2026 Blackberry Limited.
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
+ */
 #include "libunwind_i.h"
 #include "unwind_i.h"
-#include <signal.h>
 
-/* Recognise PLT entries such as:
-     3bdf0: ff 25 e2 49 13 00 jmpq   *0x1349e2(%rip)
-     3bdf6: 68 ae 03 00 00    pushq  $0x3ae
-     3bdfb: e9 00 c5 ff ff    jmpq   38300 <_init+0x18> */
+/**
+ * @brief Detect if the current instruction pointer is in a Procedure Linkage Table entry.
+ * @param[in] c Pointer to the DWARF cursor containing the current instruction pointer
+ *
+ * Recognizes x86_64 PLT stub pattern:
+ *    3bdf0: ff 25 e2 49 13 00 jmpq   *0x1349e2(%rip)
+ *    3bdf6: 68 ae 03 00 00    pushq  $0x3ae
+ *    3bdfb: e9 00 c5 ff ff    jmpq   38300 <_init+0x18>
+ * This pattern is used by the dynamic linker to resolve function addresses at runtime.
+ *
+ * This is a static internal function to reduce the indirect call overhead when used
+ * within `unw_step()` and is publicly called through `unw_is_plt_entry()`.
+ *
+ * Reads 16 bytes at the current IP and checks for:
+ * - Bytes 0-1: 0x25ff (jmpq *offset(%rip))
+ * - Bytes 6-7: 0x68   (pushq immediate)
+ * - Bytes 8-11: 0xe9  (jmpq offset)
+ *
+ * @returns 1 if current location matches PLT entry pattern, 0 otherwise
+ * @returns 0 immediately if memory access fails.
+ */
 static int
 _is_plt_entry (struct dwarf_cursor *c)
 {
@@ -49,27 +67,304 @@ _is_plt_entry (struct dwarf_cursor *c)
          && (((w0 >> 48) & 0xff) == 0x68)
          && (((w1 >> 24) & 0xff) == 0xe9));
 
-  Debug (14, "ip=0x%lx => 0x%016lx 0x%016lx, ret = %d\n", c->ip, w0, w1, ret);
+  Debug (14, "ip=%#016lx => %#016lx %#016lx, ret = %d\n", c->ip, w0, w1, ret);
   return ret;
 }
 
+/**
+ * @brief Detect cursor points to a PLT entry.
+ * @param[in] uc Pointer to the unwind cursor
+ *
+ * This is the exported public API for indicating the current frame is a PLT
+ * entry.
+ *
+ * @returns 1 if at a PLT entry, 0 otherwise
+ */
 int
 unw_is_plt_entry (unw_cursor_t *uc)
 {
-	return _is_plt_entry (&((struct cursor *)uc)->dwarf);
+  return _is_plt_entry (&((struct cursor *)uc)->dwarf);
+}
+
+/**
+ * @brief Attempt to fixup invalid return address assuming a naked CALL
+ * @param[in]  c        Pointer to the unwind cursor
+ *
+ * Sometimes a function may not have executed any kind of prolog. For example,
+ * a bad function pointer (which generally raises a SIGSEGV) or a function written
+ * in assembly not following the SYS V ABI spec.
+ *
+ * This function assumes the stack pointer (%rsp) is still valid.
+ *
+ * A special case of a NULL value for the return address is one way to indicate
+ * the call frame termination. The retrieved value is otherwise validated by
+ * attempting to read from that address: an unreadable address is not going to
+ * contain a valid executable instruction.
+ *
+ * @returns UNW_ESUCCESS on successful fixup or valid chain termination
+ * @returns otherwise on failure
+ */
+static int
+_try_rip_fixup(struct cursor *c)
+{
+  /* Get the stack pointer from the current frame. */
+  unw_word_t rsp;
+  int ret = dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &rsp);
+  if (ret != UNW_ESUCCESS)
+    {
+      Debug (1, "dwarf_get(current RSP) returned %d\n", ret);
+      return ret;
+    }
+
+  /* Get the word at the stack pointer, assume it's the previous %rip value. */
+  unw_word_t new_ip;
+  ret = dwarf_get (&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip);
+  if (ret != UNW_ESUCCESS)
+    {
+      Debug (1, "dwarf_get(new RIP) returned %d\n", ret);
+      return ret;
+    }
+
+  /* If the (assumed) %rip is NULL, it's the end of the call chain. */
+  if (new_ip == 0)
+    {
+      Debug (2, "new RIP was NULL, end of call chain assumed\n");
+      c->dwarf.loc[RBP] = DWARF_NULL_LOC;
+      c->dwarf.loc[RSP] = DWARF_NULL_LOC;
+      c->dwarf.loc[RIP] = DWARF_NULL_LOC;
+      c->dwarf.ip = 0;
+      return UNW_ESUCCESS;
+    }
+
+  /*
+   * Try to read the %rip address from memory: if it's not a valid memory
+   * location, it's obviously not a valid IP.
+   */
+  unw_word_t not_used;
+  if (dwarf_get (&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used) != UNW_ESUCCESS)
+    {
+      Debug (2, "new %%rip %#010lx failed validation\n", new_ip);
+      return -UNW_EBADFRAME;
+    }
+
+  /*
+   * Update the cursor frame info.
+   */
+  Debug (2, "new %%rip %#010lx looks valid\n", new_ip);
+  c->frame_info.cfa_reg_offset = 8;
+  c->frame_info.cfa_reg_rsp = -1;
+  c->frame_info.rbp_cfa_offset = -1;
+  c->frame_info.rsp_cfa_offset = -1;
+  c->frame_info.frame_type = UNW_X86_64_FRAME_OTHER;
+
+  /*
+   * Update the cursor DWARF info.
+   *
+   * The call should have pushed %rip to the stack and since there was no
+   * preamble %rsp hasn't been touched so %rip should be at [%rsp].
+   */
+  c->dwarf.loc[RIP] = DWARF_VAL_LOC (c->dwarf, new_ip);
+  c->dwarf.loc[RSP] = DWARF_VAL_LOC (c->dwarf, rsp + 8);
+
+  dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &c->dwarf.cfa);
+  dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+  c->dwarf.use_prev_instr = 1;
+
+  return UNW_ESUCCESS;
+}
+
+/**
+ * @brief Fallback frame unwinding using %rbp-based frame pointer chain.
+ * @param[in]  c        Pointer to the unwind cursor
+ *
+ * When DWARF info and %rip fixup fail, attempt to walk the call stack using %rbp
+ * (frame pointer) as a chain. Each frame stores the previous %rbp at [%rbp] and
+ * return address at [%rbp+8].
+ *
+ * Assumes x86_64 System V ABI frame layout:
+ * - [%rbp]    = previous %rbp (frame pointer chain)
+ * - [%rbp+8]  = return address (%rip)
+ * - [%rbp+16] = %rsp value for parent frame
+ *
+ * Validates %rbp chain sanity:
+ * - New %rbp must be above current CFA (stack grows down, so new %rbp must have
+ *   an address greater than the current %rbp).
+ * - %rbp increase must be reasonable (< 0x4000 bytes).
+ *
+ * On validation failure, marks %rip/%rbp locations as NULL to stop unwinding.
+ * Sets frame type to GUESSED since this is heuristic-based fallback.
+ *
+ * @returns UNW_ESUCCESS on success
+ * @returns otherwise on failure
+ */
+static int
+_try_rbp_frame_walk(struct cursor *c)
+{
+  /* Get the current frame's %rbp. */
+  unw_word_t cur_rbp = 0;
+  int ret = dwarf_get (&c->dwarf, c->dwarf.loc[RBP], &cur_rbp);
+  if (ret != UNW_ESUCCESS)
+    {
+      Debug (1, "dwarf_get(current RBP) returned %d\n", ret);
+      return ret;
+    }
+
+  /* Get the calling frame's %rbp. */
+  unw_word_t new_rbp = 0;
+  ret = dwarf_get (&c->dwarf, DWARF_MEM_LOC (c, cur_rbp), &new_rbp);
+  if (ret != UNW_ESUCCESS)
+    {
+      Debug (1, "dwarf_get(caller RBP) returned %d\n", ret);
+      return ret;
+    }
+
+  /* Heuristic to determine incorrect guess. For %rbp to be a
+     valid frame it needs to be above current CFA, but don't
+     let it go more than a little. */
+  if (new_rbp < c->dwarf.cfa || (new_rbp - c->dwarf.cfa) > 0x4000)
+    {
+      Debug (1, "new %%rbp failed sanity check: %%rbp=%#010lx < CFA %#010lx or > %#010lx\n",
+             new_rbp, c->dwarf.cfa, c->dwarf.cfa + 0x4000);
+      c->dwarf.loc[RBP] = DWARF_NULL_LOC;
+      c->dwarf.loc[RIP] = DWARF_NULL_LOC;
+      c->dwarf.loc[RSP] = DWARF_NULL_LOC;
+      c->dwarf.ip = 0;
+      return -UNW_EBADFRAME;
+    }
+
+  /*
+   * Update the cursor frame info.
+   */
+  c->frame_info.frame_type = UNW_X86_64_FRAME_GUESSED;
+  c->frame_info.cfa_reg_rsp = 0;
+  c->frame_info.cfa_reg_offset = 16;
+  c->frame_info.rbp_cfa_offset = -16;
+
+  /*
+   * Update the cursor DWARF info.
+   */
+  c->dwarf.loc[RBP] = DWARF_VAL_LOC (c, new_rbp);
+  c->dwarf.loc[RIP] = DWARF_MEM_LOC (c, cur_rbp + 8);
+  c->dwarf.loc[RSP] = DWARF_MEM_LOC (c, cur_rbp + 16);
+
+  dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &c->dwarf.cfa);
+  dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+  c->dwarf.use_prev_instr = 1;
+
+  return UNW_ESUCCESS;
+}
+
+/**
+ * @brief Fallback unwinding strategies when DWARF debug info is unavailable.
+ * @param[in] c       Pointer to the unwind cursor
+ * @param[in] cursor  Original unwind cursor for signal frame detection
+ *
+ * Attempts multiple methods to unwind the stack when DWARF-based unwinding fails:
+ * 1. OS-specific stepping (platform-dependent unwind info).
+ * 2. Signal trampoline detection and handling.
+ * 3. PLT (shared library call stubs) entry detection and setup.
+ * 5. %rip fixup for code without callee frames (probably a bad function
+ *    pointer).
+ * 4. %rbp-based frame pointer chain walking (like back in the 32-bit days).
+ *
+ * Also does infinite loop detection if %rip and CFA don't change and
+ * end-of-call-stack detection if %rip and %rbp are zero.
+ *
+ * @returns 1         - success, continue unwinding
+ * @returns 0         - success, end of unwinding detected
+ * @returns otherwise - error
+ */
+static int
+_unw_step_fallback(struct cursor *c, unw_cursor_t  *cursor)
+{
+  /* We could get here because of missing/bad unwind information.
+     Validate all addresses before dereferencing. */
+
+  /* Try OS-specific stepping */
+  Debug (2, ".. OS-specific check ..\n");
+  int ret = x86_64_os_step (c);
+  if (ret != 0)
+    {
+      Debug (2, "returning %d\n", ret);
+      return ret;
+    }
+
+  /* Try signal frame handling */
+  Debug (2, ".. checking for signal trampoline ..\n");
+  if (unw_is_signal_frame (cursor) > 0)
+    {
+      ret = x86_64_handle_signal_frame(cursor);
+      Debug (2, "returning %d\n", ret);
+      return ret == 0 ? 1 : ret;
+    }
+
+  /* Try PLT entry handling */
+  Debug (2, ".. checking for PLT ..\n");
+  if (_is_plt_entry (&c->dwarf))
+    {
+      /*
+       * Update the cursor frame info.
+       * Like regular frame, CFA = %rsp+8, RA = [CFA-8], no regs saved.
+       */
+      c->frame_info.cfa_reg_offset = 8;
+      c->frame_info.cfa_reg_rsp = -1;
+      c->frame_info.frame_type = UNW_X86_64_FRAME_STANDARD;
+
+      /*
+       * Update the cursor DWARF info.
+       */
+      c->dwarf.loc[RIP] = DWARF_MEM_LOC (c, c->dwarf.cfa);
+      c->dwarf.loc[RSP] = DWARF_VAL_LOC (c->dwarf, c->dwarf.cfa + 8);
+
+      dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &c->dwarf.cfa);
+      dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+
+      Debug (2, "returning %d\n", 1);
+      return 1;
+    }
+
+  /* Try %rip fixup if address looks invalid */
+  unw_word_t not_used;
+  int invalid_prev_rip = dwarf_get (&c->dwarf, DWARF_MEM_LOC (c->dwarf, c->dwarf.ip), &not_used);
+  if (invalid_prev_rip != 0)
+    {
+      Debug (2, ".. trying %%rip fixup ..\n");
+      if (_try_rip_fixup (c) == UNW_ESUCCESS)
+        {
+          ret = 1;
+        }
+    }
+  else
+    {
+      Debug (2, ".. trying %%rbp frame walk ..\n");
+      if (_try_rbp_frame_walk (c) == UNW_ESUCCESS)
+        {
+          ret = 1;
+        }
+    }
+
+  /* Check for end of call chain */
+  Debug (2, ".. checking NULL %%rip and %%rbp indicating end of call stack ..\n");
+  if (ret >= 0 && c->dwarf.ip == 0 && DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+    {
+      for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+        c->dwarf.loc[i] = DWARF_NULL_LOC;
+      ret = 0;
+    }
+
+  Debug (2, "returning %d\n", ret);
+  return ret;
 }
 
 int
 unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  int ret, i;
-
-#if CONSERVATIVE_CHECKS
   int val = 0;
+#if CONSERVATIVE_CHECKS
   if (c->dwarf.as == unw_local_addr_space) {
     val = dwarf_get_validate(&c->dwarf);
-    dwarf_set_validate(&c->dwarf, 1);
+    dwarf_set_validate (&c->dwarf, 1);
   }
 #endif
 
@@ -78,254 +373,61 @@ unw_step (unw_cursor_t *cursor)
 
   /* Try DWARF-based unwinding... */
   c->sigcontext_format = X86_64_SCF_NONE;
-  ret = dwarf_step (&c->dwarf);
+  int ret = dwarf_step (&c->dwarf);
 
 #if CONSERVATIVE_CHECKS
   if (c->dwarf.as == unw_local_addr_space) {
-    dwarf_set_validate(&c->dwarf, val);
+    dwarf_set_validate (&c->dwarf, val);
   }
 #endif
 
   if (ret < 0 && ret != -UNW_ENOINFO)
     {
-      Debug (2, "returning %d\n", ret);
+      Debug (2, "failure in dwarf_step(), returning %d\n", ret);
       return ret;
     }
 
-  c->frames++;
-
-  if (likely (ret >= 0))
+  if (ret == -UNW_ENOINFO)
     {
-      /* x86_64 ABI specifies that end of call-chain is marked with a
-         NULL RBP or undefined return address  */
-      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
-          {
-            c->dwarf.ip = 0;
-            ret = 0;
-          }
-    }
-  else
-    {
-      /* DWARF failed.  There isn't much of a usable frame-chain on x86-64,
-         but we do need to handle two special-cases:
-
-          (i) signal trampoline: Old kernels and older libcs don't
-              export the vDSO needed to get proper unwind info for the
-              trampoline.  Recognize that case by looking at the code
-              and filling in things by hand.
-
-          (ii) PLT (shared-library) call-stubs: PLT stubs are invoked
-              via CALLQ.  Try this for all non-signal trampoline
-              code.  */
-
-      unw_word_t invalid_prev_rip = 0;
-      unw_word_t prev_ip = c->dwarf.ip;
-      unw_word_t prev_cfa = c->dwarf.cfa;
-      struct dwarf_loc rbp_loc = DWARF_NULL_LOC, rsp_loc = DWARF_NULL_LOC, rip_loc = DWARF_NULL_LOC;
-
-      /* We could get here because of missing/bad unwind information.
-         Validate all addresses before dereferencing. */
+      /*
+       * DWARF stepping failed. Use fallback strategies.
+       */
       if (c->dwarf.as == unw_local_addr_space) {
-          dwarf_set_validate(&c->dwarf, 1);
+        val = dwarf_get_validate (&c->dwarf);
+        dwarf_set_validate (&c->dwarf, 1);
       }
 
-      Debug (13, "dwarf_step() failed (ret=%d), trying frame-chain\n", ret);
+      unw_word_t prev_ip = c->dwarf.ip;
+      unw_word_t prev_cfa = c->dwarf.cfa;
 
-      if ((ret = x86_64_os_step (c)) != 0)
+      Debug (2, "dwarf_step() failed, trying fallback heuristics\n");
+      ret = _unw_step_fallback (c, cursor);
+
+      /*
+       * Check for infinite call chain loops or no successful stepping.
+       * If this situation is detected, assume the end of the call chain because
+       * that's how it works on some OSes.
+       */
+      if (ret >= 0 && c->dwarf.ip == prev_ip && c->dwarf.cfa == prev_cfa)
         {
-          if (ret < 0)
-            {
-              Debug (2, "returning 0\n");
-              return 0;
-            }
-        }
-      else if (unw_is_signal_frame (cursor) > 0)
-        {
-          ret = x86_64_handle_signal_frame(cursor);
-          if (ret < 0)
-            {
-              Debug (2, "returning 0\n");
-              return 0;
-            }
-        }
-      else if (_is_plt_entry (&c->dwarf))
-        {
-          /* Like regular frame, CFA = RSP+8, RA = [CFA-8], no regs saved. */
-          Debug (2, "found plt entry\n");
-          c->frame_info.cfa_reg_offset = 8;
-          c->frame_info.cfa_reg_rsp = -1;
-          c->frame_info.frame_type = UNW_X86_64_FRAME_STANDARD;
-          c->dwarf.loc[RIP] = DWARF_LOC (c->dwarf.cfa, 0);
-          c->dwarf.cfa += 8;
-        }
-      else if (prev_ip == 0 || (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP])))
-        {
-          Debug (2, "End of call chain detected\n");
-          for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
-            c->dwarf.loc[i] = DWARF_NULL_LOC;
-        }
-      else
-        {
-          unw_word_t rbp;
-
-          ret = dwarf_get (&c->dwarf, c->dwarf.loc[RBP], &rbp);
-          if (ret < 0)
-            {
-              Debug (2, "returning %d [RBP=0x%lx]\n", ret,
-                     DWARF_GET_LOC (c->dwarf.loc[RBP]));
-              return ret;
-            }
-
-          unw_word_t not_used;
-          invalid_prev_rip = dwarf_get (&c->dwarf,  DWARF_MEM_LOC (c->dwarf, prev_ip), &not_used);
-
-          if (!rbp && invalid_prev_rip == 0)
-            {
-              /* Looks like we may have reached the end of the call-chain.  */
-              rbp_loc = DWARF_NULL_LOC;
-              rsp_loc = DWARF_NULL_LOC;
-              rip_loc = DWARF_NULL_LOC;
-            }
-          else
-            {
-              /*
-               * Check if previous RIP was invalid
-               * This could happen if a bad function pointer was
-               * followed and so the stack wasn't updated by the
-               * preamble
-               */
-              int rip_fixup_success = 0;
-              if (invalid_prev_rip != 0)
-                {
-                    Debug (2, "Previous RIP %#010lx was invalid, attempting fixup\n", prev_ip);
-                    unw_word_t rsp;
-                    ret = dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &rsp);
-                    Debug (2, "get rsp %#010lx returned %d\n", rsp, ret);
-
-                    /*Test to see if what we think is the previous RIP is valid*/
-                    unw_word_t new_ip = 0;
-                    if (dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip) == 0)
-                      {
-                        Debug (2, "RSP %#010lx (%#010lx) looks valid\n", rsp, new_ip);
-                        if (new_ip == 0x00000000)
-                          {
-                            Debug (2, "End of call chain detected\n");
-                            rip_fixup_success = 1;
-                            rbp_loc = DWARF_NULL_LOC;
-                            rsp_loc = DWARF_NULL_LOC;
-                            rip_loc = DWARF_NULL_LOC;
-                          }
-                        else
-                          {
-                            if ((ret = dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip), &not_used)) == 0)
-                              {
-                                Debug (2, "new_ip %#010lx looks valid\n", new_ip);
-                                rip_fixup_success = 1;
-                                c->frame_info.cfa_reg_offset = 8;
-                                c->frame_info.cfa_reg_rsp = -1;
-                                c->frame_info.rbp_cfa_offset = -1;
-                                c->frame_info.rsp_cfa_offset = -1;
-                                c->frame_info.frame_type = UNW_X86_64_FRAME_OTHER;
-                                /*
-                                 * The call should have pushed RIP to the stack
-                                 * and since there was no preamble RSP hasn't been
-                                 * touched so RIP should be at RSP.
-                                 */
-                                c->dwarf.cfa += 8;
-                                /* Optimised x64 binaries don't use RBP it seems? */
-                                rbp_loc = c->dwarf.loc[RBP];
-                                rsp_loc = DWARF_VAL_LOC (c, rsp + 8);
-                                rip_loc = DWARF_LOC (rsp, 0);
-                              }
-                            else
-                              {
-                                Debug (2, "new_ip %#010lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, new_ip_addr), &new_ip) != 0\n", new_ip);
-                              }
-                          }
-                      }
-                    else
-                      {
-                        Debug (2, "rsp %#010lx dwarf_get(&c->dwarf, DWARF_MEM_LOC(c->dwarf, rsp), &new_ip_addr) != 0\n", rsp);
-                      }
-                  }
-              /*
-               * If the previous rip we found on the stack didn't look valid fall back
-               * to the previous method for finding a valid stack frame
-               */
-              if (!rip_fixup_success)
-                {
-                  Debug (2, "RIP fixup didn't work, falling back\n");
-                  unw_word_t rbp1 = 0;
-                  rbp_loc = DWARF_LOC(rbp, 0);
-                  rsp_loc = DWARF_VAL_LOC(c, rbp + 16);
-                  rip_loc = DWARF_LOC (rbp + 8, 0);
-                  ret = dwarf_get (&c->dwarf, rbp_loc, &rbp1);
-                  Debug (1, "[RBP=0x%lx] = 0x%lx (cfa = 0x%lx) -> 0x%lx\n",
-                         (unsigned long) DWARF_GET_LOC (c->dwarf.loc[RBP]),
-                         rbp, c->dwarf.cfa, rbp1);
-
-                  /* Heuristic to determine incorrect guess.  For RBP to be a
-                     valid frame it needs to be above current CFA, but don't
-                     let it go more than a little.  Note that we can't deduce
-                     anything about new RBP (rbp1) since it may not be a frame
-                     pointer in the frame above.  Just check we get the value. */
-                  if (ret < 0
-                      || rbp < c->dwarf.cfa
-                      || (rbp - c->dwarf.cfa) > 0x4000)
-                    {
-                      rip_loc = DWARF_NULL_LOC;
-                      rbp_loc = DWARF_NULL_LOC;
-                    }
-
-                  c->frame_info.frame_type = UNW_X86_64_FRAME_GUESSED;
-                  c->frame_info.cfa_reg_rsp = 0;
-                  c->frame_info.cfa_reg_offset = 16;
-                  c->frame_info.rbp_cfa_offset = -16;
-                  c->dwarf.cfa += 16;
-                }
-            }
-          /* Mark all registers unsaved */
-          for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
-            c->dwarf.loc[i] = DWARF_NULL_LOC;
-
-          c->dwarf.loc[RBP] = rbp_loc;
-          c->dwarf.loc[RSP] = rsp_loc;
-          c->dwarf.loc[RIP] = rip_loc;
-          c->dwarf.use_prev_instr = 1;
-        }
-
-      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]) && invalid_prev_rip == 0)
-        {
+          Debug (2, "infinite call chain loop detected\n");
           ret = 0;
-          Debug (2, "NULL %%rbp loc, returning %d\n", ret);
-          return ret;
         }
-      if (!DWARF_IS_NULL_LOC (c->dwarf.loc[RIP]))
-        {
-          ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
-          Debug (1, "Frame Chain [RIP=0x%Lx] = 0x%Lx\n",
-                     (unsigned long long) DWARF_GET_LOC (c->dwarf.loc[RIP]),
-                     (unsigned long long) c->dwarf.ip);
-          if (ret < 0)
-            {
-              Debug (2, "returning %d\n", ret);
-              return ret;
-            }
-#if __sun
-          if (c->dwarf.ip == 0)
-            {
-              Debug (2, "returning 0\n");
-              return ret;
-            }
-#endif
-          ret = 1;
-        }
-      else
-        c->dwarf.ip = 0;
 
-      if (c->dwarf.ip == prev_ip && c->dwarf.cfa == prev_cfa)
-        return -UNW_EBADFRAME;
+      if (c->dwarf.as == unw_local_addr_space) {
+        dwarf_set_validate (&c->dwarf, val);
+      }
     }
+
+  /*
+   * If stepping was successful, increment the frame counter.
+   */
+  if (ret >= 0)
+    {
+    	++c->frames;
+    }
+
   Debug (2, "returning %d\n", ret);
   return ret;
 }
+
