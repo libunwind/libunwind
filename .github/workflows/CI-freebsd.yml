@@ -1,0 +1,84 @@
+name: CI - FreeBSD
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '**'
+      - '!README'
+      - '!INSTALL'
+      - '!NEWS'
+      - '!doc/**'
+      - '!.**'
+      - '.github/workflows/CI-freebsd.yml'
+  push:
+    branches:
+      - v[0-9].*
+      - master
+
+jobs:
+  build-freebsd:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15 # Anything more than about 15 minutes is likely a testsuite hang.
+    strategy:
+      fail-fast: false
+      matrix:
+        os_version: ['14.3', '15.0']
+        compiler: [clang, gcc]
+        architecture: [x86_64, aarch64]
+        exclude:
+          - architecture: aarch64
+            compiler: gcc
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@8e8c483db84b4bee98b60c0593521ed34d9990e8 # v6.0.1
+
+      - name: Build and test on ${{ matrix.architecture }}-freebsd-${{ matrix.os_version }} using ${{ matrix.compiler }}
+        uses: cross-platform-actions/action@v0.32.0
+        env:
+            IGNORE_OSVERSION: yes
+        with:
+          operating_system: freebsd
+          version: ${{ matrix.os_version }}
+          architecture: ${{ matrix.architecture }}
+          memory: 8G
+          run: |
+            printf 'shell="%s"\n' $SHELL
+            if [ "${{ matrix.compiler }}" = "gcc" ]; then
+              BUILD_PKGS="autoconf automake libtool gcc"
+            else
+              BUILD_PKGS='autoconf automake libtool'
+            fi
+            sudo pkg install -y $BUILD_PKGS
+            
+            if [ "${{ matrix.compiler }}" = "gcc" ]; then
+              export CC=gcc
+              export CXX=g++
+            else
+              export CC=clang
+              export CXX=clang++
+            fi
+            export CFLAGS='-Wall -Wextra'
+
+            printf '\n Configuration \n'
+            autoreconf -ifv
+            ./configure --enable-debug
+            
+            printf '\n Build \n'
+            make
+
+            printf '\n Test \n'
+            export UNW_DEBUG_LEVEL=7
+            make check
+
+      - name: Upload Test Logs
+        # This step only runs if the "Build and Test" step fails
+        if: failure()
+        uses: actions/upload-artifact@v6
+        with:
+          name: logs-${{ matrix.architecture }}-freebsd${{ matrix.os_version }}-${{ matrix.compiler }}
+          path: '**/test-suite.log'
+          if-no-files-found: warn
