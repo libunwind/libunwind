@@ -583,6 +583,17 @@ if test x$have__builtin___clear_cache = xyes; then
 fi
 AC_MSG_RESULT([$have__builtin___clear_cache])
 
+AC_MSG_CHECKING([for C23 unreachable()])
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[#include <stddef.h>]], [[unreachable()]])],
+  [have_c23_unreachable=yes],
+  [have_c23_unreachable=no])
+if test x$have_c23_unreachable = xyes; then
+  AC_DEFINE([HAVE_C23_UNREACHABLE], [1],
+            [Defined if C23 unreachable() is available in <stddef.h>])
+fi
+AC_MSG_RESULT([$have_c23_unreachable])
+
 AC_MSG_CHECKING([for __builtin_unreachable])
 AC_LINK_IFELSE(
   [AC_LANG_PROGRAM([[]], [[__builtin_unreachable()]])],
