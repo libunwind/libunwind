@@ -180,7 +180,7 @@ main ()
       0xd65f03c0, // ret
                   // some instructions skipped
       0x34ffffa4, // cbz     w4, 41838c <indenterror+0x1c>
-      0xa9be7bfd, // stp     x29, x30, [sp,#-32]      <= FP+LR stored
+      0xa9be7bfd, // stp     x29, x30, [sp,#-32]!     <= FP+LR stored
       0x910003fd, // mov     x29, sp                  <= FP updated
       0xf9000bf3, // str     x19, [sp,#16]
       0xf9400bf3, // ldr     x19, [sp,#16]
@@ -251,10 +251,12 @@ main ()
     fs = get_frame_state(&cursor);
     if (fs.loc != NONE || fs.offset != 0) return -1;
 
-    /* IP is pointing to instruction that stores FP and LR */
+    /* IP is pointing to instruction that stores FP and LR.  fs.offset
+       is the frame size (0x20) and comes from the immediate in the
+       sub sp, sp, #0x20 instruction. */
     c->dwarf.ip = (unw_word_t) (instructions+IpStp);
     fs = get_frame_state(&cursor);
-    if (fs.loc != NONE || fs.offset != 0) return -1;
+    if (fs.loc != NONE || fs.offset != 0x20) return -1;
 
     /* IP is pointing to instruction that updates the FP */
     c->dwarf.ip = (unw_word_t) (instructions+IpAdd);
@@ -289,7 +291,7 @@ main ()
       0xd2800007, // mov     x7, #0x0                        // #0
                   // some instructions skipped
       0xd2800003, // mov     x3, #0x0                        // #0
-      0xa9217bfd, // stp     x29, x30, [sp,#-16]
+      0xa93f7bfd, // stp     x29, x30, [sp,#-16]
       0x910043fd, // add     x29, sp, #0x10
       0xb90003ff, // str     wzr, [sp]
                   // some instructions skipped
@@ -306,10 +308,12 @@ main ()
     fs = get_frame_state(&cursor);
     if (fs.loc != NONE || fs.offset != 0) return -1;
 
-    /* IP is pointing to instruction that stores FP and LR */
+    /* IP is pointing to instruction that stores FP and LR.  fs.offset
+       is the frame size (0x20) and comes from the immediate in the
+       sub sp, sp, #0x20 instruction. */
     c->dwarf.ip = (unw_word_t) (instructions+IpStp);
     fs = get_frame_state(&cursor);
-    if (fs.loc != NONE || fs.offset != 0) return -1;
+    if (fs.loc != NONE || fs.offset != 0x20) return -1;
 
     /* IP is pointing to instruction that updates the FP */
     c->dwarf.ip = (unw_word_t) (instructions+IpAdd);
@@ -327,6 +331,141 @@ main ()
     if (fs.loc != AT_FP || fs.offset != 0) return -1;
 
     /* IP is pointing to instruction after FP and LR are retrieved */
+    c->dwarf.ip = (unw_word_t) (instructions+IpLdp+1);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != NONE || fs.offset != 0) return -1;
+  }
+
+  /* STP_POST_INDEX procedure: verify post-index STP is detected */
+  {
+    int IpStp  = 0;
+    int IpMov  = 1;
+    int IpLdp  = 4;
+
+    unsigned int instructions[6] = {
+      0xa8827bfd, // stp     x29, x30, [sp], #32        <= FP+LR stored (post-index)
+      0x910003fd, // mov     x29, sp                    <= FP updated
+      0xa90153f3, // stp     x19, x20, [sp,#16]
+                  // some instructions skipped
+      0xa94153f3, // ldp     x19, x20, [sp,#16]
+      0xa8c27bfd, // ldp     x29, x30, [sp],#32         <= FP+LR retrieved
+      0xd65f03c0, // ret
+    };
+    procedure_size = 6;
+
+    c->dwarf.as_arg = &instructions;
+
+    /* IP is pointing to instruction that stores FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpStp);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != NONE || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction that updates the FP */
+    c->dwarf.ip = (unw_word_t) (instructions+IpMov);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_SP_OFFSET || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction after FP was updated */
+    c->dwarf.ip = (unw_word_t) (instructions+IpMov+1);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_FP || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction that retrieves FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpLdp);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_FP || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction after retrieval of FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpLdp+1);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != NONE || fs.offset != 0) return -1;
+  }
+
+  /* LDP_SIGNED_OFFSET procedure: verify signed-offset LDP is detected */
+  {
+    int IpStp  = 0;
+    int IpMov  = 1;
+    int IpLdp  = 4;
+
+    unsigned int instructions[6] = {
+      0xa9be7bfd, // stp     x29, x30, [sp,#-32]!       <= FP+LR stored (pre-index)
+      0x910003fd, // mov     x29, sp                    <= FP updated
+      0xa90153f3, // stp     x19, x20, [sp,#16]
+                  // some instructions skipped
+      0xa94153f3, // ldp     x19, x20, [sp,#16]
+      0xa9427bfd, // ldp     x29, x30, [sp,#32]         <= FP+LR retrieved (signed offset)
+      0xd65f03c0, // ret
+    };
+    procedure_size = 6;
+
+    c->dwarf.as_arg = &instructions;
+
+    /* IP is pointing to instruction that stores FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpStp);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != NONE || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction that updates the FP */
+    c->dwarf.ip = (unw_word_t) (instructions+IpMov);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_SP_OFFSET || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction after FP was updated */
+    c->dwarf.ip = (unw_word_t) (instructions+IpMov+1);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_FP || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction that retrieves FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpLdp);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_FP || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction after retrieval of FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpLdp+1);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != NONE || fs.offset != 0) return -1;
+  }
+
+  /* LDP_PRE_INDEX procedure: verify pre-index LDP is detected */
+  {
+    int IpStp  = 0;
+    int IpMov  = 1;
+    int IpLdp  = 4;
+
+    unsigned int instructions[6] = {
+      0xa9be7bfd, // stp     x29, x30, [sp,#-32]!       <= FP+LR stored (pre-index)
+      0x910003fd, // mov     x29, sp                    <= FP updated
+      0xa90153f3, // stp     x19, x20, [sp,#16]
+                  // some instructions skipped
+      0xa94153f3, // ldp     x19, x20, [sp,#16]
+      0xa9c27bfd, // ldp     x29, x30, [sp,#32]!        <= FP+LR retrieved (pre-index)
+      0xd65f03c0, // ret
+    };
+    procedure_size = 6;
+
+    c->dwarf.as_arg = &instructions;
+
+    /* IP is pointing to instruction that stores FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpStp);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != NONE || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction that updates the FP */
+    c->dwarf.ip = (unw_word_t) (instructions+IpMov);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_SP_OFFSET || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction after FP was updated */
+    c->dwarf.ip = (unw_word_t) (instructions+IpMov+1);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_FP || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction that retrieves FP and LR */
+    c->dwarf.ip = (unw_word_t) (instructions+IpLdp);
+    fs = get_frame_state(&cursor);
+    if (fs.loc != AT_FP || fs.offset != 0) return -1;
+
+    /* IP is pointing to instruction after retrieval of FP and LR */
     c->dwarf.ip = (unw_word_t) (instructions+IpLdp+1);
     fs = get_frame_state(&cursor);
     if (fs.loc != NONE || fs.offset != 0) return -1;
