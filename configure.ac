@@ -534,7 +534,12 @@ fi
 
 # Workaround for code generation bug in certain GCC versions for aarch64+sve
 if test x$GCC = xyes; then
-    AC_SUBST([UNW_EXTRA_SVE_FLAGS],["-fno-stack-clash-protection -fno-ipa-sra"])
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fno-ipa-sra"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                    [AC_SUBST([UNW_EXTRA_SVE_FLAGS],
+                              ["-fno-stack-clash-protection -fno-ipa-sra"])])
+  CFLAGS="$saved_CFLAGS"
 fi
 
 AC_MSG_CHECKING([for QCC compiler])
