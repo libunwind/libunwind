@@ -215,6 +215,14 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
       Elf_W (Word) *bloom  = (Elf_W (Word) *) &gnu_hash[4];
       uint32_t *buckets    = (uint32_t *) (bloom + bloom_size);
 
+      /* Sanity check GNU_HASH header */
+      if (nbuckets == 0 || bloom_size == 0 || symoffset == 0)
+        return -UNW_ENOINFO;
+
+      /* Ensure we don't read past the ELF image */
+      if ((char *) buckets > (char *) ei->image + ei->size)
+        return -UNW_ENOINFO;
+
       for (i = 0; i < nbuckets; i++)
         if (buckets[i] != 0)
           {
@@ -226,6 +234,11 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
       if (sym_num)
         {
           uint32_t *hashval = buckets + nbuckets + (sym_num - symoffset);
+
+          /* Bounds check before dereferencing */
+          if ((char *) hashval >= (char *) ei->image + ei->size)
+            return -UNW_ENOINFO;
+
           do
             sym_num++;
           while (!(*hashval++ & 1));
