@@ -58,6 +58,8 @@ tests/mapper
 tests/rs-race
 tests/test-async-sig
 tests/test-coredump-unwind
+tests/test-elf32-gnu-hash
+tests/test-elf64-gnu-hash
 tests/test-flush-cache
 tests/test-init-remote
 tests/test-iterate-phdr-cache-null

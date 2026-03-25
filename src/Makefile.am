@@ -357,7 +357,7 @@ endif
  libunwind_local_la_LIBADD += libunwind-dwarf-local.la
 endif
 
-noinst_HEADERS += elf32.h elf64.h elfxx.h
+noinst_HEADERS += elf32.h elf64.h elfxx.h elfxx_i.h
 
 libunwind_elf32_la_SOURCES = elf32.c
 libunwind_elf64_la_SOURCES = elf64.c

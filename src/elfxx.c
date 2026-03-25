@@ -26,6 +26,7 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
+#include "elfxx_i.h"
 
 #include <limits.h>
 #include <stdio.h>
@@ -207,35 +208,8 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
   if (!symtab || !strtab || (!hash && !gnu_hash))
       return -UNW_ENOINFO;
 
-  if (gnu_hash)
-    {
-      uint32_t nbuckets    = gnu_hash[0];
-      uint32_t symoffset   = gnu_hash[1];
-      uint32_t bloom_size  = gnu_hash[2];
-      Elf_W (Word) *bloom  = (Elf_W (Word) *) &gnu_hash[4];
-      uint32_t *buckets    = (uint32_t *) (bloom + bloom_size);
-
-      for (i = 0; i < nbuckets; i++)
-        if (buckets[i] != 0)
-          {
-            if (buckets[i] < sym_num)
-              return -UNW_ENOINFO;
-            sym_num = buckets[i];
-          }
-
-      if (sym_num)
-        {
-          uint32_t *hashval = buckets + nbuckets + (sym_num - symoffset);
-          do
-            sym_num++;
-          while (!(*hashval++ & 1));
-        }
-    }
-  else
-    {
-      sym_num = hash[1];
-    }
-
+  if (elf_w (dynamic_symtab_count) (hash, gnu_hash, &sym_num) < 0)
+    return -UNW_ENOINFO;
   for (i = 0; i < sym_num; ++i)
     {
       sym = &symtab[i];
