@@ -353,7 +353,7 @@ AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
 
 AM_CONDITIONAL([XFAIL_PTRACE_TEST], [echo $CFLAGS | grep -q '\-m32\>'])
-AM_CONDITIONAL([CROSS_BUILD], [test x$build_arch != x$host_arch])
+AM_CONDITIONAL([CROSS_BUILD], [test x$build != x$host])
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
