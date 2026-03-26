@@ -55,7 +55,7 @@ noinst_PROGRAMS_common =
 check_PROGRAMS_arch =
 check_PROGRAMS_cdep =
 check_PROGRAMS_common = test-proc-info test-static-link \
-			test-strerror
+			test-strerror test-eh-frame-hdr-sdata8
 check_SCRIPTS_arch =
 check_SCRIPTS_cdep =
 check_SCRIPTS_common =	check-namespace.sh
@@ -346,6 +346,8 @@ test_ptrace_LDADD = $(LIBUNWIND_ptrace) $(LIBUNWIND)
 test_proc_info_LDADD = $(LIBUNWIND)
 test_static_link_LDADD = $(LIBUNWIND)
 test_strerror_LDADD = $(LIBUNWIND)
+test_eh_frame_hdr_sdata8_SOURCES = test-eh-frame-hdr-sdata8.c
+test_eh_frame_hdr_sdata8_LDADD =
 Lrs_race_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 Ltest_varargs_LDADD = $(LIBUNWIND_local)
 Ltest_init_local_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
