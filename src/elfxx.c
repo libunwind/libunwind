@@ -210,6 +210,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
 
   if (elf_w (dynamic_symtab_count) (hash, gnu_hash, &sym_num) < 0)
     return -UNW_ENOINFO;
+
   for (i = 0; i < sym_num; ++i)
     {
       sym = &symtab[i];

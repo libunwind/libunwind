@@ -353,7 +353,7 @@ AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
 
 AM_CONDITIONAL([XFAIL_PTRACE_TEST], [echo $CFLAGS | grep -q '\-m32\>'])
-AM_CONDITIONAL([CROSS_BUILD], [test x$build_arch != x$host_arch])
+AM_CONDITIONAL([CROSS_BUILD], [test x$build != x$host])
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ARM, test x$target_arch = xarm)
@@ -534,7 +534,12 @@ fi
 
 # Workaround for code generation bug in certain GCC versions for aarch64+sve
 if test x$GCC = xyes; then
-    AC_SUBST([UNW_EXTRA_SVE_FLAGS],["-fno-stack-clash-protection -fno-ipa-sra"])
+  saved_CFLAGS="$CFLAGS"
+  CFLAGS="$CFLAGS -fno-ipa-sra"
+  AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])],
+                    [AC_SUBST([UNW_EXTRA_SVE_FLAGS],
+                              ["-fno-stack-clash-protection -fno-ipa-sra"])])
+  CFLAGS="$saved_CFLAGS"
 fi
 
 AC_MSG_CHECKING([for QCC compiler])
@@ -577,6 +582,17 @@ if test x$have__builtin___clear_cache = xyes; then
             [Defined if __builtin___clear_cache() is available])
 fi
 AC_MSG_RESULT([$have__builtin___clear_cache])
+
+AC_MSG_CHECKING([for C23 unreachable()])
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[#include <stddef.h>]], [[unreachable()]])],
+  [have_c23_unreachable=yes],
+  [have_c23_unreachable=no])
+if test x$have_c23_unreachable = xyes; then
+  AC_DEFINE([HAVE_C23_UNREACHABLE], [1],
+            [Defined if C23 unreachable() is available in <stddef.h>])
+fi
+AC_MSG_RESULT([$have_c23_unreachable])
 
 AC_MSG_CHECKING([for __builtin_unreachable])
 AC_LINK_IFELSE(
