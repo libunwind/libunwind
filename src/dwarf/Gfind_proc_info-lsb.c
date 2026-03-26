@@ -44,6 +44,12 @@ struct table_entry
     int32_t fde_offset;
   };
 
+struct table_entry64
+  {
+    int64_t start_ip_offset;
+    int64_t fde_offset;
+  };
+
 #ifndef UNW_REMOTE_ONLY
 
 #ifdef __linux__
@@ -676,7 +682,8 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
                                              &fde_count, NULL)) < 0)
         return ret;
 
-      if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
+      if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4)
+          && hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata8))
         {
           /* If there is no search table or it has an unsupported
              encoding, fall back on linear search.  */
@@ -713,13 +720,17 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
         }
       else
         {
-          di->format = UNW_INFO_FORMAT_REMOTE_TABLE;
+          int is_sdata8 = (hdr->table_enc == (DW_EH_PE_datarel | DW_EH_PE_sdata8));
+          size_t entry_size = is_sdata8 ? sizeof (struct table_entry64)
+                                        : sizeof (struct table_entry);
+          di->format = is_sdata8 ? UNW_INFO_FORMAT_REMOTE_TABLE_64
+                                 : UNW_INFO_FORMAT_REMOTE_TABLE;
           di->start_ip = p_text->p_vaddr + load_base;
           di->end_ip = p_text->p_vaddr + load_base + p_text->p_memsz;
           di->u.rti.name_ptr = (unw_word_t) (uintptr_t) info->dlpi_name;
           di->u.rti.table_data = addr;
-          assert (sizeof (struct table_entry) % sizeof (unw_word_t) == 0);
-          di->u.rti.table_len = (fde_count * sizeof (struct table_entry)
+          assert (entry_size % sizeof (unw_word_t) == 0);
+          di->u.rti.table_len = (fde_count * entry_size
                                  / sizeof (unw_word_t));
           /* For the binary-search table in the eh_frame_hdr, data-relative
              means relative to the start of that section... */
@@ -830,31 +841,73 @@ lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
   return e;
 }
 
+static inline const struct table_entry64 *
+lookup64 (const struct table_entry64 *table, size_t table_size, int64_t rel_ip)
+{
+  unsigned long table_len = table_size / sizeof (struct table_entry64);
+  const struct table_entry64 *e = NULL;
+  unsigned long lo, hi, mid;
+
+  /* do a binary search for right entry: */
+  for (lo = 0, hi = table_len; lo < hi;)
+    {
+      mid = (lo + hi) / 2;
+      e = table + mid;
+      Debug (15, "e->start_ip_offset = %lx\n", (long) e->start_ip_offset);
+      if (rel_ip < e->start_ip_offset)
+        hi = mid;
+      else
+        lo = mid + 1;
+    }
+  if (hi <= 0)
+        return NULL;
+  e = table + hi - 1;
+  return e;
+}
+
 #endif /* !UNW_REMOTE_ONLY */
 
 #ifndef UNW_LOCAL_ONLY
 
+/* Helper to read a table entry field, widening 32-bit entries to 64-bit. */
+static inline int
+remote_read_entry (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
+                   int64_t *val, int is_64bit, void *arg)
+{
+  if (is_64bit)
+    return dwarf_reads64 (as, a, addr, val, arg);
+
+  int32_t val32;
+  int ret = dwarf_reads32 (as, a, addr, &val32, arg);
+  *val = val32;
+  return ret;
+}
+
 /* Lookup an unwind-table entry in remote memory.  Returns 1 if an
    entry is found, 0 if no entry is found, negative if an error
-   occurred reading remote memory.  */
+   occurred reading remote memory.
+   Handles both sdata4 (8-byte) and sdata8 (16-byte) table entries.  */
 static int
 remote_lookup (unw_addr_space_t as,
-               unw_word_t table, size_t table_size, int32_t rel_ip,
-               struct table_entry *e, int32_t *last_ip_offset, void *arg)
+               unw_word_t table, size_t table_size, int64_t rel_ip,
+               int64_t *start_ip_offset, int64_t *fde_offset,
+               int64_t *last_ip_offset, int is_64bit, void *arg)
 {
-  size_t table_len = table_size / sizeof (struct table_entry);
+  size_t entry_size = is_64bit ? sizeof (struct table_entry64)
+                               : sizeof (struct table_entry);
+  size_t table_len = table_size / entry_size;
   unw_accessors_t *a = unw_get_accessors_int (as);
   size_t lo, hi, mid;
   unw_word_t e_addr = 0;
-  int32_t start = 0;
+  int64_t start = 0;
   int ret;
 
   /* do a binary search for right entry: */
   for (lo = 0, hi = table_len; lo < hi;)
     {
       mid = (lo + hi) / 2;
-      e_addr = table + mid * sizeof (struct table_entry);
-      if ((ret = dwarf_reads32 (as, a, &e_addr, &start, arg)) < 0)
+      e_addr = table + mid * entry_size;
+      if ((ret = remote_read_entry (as, a, &e_addr, &start, is_64bit, arg)) < 0)
         return ret;
 
       if (rel_ip < start)
@@ -864,11 +917,11 @@ remote_lookup (unw_addr_space_t as,
     }
   if (hi <= 0)
     return 0;
-  e_addr = table + (hi - 1) * sizeof (struct table_entry);
-  if ((ret = dwarf_reads32 (as, a, &e_addr, &e->start_ip_offset, arg)) < 0
-   || (ret = dwarf_reads32 (as, a, &e_addr, &e->fde_offset, arg)) < 0
+  e_addr = table + (hi - 1) * entry_size;
+  if ((ret = remote_read_entry (as, a, &e_addr, start_ip_offset, is_64bit, arg)) < 0
+   || (ret = remote_read_entry (as, a, &e_addr, fde_offset, is_64bit, arg)) < 0
    || (hi < table_len &&
-       (ret = dwarf_reads32 (as, a, &e_addr, last_ip_offset, arg)) < 0))
+       (ret = remote_read_entry (as, a, &e_addr, last_ip_offset, is_64bit, arg)) < 0))
     return ret;
   return 1;
 }
@@ -878,6 +931,7 @@ remote_lookup (unw_addr_space_t as,
 static int is_remote_table(int format)
 {
   return (format == UNW_INFO_FORMAT_REMOTE_TABLE ||
+          format == UNW_INFO_FORMAT_REMOTE_TABLE_64 ||
           format == UNW_INFO_FORMAT_IP_OFFSET);
 }
 
@@ -886,15 +940,15 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                            unw_dyn_info_t *di, unw_proc_info_t *pi,
                            int need_unwind_info, void *arg)
 {
-  const struct table_entry *e = NULL, *table = NULL;
   unw_word_t ip_base = 0, segbase = 0, last_ip, fde_addr;
+  unw_word_t found_start_ip_offset = 0, found_fde_offset = 0;
+  int found_entry = 0;
   unw_accessors_t *a;
-#ifndef UNW_LOCAL_ONLY
-  struct table_entry ent;
-#endif
   int ret;
   unw_word_t debug_frame_base = 0;
   size_t table_len = 0;
+  const void *table_data = NULL;
+  int is_table64 = (di->format == UNW_INFO_FORMAT_REMOTE_TABLE_64);
 
 #ifdef UNW_REMOTE_ONLY
   assert (is_remote_table(di->format));
@@ -906,7 +960,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 
   if (is_remote_table(di->format))
     {
-      table = (const struct table_entry *) (uintptr_t) di->u.rti.table_data;
+      table_data = (const void *) (uintptr_t) di->u.rti.table_data;
       table_len = di->u.rti.table_len * sizeof (unw_word_t);
       debug_frame_base = 0;
     }
@@ -921,7 +975,7 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
          the address space to check for properties like the address size and
          endianness is the target one.  */
       as = unw_local_addr_space;
-      table = fdesc->index;
+      table_data = fdesc->index;
       table_len = fdesc->index_size;
       debug_frame_base = (uintptr_t) fdesc->debug_frame;
 #endif
@@ -939,31 +993,60 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 #ifndef UNW_REMOTE_ONLY
   if (as == unw_local_addr_space)
     {
-      e = lookup (table, table_len, ip - ip_base);
-      if (e && &e[1] < &table[table_len / sizeof (struct table_entry)])
-	last_ip = e[1].start_ip_offset + ip_base;
+      if (is_table64)
+        {
+          const struct table_entry64 *table64 = (const struct table_entry64 *) table_data;
+          const struct table_entry64 *e64;
+          e64 = lookup64 (table64, table_len, ip - ip_base);
+          if (e64)
+            {
+              found_entry = 1;
+              found_start_ip_offset = (unw_word_t) e64->start_ip_offset;
+              found_fde_offset = (unw_word_t) e64->fde_offset;
+              if (&e64[1] < &table64[table_len / sizeof (struct table_entry64)])
+                last_ip = (unw_word_t) e64[1].start_ip_offset + ip_base;
+              else
+                last_ip = di->end_ip;
+            }
+        }
       else
-	last_ip = di->end_ip;
+        {
+          const struct table_entry *table = (const struct table_entry *) table_data;
+          const struct table_entry *e;
+          e = lookup (table, table_len, ip - ip_base);
+          if (e)
+            {
+              found_entry = 1;
+              found_start_ip_offset = (unw_word_t) e->start_ip_offset;
+              found_fde_offset = (unw_word_t) e->fde_offset;
+              if (&e[1] < &table[table_len / sizeof (struct table_entry)])
+                last_ip = e[1].start_ip_offset + ip_base;
+              else
+                last_ip = di->end_ip;
+            }
+        }
     }
   else
 #endif
     {
 #ifndef UNW_LOCAL_ONLY
-      int32_t last_ip_offset = (int32_t) (di->end_ip - ip_base);
+      int64_t found_start = 0, found_fde = 0;
+      int64_t last_ip_offset64 = di->end_ip - ip_base;
       segbase = di->u.rti.segbase;
-      if ((ret = remote_lookup (as, (uintptr_t) table, table_len,
-                                (int32_t) (ip - ip_base), &ent, &last_ip_offset, arg)) < 0)
+      if ((ret = remote_lookup (as, (uintptr_t) table_data, table_len,
+                                ip - ip_base, &found_start, &found_fde,
+                                &last_ip_offset64, is_table64, arg)) < 0)
         return ret;
       if (ret)
-	{
-	  e = &ent;
-	  last_ip = last_ip_offset + ip_base;
-	}
-      else
-        e = NULL;       /* no info found */
+        {
+          found_entry = 1;
+          found_start_ip_offset = (unw_word_t) found_start;
+          found_fde_offset = (unw_word_t) found_fde;
+          last_ip = (unw_word_t) last_ip_offset64 + ip_base;
+        }
 #endif
     }
-  if (!e)
+  if (!found_entry)
     {
       Debug (1, "IP %lx inside range %lx-%lx, but no explicit unwind info found\n",
              (long) ip, (long) di->start_ip, (long) di->end_ip);
@@ -972,13 +1055,13 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       return -UNW_ENOINFO;
     }
   Debug (15, "ip=0x%lx, start_ip=0x%lx\n",
-         (long) ip, (long) (e->start_ip_offset));
+         (long) ip, (long) found_start_ip_offset);
   if (debug_frame_base)
-    fde_addr = e->fde_offset + debug_frame_base;
+    fde_addr = found_fde_offset + debug_frame_base;
   else
-    fde_addr = e->fde_offset + segbase;
-  Debug (1, "e->fde_offset = %lx, segbase = %lx, debug_frame_base = %lx, "
-            "fde_addr = %lx\n", (long) e->fde_offset, (long) segbase,
+    fde_addr = found_fde_offset + segbase;
+  Debug (1, "fde_offset = %lx, segbase = %lx, debug_frame_base = %lx, "
+            "fde_addr = %lx\n", (long) found_fde_offset, (long) segbase,
             (long) debug_frame_base, (long) fde_addr);
   if ((ret = dwarf_extract_proc_info_from_fde (as, a, &fde_addr, pi,
                                                debug_frame_base ?
