@@ -185,51 +185,39 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
       if (hdr->table_enc == DW_EH_PE_omit)
         return -UNW_ENOINFO;
 
-      if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4))
+      if (hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4)
+          && hdr->table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata8))
         {
-    #if 1
-          abort ();
-    #else
-          unw_word_t eh_frame_end;
+          Debug (4, "EH table has encoding 0x%x; cannot use binary search\n",
+                 hdr->table_enc);
 
-          /* If there is no search table or it has an unsupported
-             encoding, fall back on linear search.  */
-          if (hdr->table_enc == DW_EH_PE_omit)
-            Debug (4, "EH lacks search table; doing linear search\n");
-          else
-            Debug (4, "EH table has encoding 0x%x; doing linear search\n",
-                   hdr->table_enc);
-
-          eh_frame_end = max_load_addr; /* XXX can we do better? */
-
-          if (hdr->fde_count_enc == DW_EH_PE_omit)
-            fde_count = ~0UL;
-          if (hdr->eh_frame_ptr_enc == DW_EH_PE_omit)
-            abort ();
-
-          return linear_search (unw_local_addr_space, ip,
-                                eh_frame_start, eh_frame_end, fde_count,
-                                pi, need_unwind_info, NULL);
-    #endif
+          /* Cannot build a binary search table for unsupported encoding;
+             return 0 so the caller can fall back to other methods.  */
+          return 0;
         }
 
-      edi->di_cache.start_ip = start_ip;
-      edi->di_cache.end_ip = end_ip;
-      edi->di_cache.format = UNW_INFO_FORMAT_REMOTE_TABLE;
-      edi->di_cache.u.rti.name_ptr = 0;
-      /* two 32-bit values (ip_offset/fde_offset) per table-entry: */
-      edi->di_cache.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
-      edi->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
+      {
+        int is_sdata8 = (hdr->table_enc == (DW_EH_PE_datarel | DW_EH_PE_sdata8));
+        size_t entry_size = is_sdata8 ? 16 : 8;
+
+        edi->di_cache.start_ip = start_ip;
+        edi->di_cache.end_ip = end_ip;
+        edi->di_cache.format = is_sdata8 ? UNW_INFO_FORMAT_REMOTE_TABLE_64
+                                         : UNW_INFO_FORMAT_REMOTE_TABLE;
+        edi->di_cache.u.rti.name_ptr = 0;
+        edi->di_cache.u.rti.table_len = (fde_count * entry_size) / sizeof (unw_word_t);
+        edi->di_cache.u.rti.table_data = ((load_base + peh_hdr->p_vaddr)
                                        + (addr - to_unw_word (edi->ei.image)
                                           - peh_hdr->p_offset));
 
-      /* For the binary-search table in the eh_frame_hdr, data-relative
-         means relative to the start of that section... */
-      edi->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
+        /* For the binary-search table in the eh_frame_hdr, data-relative
+           means relative to the start of that section... */
+        edi->di_cache.u.rti.segbase = ((load_base + peh_hdr->p_vaddr)
                                     + (to_unw_word (hdr) -
                                        to_unw_word (edi->ei.image)
                                        - peh_hdr->p_offset));
-      found = 1;
+        found = 1;
+      }
     }
 
 #if UNW_TARGET_ARM
