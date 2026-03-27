@@ -726,11 +726,19 @@ unw_step (unw_cursor_t *cursor)
             }
           else
             {
-              /* Frame record stored but not pointed to by X29, use SP.  */
-              unw_word_t sp;
-              ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &sp);
-              if (ret < 0)
-                return ret;
+              /* Frame record stored but not pointed to by X29, use SP.
+               *
+               * c->dwarf.cfa is always the correct value: by the AArch64 ABI,
+               * BL does not modify SP, so the CFA of the callee equals the SP
+               * of the caller after its own prologue — exactly what is needed
+               * to locate the frame record at [sp + fs.offset].
+               *
+               * loc[UNW_AARCH64_SP] must NOT be used: it points into the SP
+               * field of the initial context (ucontext, getcontext result, or
+               * any other source) and is never updated because SP is always
+               * DWARF_WHERE_SAME in AArch64 DWARF.  After the first successful
+               * DWARF step it is stale and unrelated to the current frame.  */
+              unw_word_t sp = c->dwarf.cfa;
 
               for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
                 c->dwarf.loc[i] = DWARF_NULL_LOC;
