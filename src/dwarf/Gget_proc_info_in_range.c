@@ -91,15 +91,22 @@ unw_get_proc_info_in_range (unw_word_t        start_ip,
             return -UNW_ENOINFO;
         }
 
-        if (exhdr.table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4)) {
+        if (exhdr.table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata4)
+            && exhdr.table_enc != (DW_EH_PE_datarel | DW_EH_PE_sdata8)) {
             Debug (1, "Table encoding not supported %x\n", exhdr.table_enc);
             return -UNW_EINVAL;
         }
 
-        di.format = UNW_INFO_FORMAT_REMOTE_TABLE;
-        di.u.rti.table_data = addr;
-        di.u.rti.table_len = (fde_count * 8) / sizeof (unw_word_t);
-        di.u.rti.segbase = eh_frame_table;
+        {
+            int is_sdata8 = (exhdr.table_enc == (DW_EH_PE_datarel | DW_EH_PE_sdata8));
+            size_t entry_size = is_sdata8 ? 16 : 8;
+
+            di.format = is_sdata8 ? UNW_INFO_FORMAT_REMOTE_TABLE_64
+                                  : UNW_INFO_FORMAT_REMOTE_TABLE;
+            di.u.rti.table_data = addr;
+            di.u.rti.table_len = (fde_count * entry_size) / sizeof (unw_word_t);
+            di.u.rti.segbase = eh_frame_table;
+        }
     }
     else {
         Debug (1, "No frame table data\n");
