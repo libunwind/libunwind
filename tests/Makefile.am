@@ -161,6 +161,14 @@ if BUILD_SETJMP
  check_PROGRAMS_cdep += test-setjmp
 endif
 
+if USE_ELF32
+ check_PROGRAMS_cdep += test-elf32-gnu-hash
+endif
+
+if USE_ELF64
+ check_PROGRAMS_cdep += test-elf64-gnu-hash
+endif
+
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
 endif
@@ -316,6 +324,8 @@ Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
 Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
 Gtest_get_proc_name_SOURCES = Gtest-get_proc_name.c
+test_elf32_gnu_hash_SOURCES = test-elf32-gnu-hash.c
+test_elf64_gnu_hash_SOURCES = test-elf64-gnu-hash.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_arch = $(top_builddir)/src/libunwind-arch-$(arch).la
@@ -356,6 +366,8 @@ x64_unwind_badjmp_signal_frame_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_dyn1_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_get_proc_name_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+test_elf32_gnu_hash_LDADD = $(LIBUNWIND_internal)
+test_elf64_gnu_hash_LDADD = $(LIBUNWIND_internal)
 Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
