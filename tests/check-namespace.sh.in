@@ -234,6 +234,12 @@ check_local_unw_abi () {
 	    ;;
     esac
 
+    case "${os}" in
+        freebsd*)
+	    match _U${plat}_setcontext
+	    ;;
+    esac
+
     if [ x@enable_debug_frame@ = xyes ]; then
 	match _UL${plat}_dwarf_find_debug_frame
     fi
