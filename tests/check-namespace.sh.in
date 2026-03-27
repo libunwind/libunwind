@@ -170,6 +170,16 @@ check_local_unw_abi () {
     match unw_backtrace2
 
     case ${plat} in
+	aarch64)
+	    match _U${plat}_is_fpreg
+	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
+	    case "${os}" in
+	        freebsd*)
+	            match _U${plat}_setcontext
+	        ;;
+	    esac
+	    ;;
 	arm)
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_unwind_method
@@ -233,6 +243,7 @@ check_local_unw_abi () {
 	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
     esac
+
 
     if [ x@enable_debug_frame@ = xyes ]; then
 	match _UL${plat}_dwarf_find_debug_frame
