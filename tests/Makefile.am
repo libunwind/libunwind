@@ -97,7 +97,9 @@ endif
 if ARCH_AARCH64
   check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal   \
                          aarch64-test-plt \
-                         Laarch64-test-frame-record Gaarch64-test-frame-record
+                         Laarch64-test-frame-record Gaarch64-test-frame-record \
+                         Laarch64-test-frame-size Gaarch64-test-frame-size \
+                         aarch64-test-lr-fallback
 endif
 
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt				 \
@@ -295,6 +297,11 @@ Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
 aarch64_test_plt_SOURCES = aarch64-test-plt.c
 Laarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 Gaarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
+Laarch64_test_frame_size_SOURCES = aarch64-test-frame-size.c
+Gaarch64_test_frame_size_SOURCES = aarch64-test-frame-size.c
+aarch64_test_lr_fallback_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
+aarch64_test_lr_fallback_SOURCES = aarch64-test-lr-fallback.c \
+                                   aarch64-test-lr-fallback-asm.S
 
 if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
  Garm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve $(UNW_EXTRA_SVE_FLAGS)
@@ -426,3 +433,7 @@ aarch64_test_plt_LDADD = $(LIBUNWIND)
 Laarch64_test_frame_record_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
 Laarch64_test_frame_record_LDADD = $(LIBUNWIND_internal)
 Gaarch64_test_frame_record_LDADD = $(LIBUNWIND_arch)
+Laarch64_test_frame_size_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
+Laarch64_test_frame_size_LDADD = $(LIBUNWIND_internal)
+Gaarch64_test_frame_size_LDADD = $(LIBUNWIND_arch)
+aarch64_test_lr_fallback_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
