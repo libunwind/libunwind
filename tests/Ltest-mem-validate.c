@@ -134,8 +134,8 @@ main (int argc UNUSED, char **argv UNUSED)
     }
   else
     {
-      stack_start = (void *)(((uintptr_t)&start & ~(page_size - 1)) + page_size);
-      count  = (uintptr_t)stack_start - (uintptr_t)&start;
+      stack_start = (void *)(((uintptr_t)&start & ~(page_size - 1)) - page_size);
+      count  = (uintptr_t)&start - (uintptr_t)stack_start;
     }
     count = count / STACK_SLICE + STEPS;
 
