@@ -232,7 +232,6 @@ libunwind_setjmp_la_LDFLAGS =                  \
 	$(COMMON_SO_LDFLAGS)                   \
 	-version-info $(SETJMP_SO_VERSION)
 libunwind_setjmp_la_LIBADD =                   \
-	$(libunwind_elf_libs)                  \
 	libunwind-$(arch).la                   \
 	$(libunwind_libadd)
 
