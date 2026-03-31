@@ -1033,6 +1033,8 @@ libunwind_local_la_SOURCES =               \
 	s390x/Lresume.c                        \
 	s390x/Lstep.c                          \
 	s390x/setcontext.S
+
+libunwind_setjmp_la_SOURCES += s390x/siglongjmp.S
 endif # ARCH_S390X
 
 # The list of files that go into libunwind-s390x:
