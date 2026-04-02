@@ -182,6 +182,11 @@ dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 
   return (*c->as->acc.access_mem) (c->as, addr + sizeof(unw_word_t),
                                    valp + 1, 0, c->as_arg);
+#elif __riscv_xlen == 64 && __riscv_flen == 32
+  unw_word_t mword;
+  int r = (*c->as->acc.access_mem) (c->as, addr, &mword, 0, c->as_arg);
+  memcpy(valp, &mword, 4);
+  return r;
 #else
 # error "dwarf_getfp: FIXME"
 #endif
@@ -210,6 +215,13 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
 
   return (*c->as->acc.access_mem) (c->as, addr + sizeof(unw_word_t),
                                    valp + 1, 1, c->as_arg);
+#elif __riscv_xlen == 64 && __riscv_flen == 32
+  unw_word_t mword;
+  int r = (*c->as->acc.access_mem) (c->as, addr, &mword, 0, c->as_arg);
+  if (r < 0)
+    return r;
+  memcpy(&mword, valp, 4);
+  return (*c->as->acc.access_mem) (c->as, addr, &mword, 1, c->as_arg);
 #else
 # error "dwarf_putfp: FIXME"
 #endif
