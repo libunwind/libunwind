@@ -735,8 +735,10 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_LOONGARCH64_R31] = LOONGARCH_EF_R31,
     [UNW_LOONGARCH64_PC]  = LOONGARCH_EF_CSR_ERA
 #elif defined(UNW_TARGET_ALPHA)
-    /* PTRACE_PEEKUSER on Alpha uses indices:
-       0-30 = GPRs $0-$30, 31 = $31 (zero), 32 = PC */
+    /* Offsets into gregset_t (used by PTRACE_GETREGSET):
+       [0]-[30] = GPRs $0-$30, [31] = PC, [32] = unique.
+       PTRACE_PEEKUSER uses the same GPR offsets but PC is at
+       index 32 (0x100) instead of 31 -- handled in _UPT_access_reg. */
     [UNW_ALPHA_R0]  = 0x000,
     [UNW_ALPHA_R1]  = 0x008,
     [UNW_ALPHA_R2]  = 0x010,
@@ -769,7 +771,7 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_ALPHA_R29] = 0x0e8,
     [UNW_ALPHA_R30] = 0x0f0,
     /* $31 is hardwired zero, no entry needed */
-    [UNW_ALPHA_PC]  = 0x100     /* ptrace index 32 */
+    [UNW_ALPHA_PC]  = 0x0f8     /* gregset index 31 */
 #else
 # error Fix me.
 #endif
