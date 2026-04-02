@@ -3,6 +3,8 @@
 
 #if defined __aarch64__
 # include "tdep-aarch64/dwarf-config.h"
+#elif defined __alpha__ || defined __alpha
+# include "tdep-alpha/dwarf-config.h"
 #elif defined __arm__
 # include "tdep-arm/dwarf-config.h"
 #elif defined __hppa__

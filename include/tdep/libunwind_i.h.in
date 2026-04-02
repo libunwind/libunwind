@@ -5,6 +5,8 @@
 
 #if defined __aarch64__
 # include "tdep-aarch64/libunwind_i.h"
+#elif defined __alpha__ || defined __alpha
+# include "tdep-alpha/libunwind_i.h"
 #elif defined __arm__
 # include "tdep-arm/libunwind_i.h"
 #elif defined __hppa__

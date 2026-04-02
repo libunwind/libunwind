@@ -34,7 +34,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include "tdep-ia64/rse.h"
 #endif
 
-#if HAVE_DECL_PTRACE_SETREGSET && (defined(__linux__) && !defined(UNW_TARGET_X86))
+/* Alpha is excluded because its kernel does not enable HAVE_ARCH_TRACEHOOK
+   or implement task_user_regset_view(), so PTRACE_GETREGSET returns -EIO. */
+#if HAVE_DECL_PTRACE_SETREGSET && (defined(__linux__) && !defined(UNW_TARGET_X86) && !defined(UNW_TARGET_ALPHA))
 #include <sys/uio.h>
 int
 _UPT_access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
