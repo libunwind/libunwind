@@ -162,7 +162,7 @@ dwarf_put (struct dwarf_cursor *c UNUSED, dwarf_loc_t loc, unw_word_t val)
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
 {
-  char *valp = (char *) &val;
+  char *valp = (char *) val;
   unw_word_t addr;
 
   if (DWARF_IS_NULL_LOC (loc))
