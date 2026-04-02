@@ -97,7 +97,8 @@ endif
 if ARCH_AARCH64
   check_PROGRAMS_arch += Garm64-test-sve-signal Larm64-test-sve-signal   \
                          aarch64-test-plt \
-                         Laarch64-test-frame-record Gaarch64-test-frame-record
+                         Laarch64-test-frame-record                      \
+                         Gaarch64-test-frame-record Ltest-stale-sp-signal
 endif
 
  check_PROGRAMS_cdep +=	Gtest-bt Ltest-bt				 \
@@ -295,6 +296,14 @@ Larm64_test_sve_signal_SOURCES = Larm64-test-sve-signal.c
 aarch64_test_plt_SOURCES = aarch64-test-plt.c
 Laarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 Gaarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
+
+# Regression test for stale loc[SP] bug in AT_SP_OFFSET fallback (Gstep.c).
+# A signed-offset STP without "mov x29,sp" triggers the AT_SP_OFFSET path;
+# after one successful DWARF step loc[SP] is stale, so the fallback must use
+# c->dwarf.cfa instead.
+Ltest_stale_sp_signal_SOURCES  = Ltest-stale-sp-signal.c \
+                                  Ltest-stale-sp-signal-func.S
+Ltest_stale_sp_signal_LDADD    = $(LIBUNWIND) $(LIBUNWIND_local) $(PTHREADS_LIB)
 
 if COMPILER_SUPPORTS_MARCH_ARMV8_A_SVE
  Garm64_test_sve_signal_CFLAGS = $(AM_CFLAGS) -fno-inline -march=armv8-a+sve $(UNW_EXTRA_SVE_FLAGS)
