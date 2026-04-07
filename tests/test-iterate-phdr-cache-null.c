@@ -39,16 +39,23 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    the mutex, the normal unwind can deadlock.  A watchdog thread
    detects the deadlock by exiting after a timeout.  */
 
+#if !defined(UNW_REMOTE_ONLY)
+
 #if defined(HAVE_CONFIG_H)
 # include "config.h"
 #endif
 
-#if defined(HAVE_DL_ITERATE_PHDR)
+#if defined(HAVE_LINK_H)
 # include <link.h>
-# include <pthread.h>
-# include <stdio.h>
-# include <stdlib.h>
-# include <unistd.h>
+#elif defined(HAVE_SYS_LINK_H)
+# include <sys/link.h>
+#else
+# error Could not find <link.h>
+#endif
+#include <pthread.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <unistd.h>
 
 #include "compiler.h"
 #include "unw_test.h"
@@ -129,10 +136,13 @@ main (int argc, char **argv UNUSED)
   return UNW_TEST_EXIT_PASS;
 }
 
-#else
+#else /* defined(UNW_REMOTE_ONLY) */
+
+#include "unw_test.h"
+
 int
 main (void)
 {
-  return UNW_TEST_EXIT_SKIP; /* dl_iterate_phdr is not available */
+  return UNW_TEST_EXIT_SKIP;
 }
-#endif
+#endif /* defined(UNW_REMOTE_ONLY) */
