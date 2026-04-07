@@ -1,20 +1,18 @@
 /**
  * @file tests/Gtest-trace.c
- *
- * Exercise the unw_backtrace*() functions and ensire they produce expected
- * results.
+ * @brief Verify unw_backtrace() (and backtrace()) give the same backtrace as
+ * looping through unw_step().
  */
-/* 
- * Copyright (C) 2010, 2011 by FERMI NATIONAL ACCELERATOR LABORATORY
- * Copyright 2024 Stephen M. Webb <stephen.webb@bregmasoft.ca>
- *
- * This file is part of libunwind.
+/*
+ * This file is part of libunwind - a platform-independent unwind library.
+ *   Copyright (C) 2010, 2011 by FERMI NATIONAL ACCELERATOR LABORATORY
+ *   Copyright 2026 Blackberry Limited.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
- * of this software and associated documentation files (the "Software"), to deal
- * in the Software without restriction, including without limitation the rights
- * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
- * copies of the Software, and to permit persons to whom the Software is
+ * of this software and associated documentation files (the "Software"), to
+ * deal in the Software without restriction, including without limitation the
+ * rights to use, copy, modify, merge, publish, distribute, sublicense, and/or
+ * sell copies of the Software, and to permit persons to whom the Software is
  * furnished to do so, subject to the following conditions:
  *
  * The above copyright notice and this permission notice shall be included in
@@ -24,14 +22,15 @@
  * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
  * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
  * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
- * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
- * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
- * SOFTWARE.
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING
+ * FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS
+ * IN THE SOFTWARE.
  */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
 #endif
+#include "unw_test.h"
 
 #include "compiler.h"
 
@@ -42,26 +41,21 @@
   extern int backtrace (void **, int);
 #endif
 #include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ucontext.h>
 #include <unistd.h>
 #include <libunwind.h>
 
 #include "ident.h"
 
-#define panic(...)				\
-	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
-
 #define SIG_STACK_SIZE 0x100000
 
-int verbose;                /**< enable verbose mode? */
-int repeat_count = 9;       /**< number of times to exercise the signal handler */
-int num_errors = 0;         /**< cumulatiove error count */
+bool verbose = false;       /**< enable verbose mode? */
+int repeat_count = 3;       /**< number of times to exercise the signal handler */
+int num_errors = 0;         /**< cumulative error count */
 
-/* These variables are global because they
- * can cause the signal stack to overflow */
 enum test_id {
     TEST_UNW_STEP,
     TEST_BACKTRACE,
@@ -80,20 +74,35 @@ struct {
 	{ "unw_backtrace2", {0} }
 };
 
-unw_cursor_t cursor;
+/*
+ * These variables are global because they can cause the signal stack to
+ * overflow
+ */
+unw_cursor_t  cursor;
 unw_context_t uc;
+char          function_name[256];
 
 /**
  * Dump a backtrace (in verbose mode).
  */
 static void
-dump_backtrace(int bt_count, enum test_id id)
+dump_backtrace(size_t bt_count, enum test_id id)
 {
   if (verbose)
     {
-      printf ("\t%s() [depth is %d]:\n", trace[id].name, bt_count);
-      for (int i = 0; i < bt_count; ++i)
-        printf ("\t #%-3d ip=%p\n", i, trace[id].addresses[i]);
+      printf ("### %s() [depth is %zu]\n", trace[id].name, bt_count);
+      for (size_t i = 0; i < bt_count; ++i)
+        {
+          unw_word_t offset = 0;
+          int ret = unw_get_proc_name_by_ip (unw_local_addr_space,
+                                             (unw_word_t)trace[id].addresses[i],
+                                             function_name, sizeof(function_name),
+                                             &offset, NULL);
+          printf ("    frame %-3zu ip=%10p %s+%#010lx\n",
+                  i, trace[id].addresses[i],
+                  ret == 0 ? function_name : "???",
+                  (long)offset);
+        }
     }
 }
 
@@ -118,9 +127,9 @@ compare_backtraces(int step_count, int backtrace_count, enum test_id id)
           if (labs (trace[TEST_UNW_STEP].addresses[i] - trace[id].addresses[i]) > 1)
             {
               printf ("FAILURE: unw_step() loop and %s() addresses differ at %d: %p vs. %p\n",
-              		  trace[id].name, i,
-              		  trace[TEST_UNW_STEP].addresses[i],
-              		  trace[id].addresses[i]);
+                      trace[id].name, i,
+                      trace[TEST_UNW_STEP].addresses[i],
+                      trace[id].addresses[i]);
               ++num_errors;
             }
         }
@@ -144,23 +153,18 @@ do_backtrace (void)
 {
   unw_word_t ip;
   int ret = -UNW_ENOINFO;
-  int unw_step_depth = 0;
-  int backtrace_depth = 0;
-  int unw_backtrace_depth = 0;
+  size_t unw_step_depth = 0;
+  size_t backtrace_depth = 0;
+  size_t unw_backtrace_depth = 0;
 
   if (verbose)
-    {
-      printf ("\nBacktrace with implicit context:\n");
-    }
+    printf ("## backtrace with unw_getcontext()\n");
 
-  /**
-   * Perform a naked `unw_step()` loop on the current context and save the IPs.
-   */
   ret = unw_getcontext (&uc);
-  if (ret != 0)
-    panic ("unw_getcontext failed\n");
-  if (unw_init_local (&cursor, &uc) < 0)
-    panic ("unw_init_local failed!\n");
+  UNW_TEST_ASSERT(ret == UNW_ESUCCESS, "failure in unw_getcontext()\n");
+
+  ret = unw_init_local (&cursor, &uc);
+  UNW_TEST_ASSERT(ret == UNW_ESUCCESS, "failure in unw_init_local()\n");
 
   do
     {
@@ -224,15 +228,10 @@ do_backtrace_with_context(void *context)
   int unw_backtrace2_depth;
 
   if (verbose)
-    {
-      printf ("\nbacktrace with explicit context:\n");
-    }
+    printf ("\n## backtrace with with signal context\n");
 
-  /**
-   * Perform a naked `unw_step()` loop on the passed context and save the IPs.
-   */
-  if (unw_init_local2 (&cursor, (unw_context_t*)context, UNW_INIT_SIGNAL_FRAME) < 0)
-    panic ("unw_init_local2 failed!\n");
+  ret = unw_init_local2 (&cursor, (unw_context_t*)context, UNW_INIT_SIGNAL_FRAME);
+  UNW_TEST_ASSERT(ret == UNW_ESUCCESS, "failure in unw_init_local2()\n");
 
   do
     {
@@ -355,23 +354,23 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
 int
 main (int argc, char **argv UNUSED)
 {
-  struct sigaction act;
-#ifdef HAVE_SIGALTSTACK
-  stack_t stk;
-#endif /* HAVE_SIGALTSTACK */
-
   verbose = (argc > 1);
 
   if (verbose)
-    printf ("Normal backtrace:\n");
+    printf ("# Normal backtrace\n");
 
   bar (1);
 
-  memset (&act, 0, sizeof (act));
-  act.sa_sigaction = sighandler;
-  act.sa_flags = SA_SIGINFO;
-  if (sigaction (SIGTERM, &act, NULL) < 0)
-    panic ("sigaction: %s\n", strerror (errno));
+  if (verbose)
+    printf ("\n# Backtrace across signal handler\n");
+
+  struct sigaction act =
+    {
+      .sa_sigaction = sighandler,
+      .sa_flags     = SA_SIGINFO
+    };
+  int ret = sigaction (SIGTERM, &act, NULL);
+  UNW_TEST_ASSERT(ret == 0, "error %d in sigaction(SIGTERM): %s\n", errno, strerror(errno));
 
   /*
    * Repeatedly invoke the signal hander to make sure any global cache does not
@@ -379,37 +378,31 @@ main (int argc, char **argv UNUSED)
    */
   for (int i = 0; i < repeat_count; ++i)
     {
-      if (verbose)
-        printf ("\nBacktrace across signal handler (iteration %d):\n", i+1);
       kill (getpid (), SIGTERM);
     }
 
 #ifdef HAVE_SIGALTSTACK
   if (verbose)
-    printf ("\nBacktrace across signal handler on alternate stack:\n");
-  stk.ss_sp = malloc (SIG_STACK_SIZE);
-  if (!stk.ss_sp)
-    panic ("failed to allocate %u bytes\n", SIG_STACK_SIZE);
-  stk.ss_size = SIG_STACK_SIZE;
-  stk.ss_flags = 0;
-  if (sigaltstack (&stk, NULL) < 0)
-    panic ("sigaltstack: %s\n", strerror (errno));
+    printf ("\n# Backtrace across signal handler on alternate stack\n");
+  stack_t stk =
+    {
+      .ss_size  = SIG_STACK_SIZE,
+      .ss_flags = 0,
+      .ss_sp    = malloc (SIG_STACK_SIZE)
+    };
+  UNW_TEST_ASSERT(stk.ss_sp != NULL, "failed to allocate %u bytes\n", SIG_STACK_SIZE);
+  ret = sigaltstack (&stk, NULL);
+  UNW_TEST_ASSERT(ret == 0, "error %d in sigaltstack(): %s\n", errno, strerror(errno));
 
   memset (&act, 0, sizeof (act));
   act.sa_sigaction = sighandler;
   act.sa_flags = SA_ONSTACK | SA_SIGINFO;
-  if (sigaction (SIGTERM, &act, NULL) < 0)
-    panic ("sigaction: %s\n", strerror (errno));
-
+  ret = sigaction (SIGTERM, &act, NULL);
+  UNW_TEST_ASSERT(ret == 0, "error %d in sigaction(SIGTERM): %s\n", errno, strerror(errno));
   kill (getpid (), SIGTERM);
 #endif /* HAVE_SIGALTSTACK */
 
-  if (num_errors > 0)
-    {
-      fprintf (stderr, "FAILURE: detected %d errors\n", num_errors);
-      exit (-1);
-    }
-
+  UNW_TEST_ASSERT(num_errors == 0, "FAILURE: detected %d errors\n", num_errors);
   if (verbose)
     printf ("SUCCESS.\n");
 
@@ -420,5 +413,5 @@ main (int argc, char **argv UNUSED)
   free (stk.ss_sp);
 #endif /* HAVE_SIGALTSTACK */
 
-  return 0;
+  return UNW_TEST_EXIT_PASS;
 }

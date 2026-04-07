@@ -636,6 +636,23 @@ unw_step (unw_cursor_t *cursor)
       dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X30], &c->dwarf.ip);
     }
 
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &fp);
+  if (ret == 0 && fp == 0)
+    {
+      /* Procedure Call Standard for the ARM 64-bit Architecture (AArch64)
+       * specifies that the end of the frame record chain is indicated by
+       * the address zero in the address for the previous frame.
+       *
+       * Do this before attempting the DWARF stepping because returning 0
+       * indicates the current frame is one-past-the-end of the frame sequence.
+       * It's not really possible to advance the cursor past the last frame, so
+       * don't even try.
+       */
+      c->dwarf.ip = 0;
+      Debug (1, "NULL frame pointer X29 loc, returning 0\n");
+      return 0;
+    }
+
   /* Try DWARF-based unwinding... */
   c->sigcontext_format = AARCH64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
@@ -644,23 +661,11 @@ unw_step (unw_cursor_t *cursor)
   /* Restore default memory validation state */
   c->validate = validate;
 
-  if (unlikely (ret == -UNW_ESTOPUNWIND))
-    return ret;
-
-  if (likely (ret > 0))
+  if (ret < 0 && ret != -UNW_ENOINFO)
     {
-      ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &fp);
-      if (ret == 0 && fp == 0)
-        {
-	  /* Procedure Call Standard for the ARM 64-bit Architecture (AArch64)
-	   * specifies that the end of the frame record chain is indicated by
-	   * the address zero in the address for the previous frame.
-	   */
-	  c->dwarf.ip = 0;
-	  Debug (2, "NULL frame pointer X29 loc, returning 0\n");
-	  return 0;
-        }
-    }
+      Debug (2, "failure in dwarf_step(), returning %d\n", ret);
+      return ret;
+	}
 
   if (unlikely (ret < 0))
     {
