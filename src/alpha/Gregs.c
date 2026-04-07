@@ -81,6 +81,12 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       loc = c->dwarf.loc[reg];
       break;
 
+    case UNW_ALPHA_R31:
+      if (write)
+        return -UNW_EREADONLYREG;
+      *valp = 0;
+      return 0;
+
     default:
       Debug (1, "bad register number %u\n", reg);
       return -UNW_EBADREG;
@@ -131,9 +137,15 @@ tdep_access_fpreg (struct cursor *c, unw_regnum_t reg, unw_fpreg_t *valp,
     case UNW_ALPHA_F28:
     case UNW_ALPHA_F29:
     case UNW_ALPHA_F30:
-    case UNW_ALPHA_F31:
       loc = c->dwarf.loc[reg];
       break;
+
+    case UNW_ALPHA_F31:
+      if (write)
+        return -UNW_EREADONLYREG;
+      *valp = 0;
+      return 0;
+
     default:
       Debug (1, "bad register number %u\n", reg);
       return -UNW_EBADREG;
