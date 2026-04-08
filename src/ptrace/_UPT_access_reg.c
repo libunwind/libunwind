@@ -42,12 +42,12 @@ _UPT_access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
 {
   struct UPT_info *ui = arg;
   pid_t pid = ui->pid;
-  gregset_t regs;
+  elf_gregset_t regs;
   char *r;
   struct iovec loc;
 
 #if UNW_DEBUG
-  Debug(16, "using getregset: reg: %s [%u], val: %lx, write: %u\n", 
+  Debug(16, "using getregset: reg: %s [%u], val: %lx, write: %u\n",
 	unw_regname(reg), (unsigned) reg, (long) val, write);
 
   if (write)
