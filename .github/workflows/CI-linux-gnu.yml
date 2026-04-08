@@ -20,7 +20,7 @@ on:
 
 jobs:
   build-gnu-native:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 15 # Anything more than about 15 minutes is likely a testsuite hang.
     name: ${{ matrix.target.triple }} (native) ${{ matrix.toolchain.compiler }} ${{ matrix.optimization.CFLAGS }}
 
@@ -31,8 +31,8 @@ jobs:
           - { arch: i686,   triple: i686-pc-linux-gnu,   CFLAGS: -m32 }
           - { arch: x86_64, triple: x86_64-pc-linux-gnu, CFLAGS:      }
         toolchain:
-          - { compiler: gcc,   CC: gcc-12,   CXX: g++-12     }
-          - { compiler: clang, CC: clang-13, CXX: clang++-13 }
+          - { compiler: gcc,   CC: gcc-14,   CXX: g++-14     }
+          - { compiler: clang, CC: clang-18, CXX: clang++-18 }
         optimization:
           - { CFLAGS: -O0 }
           - { CFLAGS: -O3 }
@@ -42,7 +42,7 @@ jobs:
       - name: Install ${{ matrix.target.triple }} Toolchain
         run: |
           sudo apt update
-          sudo apt install -y g++-12-multilib abigail-tools
+          sudo apt install -y g++-14-multilib abigail-tools
 
       - name: Configure
         run: |
@@ -88,7 +88,7 @@ jobs:
 
 
   build-gnu-cross:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-24.04
     timeout-minutes: 20 # Anything more than about 20 minutes is likely a testsuite hang.
     name: ${{ matrix.config.host }} (cross)
 
