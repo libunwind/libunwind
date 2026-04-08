@@ -89,6 +89,9 @@ jobs:
 
   build-gnu-cross:
     runs-on: ubuntu-24.04
+    container:
+      image: ${{ matrix.config.container }}
+      options: --privileged
     timeout-minutes: 20 # Anything more than about 20 minutes is likely a testsuite hang.
     name: ${{ matrix.config.host }} (cross)
 
@@ -96,29 +99,38 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 12 }
-          - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 12 }
-          - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 12 }
-          - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 12 }
-          - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 10 }
-          - {target: mips64,   host: mips64-linux-gnuabi64,   qemu: mips64,   gccver: 10 }
-          - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 10 }
-          - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 10 }
-          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 12 }
-          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 12 }
-          - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 12 }
-          - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 12 }
-          - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 12 }
+          - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 14, container: ubuntu:26.04 }
+          - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 14, container: ubuntu:26.04 }
+          - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 14, container: ubuntu:26.04 }
+          - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 14, container: ubuntu:26.04 }
+          - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 14, container: ubuntu:24.04 }
+          - {target: mips64,   host: mips64-linux-gnuabi64,   qemu: mips64,   gccver: 14, container: ubuntu:24.04 }
+          - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 14, container: ubuntu:24.04 }
+          - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 14, container: ubuntu:24.04 }
+          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 14, container: ubuntu:26.04 }
+          - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04 }
+          - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04 }
 
     steps:
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get install -y git
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Install ${{ matrix.config.host }} Toolchain
         run: |
-          sudo apt update
-          sudo apt install -y g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} \
-                              qemu-user-static \
-                              abigail-tools
+          apt-get install -y autoconf automake libtool make \
+                             g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} \
+                             qemu-user \
+                             abigail-tools
+        env:
+          DEBIAN_FRONTEND: noninteractive
 
       - name: Configure with ${{ matrix.config.cc }}
         run: |
@@ -156,7 +168,7 @@ jobs:
       - name: Test
         run: |
           set -x
-          sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           cd build
           make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \

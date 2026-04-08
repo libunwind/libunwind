@@ -107,7 +107,7 @@ trap "st=130; $do_exit" 2
 trap "st=141; $do_exit" 13
 trap "st=143; $do_exit" 15
 
-qemu_cmd="qemu-${qemu_arch}-static"
+qemu_cmd="qemu-${qemu_arch}"
 # Test script is run here.
 if test x$verbose != xno; then
   printf "%s\n" "${qemu_cmd} $@"
