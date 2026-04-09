@@ -247,15 +247,25 @@ trace_init_addr (unw_tdep_frame_t *f,
 
   if (likely(dwarf_put (d, d->loc[UNW_AARCH64_X29], fp) >= 0)
       && likely(dwarf_put (d, d->loc[UNW_AARCH64_SP], sp) >= 0)
-      && likely(dwarf_put (d, d->loc[UNW_AARCH64_PC], pc) >= 0)
-      && likely((ret = unw_step (cursor)) >= 0))
-    *f = c->frame_info;
-  #if defined (__QNX__)
-    if (unw_is_signal_frame (cursor))
-      {
-        return NULL;
-      }
-  #endif
+      && likely(dwarf_put (d, d->loc[UNW_AARCH64_PC], pc) >= 0))
+    {
+#if defined (__QNX__)
+      /*
+       * On QNX, the signal trampoline can't really be traced through the cache
+       * because the context is passed in register X19, which may be
+       * unrecoverable at this point. See the FIXME in the function header
+       * comment.
+       */
+      if (unw_is_signal_frame (cursor))
+        {
+          return NULL;
+        }
+#endif
+      if (likely((ret = unw_step (cursor)) >= 0))
+        {
+          *f = c->frame_info;
+        }
+    }
 
   /* If unw_step() stopped voluntarily, remember that, even if it
      otherwise could not determine anything useful.  This avoids
@@ -286,6 +296,7 @@ trace_lookup (unw_cursor_t *cursor,
               unw_word_t fp,
               unw_word_t sp)
 {
+
   /* First look up for previously cached information using cache as
      linear probing hash table with probe step of 1.  Majority of
      lookups should be completed within few steps, but it is very
@@ -295,16 +306,6 @@ trace_lookup (unw_cursor_t *cursor,
   uint64_t cache_size = 1ULL << cache->log_size;
   uint64_t slot = ((pc * 0x9e3779b97f4a7c16) >> 43) & (cache_size-1);
   unw_tdep_frame_t *frame;
-
-#if defined(__QNXNTO__)
-  /**
-   * Without slow DWARF unwinding the signal context gets lost, so bail.
-   */
-  if (unw_is_signal_frame (cursor))
-    {
-      return NULL;
-    }
-#endif
 
   for (i = 0; i < 16; ++i)
   {

@@ -237,6 +237,13 @@ check_local_unw_abi () {
 	    match _UL${plat}_dwarf_search_unwind_table
 	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
+	alpha)
+	    match _U${plat}_getcontext
+	    match _U${plat}_setcontext
+	    match _U${plat}_is_fpreg
+	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
+	    ;;
 	*)
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table

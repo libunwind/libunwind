@@ -46,7 +46,11 @@ mips_handle_signal_frame (unw_cursor_t *cursor)
     return -UNW_EUNSPEC;
   }
 
-  if (tdep_big_endian(c->dwarf.as))
+  /* On O32 big-endian, 32-bit register values are sign-extended to 64 bits and
+     stored in the upper half of each 8-byte slot.  Add 4 to reach the actual
+     32-bit value.  On N32/N64, registers are natively 64-bit, so no offset
+     is needed (and adding 4 would misalign the 64-bit access).  */
+  if (tdep_big_endian(c->dwarf.as) && c->dwarf.as->abi == UNW_MIPS_ABI_O32)
     sc_addr += 4;
 
   c->sigcontext_addr = sc_addr;

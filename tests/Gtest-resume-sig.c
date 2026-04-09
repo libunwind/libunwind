@@ -144,7 +144,7 @@ int
 main (int argc, char **argv UNUSED)
 {
   struct sigaction sa;
-  float d = 1.0;
+  volatile float d = 1.0;
   int n = 0;
 
   if (argc > 1)

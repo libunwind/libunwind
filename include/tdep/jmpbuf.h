@@ -5,6 +5,8 @@
 
 #if defined __aarch64__
 # include "tdep-aarch64/jmpbuf.h"
+#elif defined __alpha__ || defined __alpha
+# include "tdep-alpha/jmpbuf.h"
 #elif defined __arm__
 # include "tdep-arm/jmpbuf.h"
 #elif defined __hppa__
