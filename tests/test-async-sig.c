@@ -52,13 +52,12 @@ int verbose;
 int nerrors;
 int sigcount;
 
-#ifndef CONFIG_BLOCK_SIGNALS
-/* When libunwind is configured with --enable-block-signals=no, the caller
-   is responsible for preventing recursion via signal handlers.
-   We use a simple global here.  In a multithreaded program, one would use
-   a thread-local variable.  */
+/* Prevent recursion when a signal is delivered during do_backtrace().
+   CONFIG_BLOCK_SIGNALS only blocks signals around mutex operations inside
+   libunwind, not during the entire unw_step(), so the caller must still
+   guard against re-entering do_backtrace() from a signal handler.
+   In a multithreaded program, one would use a thread-local variable.  */
 int recurcount;
-#endif
 
 #define panic(...)					\
 	{ ++nerrors; fprintf (stderr, __VA_ARGS__); return; }
@@ -73,11 +72,9 @@ do_backtrace (int may_print, int get_proc_name)
   int ret;
   int depth = 0;
 
-#ifndef CONFIG_BLOCK_SIGNALS
   if (recurcount > 0)
     return;
   recurcount += 1;
-#endif
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -129,9 +126,7 @@ do_backtrace (int may_print, int get_proc_name)
     }
   while (ret > 0);
 
-#ifndef CONFIG_BLOCK_SIGNALS
   recurcount -= 1;
-#endif
 }
 
 void
