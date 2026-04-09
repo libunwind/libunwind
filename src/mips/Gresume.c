@@ -22,8 +22,6 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
-/* FIXME for MIPS.  */
-
 #include <stdlib.h>
 
 #include "unwind_i.h"
@@ -33,13 +31,54 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 HIDDEN inline int
 mips_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
+  struct cursor *c = (struct cursor *) cursor;
+  ucontext_t *uc = (ucontext_t *) c->dwarf.as_arg;
+
+  Debug (8, "resuming at ip=%llx via setcontext()\n",
+         (unsigned long long) c->dwarf.ip);
+  setcontext (uc);
   return -UNW_EINVAL;
 }
 
 #endif /* !UNW_REMOTE_ONLY */
 
+static inline void
+establish_machine_state (struct cursor *c)
+{
+  unw_addr_space_t as = c->dwarf.as;
+  void *arg = c->dwarf.as_arg;
+  unw_word_t val;
+  int reg;
+
+  Debug (8, "copying out cursor state\n");
+
+  for (reg = UNW_MIPS_R0; reg <= UNW_MIPS_R31; ++reg)
+    {
+      Debug (16, "copying %s %d\n", unw_regname (reg), reg);
+      if (tdep_access_reg (c, reg, &val, 0) >= 0)
+        as->acc.access_reg (as, reg, &val, 1, arg);
+    }
+
+  /* Set the PC from the cursor's IP */
+  val = c->dwarf.ip;
+  as->acc.access_reg (as, UNW_MIPS_PC, &val, 1, arg);
+}
+
 int
 unw_resume (unw_cursor_t *cursor)
 {
-  return -UNW_EINVAL;
+  struct cursor *c = (struct cursor *) cursor;
+
+  Debug (1, "(cursor=%p)\n", c);
+
+  if (!c->dwarf.ip)
+    {
+      Debug (1, "refusing to resume execution at address 0\n");
+      return -UNW_EINVAL;
+    }
+
+  establish_machine_state (c);
+
+  return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
+                                     c->dwarf.as_arg);
 }
