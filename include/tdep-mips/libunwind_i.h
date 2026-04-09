@@ -148,9 +148,24 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 static inline int
 read_s32 (struct dwarf_cursor *c, unw_word_t addr, unw_word_t *val)
 {
-  int offset = addr & 4;
   int ret;
   unw_word_t memval;
+
+  if (sizeof (unw_word_t) == 4)
+    {
+      /* Native O32: access_mem reads 32-bit values, and signal frame
+         addresses are already adjusted for endianness in Gstep.c.  */
+      ret = (*c->as->acc.access_mem) (c->as, addr, &memval, 0, c->as_arg);
+      if (ret < 0)
+        return ret;
+
+      *val = (int32_t) memval;
+      return 0;
+    }
+
+  /* Cross-ABI (64-bit host unwinding O32 target): access_mem reads
+     64-bit values, so extract the correct 32-bit half.  */
+  int offset = addr & 4;
 
   ret = (*c->as->acc.access_mem) (c->as, addr - offset, &memval, 0, c->as_arg);
   if (ret < 0)
@@ -167,18 +182,29 @@ read_s32 (struct dwarf_cursor *c, unw_word_t addr, unw_word_t *val)
 static inline int
 write_s32 (struct dwarf_cursor *c, unw_word_t addr, const unw_word_t *val)
 {
-  int offset = addr & 4;
   int ret;
   unw_word_t memval;
+
+  if (sizeof (unw_word_t) == 4)
+    {
+      /* Native O32: access_mem writes 32-bit values, and signal frame
+         addresses are already adjusted for endianness in Gstep.c.  */
+      memval = (int32_t) *val;
+      return (*c->as->acc.access_mem) (c->as, addr, &memval, 1, c->as_arg);
+    }
+
+  /* Cross-ABI (64-bit host unwinding O32 target): access_mem reads/writes
+     64-bit values, so update the correct 32-bit half.  */
+  int offset = addr & 4;
 
   ret = (*c->as->acc.access_mem) (c->as, addr - offset, &memval, 0, c->as_arg);
   if (ret < 0)
     return ret;
 
   if ((offset != 0) == tdep_big_endian (c->as))
-    memval = (memval & ~0xffffffffLL) | (uint32_t) *val;
+    memval = (memval & ~(unw_word_t) 0xffffffffU) | (uint32_t) *val;
   else
-    memval = (memval & 0xffffffffLL) | (uint32_t) (*val << 32);
+    memval = (memval & (unw_word_t) 0xffffffffU) | ((unw_word_t) (uint32_t) *val << 32);
 
   return (*c->as->acc.access_mem) (c->as, addr - offset, &memval, 1, c->as_arg);
 }
