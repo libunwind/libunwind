@@ -132,8 +132,6 @@ endif
 if ARCH_PPC32
   # https://github.com/libunwind/libunwind/issues/560
   XFAIL_TESTS += Ltest-init-local-signal
-  # https://github.com/libunwind/libunwind/issues/670
-  XFAIL_TESTS += test-async-sig
 endif #ARCH_PPC32
 
 # Tests that exercise unw_resume, which is only unsupported on some targets
