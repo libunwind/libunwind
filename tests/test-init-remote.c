@@ -51,7 +51,7 @@ do_backtrace (void)
   unw_word_t ip, sp, off;
   unw_cursor_t cursor;
   unw_context_t uc;
-  int ret;
+  int ret, num_frames = 0;
 
   unw_getcontext (&uc);
   if (unw_init_remote (&cursor, unw_local_addr_space, &uc) < 0)
@@ -89,8 +89,16 @@ do_backtrace (void)
 		  ret, (long) ip);
 	  return -1;
 	}
+
+      ++num_frames;
     }
   while (ret > 0);
+
+  if (num_frames < 3)
+    {
+      printf ("FAILURE: only found %d frames\n", num_frames);
+      return -1;
+    }
 
   return 0;
 }

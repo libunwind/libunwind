@@ -55,7 +55,7 @@ handler (int sig UNUSED, siginfo_t *siginfo UNUSED, void *context UNUSED)
   unw_word_t ip;
   unw_context_t uc;
   unw_cursor_t c;
-  int ret;
+  int ret, num_frames = 0;
 
   unw_getcontext (&uc);
   unw_init_local (&c, &uc);
@@ -64,6 +64,7 @@ handler (int sig UNUSED, siginfo_t *siginfo UNUSED, void *context UNUSED)
       unw_get_reg (&c, UNW_REG_IP, &ip);
       if (verbose)
 	printf ("%lx: IP=%lx\n", (long) pthread_self (), (unsigned long) ip);
+      ++num_frames;
     }
   while ((ret = unw_step (&c)) > 0);
 
@@ -73,6 +74,9 @@ handler (int sig UNUSED, siginfo_t *siginfo UNUSED, void *context UNUSED)
 #endif
   if (ret < 0)
     panic ("unw_step() returned %d\n", ret);
+
+  if (num_frames < 3)
+    panic ("FAILURE: only found %d frames\n", num_frames);
 }
 
 void *
