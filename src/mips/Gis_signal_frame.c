@@ -28,19 +28,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* Read a 32-bit MIPS instruction from addr via access_mem.
  *
- * On N64/N32, unw_word_t is 64 bits but MIPS instructions are 32 bits.
+ * On N64, unw_word_t is 64 bits but MIPS instructions are 32 bits.
  * access_mem does a 64-bit load, so addr must be 8-byte aligned.  Since MIPS
  * instructions are only guaranteed 4-byte aligned, use the same trick as
  * read_s32(): align addr down to 8 bytes, do one aligned load, then extract
  * the correct 32-bit half based on endianness and the original offset.
  *
- * On O32, unw_word_t is 32 bits, so access_mem reads exactly one instruction
- * and any MIPS-instruction-aligned address is fine.  */
+ * On O32 and N32, unw_word_t is 32 bits, so access_mem reads exactly one
+ * instruction and any MIPS-instruction-aligned address is fine.  */
 static int
 read_mips_instr (unw_addr_space_t as, unw_accessors_t *a,
                  unw_word_t addr, unw_word_t *val, void *arg)
 {
-#if _MIPS_SIM == _ABI64 || _MIPS_SIM == _ABIN32
+#if _MIPS_SIM == _ABI64
   int offset = addr & 4;
   unw_word_t word;
   int ret;
@@ -94,6 +94,14 @@ unw_is_signal_frame (unw_cursor_t *cursor)
           return 1;
         case 0x24021017:
           return 2;
+        default:
+          return 0;
+        }
+    case UNW_MIPS_ABI_N32:
+      switch (w0 & 0xffffffff)
+        {
+        case 0x24021843:
+          return 1;
         default:
           return 0;
         }
