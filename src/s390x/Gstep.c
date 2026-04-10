@@ -94,6 +94,8 @@ unw_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int ret = 0, val = c->validate, sig;
+  unw_word_t old_ip = c->dwarf.ip;
+  unw_word_t old_cfa = c->dwarf.cfa;
 
 #if CONSERVATIVE_CHECKS
   c->validate = 1;
@@ -144,6 +146,13 @@ unw_step (unw_cursor_t *cursor)
 
   if (unlikely (ret > 0 && c->dwarf.ip == 0))
     return 0;
+
+  if (unlikely (ret > 0 && c->dwarf.ip == old_ip && c->dwarf.cfa <= old_cfa))
+    {
+      Dprintf ("%s: ip unchanged and cfa not advancing; stopping\n",
+               __FUNCTION__);
+      return 0;
+    }
 
   return ret;
 }
