@@ -166,11 +166,27 @@ unw_tdep_proc_info_t;
 #include "libunwind-dynamic.h"
 #include "libunwind-common.h"
 
-#define unw_tdep_getcontext             UNW_ARCH_OBJ(getcontext)
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 
-extern int unw_tdep_getcontext (unw_tdep_context_t *);
+extern int UNW_ARCH_OBJ(getcontext) (unw_tdep_context_t *);
 extern int unw_tdep_is_fpreg (int);
+
+/* On Alpha, GP ($29) is set up in each function's prologue from the
+   procedure value register ($27/t12).  When _Ualpha_getcontext is called
+   across a shared library boundary with lazy PLT binding, the dynamic
+   linker's PLT resolver trashes GP before getcontext can save it.
+   This inline wrapper captures GP before the cross-module call and
+   fixes up the saved value afterward.  */
+static inline int
+unw_tdep_getcontext (unw_tdep_context_t *uc)
+{
+    unsigned long saved_gp;
+    int ret;
+    __asm__ __volatile__ ("mov $29, %0" : "=r" (saved_gp));
+    ret = UNW_ARCH_OBJ(getcontext) (uc);
+    uc->uc_mcontext.sc_regs[29] = saved_gp;
+    return ret;
+}
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
