@@ -104,6 +104,18 @@ unw_step (unw_cursor_t *cursor)
   Debug (1, "(cursor=%p, ip=0x%016lx, cfa=0x%016lx)\n",
          c, c->dwarf.ip, c->dwarf.cfa);
 
+  /* Check if this is a signal frame before trying DWARF-based unwinding. The
+   * vDSO may provide DWARF info for the signal trampoline that doesn't
+   * correctly describe how to unwind through the signal frame. Checking first
+   * ensures we always use our signal frame handler which correctly parses the
+   * sigcontext.  */
+  sig = unw_is_signal_frame (cursor);
+  if (sig > 0)
+    {
+      c->sigcontext_format = sig;
+      return s390x_handle_signal_frame (cursor);
+    }
+
   /* Try DWARF-based unwinding... */
   c->sigcontext_format = S390X_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
@@ -114,34 +126,14 @@ unw_step (unw_cursor_t *cursor)
 
   if (unlikely (ret == -UNW_ENOINFO))
     {
-      /* GCC doesn't currently emit debug information for signal
-         trampolines on s390x so we check for them explicitly.
-
-         If there isn't debug information available we could also
+      /* If there isn't debug information available we could also
          try using the backchain (if available).
 
          Other platforms also detect PLT entries here. That's
          tricky to do reliably on s390x so I've left it out for
          now.  */
-
-      /* Memory accesses here are quite likely to be unsafe. */
-      c->validate = 1;
-
-      /* Check if this is a signal frame. */
-      sig = unw_is_signal_frame (cursor);
-      if (sig > 0)
-        {
-          c->sigcontext_format = sig;
-          ret = s390x_handle_signal_frame (cursor);
-        }
-      else
-        {
-          c->dwarf.ip = 0;
-          ret = 0;
-        }
-
-      c->validate = val;
-      return ret;
+      c->dwarf.ip = 0;
+      return 0;
     }
 
   if (unlikely (ret > 0 && c->dwarf.ip == 0))
