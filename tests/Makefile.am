@@ -110,7 +110,8 @@ endif
 			test-iterate-phdr-reentry			 \
 			test-iterate-phdr-cache-null			 \
 			test-mem test-reg-state Ltest-varargs		 \
-			Ltest-nomalloc Ltest-nocalloc Lrs-race
+			Ltest-nomalloc Ltest-nocalloc Lrs-race \
+			test-getcontext-gp
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
@@ -354,6 +355,8 @@ test_eh_frame_hdr_sdata8_SOURCES = test-eh-frame-hdr-sdata8.c
 test_eh_frame_hdr_sdata8_LDADD =
 Lrs_race_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 Ltest_varargs_LDADD = $(LIBUNWIND_local)
+test_getcontext_gp_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
+test_getcontext_gp_LDFLAGS = $(AM_LDFLAGS) -Wl,-z,lazy
 Ltest_init_local_signal_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 
 Gtest_bt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
