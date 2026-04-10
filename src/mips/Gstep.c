@@ -119,18 +119,19 @@ mips_handle_signal_frame (unw_cursor_t *cursor)
 
 
 
+#define FP_REG UNW_MIPS_R30
+#define SP_REG UNW_MIPS_R29
+#define RA_REG UNW_MIPS_R31
+
+#if _MIPS_SIM == _ABI64
+
 static inline
 int is_valid_fp_val(unw_word_t cfa_val, unw_word_t fp_val)
 {
   return fp_val > 0 && cfa_val > 0 && fp_val >cfa_val && (fp_val - cfa_val < 0x4000);
 }
-
 static int _step_n64(struct cursor *c)
 {
-  #define FP_REG UNW_MIPS_R30
-  #define SP_REG UNW_MIPS_R29
-  #define RA_REG UNW_MIPS_R31
-
   //TODO:handle plt entry
   int ret;
   unw_word_t current_fp_val = 0;
@@ -206,6 +207,7 @@ static int _step_n64(struct cursor *c)
   }
   return (c->dwarf.ip == 0) ? 0 : 1;
 }
+#endif /* _MIPS_SIM == _ABI64 */
 
 int
 unw_step (unw_cursor_t *cursor)
