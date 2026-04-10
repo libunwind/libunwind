@@ -209,6 +209,60 @@ static int _step_n64(struct cursor *c)
 }
 #endif /* _MIPS_SIM == _ABI64 */
 
+#if _MIPS_SIM != _ABI64
+/* Fallback when DWARF info is missing (O32 and N32).  When dwarf_step()
+   fails, use $ra to determine the return address.  */
+static int _step_ra_fallback(struct cursor *c)
+{
+  int ret;
+  unw_word_t current_ra_val = 0;
+
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RA_REG], &current_ra_val);
+  if (ret < 0)
+    {
+      /* Can't read $ra -- if the location is null, treat as end of chain. */
+      if (DWARF_IS_NULL_LOC (c->dwarf.loc[RA_REG]))
+        {
+          Debug (2, "NULL %%ra loc, returning 0\n");
+          c->dwarf.ip = 0;
+          return 0;
+        }
+      Debug (2, "returning %d [RA=0x%lx]\n", ret,
+             DWARF_GET_LOC (c->dwarf.loc[RA_REG]));
+      return ret;
+    }
+
+  Debug (2, "ra fallback: CFA=0x%lx IP=0x%lx RA=0x%lx\n",
+         (unsigned long)c->dwarf.cfa, (unsigned long)c->dwarf.ip,
+         (unsigned long)current_ra_val);
+
+  /* $ra == 0 means end of call chain (e.g., kernel sets $ra = 0 for _start,
+     though typically $ra == ip is hit first -- see below). */
+  if (current_ra_val == 0)
+    {
+      c->dwarf.ip = 0;
+      return 0;
+    }
+
+  /* $ra == ip means the frame did not change the return address -- we cannot
+     make progress.  This is the common end-of-chain case: at __start, the
+     DWARF step from __libc_start_main restored $ra to the same address as
+     the current IP. */
+  if (current_ra_val == c->dwarf.ip)
+    {
+      Debug (2, "RA == IP, end of chain\n");
+      c->dwarf.ip = 0;
+      return 0;
+    }
+
+  /* Use $ra as the next IP. */
+  c->dwarf.ip = current_ra_val;
+  c->dwarf.use_prev_instr = 1;
+
+  return 1;
+}
+#endif /* _MIPS_SIM != _ABI64 */
+
 int
 unw_step (unw_cursor_t *cursor)
 {
@@ -228,7 +282,7 @@ unw_step (unw_cursor_t *cursor)
 #if _MIPS_SIM == _ABI64
       return _step_n64(c);
 #else
-      return ret;
+      return _step_ra_fallback(c);
 #endif
     }
 
