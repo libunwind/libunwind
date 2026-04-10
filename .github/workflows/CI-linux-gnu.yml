@@ -106,6 +106,8 @@ jobs:
           - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 14, container: ubuntu:26.04 }
           - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 14, container: ubuntu:24.04 }
           - {target: mips64,   host: mips64-linux-gnuabi64,   qemu: mips64,   gccver: 14, container: ubuntu:24.04 }
+          - {target: mipsn32el, host: mips64el-linux-gnuabin32, qemu: mipsn32el, gccver: 14, container: ubuntu:24.04, cc: "mips64el-linux-gnuabi64-gcc-14 -mabi=n32", cxx: "mips64el-linux-gnuabi64-g++-14 -mabi=n32", packages: "g++-14-multilib-mips64el-linux-gnuabi64", cross_lib: "/usr/mips64el-linux-gnuabi64" }
+          - {target: mipsn32,   host: mips64-linux-gnuabin32,   qemu: mipsn32,   gccver: 14, container: ubuntu:24.04, cc: "mips64-linux-gnuabi64-gcc-14 -mabi=n32",   cxx: "mips64-linux-gnuabi64-g++-14 -mabi=n32",   packages: "g++-14-multilib-mips64-linux-gnuabi64",   cross_lib: "/usr/mips64-linux-gnuabi64" }
           - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 14, container: ubuntu:24.04 }
           - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 14, container: ubuntu:24.04 }
           - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04 }
@@ -127,7 +129,7 @@ jobs:
       - name: Install ${{ matrix.config.host }} Toolchain
         run: |
           apt-get install -y autoconf automake libtool make \
-                             g++-${{ matrix.config.gccver }}-${{ matrix.config.host }} \
+                             ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
                              qemu-user \
                              abigail-tools
         env:
@@ -144,8 +146,8 @@ jobs:
                        --with-testdriver="$(pwd)/libtool execute $(pwd)/../scripts/qemu-test-driver" \
                        --enable-debug
         env:
-          CC: ${{ matrix.config.host }}-gcc-${{ matrix.config.gccver }}
-          CXX: ${{ matrix.config.host }}-g++-${{ matrix.config.gccver }}
+          CC: ${{ matrix.config.cc || format('{0}-gcc-{1}', matrix.config.host, matrix.config.gccver) }}
+          CXX: ${{ matrix.config.cxx || format('{0}-g++-{1}', matrix.config.host, matrix.config.gccver) }}
 
       - name: Build
         run: |
@@ -177,7 +179,7 @@ jobs:
                      LDFLAGS="-L$CROSS_LIB/lib"
         env:
           UNW_DEBUG_LEVEL: 4
-          CROSS_LIB: "/usr/${{ matrix.config.host }}"
+          CROSS_LIB: ${{ matrix.config.cross_lib || format('/usr/{0}', matrix.config.host) }}
 
       - name: Upload Test Logs
         # This step only runs if the "Build and Test" step fails
