@@ -46,7 +46,7 @@ do_backtrace (void)
   unw_cursor_t cursor;
   unw_word_t ip, sp;
   unw_context_t uc;
-  int ret;
+  int ret, num_frames = 0;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -60,10 +60,12 @@ do_backtrace (void)
       if (verbose)
 	printf ("%016lx (sp=%016lx)\n", (long) ip, (long) sp);
 
+      ++num_frames;
+
       ret = unw_step (&cursor);
 #ifdef UNW_TARGET_ARM
       if (ret == -UNW_ESTOPUNWIND)
-        return;
+        break;
 #endif
       if (ret < 0)
 	{
@@ -73,6 +75,9 @@ do_backtrace (void)
 	}
     }
   while (ret > 0);
+
+  if (num_frames < 3)
+    panic ("FAILURE: only found %d frames\n", num_frames);
 }
 
 int

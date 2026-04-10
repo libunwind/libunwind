@@ -126,6 +126,9 @@ do_backtrace (int may_print, int get_proc_name)
     }
   while (ret > 0);
 
+  if (depth < 3)
+    panic ("FAILURE: only found %d frames\n", depth);
+
   recurcount -= 1;
 }
 

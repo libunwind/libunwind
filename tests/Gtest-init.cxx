@@ -53,7 +53,7 @@ do_backtrace (void)
   unw_word_t ip, offset, file_offset;
   unw_cursor_t cursor;
   unw_context_t uc;
-  int ret, count = 0;
+  int ret, count = 0, num_frames = 0;
 
   unw_getcontext (&uc);
   unw_init_local (&cursor, &uc);
@@ -75,6 +75,8 @@ do_backtrace (void)
 
       if (++count > 32)
         panic ("FAILURE: didn't reach beginning of unwind-chain\n");
+
+      ++num_frames;
     }
   while ((ret = unw_step (&cursor)) > 0);
 
@@ -85,6 +87,9 @@ do_backtrace (void)
 
   if (ret < 0)
     panic ("FAILURE: unw_step() returned %d\n", ret);
+
+  if (num_frames < 3)
+    panic ("FAILURE: only found %d frames\n", num_frames);
 }
 
 static void

@@ -182,6 +182,11 @@ do_backtrace (void)
       printf ("FAILURE: unw_step() returned %d for ip=%#010lx\n", ret, (long) ip);
       ++num_errors;
     }
+  if (unw_step_depth < 3)
+    {
+      printf ("FAILURE: only found %zu frames\n", unw_step_depth);
+      ++num_errors;
+    }
   dump_backtrace(unw_step_depth, TEST_UNW_STEP);
 
   /*
@@ -247,6 +252,11 @@ do_backtrace_with_context(void *context)
     {
       unw_get_reg (&cursor, UNW_REG_IP, &ip);
       printf ("FAILURE: unw_step() returned %d for ip=%#010lx\n", ret, (long) ip);
+      ++num_errors;
+    }
+  if (unw_step_depth < 3)
+    {
+      printf ("FAILURE: only found %d frames\n", unw_step_depth);
       ++num_errors;
     }
   dump_backtrace(unw_step_depth, TEST_UNW_STEP);
