@@ -156,11 +156,26 @@ unw_tdep_proc_info_t;
 /* There is no getcontext() on MIPS.  Use a stub version which only saves GP
    registers.  FIXME: Not ideal, may not be sufficient for all libunwind
    use cases.  */
-#define unw_tdep_getcontext UNW_ARCH_OBJ(getcontext)
-extern int unw_tdep_getcontext (ucontext_t *uc);
+extern int UNW_ARCH_OBJ(getcontext) (ucontext_t *uc);
 
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);
+
+/* On MIPS, GP ($28) is set up in each function's prologue from $25 (t9).
+   When getcontext is called across a shared library boundary with lazy PLT
+   binding, the dynamic linker's PLT resolver trashes GP before getcontext
+   can save it.  This inline wrapper captures GP before the cross-module
+   call and fixes up the saved value afterward.  */
+static inline int
+unw_tdep_getcontext (ucontext_t *uc)
+{
+    unsigned long saved_gp;
+    int ret;
+    __asm__ __volatile__ ("move %0, $28" : "=r" (saved_gp));
+    ret = UNW_ARCH_OBJ(getcontext) (uc);
+    uc->uc_mcontext.gregs[28] = saved_gp;
+    return ret;
+}
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }
