@@ -110,7 +110,7 @@ static int
 access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
             void *arg)
 {
-  unw_word_t *addr;
+  void *addr;
   ucontext_t *uc = arg;
 
   if (unw_is_fpreg (reg))
@@ -120,14 +120,17 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
   if (!(addr = uc_addr (uc, reg)))
     goto badreg;
 
+  /* uc_addr() returns a pointer to a 64-bit greg_t slot, even on O32 where
+     registers are 32 bits.  Read/write the full 64-bit value with sign
+     extension so setcontext() restores the correct value.  */
   if (write)
     {
-      *(unw_word_t *) (intptr_t) addr = (mips_reg_t) *val;
+      *(unsigned long long *) addr = (long long) (mips_reg_t) *val;
       Debug (12, "%s <- %llx\n", unw_regname (reg), (long long) *val);
     }
   else
     {
-      *val = (mips_reg_t) *(unw_word_t *) (intptr_t) addr;
+      *val = (mips_reg_t) *(unsigned long long *) addr;
       Debug (12, "%s -> %llx\n", unw_regname (reg), (long long) *val);
     }
   return 0;
