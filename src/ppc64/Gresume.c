@@ -28,17 +28,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <stdlib.h>
 
 #include "unwind_i.h"
+#include "ucontext_i.h"
 
 #ifndef UNW_REMOTE_ONLY
-
-/* sigreturn() is a no-op on x86_64 glibc.  */
-
-static NORETURN inline long
-my_rt_sigreturn (void *new_sp)
-{
-  /* XXX: empty stub.  */
-  abort ();
-}
 
 HIDDEN inline int
 ppc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
@@ -48,8 +40,47 @@ ppc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (unlikely (c->sigcontext_format != PPC_SCF_NONE))
     {
-      my_rt_sigreturn(cursor);
-      abort();
+      /* The cursor has been stepped through a signal frame.  Copy the
+         cursor's register state from the handler's ucontext (where
+         establish_machine_state deposited it) into the signal frame's
+         ucontext, then use setcontext to resume.
+
+         We use setcontext on the signal frame's ucontext rather than
+         rt_sigreturn because:
+         1. The signal frame's ucontext has the correct MSR (set by the
+            kernel).  The handler's ucontext from getcontext() has MSR=0
+            because reading MSR is privileged.
+         2. The signal frame's ucontext has the correct signal mask from
+            before signal delivery.
+         3. The signal frame's ucontext has valid metadata fields (regs
+            pointer, v_regs pointer) that setcontext may need.
+
+         We only copy the register fields that establish_machine_state
+         set (GPRs, FPRs, NIP, LR, CTR, CR, XER), preserving the
+         signal frame's MSR, ORIG_R3, and other kernel-internal fields
+         in the gp_regs array.  */
+      ucontext_t *sig_uc = (ucontext_t *) c->sigcontext_addr;
+      int i;
+
+      Debug (8, "resuming at ip=%llx via setcontext(%p)\n",
+             (unsigned long long) c->dwarf.ip, sig_uc);
+
+      /* Copy GPR0-GPR31 */
+      for (i = 0; i < 32; i++)
+        sig_uc->uc_mcontext.gp_regs[i] = uc->uc_mcontext.gp_regs[i];
+
+      /* Copy NIP, skip MSR and ORIG_R3, copy CTR, LR, XER, CCR */
+      sig_uc->uc_mcontext.gp_regs[NIP_IDX] = uc->uc_mcontext.gp_regs[NIP_IDX];
+      sig_uc->uc_mcontext.gp_regs[CTR_IDX] = uc->uc_mcontext.gp_regs[CTR_IDX];
+      sig_uc->uc_mcontext.gp_regs[LINK_IDX] = uc->uc_mcontext.gp_regs[LINK_IDX];
+      sig_uc->uc_mcontext.gp_regs[XER_IDX] = uc->uc_mcontext.gp_regs[XER_IDX];
+      sig_uc->uc_mcontext.gp_regs[CCR_IDX] = uc->uc_mcontext.gp_regs[CCR_IDX];
+
+      /* Copy FPRs */
+      memcpy (&sig_uc->uc_mcontext.fp_regs, &uc->uc_mcontext.fp_regs,
+              sizeof (sig_uc->uc_mcontext.fp_regs));
+
+      setcontext (sig_uc);
     }
   else
     {
