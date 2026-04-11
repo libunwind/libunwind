@@ -191,6 +191,14 @@ unw_step (unw_cursor_t * cursor)
 
   Debug (1, "(cursor=%p, ip=0x%016lx)\n", c, (unsigned long) c->dwarf.ip);
 
+  /* Check for signal frame before trying DWARF-based unwinding.
+     This ensures sigcontext_format and sigcontext_addr are always set
+     when stepping through a signal trampoline, even when DWARF CFI
+     covers the trampoline.  unw_resume needs these to resume via
+     rt_sigreturn instead of setcontext().  */
+  if (unlikely (unw_is_signal_frame (cursor) > 0))
+    goto signal_frame;
+
   /* Try DWARF-based unwinding... */
 
   c->dwarf.as->validate = 1;
@@ -205,10 +213,8 @@ unw_step (unw_cursor_t * cursor)
 
   if (unlikely (ret < 0))
     {
-      if (likely (unw_is_signal_frame (cursor) <= 0))
-        {
-          /* DWARF failed. */
-          if (_is_plt_entry (&c->dwarf))
+      /* DWARF failed. */
+      if (_is_plt_entry (&c->dwarf))
             {
               Debug (2, "found plt entry\n");
 
@@ -298,20 +304,23 @@ unw_step (unw_cursor_t * cursor)
               for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
                 c->dwarf.loc[i] = DWARF_NULL_LOC;
             }
-        }
-      else
-        {
-          /* Find the sigcontext record by taking the CFA and adjusting by
-             the dummy signal frame size.
+    }
 
-             Note that there isn't any way to determined if SA_SIGINFO was
-             set in the sa_flags parameter to sigaction when the signal
-             handler was established.  If it was not set, the ucontext
-             record is not required to be on the stack, in which case the
-             following code will likely cause a seg fault or other crash
-             condition.  */
+  goto step_done;
 
-          unw_word_t ucontext = c->dwarf.cfa + __SIGNAL_FRAMESIZE;
+signal_frame:
+    {
+      /* Find the sigcontext record by taking the CFA and adjusting by
+         the dummy signal frame size.
+
+         Note that there isn't any way to determined if SA_SIGINFO was
+         set in the sa_flags parameter to sigaction when the signal
+         handler was established.  If it was not set, the ucontext
+         record is not required to be on the stack, in which case the
+         following code will likely cause a seg fault or other crash
+         condition.  */
+
+      unw_word_t ucontext = c->dwarf.cfa + __SIGNAL_FRAMESIZE;
 
           Debug (1, "signal frame, skip over trampoline\n");
 
@@ -614,10 +623,10 @@ unw_step (unw_cursor_t * cursor)
               c->dwarf.loc[UNW_PPC64_VRSAVE] = DWARF_NULL_LOC;
               c->dwarf.loc[UNW_PPC64_VSCR] = DWARF_NULL_LOC;
             }
-          ret = 1;
-        }
+      ret = 1;
     }
 
+step_done:
   if (c->dwarf.ip == 0)
     {
       /* Unless the cursor or stack is corrupt or uninitialized,
