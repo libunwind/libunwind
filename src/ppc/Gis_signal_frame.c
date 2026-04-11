@@ -74,5 +74,13 @@ unw_is_signal_frame (unw_cursor_t * cursor)
       i2 = w1 & 0xffffffffUL;
     }
 
-  return (i0 == 0x38210080 && i1 == 0x380000ac && i2 == 0x44000002);
+  /* Standard RT signal trampoline (__NR_rt_sigreturn = 172):
+       addi r1, r1, 128  (0x38210080)
+       li r0, 172        (0x380000ac)
+       sc                (0x44000002)
+
+     Some trampolines (e.g. QEMU user-mode) omit the addi and start
+     directly at the li instruction, so check for that pattern too.  */
+  return (i0 == 0x38210080 && i1 == 0x380000ac && i2 == 0x44000002)
+      || (i0 == 0x380000ac && i1 == 0x44000002);
 }
