@@ -36,13 +36,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    /usr/src/linux-2.6.18-1.8/arch/powerpc/kernel/ppc32.h
 */
 
-//#define NIP_IDX               32
-#define CTR_IDX         32
-#define XER_IDX         33
-#define CCR_IDX         34
-#define MSR_IDX         35
-//#define MQ_IDX                36
+#define NIP_IDX         32
+#define MSR_IDX         33
+/* 34 is ORIG_GPR3 */
+#define CTR_IDX         35
 #define LINK_IDX        36
+#define XER_IDX         37
+#define CCR_IDX         38
+/* 39 is MQ */
 
 #ifdef __GLIBC__
 #define _UC_MCONTEXT_GPR(x) ( ((void *)&dmy_ctxt.uc_mcontext.uc_regs->gregs[x] - (void *)&dmy_ctxt) )
