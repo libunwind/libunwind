@@ -31,7 +31,7 @@ int
 unw_is_signal_frame (unw_cursor_t * cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  unw_word_t w0, w1, i0, i1, i2, ip;
+  unw_word_t i0, i1, i2, ip;
   unw_addr_space_t as;
   unw_accessors_t *a;
   void *arg;
@@ -42,7 +42,7 @@ unw_is_signal_frame (unw_cursor_t * cursor)
   arg = c->dwarf.as_arg;
 
   /* Check if return address points at sigreturn sequence.
-     on ppc64 Linux that is (see libc.so):
+     on ppc Linux that is (see libc.so):
      0x38210080  addi r1, r1, 128  // pop the stack
      0x380000ac  li r0, 172        // invoke system service 172
      0x44000002  sc
@@ -52,27 +52,38 @@ unw_is_signal_frame (unw_cursor_t * cursor)
   if (ip == 0)
     return 0;
 
-  /* Read up two 8-byte words at the IP.  We are only looking at 3
-     consecutive 32-bit words, so the second 8-byte word needs to be
-     shifted right by 32 bits (think big-endian) */
+  /* Read three consecutive 32-bit instructions at the IP.
+     On ppc64, access_mem reads 8 bytes, so we extract the two 32-bit
+     halves.  On ppc32, access_mem reads 4 bytes directly.  */
 
   a = unw_get_accessors_int (as);
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
-    return 0;
 
-  if (tdep_big_endian (as))
-    {
-      i0 = w0 >> 32;
-      i1 = w0 & 0xffffffffUL;
-      i2 = w1 >> 32;
-    }
-  else
-    {
-      i0 = w0 & 0xffffffffUL;
-      i1 = w0 >> 32;
-      i2 = w1 & 0xffffffffUL;
-    }
+#if __WORDSIZE == 64
+  {
+    unw_word_t w0, w1;
+    if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
+        || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0)
+      return 0;
+
+    if (tdep_big_endian (as))
+      {
+        i0 = w0 >> 32;
+        i1 = w0 & 0xffffffffUL;
+        i2 = w1 >> 32;
+      }
+    else
+      {
+        i0 = w0 & 0xffffffffUL;
+        i1 = w0 >> 32;
+        i2 = w1 & 0xffffffffUL;
+      }
+  }
+#else
+  if ((ret = (*a->access_mem) (as, ip, &i0, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 4, &i1, 0, arg)) < 0
+      || (ret = (*a->access_mem) (as, ip + 8, &i2, 0, arg)) < 0)
+    return 0;
+#endif
 
   /* Standard RT signal trampoline (__NR_rt_sigreturn = 172):
        addi r1, r1, 128  (0x38210080)
