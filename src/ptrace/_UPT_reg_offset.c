@@ -469,7 +469,7 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     UNW_FP_OFF(b, 31)
 
 #define UNW_PPC32_REGS \
-    [UNW_PPC32_FPSCR] = UNW_PPC_PT(FPSCR), \
+    [UNW_PPC32_NIP] = UNW_PPC_PT(NIP), \
     [UNW_PPC32_CCR] = UNW_PPC_PT(CCR)
 
 #define UNW_VR_OFF(i)   \

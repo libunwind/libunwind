@@ -62,12 +62,6 @@ static const char *regname[] =
     [UNW_PPC32_R30]="GPR30",
     [UNW_PPC32_R31]="GPR31",
 
-    [UNW_PPC32_CTR]="CTR",
-    [UNW_PPC32_XER]="XER",
-    [UNW_PPC32_CCR]="CCR",
-    [UNW_PPC32_LR]="LR",
-    [UNW_PPC32_FPSCR]="FPSCR",
-
     [UNW_PPC32_F0]="FPR0",
     [UNW_PPC32_F1]="FPR1",
     [UNW_PPC32_F2]="FPR2",
@@ -99,7 +93,16 @@ static const char *regname[] =
     [UNW_PPC32_F28]="FPR28",
     [UNW_PPC32_F29]="FPR29",
     [UNW_PPC32_F30]="FPR30",
-    [UNW_PPC32_F31]="FPR31"
+    [UNW_PPC32_F31]="FPR31",
+
+    [UNW_PPC32_LR]="LR",
+    [UNW_PPC32_CTR]="CTR",
+
+    [UNW_PPC32_CCR]="CCR",
+
+    [UNW_PPC32_XER]="XER",
+
+    [UNW_PPC32_NIP]="NIP"
 };
 
 const char *
