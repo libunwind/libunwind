@@ -42,13 +42,14 @@ common_init_ppc32 (struct cursor *c, unsigned use_prev_instr)
     c->dwarf.loc[i] = DWARF_FPREG_LOC (&c->dwarf, i);
   }
 
-  c->dwarf.loc[UNW_PPC32_CTR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_CTR);
-  c->dwarf.loc[UNW_PPC32_XER] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_XER);
-  c->dwarf.loc[UNW_PPC32_CCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_CCR);
   c->dwarf.loc[UNW_PPC32_LR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_LR);
-  c->dwarf.loc[UNW_PPC32_FPSCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_FPSCR);
+  c->dwarf.loc[UNW_PPC32_CTR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_CTR);
+  c->dwarf.loc[UNW_PPC32_CCR] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_CCR);
+  c->dwarf.loc[UNW_PPC32_XER] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_XER);
 
-  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_PPC32_LR], &c->dwarf.ip);
+  c->dwarf.loc[UNW_PPC32_NIP] = DWARF_REG_LOC (&c->dwarf, UNW_PPC32_NIP);
+
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_PPC32_NIP], &c->dwarf.ip);
   if (ret < 0)
     return ret;
 

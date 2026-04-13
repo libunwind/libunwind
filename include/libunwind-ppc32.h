@@ -56,10 +56,8 @@ extern "C" {
  * relatively cheap and unwind-state copying is relatively rare, so we want
  * to err on making it rather too big than too small.
  *
- * To simplify this whole process, we are at least initially taking the
- * tack that UNW_PPC32_* map straight across to the .eh_frame column register
- * numbers.  These register numbers come from gcc's source in
- * gcc/config/rs6000/rs6000.h
+ * UNW_PPC32_* register numbers match the DWARF register numbers used by
+ * GCC in .eh_frame data (see gcc/config/rs6000/rs6000.h).
  *
  * UNW_TDEP_CURSOR_LEN is in terms of unw_word_t size.  Since we have 115
  * elements in the loc array, each sized 2 * unw_word_t, plus the rest of
@@ -116,22 +114,7 @@ typedef enum
     UNW_PPC32_R30,
     UNW_PPC32_R31, /* called HARD_FRAME_POINTER in gcc */
 
-    /* Count Register */
-    UNW_PPC32_CTR = 32,
-    /* Fixed-Point Status and Control Register */
-    UNW_PPC32_XER = 33,
-    /* Condition Register */
-    UNW_PPC32_CCR = 34,
-    /* Machine State Register */
-    //UNW_PPC32_MSR = 35,
-    /* MQ or SPR0, not part of generic Power, part of MPC601 */
-    //UNW_PPC32_MQ = 36,
-    /* Link Register */
-    UNW_PPC32_LR = 36,
-    /* Floating Pointer Status and Control Register */
-    UNW_PPC32_FPSCR = 37,
-
-    UNW_PPC32_F0 = 48,
+    UNW_PPC32_F0 = 32,
     UNW_PPC32_F1,
     UNW_PPC32_F2,
     UNW_PPC32_F3,
@@ -163,10 +146,26 @@ typedef enum
     UNW_PPC32_F29,
     UNW_PPC32_F30,
     UNW_PPC32_F31,
+    /* Note that there doesn't appear to be an .eh_frame register column
+       for the FPSCR register.  I don't know why this is.  Since .eh_frame
+       info is what this implementation uses for unwinding, we have no way
+       to unwind this register, and so we will not expose an FPSCR register
+       number in the libunwind API.
+     */
 
-    UNW_TDEP_LAST_REG = UNW_PPC32_F31,
+    UNW_PPC32_LR = 65,
+    UNW_PPC32_CTR = 66,
 
-    UNW_TDEP_IP = UNW_PPC32_LR,
+    UNW_PPC32_CCR = 68,
+
+    UNW_PPC32_XER = 76,
+
+    /* frame info (read-only) */
+    UNW_PPC32_NIP = 77,
+
+    UNW_TDEP_LAST_REG = UNW_PPC32_NIP,
+
+    UNW_TDEP_IP = UNW_PPC32_NIP,
     UNW_TDEP_SP = UNW_PPC32_R1,
     UNW_TDEP_EH = UNW_PPC32_R12
   }
