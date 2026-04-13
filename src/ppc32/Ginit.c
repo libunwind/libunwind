@@ -76,6 +76,9 @@ uc_addr (ucontext_t *uc, int reg)
 
       switch (reg)
         {
+        case UNW_PPC32_NIP:
+          gregs_idx = NIP_IDX;
+          break;
         case UNW_PPC32_CTR:
           gregs_idx = CTR_IDX;
           break;
