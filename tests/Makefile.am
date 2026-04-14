@@ -137,10 +137,6 @@ if ENABLE_UNW_RESUME_TESTS
 check_PROGRAMS_cdep += Gtest-exc Ltest-exc \
                        Gtest-resume-sig Ltest-resume-sig \
                        Gtest-resume-sig-rt Ltest-resume-sig-rt
-if ARCH_PPC32
-  # https://github.com/libunwind/libunwind/issues/559
-  XFAIL_TESTS += Gtest-exc Ltest-exc
-endif #ARCH_PPC32
 endif
 
 if BUILD_PTRACE

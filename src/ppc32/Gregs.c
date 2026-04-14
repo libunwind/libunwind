@@ -35,7 +35,45 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 
   switch (reg)
     {
-    case UNW_TDEP_IP:
+    case UNW_PPC32_R0:
+    case UNW_PPC32_R2:
+    case UNW_PPC32_R3:
+    case UNW_PPC32_R4:
+    case UNW_PPC32_R5:
+    case UNW_PPC32_R6:
+    case UNW_PPC32_R7:
+    case UNW_PPC32_R8:
+    case UNW_PPC32_R9:
+    case UNW_PPC32_R10:
+    case UNW_PPC32_R11:
+    case UNW_PPC32_R12:
+    case UNW_PPC32_R13:
+    case UNW_PPC32_R14:
+    case UNW_PPC32_R15:
+    case UNW_PPC32_R16:
+    case UNW_PPC32_R17:
+    case UNW_PPC32_R18:
+    case UNW_PPC32_R19:
+    case UNW_PPC32_R20:
+    case UNW_PPC32_R21:
+    case UNW_PPC32_R22:
+    case UNW_PPC32_R23:
+    case UNW_PPC32_R24:
+    case UNW_PPC32_R25:
+    case UNW_PPC32_R26:
+    case UNW_PPC32_R27:
+    case UNW_PPC32_R28:
+    case UNW_PPC32_R29:
+    case UNW_PPC32_R30:
+    case UNW_PPC32_R31:
+    case UNW_PPC32_LR:
+    case UNW_PPC32_CTR:
+    case UNW_PPC32_CCR:
+    case UNW_PPC32_XER:
+      loc = c->dwarf.loc[reg];
+      break;
+
+    case UNW_TDEP_IP: /* UNW_PPC32_NIP */
       if (write)
         {
           c->dwarf.ip = *valp;  /* update the IP cache */
@@ -47,22 +85,15 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
         *valp = c->dwarf.ip;
       return 0;
 
-    case UNW_TDEP_SP:
+    case UNW_TDEP_SP: /* UNW_PPC32_R1 */
       if (write)
         return -UNW_EREADONLYREG;
       *valp = c->dwarf.cfa;
       return 0;
 
-
     default:
-      break;
+      return -UNW_EBADREG;
     }
-
-  /* make sure it's not an FP or VR register */
-  if ((((unsigned) (reg - UNW_PPC32_F0)) <= 31))
-    return -UNW_EBADREG;
-
-  loc = c->dwarf.loc[reg];
 
   if (write)
     return dwarf_put (&c->dwarf, loc, *valp);
