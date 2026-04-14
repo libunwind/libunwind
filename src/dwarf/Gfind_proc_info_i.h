@@ -23,48 +23,48 @@ struct table_entry64
 static inline const struct table_entry *
 lookup (const struct table_entry *table, size_t table_size, int32_t rel_ip)
 {
-  unsigned long table_len = table_size / sizeof (struct table_entry);
+  size_t table_len = table_size / sizeof (struct table_entry);
   const struct table_entry *e = NULL;
-  unsigned long lo, hi, mid;
+  size_t lo, hi, mid;
 
   /* do a binary search for right entry: */
   for (lo = 0, hi = table_len; lo < hi;)
     {
-      mid = (lo + hi) / 2;
+      mid = (lo + hi) / 2U;
       e = table + mid;
       Debug (15, "e->start_ip_offset = %lx\n", (long) e->start_ip_offset);
       if (rel_ip < e->start_ip_offset)
         hi = mid;
       else
-        lo = mid + 1;
+        lo = mid + 1U;
     }
   if (hi <= 0)
         return NULL;
-  e = table + hi - 1;
+  e = table + hi - 1U;
   return e;
 }
 
 static inline const struct table_entry64 *
 lookup64 (const struct table_entry64 *table, size_t table_size, int64_t rel_ip)
 {
-  unsigned long table_len = table_size / sizeof (struct table_entry64);
+  size_t table_len = table_size / sizeof (struct table_entry64);
   const struct table_entry64 *e = NULL;
-  unsigned long lo, hi, mid;
+  size_t lo, hi, mid;
 
   /* do a binary search for right entry: */
   for (lo = 0, hi = table_len; lo < hi;)
     {
-      mid = (lo + hi) / 2;
+      mid = (lo + hi) / 2U;
       e = table + mid;
       Debug (15, "e->start_ip_offset = %lx\n", (long) e->start_ip_offset);
       if (rel_ip < e->start_ip_offset)
         hi = mid;
       else
-        lo = mid + 1;
+        lo = mid + 1U;
     }
   if (hi <= 0)
         return NULL;
-  e = table + hi - 1;
+  e = table + hi - 1U;
   return e;
 }
 
