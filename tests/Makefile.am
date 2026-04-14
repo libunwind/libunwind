@@ -131,10 +131,6 @@ endif
 if !ARCH_IA64
  check_PROGRAMS_cdep += Ltest-init-local-signal
 endif
-if ARCH_PPC32
-  # https://github.com/libunwind/libunwind/issues/560
-  XFAIL_TESTS += Ltest-init-local-signal
-endif #ARCH_PPC32
 
 # Tests that exercise unw_resume, which is only unsupported on some targets
 if ENABLE_UNW_RESUME_TESTS

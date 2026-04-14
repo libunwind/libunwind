@@ -192,7 +192,22 @@ typedef ucontext_t unw_tdep_context_t;
    using the "getcontext" name just because it's using libunwind.  We
    can't just use __getcontext() either, because that isn't exported
    by glibc...  */
+#if defined(__linux__) && defined(__GLIBC__)
+/* On ppc32 Linux, glibc's getcontext() saves the NIP as an address inside
+   getcontext itself (via an internal `bcl` to read the current PC), rather
+   than the caller's return address.  That adds an extra frame to every
+   unwind, shifting results versus other architectures (e.g. x86_64) whose
+   getcontext saves the caller's return address as the instruction pointer.
+   The saved LR (gregs[36]) is the caller's return address, so overwrite
+   NIP (gregs[32]) with it to put the cursor in the caller's frame.  */
+#define unw_tdep_getcontext(uc)                                        \
+  (getcontext (uc),                                                    \
+   (uc)->uc_mcontext.uc_regs->gregs[32]                                \
+     = (uc)->uc_mcontext.uc_regs->gregs[36],                           \
+   0)
+#else
 #define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+#endif
 
 #include "libunwind-dynamic.h"
 
