@@ -104,6 +104,12 @@ vec_stack (int count)
 		      printf ("proc name = %s, offset = %lx\n",
 			      proc_name_buffer, offset);
 		    }
+		  else if (ret == -UNW_ENOINFO)
+		    {
+		      /* Some startup frames (e.g. in glibc) lack unwind info
+			 for the procedure name.  Not a test failure.  */
+		      printf ("proc name = <unknown>\n");
+		    }
 		  else
 		    {
 		      panic ("unw_get_proc_name returned %d\n", ret);
