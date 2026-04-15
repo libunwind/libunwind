@@ -50,14 +50,79 @@ typedef struct
   /* many more fields here, but they are unused by this code */
 } stack_frame_t;
 
+/* Read a single 32-bit instruction at ADDR via the accessors.  The access_mem
+   callback reads sizeof(unw_word_t) (8 bytes on ppc64) at a time and requires
+   the kernel's word alignment (PTRACE_PEEKDATA on Linux rejects misaligned
+   addresses), so we always read the containing 8-byte-aligned word and
+   extract the half we want.  */
+static int
+_read_instruction (struct dwarf_cursor *c, unw_word_t addr, uint32_t *insn)
+{
+  unw_accessors_t *a = unw_get_accessors (c->as);
+  unw_word_t aligned = addr & ~(unw_word_t) 7;
+  unw_word_t w;
+
+  if ((*a->access_mem) (c->as, aligned, &w, 0, c->as_arg) < 0)
+    return -1;
+
+  /* On BE ppc, the low-addressed 4 bytes live in the high 32 bits of the
+     8-byte word; on LE it's the opposite.  */
+  if (c->as->big_endian)
+    *insn = (addr == aligned) ? (uint32_t) (w >> 32) : (uint32_t) w;
+  else
+    *insn = (addr == aligned) ? (uint32_t) w : (uint32_t) (w >> 32);
+  return 0;
+}
+
+/* Recognise BE ELFv1 PLT call stubs, e.g.:
+      std   r2, 40(r1)
+      addis r11, r2, X
+      ld    r12, X(r11)
+      mtctr r12
+      ld    r2, X(r11)
+      bctr
+   IP may be anywhere inside the 24-byte stub.  */
+static int
+_is_plt_entry_elfv1 (struct dwarf_cursor *c)
+{
+  static const struct { uint32_t pattern, mask; } insns[6] =
+    {
+      {0xf8410028, 0xffffffff},  /* std   r2, 40(r1)  */
+      {0x3d620000, 0xffff0000},  /* addis r11, r2, X  */
+      {0xe98b0000, 0xffff0000},  /* ld    r12, X(r11) */
+      {0x7d8903a6, 0xffffffff},  /* mtctr r12         */
+      {0xe84b0000, 0xffff0000},  /* ld    r2, X(r11)  */
+      {0x4e800420, 0xffffffff},  /* bctr              */
+    };
+  int offset;
+
+  for (offset = 0; offset < 6; ++offset)
+    {
+      unw_word_t start = c->ip - (unw_word_t) (offset * 4);
+      int i, ok = 1;
+
+      for (i = 0; i < 6; ++i)
+        {
+          uint32_t insn;
+          if (_read_instruction (c, start + i * 4, &insn) < 0
+              || (insn & insns[i].mask) != insns[i].pattern)
+            {
+              ok = 0;
+              break;
+            }
+        }
+      if (ok)
+        return 1;
+    }
+  return 0;
+}
+
 //! Recognise PLT entries
 /*! For example:
    0x000000001000d1f0 <+0>:     18 00 41 f8     std     r2,24(r1)
    0x000000001000d1f4 <+4>:     30 87 82 e9     ld      r12,-30928(r2)
    0x000000001000d1f8 <+8>:     a6 03 89 7d     mtctr   r12
    0x000000001000d1fc <+12>:    20 04 80 4e     bctr
-
-  \note The current implementation only supports little endian modes.
 */
 static int
 _is_plt_entry (struct dwarf_cursor *c)
@@ -66,9 +131,7 @@ _is_plt_entry (struct dwarf_cursor *c)
   unw_accessors_t *a;
 
   if (c->as->big_endian)
-    {
-      return 0;
-    }
+    return _is_plt_entry_elfv1 (c);
 
   /*
     A PLT (Procedure Linkage Table) is used by the dynamic linker to map the
