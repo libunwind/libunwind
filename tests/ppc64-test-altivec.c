@@ -116,6 +116,7 @@ vec_stack (int count)
 	    }
 	  while (ret > 0);
 	}
+      return vec_init ();
     }
 
   v1 = vec_init ();
