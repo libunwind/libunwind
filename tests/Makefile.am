@@ -35,6 +35,7 @@ AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_CET_CFLAGS) \
               -I$(top_srcdir)/include -I$(top_srcdir)/include/tdep-$(arch) -I$(top_srcdir)/src
 AM_CFLAGS = $(UNW_EXTRA_CFLAGS) -g -fno-optimize-sibling-calls
+AM_CXXFLAGS = $(UNW_EXTRA_CFLAGS) -g -fno-optimize-sibling-calls
 
 AM_LDFLAGS = $(LD_FLAGS_UNW_CET)
 
