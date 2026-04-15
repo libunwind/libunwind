@@ -38,7 +38,12 @@ vec_stack (int count)
   register vector signed int v8;
   register vector signed int v9;
 
-  unw_fpreg_t vr;
+  /* Vector registers are 16 bytes on ppc64.  Although unw_get_fpreg()
+     takes an unw_fpreg_t* (8 bytes on ppc64), the library writes the
+     full 16-byte register into the buffer when reading a V register
+     that was saved to memory (DWARF MEM_LOC path), so the caller must
+     provide a 16-byte buffer.  Use unw_tdep_vreg_t for that. */
+  unw_tdep_vreg_t vr;
 
   unw_cursor_t cursor;
   unw_word_t ip, sp;
@@ -69,7 +74,7 @@ vec_stack (int count)
 		  panic ("FAILURE: unw_get_reg returned %d for UNW_REG_SP\n",
 			 ret);
 		}
-	      if ((ret = unw_get_fpreg (&cursor, UNW_PPC64_V30, &vr)) < 0)
+	      if ((ret = unw_get_fpreg (&cursor, UNW_PPC64_V30, (unw_fpreg_t *)&vr)) < 0)
 		{
 		  panic
 		    ("FAILURE: unw_get_vreg returned %d for UNW_PPC64_V30\n",
