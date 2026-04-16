@@ -168,10 +168,6 @@ endif
 if SUPPORT_CXX_EXCEPTIONS
  check_PROGRAMS_cdep += Ltest-cxx-exceptions
 endif
-if ARCH_PPC32
-  # https://github.com/libunwind/libunwind/issues/561
-  XFAIL_TESTS += Ltest-cxx-exceptions
-endif
 
 if ARCH_IA64
  check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
