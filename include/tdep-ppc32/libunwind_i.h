@@ -73,7 +73,8 @@ struct cursor
   enum
   {
     PPC_SCF_NONE,               /* no signal frame encountered */
-    PPC_SCF_LINUX_RT_SIGFRAME   /* POSIX ucontext_t */
+    PPC_SCF_LINUX_RT_SIGFRAME,  /* POSIX ucontext_t */
+    PPC_SCF_LINUX_SIGFRAME      /* legacy non-RT struct sigcontext */
   }
   sigcontext_format;
   unw_word_t sigcontext_addr;

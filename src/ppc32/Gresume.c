@@ -41,6 +41,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define _UCONTEXT_UC_REGS(uc) (uc)->uc_regs
 #endif
 
+/* Offset of oldmask within struct sigcontext (see Gstep.c).  */
+#define SIGCONTEXT_OLDMASK  24
+
 HIDDEN inline int
 ppc32_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
@@ -91,6 +94,48 @@ ppc32_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       sigprocmask (SIG_SETMASK, &sig_uc->uc_sigmask, NULL);
 
       setcontext (sig_uc);
+    }
+  else if (unlikely (c->sigcontext_format == PPC_SCF_LINUX_SIGFRAME))
+    {
+      /* Non-RT (legacy) signal frame.  There is no ucontext_t here --
+         just a struct sigcontext with an oldmask field holding the
+         pre-handler signal mask (low 32 bits) and a pointer to a
+         struct pt_regs with the saved register state.
+
+         Restore the signal mask from oldmask so pending signals that
+         were blocked by the handler can be delivered after resume,
+         then setcontext() on the handler's ucontext (which has been
+         populated by establish_machine_state with the cursor's
+         register state, including the target IP).  */
+      unw_word_t sigcontext = c->sigcontext_addr;
+      unw_word_t oldmask = 0;
+      sigset_t mask;
+      unw_addr_space_t as_local = c->dwarf.as;
+      unw_accessors_t *a = unw_get_accessors_int (as_local);
+      void *arg_local = c->dwarf.as_arg;
+      int ret;
+
+      ret = (*a->access_mem) (as_local, sigcontext + SIGCONTEXT_OLDMASK,
+                              &oldmask, 0, arg_local);
+
+      Debug (8, "resuming at ip=%lx via setcontext(), oldmask=%lx\n",
+             (unsigned long) c->dwarf.ip, (unsigned long) oldmask);
+
+      if (ret >= 0)
+        {
+          sigemptyset (&mask);
+          memcpy (&mask, &oldmask, sizeof (oldmask));
+          sigprocmask (SIG_SETMASK, &mask, NULL);
+        }
+      else
+        {
+          /* Leave the handler's current mask in place rather than
+             silently unblocking signals by applying oldmask=0.  */
+          Debug (2, "failed to read oldmask from sigcontext (%d); "
+                    "keeping handler's signal mask\n", ret);
+        }
+
+      setcontext (uc);
     }
   else
     {

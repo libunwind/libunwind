@@ -90,8 +90,27 @@ unw_is_signal_frame (unw_cursor_t * cursor)
        li r0, 172        (0x380000ac)
        sc                (0x44000002)
 
+     Standard non-RT signal trampoline (__NR_sigreturn = 119), used on
+     ppc32 when sigaction is called without SA_SIGINFO:
+       addi r1, r1, 64   (0x38210040)
+       li r0, 119        (0x38000077)
+       sc                (0x44000002)
+
      Some trampolines (e.g. QEMU user-mode) omit the addi and start
-     directly at the li instruction, so check for that pattern too.  */
-  return (i0 == 0x38210080 && i1 == 0x380000ac && i2 == 0x44000002)
-      || (i0 == 0x380000ac && i1 == 0x44000002);
+     directly at the li instruction, so check for that pattern too.
+
+     Returns 1 for an RT trampoline, 2 for a non-RT trampoline, 0 for
+     no match.  Callers that only need a yes/no answer can treat any
+     non-zero return as "yes".  */
+  if ((i0 == 0x38210080 && i1 == 0x380000ac && i2 == 0x44000002)
+      || (i0 == 0x380000ac && i1 == 0x44000002))
+    return 1;
+#if __WORDSIZE == 32
+  /* ppc64 has no legacy __NR_sigreturn path, so only recognize this on
+     ppc32 to avoid any chance of mismatching unrelated code there.  */
+  if ((i0 == 0x38210040 && i1 == 0x38000077 && i2 == 0x44000002)
+      || (i0 == 0x38000077 && i1 == 0x44000002))
+    return 2;
+#endif
+  return 0;
 }
