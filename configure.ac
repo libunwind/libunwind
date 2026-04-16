@@ -88,15 +88,6 @@ dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore pipe2 sigaltstack execvpe)
 
-AC_MSG_CHECKING([if building with AltiVec])
-AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
-#ifndef __ALTIVEC__
-# error choke
-#endif
-]])], [use_altivec=yes],[use_altivec=no])
-AM_CONDITIONAL(USE_ALTIVEC, [test x$use_altivec = xyes])
-AC_MSG_RESULT([$use_altivec])
-
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #ifndef __powerpc64__
 # error choke

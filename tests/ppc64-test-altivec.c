@@ -9,6 +9,10 @@
 
 #include <sys/resource.h>
 
+#if defined(__linux__)
+# include <sys/auxv.h>
+#endif
+
 #define panic(args...)	{ fprintf (stderr, args);  abort(); }
 
 extern vector signed int vec_init ();
@@ -16,9 +20,29 @@ extern void vec_print (vector signed int v);
 
 vector signed int vec_stack (int count);
 
+/* Probe for AltiVec support at runtime.  The test is compiled with
+   -maltivec unconditionally, so we must avoid executing any AltiVec
+   instruction on a CPU that lacks the feature -- otherwise SIGILL.  */
+static int
+altivec_is_available (void)
+{
+#if defined(__linux__) && defined(AT_HWCAP) && defined(PPC_FEATURE_HAS_ALTIVEC)
+  return (getauxval (AT_HWCAP) & PPC_FEATURE_HAS_ALTIVEC) != 0;
+#else
+  /* No reliable runtime probe; assume present and let the kernel SIGILL
+     us if not.  */
+  return 1;
+#endif
+}
+
 int
 main ()
 {
+  if (!altivec_is_available ())
+    {
+      fprintf (stderr, "AltiVec not available on this CPU; skipping.\n");
+      return 77;
+    }
   printf ("&vec_stack = %016lx\n", (unsigned long) vec_stack);
   vec_stack (3);
   return 0;
