@@ -257,7 +257,28 @@ typedef ucontext_t unw_tdep_context_t;
    using the "getcontext" name just because it's using libunwind.  We
    can't just use __getcontext() either, because that isn't exported
    by glibc...  */
+#if defined(__linux__) && defined(__GLIBC__)
+/* On ppc64 Linux, glibc's getcontext() saves r2 (the TOC pointer) as
+   the value at the time of the syscall -- which is libc's TOC, not
+   the caller's TOC.  unw_resume restores r2 from the saved context;
+   if it holds libc's value, code resumed in any other module loads
+   garbage from r2-relative offsets and crashes.
+
+   The compiler emits the standard ELFv1/ELFv2 PLT-call sequence
+   around our getcontext call (`std r2, N(r1)` before, `ld r2, N(r1)`
+   after), so by the time the asm below runs r2 has been restored to
+   the caller's TOC.  Capture it directly into the saved register
+   file so unw_resume sees the correct value.  */
+#define unw_tdep_getcontext(uc) __extension__                                \
+  ({                                                                         \
+     getcontext (uc);                                                        \
+     __asm__ __volatile__ ("std 2,%0"                                        \
+                           : "=m" ((uc)->uc_mcontext.gp_regs[2]));           \
+     0;                                                                      \
+   })
+#else
 #define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+#endif
 
 #include "libunwind-dynamic.h"
 
