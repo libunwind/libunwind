@@ -126,12 +126,14 @@ dwarf_getvr (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t * val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  assert (DWARF_IS_V_LOC (loc));
-  assert (!DWARF_IS_FP_LOC (loc));
-
   if (DWARF_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
-                                      val, 0, c->as_arg);
+    {
+      if (DWARF_IS_V_LOC (loc) || DWARF_IS_FP_LOC (loc))
+        return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
+                                           val, 0, c->as_arg);
+      return (*c->as->acc.access_reg) (c->as, DWARF_GET_REG_LOC (loc),
+                                       valp, 0, c->as_arg);
+    }
 
   addr = DWARF_GET_MEM_LOC (loc);
 
@@ -152,12 +154,14 @@ dwarf_putvr (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  assert (DWARF_IS_V_LOC (loc));
-  assert (!DWARF_IS_FP_LOC (loc));
-
   if (DWARF_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
-                                      &val, 1, c->as_arg);
+    {
+      if (DWARF_IS_V_LOC (loc) || DWARF_IS_FP_LOC (loc))
+        return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
+                                           &val, 1, c->as_arg);
+      return (*c->as->acc.access_reg) (c->as, DWARF_GET_REG_LOC (loc),
+                                       valp, 1, c->as_arg);
+    }
 
   addr = DWARF_GET_MEM_LOC (loc);
   if ((ret = (*c->as->acc.access_mem) (c->as, addr + 0, valp,
@@ -176,16 +180,17 @@ dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t * val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  assert (DWARF_IS_FP_LOC (loc));
-  assert (!DWARF_IS_V_LOC (loc));
-
   if (DWARF_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
-                                       val, 0, c->as_arg);
+    {
+      if (DWARF_IS_FP_LOC (loc))
+        return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
+                                           val, 0, c->as_arg);
+      return (*c->as->acc.access_reg) (c->as, DWARF_GET_REG_LOC (loc),
+                                       valp, 0, c->as_arg);
+    }
 
   addr = DWARF_GET_MEM_LOC (loc);
   return (*c->as->acc.access_mem) (c->as, addr + 0, valp, 0, c->as_arg);
-
 }
 
 static inline int
@@ -197,15 +202,16 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
   if (DWARF_IS_NULL_LOC (loc))
     return -UNW_EBADREG;
 
-  assert (DWARF_IS_FP_LOC (loc));
-  assert (!DWARF_IS_V_LOC (loc));
-
   if (DWARF_IS_REG_LOC (loc))
-    return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
-                                       &val, 1, c->as_arg);
+    {
+      if (DWARF_IS_FP_LOC (loc))
+        return (*c->as->acc.access_fpreg) (c->as, DWARF_GET_REG_LOC (loc),
+                                           &val, 1, c->as_arg);
+      return (*c->as->acc.access_reg) (c->as, DWARF_GET_REG_LOC (loc),
+                                       valp, 1, c->as_arg);
+    }
 
   addr = DWARF_GET_MEM_LOC (loc);
-
   return (*c->as->acc.access_mem) (c->as, addr + 0, valp, 1, c->as_arg);
 }
 
