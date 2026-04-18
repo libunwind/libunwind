@@ -35,11 +35,9 @@ unw_address_is_valid(UNUSED unw_word_t addr, UNUSED size_t len)
 
 #else /* !UNW_REMOTE_ONLY */
 
-#include <stdatomic.h>
-
-
-static atomic_flag _unw_address_validator_initialized = ATOMIC_FLAG_INIT;
-static int _mem_validate_pipe[2] = {-1, -1};
+/* Each thread manages its own pipe so concurrent callers (including signal
+ * handlers) never race on closing or reopening another thread's fds. */
+static thread_local int _mem_validate_pipe[2] = {-1, -1};
 
 #ifdef HAVE_PIPE2
 static int
@@ -104,7 +102,7 @@ _write_validate (unw_word_t addr)
   int ret = -1;
   ssize_t bytes = 0;
 
-  if (unlikely (!atomic_flag_test_and_set(&_unw_address_validator_initialized)))
+  if (unlikely (_mem_validate_pipe[0] == -1))
     {
       if (_open_pipe () != 0)
         {
