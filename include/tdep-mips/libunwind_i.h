@@ -67,7 +67,7 @@ struct unw_addr_space
 
 #define tdep_big_endian(as)             ((as)->big_endian)
 
-struct cursor
+struct MAY_ALIAS cursor
   {
     struct dwarf_cursor dwarf;          /* must be first */
     unw_word_t sigcontext_addr;

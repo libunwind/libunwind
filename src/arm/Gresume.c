@@ -54,7 +54,7 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
       struct regs_overlay {
               char x[sizeof(regs)];
-      };
+      } MAY_ALIAS;
 
       __asm__ __volatile__ (
         "ldmia %0, {r4-r12, lr}\n"
