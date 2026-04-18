@@ -119,7 +119,7 @@ struct unw_addr_space
 #define ABI_MARKER_LINUX_SIGTRAMP       ((3 << 8) | 's')
 #define ABI_MARKER_LINUX_INTERRUPT      ((3 << 8) | 'i')
 
-struct cursor
+struct MAY_ALIAS cursor
   {
     void *as_arg;               /* argument to address-space callbacks */
     unw_addr_space_t as;        /* reference to per-address-space info */

@@ -59,7 +59,7 @@ struct unw_addr_space
 /* LoongArch64 supports only little-endian. */
 #define tdep_big_endian(as)             0
 
-struct cursor
+struct MAY_ALIAS cursor
   {
     struct dwarf_cursor dwarf;          /* must be first */
 

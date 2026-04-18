@@ -66,7 +66,7 @@ struct unw_addr_space
   int validate;
 };
 
-struct cursor
+struct MAY_ALIAS cursor
 {
   struct dwarf_cursor dwarf;    /* must be first */
 
