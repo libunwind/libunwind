@@ -148,9 +148,25 @@ unw_step (unw_cursor_t *cursor)
 #endif /* CONFIG_DEBUG_FRAME */
 
   c->validate = validate;
-  // Before trying the fallback, if any unwind info tell us to stop, do that.
+  /* CANTUNWIND means the function never modified LR (it's a leaf).
+     Use LR as the return address rather than stopping; if LR is zero
+     or unreadable then this is genuinely the end of the stack. */
   if (has_stopunwind)
-    return -UNW_ESTOPUNWIND;
+    {
+      unw_word_t lr;
+      if (dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &lr) >= 0
+          && lr != 0)
+        {
+          c->dwarf.ip = lr;
+          /* Prevent looping: if the next frame is also CANTUNWIND we must
+             stop rather than re-reading the same stale LR location. */
+          c->dwarf.loc[UNW_ARM_R14] = DWARF_NULL_LOC;
+          c->dwarf.use_prev_instr = 1;
+          c->dwarf.pi_valid = 0;
+          return 1;
+        }
+      return 0;
+    }
 
   /* Fall back on APCS frame parsing.
      Note: This won't work in case the ARM EABI is used. */
