@@ -142,7 +142,12 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
+  unw_word_t addr = DWARF_GET_LOC (loc);
+  const struct cursor *cursor = (const struct cursor *) c->as_arg;
+  if (likely (cursor != NULL) && unlikely (cursor->validate)
+      && unlikely (!unw_address_is_valid (addr, sizeof (unw_word_t))))
+    return -1;
+  *val = *(unw_word_t *) addr;
   return 0;
 }
 
