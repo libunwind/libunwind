@@ -522,7 +522,7 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
     set_reg (sr, i, DWARF_WHERE_SAME, 0);
 
-#if !defined(UNW_TARGET_ARM) && !(defined(UNW_TARGET_MIPS) && _MIPS_SIM == _ABI64) \
+#if !(defined(UNW_TARGET_MIPS) && _MIPS_SIM == _ABI64) \
     && !defined(UNW_TARGET_S390X)
   /* SP defaults to CFA. s390x excluded: CFA = R15+160, so this default gives
      caller's R15 = CFA instead of R15, breaking frameless functions like kill
