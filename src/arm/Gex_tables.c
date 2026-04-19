@@ -68,7 +68,7 @@ prel31_to_addr (unw_addr_space_t as, void *arg, unw_word_t prel31,
   if ((*as->acc.access_mem)(as, prel31, &offset, 0, arg) < 0)
     return -UNW_EINVAL;
 
-  offset = ((long)offset << 1) >> 1;
+  offset = (unw_word_t)((int32_t)(offset << 1) >> 1);
   *val = prel31 + offset;
 
   return 0;
