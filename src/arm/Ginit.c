@@ -104,7 +104,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
             void *arg)
 {
   unw_word_t *addr;
-  unw_tdep_context_t *uc = arg;
+  unw_tdep_context_t *uc = ((struct cursor *) arg)->uc;
 
   if (unw_is_fpreg (reg))
     goto badreg;
@@ -133,7 +133,7 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
               int write, void *arg)
 {
-  unw_tdep_context_t *uc = arg;
+  unw_tdep_context_t *uc = ((struct cursor *) arg)->uc;
   unw_fpreg_t *addr;
 
   if (!unw_is_fpreg (reg))
