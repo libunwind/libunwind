@@ -77,7 +77,7 @@ typedef int64_t unw_sword_t;
 # define UNW_WORD_MAX UINT64_MAX
 #endif
 
-typedef long double unw_tdep_fpreg_t;
+typedef double unw_tdep_fpreg_t;
 
 typedef enum
   {
