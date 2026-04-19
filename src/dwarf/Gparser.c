@@ -522,8 +522,11 @@ setup_fde (struct dwarf_cursor *c, dwarf_state_record_t *sr)
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS + 2; ++i)
     set_reg (sr, i, DWARF_WHERE_SAME, 0);
 
-#if !defined(UNW_TARGET_ARM) && !(defined(UNW_TARGET_MIPS) && _MIPS_SIM == _ABI64)
-  // SP defaults to CFA (but is overridable)
+#if !defined(UNW_TARGET_ARM) && !(defined(UNW_TARGET_MIPS) && _MIPS_SIM == _ABI64) \
+    && !defined(UNW_TARGET_S390X)
+  /* SP defaults to CFA. s390x excluded: CFA = R15+160, so this default gives
+     caller's R15 = CFA instead of R15, breaking frameless functions like kill
+     that never emit DW_CFA_offset for R15. */
   set_reg (sr, TDEP_DWARF_SP, DWARF_WHERE_CFA, 0);
 #endif
 
