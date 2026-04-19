@@ -209,6 +209,17 @@ _try_rbp_frame_walk(struct cursor *c)
       return ret;
     }
 
+  /* cur_rbp must be >= CFA: on x86_64, the frame pointer is always above
+     (or equal to) the stack pointer.  If it's below, it's not a real frame
+     pointer (e.g. a general-purpose register value or a fake stack address
+     inserted by sanitizers), so bail before dereferencing it. */
+  if (cur_rbp < c->dwarf.cfa)
+    {
+      Debug (1, "cur_rbp %#010lx is below CFA %#010lx, not a frame pointer\n",
+             cur_rbp, c->dwarf.cfa);
+      return -UNW_EBADFRAME;
+    }
+
   /* Get the calling frame's %rbp. */
   unw_word_t new_rbp = 0;
   ret = dwarf_get (&c->dwarf, DWARF_MEM_LOC (c, cur_rbp), &new_rbp);
