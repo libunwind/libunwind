@@ -185,8 +185,13 @@ typedef struct unw_tdep_save_loc
   }
 unw_tdep_save_loc_t;
 
-/* On ppc, we can directly use ucontext_t as the unwind context.  */
-typedef ucontext_t unw_tdep_context_t;
+/* On ppc32 Linux, glibc's getcontext() sets uc_mcontext.uc_regs to
+   uc_reg_space + ((16 - offsetof(ucontext_t, uc_reg_space) % 16) % 16),
+   a fixed offset that only lands on a 16-byte boundary when ucontext_t
+   itself is 16-byte aligned.  mcontext_t requires 16-byte alignment (it
+   contains vrregset_t __attribute__((aligned(16)))), so force the needed
+   alignment here to avoid misaligned-pointer UB on every getcontext call.  */
+typedef ucontext_t unw_tdep_context_t __attribute__((aligned(16)));
 
 /* XXX this is not ideal: an application should not be prevented from
    using the "getcontext" name just because it's using libunwind.  We
