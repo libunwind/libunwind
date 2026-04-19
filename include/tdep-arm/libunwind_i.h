@@ -96,9 +96,17 @@ struct cursor
     unw_word_t sigcontext_sp;
     unw_word_t sigcontext_pc;
     int validate;
+    unw_tdep_context_t *uc;
   };
 
 #define DWARF_GET_LOC(l)        ((l).val)
+
+static inline unw_tdep_context_t *
+dwarf_get_uc(const struct dwarf_cursor *cursor)
+{
+  const struct cursor *c = (const struct cursor *) cursor->as_arg;
+  return c->uc;
+}
 
 #ifdef UNW_LOCAL_ONLY
 # define DWARF_NULL_LOC         DWARF_LOC (0, 0)
@@ -106,10 +114,10 @@ struct cursor
 # define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r) })
 # define DWARF_IS_REG_LOC(l)    0
 # define DWARF_REG_LOC(c,r)     (DWARF_LOC((unw_word_t)                      \
-                                 tdep_uc_addr((c)->as_arg, (r)), 0))
+                                 tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
 # define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)   (DWARF_LOC((unw_word_t)                      \
-                                 tdep_uc_addr((c)->as_arg, (r)), 0))
+                                 tdep_uc_addr(dwarf_get_uc(c), (r)), 0))
 
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
