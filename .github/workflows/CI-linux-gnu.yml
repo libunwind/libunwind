@@ -54,8 +54,8 @@ jobs:
         env:
           CC: ${{ matrix.toolchain.CC }}
           CXX: ${{ matrix.toolchain.CXX }}
-          CFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -g -Wall -Wextra"
-          CXXFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -g -Wall -Wextra"
+          CFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -g -Wall -Wextra -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
+          CXXFLAGS: "${{ matrix.target.CFLAGS }} ${{ matrix.optimization.CFLAGS }} -g -Wall -Wextra -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
           LDFLAGS: ${{ matrix.target.CFLAGS }}
 
       - name: Build
@@ -153,7 +153,7 @@ jobs:
         run: |
           make -C build -j
         env:
-          CFLAGS: "-Wall -Wextra -g -Og"
+          CFLAGS: "-Wall -Wextra -g -Og -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
 
       - name: ABI Check
         run: |
