@@ -711,7 +711,8 @@ step_done:
     uint32_t toc_save = (as->abi == UNW_PPC64_ABI_ELFv2)? 24 : 40;
     int32_t inst;
 
-    if (fetch32 (as, a, &ip, &inst, arg) >= 0
+    if ((ip & 0x3) == 0
+	&& fetch32 (as, a, &ip, &inst, arg) >= 0
 	&& (uint32_t)inst == (0xE8410000U + toc_save))
       {
 	// @plt call, restoring R2 from CFA+toc_save
