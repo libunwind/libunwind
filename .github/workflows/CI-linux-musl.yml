@@ -78,5 +78,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.arch }}-linux-musl
-          path: '**/test-suite.log'
+          path: |
+            **/test-suite.log
+            **/config.log
           if-no-files-found: warn
