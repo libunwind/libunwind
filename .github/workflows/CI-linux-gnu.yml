@@ -193,3 +193,151 @@ jobs:
             **/test-suite.log
             **/config.log
           if-no-files-found: warn
+
+
+  build-gnu-native-ubsan:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20 # Anything more than about 20 minutes is likely a testsuite hang.
+    name: ${{ matrix.target.triple }} (native, asan+ubsan) ${{ matrix.toolchain.compiler }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { arch: i686,   triple: i686-pc-linux-gnu,   CFLAGS: -m32 }
+          - { arch: x86_64, triple: x86_64-pc-linux-gnu, CFLAGS:      }
+        toolchain:
+          - { compiler: gcc,   CC: gcc-14,   CXX: g++-14     }
+          - { compiler: clang, CC: clang-18, CXX: clang++-18 }
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install ${{ matrix.target.triple }} Toolchain
+        run: |
+          sudo apt update
+          sudo apt install -y g++-14-multilib abigail-tools
+
+      - name: Configure
+        run: |
+          set -x
+          autoreconf -i
+          mkdir build
+          cd build
+          ../configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }} --enable-debug
+        env:
+          CC: ${{ matrix.toolchain.CC }}
+          CXX: ${{ matrix.toolchain.CXX }}
+          CFLAGS: "${{ matrix.target.CFLAGS }} -g -Wall -Wextra -fsanitize=undefined,address -fno-sanitize-recover=all"
+          CXXFLAGS: "${{ matrix.target.CFLAGS }} -g -Wall -Wextra -fsanitize=undefined,address -fno-sanitize-recover=all"
+          LDFLAGS: "${{ matrix.target.CFLAGS }} -fsanitize=undefined,address"
+
+      - name: Build
+        run: |
+          make -C build -j
+
+      - name: Test (native)
+        if: ${{ success() }}
+        run: |
+          set -x
+          sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          ulimit -c unlimited
+          make -C build check -j8
+        env:
+          UNW_DEBUG_LEVEL: 4
+          ASAN_OPTIONS: detect_odr_violation=0
+
+      - name: Upload Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.target.triple }}-${{ matrix.toolchain.compiler }}-asan+ubsan
+          path: |
+            **/test-suite.log
+            **/config.log
+          if-no-files-found: warn
+
+
+  build-gnu-cross-ubsan:
+    runs-on: ubuntu-24.04
+    container:
+      image: ${{ matrix.config.container }}
+      options: --privileged
+    timeout-minutes: 30 # Anything more than about 30 minutes is likely a testsuite hang.
+    name: ${{ matrix.config.host }} (cross, asan+ubsan)
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04 }
+          - {target: armhf,     host: arm-linux-gnueabihf,      qemu: arm,       gccver: 14, container: ubuntu:26.04 }
+          - {target: arm,       host: arm-linux-gnueabi,        qemu: arm,       gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc64,     host: powerpc64-linux-gnu,      qemu: ppc64,     gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc,       host: powerpc-linux-gnu,        qemu: ppc,       gccver: 14, container: ubuntu:26.04 }
+          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04 }
+          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04 }
+
+    steps:
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get install -y git
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install ${{ matrix.config.host }} Toolchain
+        run: |
+          apt-get install -y autoconf automake libtool make \
+                             ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
+                             qemu-user \
+                             abigail-tools
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Configure
+        run: |
+          set -x
+          autoreconf -i
+          mkdir build
+          cd build
+          ../configure --build=$(config/config.guess) \
+                       --host=${{ matrix.config.host }} \
+                       --with-testdriver="$(pwd)/libtool execute $(pwd)/../scripts/qemu-test-driver" \
+                       --enable-debug
+        env:
+          CC: ${{ matrix.config.cc || format('{0}-gcc-{1}', matrix.config.host, matrix.config.gccver) }}
+          CXX: ${{ matrix.config.cxx || format('{0}-g++-{1}', matrix.config.host, matrix.config.gccver) }}
+          CFLAGS: "-Wall -Wextra -g -Og -fsanitize=undefined,address -fno-sanitize-recover=all"
+          CXXFLAGS: "-Wall -Wextra -g -Og -fsanitize=undefined,address -fno-sanitize-recover=all"
+          LDFLAGS: "-fsanitize=undefined,address"
+
+      - name: Build
+        run: |
+          make -C build -j
+
+      - name: Test
+        run: |
+          set -x
+          bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          ulimit -c unlimited
+          cd build
+          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
+                     QEMU_LD_PREFIX="$CROSS_LIB" \
+                     LDFLAGS="-L$CROSS_LIB/lib -fsanitize=undefined,address"
+        env:
+          UNW_DEBUG_LEVEL: 4
+          ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0
+          CROSS_LIB: ${{ matrix.config.cross_lib || format('/usr/{0}', matrix.config.host) }}
+
+      - name: Upload Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.config.host }}-asan+ubsan
+          path: |
+            **/test-suite.log
+            **/config.log
+          if-no-files-found: warn
