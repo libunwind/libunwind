@@ -80,5 +80,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.architecture }}-freebsd${{ matrix.os_version }}-${{ matrix.compiler }}
-          path: '**/test-suite.log'
+          path: |
+            **/test-suite.log
+            **/config.log
           if-no-files-found: warn
