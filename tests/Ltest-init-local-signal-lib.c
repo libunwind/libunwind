@@ -1,6 +1,7 @@
 #include <stdio.h>
+#include "compiler.h"
 
 /* To prevent inlining and optimizing away */
-int foo(volatile int* f) {
+NO_SANITIZE_NULL int foo(volatile int* f) {
   return *f;
 }

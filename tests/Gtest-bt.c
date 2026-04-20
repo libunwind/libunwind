@@ -256,6 +256,13 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
   do_backtrace();
 }
 
+static NO_SANITIZE_NULL void
+do_null_deref (void)
+{
+  int *bad_ptr = NULL;
+  *bad_ptr = 0;
+}
+
 int
 main (int argc, char **argv UNUSED)
 {
@@ -289,11 +296,7 @@ main (int argc, char **argv UNUSED)
     panic ("sigaction: %s\n", strerror (errno));
 
   if (sigsetjmp (env, 1) == 0)
-  {
-    /* Make a NULL pointer dereference.  */
-    int *bad_ptr = NULL;
-    *bad_ptr = 0;
-  }
+    do_null_deref ();
 
 #ifdef HAVE_SIGALTSTACK
   if (verbose)
