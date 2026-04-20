@@ -83,7 +83,9 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.config.triple }}-${{ matrix.toolchain.compiler }}${{ matrix.optimization.CFLAGS }}
-          path: '**/test-suite.log'
+          path: |
+            **/test-suite.log
+            **/config.log
           if-no-files-found: warn
 
 
@@ -187,7 +189,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.config.host }}
-          path: '**/test-suite.log'
+          path: |
+            **/test-suite.log
+            **/config.log
           if-no-files-found: warn
-
-
