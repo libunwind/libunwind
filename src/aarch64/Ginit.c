@@ -196,11 +196,11 @@ access_fpreg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_fpreg_t *val,
     {
       Debug (12, "%s <- %08lx.%08lx.%08lx\n", unw_regname (reg),
              ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
-      *(unw_fpreg_t *) addr = *val;
+      memcpy ((void *) addr, val, sizeof (unw_fpreg_t));
     }
   else
     {
-      *val = *(unw_fpreg_t *) addr;
+      memcpy (val, (void *) addr, sizeof (unw_fpreg_t));
       Debug (12, "%s -> %08lx.%08lx.%08lx\n", unw_regname (reg),
              ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
     }
