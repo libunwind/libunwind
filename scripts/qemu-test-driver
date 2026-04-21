@@ -57,6 +57,9 @@ expect_failure=no
 color_tests=no
 enable_hard_errors=yes
 verbose=no
+qemu_arch=
+qemu_xfail_list=          # colon-separated test basenames to XFAIL under QEMU
+qemu_xfail_before_ver=    # X.Y.Z: only XFAIL if running QEMU < this version
 while test $# -gt 0; do
   case $1 in
   --help) print_usage; exit $?;;
@@ -68,6 +71,11 @@ while test $# -gt 0; do
   --expect-failure) expect_failure=$2; shift;;
   --enable-hard-errors) enable_hard_errors=$2; shift;;
   --qemu-arch) qemu_arch=$2; shift;;
+  --qemu-arch=*) qemu_arch=${1#--qemu-arch=};;
+  --qemu-xfail) qemu_xfail_list=$2; shift;;
+  --qemu-xfail=*) qemu_xfail_list=${1#--qemu-xfail=};;
+  --qemu-xfail-before-version) qemu_xfail_before_ver=$2; shift;;
+  --qemu-xfail-before-version=*) qemu_xfail_before_ver=${1#--qemu-xfail-before-version=};;
   --verbose) verbose=$2; shift;;
   --) shift; break;;
   -*) usage_error "invalid option: '$1'";;
@@ -83,6 +91,49 @@ test x"$trs_file"  = x && missing_opts="$missing_opts --trs-file"
 test x"$qemu_arch"  = x && missing_opts="$missing_opts --qemu-arch"
 if test x"$missing_opts" != x; then
   usage_error "the following mandatory options are missing:$missing_opts"
+fi
+
+# Compare two X.Y.Z version strings.  Returns 0 (true) if $1 < $2.
+qemu_version_lt ()
+{
+  awk -v v1="$1" -v v2="$2" 'BEGIN {
+    n = split(v1, a, ".")
+    m = split(v2, b, ".")
+    top = (n > m) ? n : m
+    for (i = 1; i <= top; i++) {
+      x = (i <= n) ? int(a[i]) : 0
+      y = (i <= m) ? int(b[i]) : 0
+      if (x < y) { exit 0 }
+      if (x > y) { exit 1 }
+    }
+    exit 1  # equal is not less-than
+  }'
+}
+
+# If --qemu-xfail was given, check whether the current test is listed and
+# whether any version gate allows it to pass.  Promote expect_failure=yes
+# when the test is known to fail under this QEMU but pass on real hardware.
+if test -n "$qemu_xfail_list"; then
+  test_basename=$(basename "$test_name")
+  qemu_cmd_tmp="qemu-${qemu_arch}"
+  IFS_save="$IFS"
+  IFS=:
+  for entry in $qemu_xfail_list; do
+    if test "$test_basename" = "$entry"; then
+      if test -n "$qemu_xfail_before_ver"; then
+        qemu_ver=$("$qemu_cmd_tmp" --version 2>/dev/null \
+                   | sed -n 's/.*version \([0-9][0-9.]*\).*/\1/p' \
+                   | head -1)
+        if qemu_version_lt "$qemu_ver" "$qemu_xfail_before_ver"; then
+          expect_failure=yes
+        fi
+      else
+        expect_failure=yes
+      fi
+      break
+    fi
+  done
+  IFS="$IFS_save"
 fi
 
 if test $# -eq 0; then
