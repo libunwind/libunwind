@@ -108,11 +108,18 @@ dump_backtrace(size_t bt_count, enum test_id id)
 
 /**
  * Compare a backtrace from a backtrace call with a backtrace from unw_step().
+ *
+ * @p bt_offset accounts for extra frames prepended to the backtrace result by
+ * runtime instrumentation (e.g. ASan's backtrace() interceptor).  The depth
+ * check becomes step_count + bt_offset == backtrace_count, and address
+ * comparisons are shifted by bt_offset so that backtrace[i + bt_offset] is
+ * compared against unw_step[i].
  */
 static void
-compare_backtraces(int step_count, int backtrace_count, enum test_id id)
+compare_backtraces(int step_count, int backtrace_count, enum test_id id,
+                   int bt_offset)
 {
-  if (step_count != backtrace_count)
+  if (step_count + bt_offset != backtrace_count)
     {
       printf ("FAILURE: unw_step() loop and %s() depths differ: %d vs. %d\n",
               trace[id].name,
@@ -124,12 +131,13 @@ compare_backtraces(int step_count, int backtrace_count, enum test_id id)
     {
       for (int i = 1; i < step_count; ++i)
         {
-          if (labs (trace[TEST_UNW_STEP].addresses[i] - trace[id].addresses[i]) > 1)
+          if (labs (trace[TEST_UNW_STEP].addresses[i] -
+                    trace[id].addresses[i + bt_offset]) > 1)
             {
               printf ("FAILURE: unw_step() loop and %s() addresses differ at %d: %p vs. %p\n",
                       trace[id].name, i,
                       trace[TEST_UNW_STEP].addresses[i],
-                      trace[id].addresses[i]);
+                      trace[id].addresses[i + bt_offset]);
               ++num_errors;
             }
         }
@@ -192,10 +200,14 @@ do_backtrace (void)
   /*
    * Call the system-supplied `backtrace()` (maybe) and compare with the
    * `unw_step()`results. They should be identical.
+   *
+   * Under ASan, backtrace() is intercepted by the ASan runtime, which adds one
+   * extra frame to the result.  unw_step() walks DWARF CFI and does not see
+   * that frame, so account for it by adding one to the expected depth.
    */
   backtrace_depth = backtrace (trace[TEST_BACKTRACE].addresses, MAX_BACKTRACE_SIZE);
   dump_backtrace(backtrace_depth, TEST_BACKTRACE);
-  compare_backtraces(unw_step_depth, backtrace_depth, TEST_BACKTRACE);
+  compare_backtraces(unw_step_depth, backtrace_depth, TEST_BACKTRACE, RUNNING_WITH_ASAN);
 
   /* 
    * Call `unw_backtrace()` and compare with the `unw_step()`results. They
@@ -204,7 +216,7 @@ do_backtrace (void)
   unw_backtrace_depth = unw_backtrace (trace[TEST_UNW_BACKTRACE].addresses,
                                        MAX_BACKTRACE_SIZE);
   dump_backtrace(unw_backtrace_depth, TEST_UNW_BACKTRACE);
-  compare_backtraces(unw_step_depth, unw_backtrace_depth, TEST_UNW_BACKTRACE);
+  compare_backtraces(unw_step_depth, unw_backtrace_depth, TEST_UNW_BACKTRACE, 0);
 
   /*
    * Call `unw_backtrace2()` on the current context and compare with the
@@ -215,7 +227,7 @@ do_backtrace (void)
                                              &uc,
                                              0);
   dump_backtrace(unw_backtrace2_depth, TEST_UNW_BACKTRACE2);
-  compare_backtraces(unw_step_depth, unw_backtrace2_depth, TEST_UNW_BACKTRACE2);
+  compare_backtraces(unw_step_depth, unw_backtrace2_depth, TEST_UNW_BACKTRACE2, 0);
 }
 
 /**
@@ -270,7 +282,7 @@ do_backtrace_with_context(void *context)
                                          (unw_context_t*)context,
                                          UNW_INIT_SIGNAL_FRAME);
   dump_backtrace(unw_backtrace2_depth, TEST_UNW_BACKTRACE2);
-  compare_backtraces(unw_step_depth, unw_backtrace2_depth, TEST_UNW_BACKTRACE2);
+  compare_backtraces(unw_step_depth, unw_backtrace2_depth, TEST_UNW_BACKTRACE2, 0);
 }
 
 void
