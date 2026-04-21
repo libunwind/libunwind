@@ -135,7 +135,7 @@ dwarf_getfp (struct dwarf_cursor *c UNUSED, dwarf_loc_t loc, unw_fpreg_t *val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *val = *(unw_fpreg_t *) DWARF_GET_LOC (loc);
+  memcpy (val, (void *) DWARF_GET_LOC (loc), sizeof (unw_fpreg_t));
   return 0;
 }
 
@@ -144,7 +144,7 @@ dwarf_putfp (struct dwarf_cursor *c UNUSED, dwarf_loc_t loc, unw_fpreg_t val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *(unw_fpreg_t *) DWARF_GET_LOC (loc) = val;
+  memcpy ((void *) DWARF_GET_LOC (loc), &val, sizeof (unw_fpreg_t));
   return 0;
 }
 
