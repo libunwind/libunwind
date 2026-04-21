@@ -86,6 +86,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define unlikely(x)    (x)
 #endif
 
+/* True when compiled with AddressSanitizer.  Both GCC and Clang define
+   __SANITIZE_ADDRESS__; Clang also supports __has_feature(address_sanitizer)
+   but the macro is sufficient for our purposes. */
+#if defined(__SANITIZE_ADDRESS__)
+# define RUNNING_WITH_ASAN 1
+#else
+# define RUNNING_WITH_ASAN 0
+#endif
+
 #define ARRAY_SIZE(a)   (sizeof (a) / sizeof ((a)[0]))
 
 #endif /* COMPILER_H */
