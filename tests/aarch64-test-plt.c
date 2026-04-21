@@ -51,16 +51,16 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     return -1;
 
   const size_t mem_size   = ip_program_end * sizeof(uint32_t);
-  const void *mem_start   = arg;
-  const void *mem_end     = (const char*) arg + mem_size;
-  const unw_word_t *paddr = (const unw_word_t*) addr;
+  const uintptr_t mem_start = (uintptr_t) arg;
+  const uintptr_t mem_end   = (uintptr_t) arg + mem_size;
+  const uintptr_t paddr     = (uintptr_t) addr;
 
-  if ((void*) paddr < mem_start || (void*) paddr > mem_end)
+  if (paddr < mem_start || paddr > mem_end)
     {
       return -1;
     }
 
-  *val = *paddr;
+  memcpy (val, (const void *) paddr, sizeof (*val));
   return 0;
 }
 
