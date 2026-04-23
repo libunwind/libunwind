@@ -148,8 +148,8 @@ enum { NLGA = 4 };
 
 #if defined(HAVE___CACHE_PER_THREAD) && HAVE___CACHE_PER_THREAD
 // thread-local variant
-static _Thread_local unw_word_t last_good_addr[NLGA];
-static _Thread_local int lga_victim;
+static thread_local unw_word_t last_good_addr[NLGA];
+static thread_local int lga_victim;
 
 
 static bool

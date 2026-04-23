@@ -61,7 +61,7 @@ AC_MSG_NOTICE([--- Checking for header files ---])
 AC_CHECK_HEADERS(asm/ptrace_offsets.h asm/ptrace.h asm/vsyscall.h endian.h sys/endian.h \
 		sys/param.h execinfo.h ia64intrin.h sys/uc_access.h unistd.h signal.h \
 		sys/types.h sys/procfs.h sys/ptrace.h sys/syscall.h byteswap.h elf.h \
-		sys/elf.h link.h sys/link.h)
+		sys/elf.h link.h sys/link.h threads.h)
 
 dnl Set target-specific compile flags
 AS_CASE([$target_os],
