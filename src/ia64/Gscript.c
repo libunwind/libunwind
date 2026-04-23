@@ -47,7 +47,7 @@ enum ia64_script_insn_opcode
   };
 
 #if defined(HAVE___CACHE_PER_THREAD) && HAVE___CACHE_PER_THREAD
-static _Thread_local struct ia64_script_cache ia64_per_thread_cache =
+static thread_local struct ia64_script_cache ia64_per_thread_cache =
   {
     .busy = ATOMIC_FLAG_INIT
   };

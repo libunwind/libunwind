@@ -3,6 +3,7 @@
 
 #cmakedefine01 HAVE_ELF_H
 #cmakedefine01 HAVE_ENDIAN_H
+#cmakedefine01 HAVE_THREADS_H
 
 #define PACKAGE_STRING "@PACKAGE_STRING@"
 #define PACKAGE_BUGREPORT "@PACKAGE_BUGREPORT@"

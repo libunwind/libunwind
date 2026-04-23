@@ -58,6 +58,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/mman.h>
 #include <errno.h>
 #include <stdio.h>
+#if defined(HAVE_THREADS_H)
+# include <threads.h>
+#endif
 
 #if defined(HAVE_SYS_SYSCALL_H)
 # include <sys/syscall.h>   /* For SYS_xxx definitions */
