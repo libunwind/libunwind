@@ -55,7 +55,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
   const uintptr_t mem_end   = (uintptr_t) arg + mem_size;
   const uintptr_t paddr     = (uintptr_t) addr;
 
-  if (paddr < mem_start || paddr > mem_end)
+  if (paddr < mem_start || paddr + sizeof (*val) > mem_end)
     {
       return -1;
     }
