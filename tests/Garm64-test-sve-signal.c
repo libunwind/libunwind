@@ -62,6 +62,27 @@ sve_is_enabled (void)
   return (getauxval (AT_HWCAP) & HWCAP_SVE) ? true : false;
 }
 
+# elif defined(__FreeBSD__)
+#  include <sys/auxv.h>
+/* HWCAP_SVE matches the Linux value and is defined in <machine/elf.h> */
+#  ifndef HWCAP_SVE
+#   define HWCAP_SVE (1UL << 22)
+#  endif
+
+#  define UNW_TEST_KILL_SYSCALL "kill"
+#  define UNW_TEST_SIGNAL_FRAME "signal_frame"
+
+/**
+ * Probe for SVE support in the host FreeBSD kernel.
+ */
+static bool
+sve_is_enabled (void)
+{
+  unsigned long hwcap = 0;
+  elf_aux_info (AT_HWCAP, &hwcap, sizeof (hwcap));
+  return (hwcap & HWCAP_SVE) ? true : false;
+}
+
 # elif defined(__QNX__)
 #  include <sys/syspage.h>
 
