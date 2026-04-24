@@ -62,6 +62,27 @@ sve_is_enabled (void)
   return (getauxval (AT_HWCAP) & HWCAP_SVE) ? true : false;
 }
 
+# elif defined(__FreeBSD__)
+#  include <sys/auxv.h>
+/* HWCAP_SVE matches the Linux value and is defined in <machine/elf.h> */
+#  ifndef HWCAP_SVE
+#   define HWCAP_SVE (1UL << 22)
+#  endif
+
+#  define UNW_TEST_KILL_SYSCALL "kill"
+#  define UNW_TEST_SIGNAL_FRAME "signal_frame"
+
+/**
+ * Probe for SVE support in the host FreeBSD kernel.
+ */
+static bool
+sve_is_enabled (void)
+{
+  unsigned long hwcap = 0;
+  elf_aux_info (AT_HWCAP, &hwcap, sizeof (hwcap));
+  return (hwcap & HWCAP_SVE) ? true : false;
+}
+
 # elif defined(__QNX__)
 #  include <sys/syspage.h>
 
@@ -105,7 +126,7 @@ signal_handler (int signum)
    * This is the sequencce of calls expected in the call stack.
    */
   static const char *  expected[] = {
-    UNW_TEST_SIGNAL_FRAME, UNW_TEST_KILL_SYSCALL, "sum", "square", "main",
+    UNW_TEST_SIGNAL_FRAME, UNW_TEST_KILL_SYSCALL, "sum", "square", "run_test", "main",
   };
   static size_t expected_call_stack_size = sizeof (expected) / sizeof (expected[0]);
 
@@ -187,16 +208,15 @@ square (svint64_t z0)
   return res;
 }
 
-int
-main (int argc, char *argv[])
+/*
+ * Separated from main() so that main()'s stack frame contains no SVE types.
+ * At -O0, a compiler allocates all locals in the frame prologue using addvl,
+ * which is itself an SVE instruction that would SIGILL before the
+ * sve_is_enabled() guard runs.
+ */
+static int
+run_test (void)
 {
-  verbose = (argc > 1);
-  if (!sve_is_enabled ())
-    {
-      fprintf (stderr, "SVE is not enabled: skip\n");
-      return UNW_TEST_EXIT_SKIP;
-    }
-
   signal (SIGUSR1, signal_handler);
   for (unsigned int i = 0; i < sizeof (z) / sizeof (z[0]); ++i)
     z[i] = rand ();
@@ -209,6 +229,19 @@ main (int argc, char *argv[])
    */
   fprintf (stderr, "Signal handler wasn't called\n");
   return UNW_TEST_EXIT_HARD_ERROR;
+}
+
+int
+main (int argc, char *argv[])
+{
+  verbose = (argc > 1);
+  if (!sve_is_enabled ())
+    {
+      fprintf (stderr, "SVE is not enabled: skip\n");
+      return UNW_TEST_EXIT_SKIP;
+    }
+
+  return run_test ();
 }
 
 #else /* !__ARM_FEATURE_SVE */
