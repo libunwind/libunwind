@@ -105,7 +105,7 @@ signal_handler (int signum)
    * This is the sequencce of calls expected in the call stack.
    */
   static const char *  expected[] = {
-    UNW_TEST_SIGNAL_FRAME, UNW_TEST_KILL_SYSCALL, "sum", "square", "main",
+    UNW_TEST_SIGNAL_FRAME, UNW_TEST_KILL_SYSCALL, "sum", "square", "run_test", "main",
   };
   static size_t expected_call_stack_size = sizeof (expected) / sizeof (expected[0]);
 
@@ -187,16 +187,15 @@ square (svint64_t z0)
   return res;
 }
 
-int
-main (int argc, char *argv[])
+/*
+ * Separated from main() so that main()'s stack frame contains no SVE types.
+ * At -O0, a compiler allocates all locals in the frame prologue using addvl,
+ * which is itself an SVE instruction that would SIGILL before the
+ * sve_is_enabled() guard runs.
+ */
+static int
+run_test (void)
 {
-  verbose = (argc > 1);
-  if (!sve_is_enabled ())
-    {
-      fprintf (stderr, "SVE is not enabled: skip\n");
-      return UNW_TEST_EXIT_SKIP;
-    }
-
   signal (SIGUSR1, signal_handler);
   for (unsigned int i = 0; i < sizeof (z) / sizeof (z[0]); ++i)
     z[i] = rand ();
@@ -209,6 +208,19 @@ main (int argc, char *argv[])
    */
   fprintf (stderr, "Signal handler wasn't called\n");
   return UNW_TEST_EXIT_HARD_ERROR;
+}
+
+int
+main (int argc, char *argv[])
+{
+  verbose = (argc > 1);
+  if (!sve_is_enabled ())
+    {
+      fprintf (stderr, "SVE is not enabled: skip\n");
+      return UNW_TEST_EXIT_SKIP;
+    }
+
+  return run_test ();
 }
 
 #else /* !__ARM_FEATURE_SVE */
