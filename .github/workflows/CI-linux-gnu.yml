@@ -269,14 +269,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04 }
+          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 32g }
           - {target: armhf,     host: arm-linux-gnueabihf,      qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: arm,       host: arm-linux-gnueabi,        qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: ppc64,     host: powerpc64-linux-gnu,      qemu: ppc64,     gccver: 14, container: ubuntu:26.04 }
-          - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04, extra_ldflags: -static-libasan }
           - {target: ppc,       host: powerpc-linux-gnu,        qemu: ppc,       gccver: 14, container: ubuntu:26.04 }
-          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04 }
-          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04 }
+          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 32g }
+          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 32g }
 
     steps:
       - name: Install git
@@ -326,11 +326,13 @@ jobs:
           cd build
           make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
                      QEMU_LD_PREFIX="$CROSS_LIB" \
-                     LDFLAGS="-L$CROSS_LIB/lib -fsanitize=undefined,address"
+                     LDFLAGS="-L$CROSS_LIB/lib -fsanitize=undefined,address $EXTRA_LDFLAGS"
         env:
           UNW_DEBUG_LEVEL: 4
           ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0
           CROSS_LIB: ${{ matrix.config.cross_lib || format('/usr/{0}', matrix.config.host) }}
+          EXTRA_LDFLAGS: ${{ matrix.config.extra_ldflags || '' }}
+          QEMU_RESERVED_VA: ${{ matrix.config.qemu_reserved_va || '' }}
 
       - name: Upload Test Logs
         if: failure()

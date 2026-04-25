@@ -108,6 +108,9 @@ trap "st=141; $do_exit" 13
 trap "st=143; $do_exit" 15
 
 qemu_cmd="qemu-${qemu_arch}"
+if test -n "${QEMU_RESERVED_VA:-}"; then
+  qemu_cmd="${qemu_cmd} -R ${QEMU_RESERVED_VA}"
+fi
 # Test script is run here.
 if test x$verbose != xno; then
   printf "%s\n" "${qemu_cmd} $@"
