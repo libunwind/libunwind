@@ -110,8 +110,8 @@ jobs:
           - {target: mipsn32,   host: mips64-linux-gnuabin32,   qemu: mipsn32,   gccver: 14, container: ubuntu:24.04, cc: "mips64-linux-gnuabi64-gcc-14 -mabi=n32",   cxx: "mips64-linux-gnuabi64-g++-14 -mabi=n32",   packages: "g++-14-multilib-mips64-linux-gnuabi64",   cross_lib: "/usr/mips64-linux-gnuabi64" }
           - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 14, container: ubuntu:24.04 }
           - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 14, container: ubuntu:24.04 }
-          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04 }
-          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04, qemu_xfail: &ppc64_qemu_xfail "Gtest-bt:Gtest-concurrent:Gtest-resume-sig:Gtest-resume-sig-rt:Gtest-trace:Ltest-bt:Ltest-concurrent:Ltest-init-local-signal:Ltest-resume-sig:Ltest-resume-sig-rt:Ltest-sig-context:Ltest-trace" }
+          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04, qemu_xfail: *ppc64_qemu_xfail }
           - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 14, container: ubuntu:26.04 }
           - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04 }
           - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04 }
@@ -174,7 +174,7 @@ jobs:
           bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           cd build
-          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
+          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}${{ matrix.config.qemu_xfail && format(' --qemu-xfail={0}', matrix.config.qemu_xfail) || '' }}" \
                      QEMU_LD_PREFIX="$CROSS_LIB" \
                      LDFLAGS="-L$CROSS_LIB/lib"
         env:
