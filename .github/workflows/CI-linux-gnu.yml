@@ -269,14 +269,14 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 32g }
+          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 34359738368 }
           - {target: armhf,     host: arm-linux-gnueabihf,      qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: arm,       host: arm-linux-gnueabi,        qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: ppc64,     host: powerpc64-linux-gnu,      qemu: ppc64,     gccver: 14, container: ubuntu:26.04 }
           - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04, extra_ldflags: -static-libasan }
           - {target: ppc,       host: powerpc-linux-gnu,        qemu: ppc,       gccver: 14, container: ubuntu:26.04 }
-          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 32g }
-          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 32g }
+          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04, qemu_reserved_va: 34359738368 }
+          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04 }
 
     steps:
       - name: Install git
@@ -312,7 +312,7 @@ jobs:
           CXX: ${{ matrix.config.cxx || format('{0}-g++-{1}', matrix.config.host, matrix.config.gccver) }}
           CFLAGS: "-Wall -Wextra -g -Og -fsanitize=undefined,address -fno-sanitize-recover=all"
           CXXFLAGS: "-Wall -Wextra -g -Og -fsanitize=undefined,address -fno-sanitize-recover=all"
-          LDFLAGS: "-fsanitize=undefined,address"
+          LDFLAGS: "-fsanitize=undefined,address ${{ matrix.config.extra_ldflags || '' }}"
 
       - name: Build
         run: |
