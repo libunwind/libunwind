@@ -60,7 +60,7 @@ jobs:
 
       - name: Build
         run: |
-          make -C build -j
+          make -C build -j$(nproc)
 
       - name: Check ABI
         if: ${{ success() }}
@@ -73,7 +73,7 @@ jobs:
           set -x
           sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
-          make -C build check -j8
+          make -C build check -j$(nproc)
         env:
           UNW_DEBUG_LEVEL: 4
 
@@ -153,7 +153,7 @@ jobs:
 
       - name: Build
         run: |
-          make -C build -j
+          make -C build -j$(nproc)
         env:
           CFLAGS: "-Wall -Wextra -g -Og -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
 
@@ -176,7 +176,7 @@ jobs:
           bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           cd build
-          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
+          make check -j$(nproc) LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
                      QEMU_LD_PREFIX="$CROSS_LIB" \
                      LDFLAGS="-L$CROSS_LIB/lib"
         env:
