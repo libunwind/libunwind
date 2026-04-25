@@ -302,7 +302,7 @@ AM_COND_IF([SUPPORT_CXX_EXCEPTIONS],
                            [gcc_s gcc],
                            [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
                                   [AC_SUBST([UNW_CRT_LIBADD],  ["-lc $ac_cv_search__Unwind_Resume"])
-                                   AC_SUBST([UNW_CRT_LDFLAGS], ["-WCClinker -nostdlib"])])
+                                   AC_SUBST([UNW_CRT_LDFLAGS], ["-XCClinker -nostdlib"])])
                            ],,
                            [-lc])
             LDFLAGS="$save_LDFLAGS"]
