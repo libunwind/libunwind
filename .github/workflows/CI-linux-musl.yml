@@ -61,13 +61,13 @@ jobs:
 
       - name: Build
         run: |
-          make -j
+          make -j$(nproc)
         shell: alpine.sh {0}
 
       - name: Test
         if: ${{ success() }}
         run: |
-          make check
+          make check -j$(nproc)
         env:
           UNW_DEBUG_LEVEL: 5
         shell: alpine.sh {0}
@@ -78,5 +78,7 @@ jobs:
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.arch }}-linux-musl
-          path: '**/test-suite.log'
+          path: |
+            **/test-suite.log
+            **/config.log
           if-no-files-found: warn
