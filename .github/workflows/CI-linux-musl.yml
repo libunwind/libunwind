@@ -61,13 +61,13 @@ jobs:
 
       - name: Build
         run: |
-          make -j
+          make -j$(nproc)
         shell: alpine.sh {0}
 
       - name: Test
         if: ${{ success() }}
         run: |
-          make check
+          make check -j$(nproc)
         env:
           UNW_DEBUG_LEVEL: 5
         shell: alpine.sh {0}
