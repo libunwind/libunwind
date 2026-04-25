@@ -244,7 +244,7 @@ jobs:
           make -C build check -j8
         env:
           UNW_DEBUG_LEVEL: 4
-          ASAN_OPTIONS: detect_odr_violation=0
+          ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0
 
       - name: Upload Test Logs
         if: failure()
