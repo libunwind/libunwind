@@ -101,9 +101,15 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
        }
 
       if (DWARF_IS_REG_LOC(c->dwarf.loc[reg]))
-        loc = c->dwarf.loc[reg];
+        {
+          loc = c->dwarf.loc[reg];
+        }
       else
         {
+#if defined(__QNX__) && defined(AARCH64_SVE_MAX_PREDICATE_SIZE)
+          *valp = AARCH64_SVE_MAX_PREDICATE_SIZE;
+          return 0;
+#else
           unw_addr_space_t as = c->dwarf.as;
           unw_accessors_t *a = unw_get_accessors_int (as);
           void *arg = c->dwarf.as_arg;
@@ -129,6 +135,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
           if (!ret)
             *valp = (val16 * 8) / 64;
           return ret;
+#endif
         }
       break;
 
