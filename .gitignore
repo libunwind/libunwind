@@ -13,7 +13,6 @@ bin
 Makefile
 Makefile.in
 
-INSTALL
 aclocal.m4
 m4/
 autom4te.cache/

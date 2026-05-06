@@ -108,7 +108,6 @@ EXTRA_DIST = include/libunwind-common.h.in
 
 MAINTAINERCLEANFILES = \
 	Makefile.in \
-	INSTALL \
 	aclocal.m4 \
 	configure \
 	config/compile \
