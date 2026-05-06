@@ -9,7 +9,6 @@ on:
       - '**'
       - '!README'
       - '!INSTALL'
-      - '!NEWS'
       - '!doc/**'
       - '!.**'
       - '.github/workflows/CI-linux-musl.yml'
