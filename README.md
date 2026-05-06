@@ -22,7 +22,9 @@ following.
 
 ## Supported Systems
 
-[![CI - Unix](https://github.com/libunwind/libunwind/actions/workflows/CI-unix.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-unix.yml)
+[![CI - Linux (GNU)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-gnu.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-gnu.yml)
+[![CI - Linux (musl)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-musl.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-musl.yml)
+[![CI - FreeBSD](https://github.com/libunwind/libunwind/actions/workflows/CI-freebsd.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-freebsd.yml)
 [![CI - Windows](https://github.com/libunwind/libunwind/actions/workflows/CI-win.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-win.yml)
 
 This library supports several architecture/operating-system combinations:
@@ -33,8 +35,11 @@ This library supports several architecture/operating-system combinations:
 | Linux   | x86          | ✓      |
 | Linux   | ARM          | ✓      |
 | Linux   | AArch64      | ✓      |
+| Linux   | Alpha        | ✓      |
 | Linux   | PPC32        | ✓      |
 | Linux   | PPC64        | ✓      |
+| Linux   | PPC64LE      | ✓      |
+| Linux   | s390x        | ✓      |
 | Linux   | SuperH       | ✓      |
 | Linux   | IA-64        | ✓      |
 | Linux   | PA-RISC      | Works well, but C library missing unwind-info |
@@ -65,7 +70,8 @@ such dependencies
 
 | Architecture | getcontext | setcontext |
 |--------------|------------|------------|
-|    aarch64   |     p      |            |
+|    aarch64   |     p      |      p     |
+|    alpha     |     p      |      p     |
 |    arm       |     p      |            |
 |    hppa      |     p      |      p     |
 |    ia64      |     p      |      r     |
