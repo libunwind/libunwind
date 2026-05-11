@@ -224,6 +224,54 @@ if target_machine.cpu_family() == 'aarch64'
         ),
     ]
     _libunwind_setjmp_srcs += files('aarch64/longjmp.S', 'aarch64/siglongjmp.S')
+elif target_machine.cpu_family() == 'alpha'
+    _libunwind_srcs_alpha_common = [
+        _libunwind_srcs_common,
+        files('alpha/is_fpreg.c', 'alpha/regname.c'),
+    ]
+    _libunwind_srcs = [
+        _libunwind_srcs_alpha_common,
+        _libunwind_srcs_local,
+        files(
+            'mi/Lis_plt_entry.c',
+            'alpha/getcontext.S',
+            'alpha/Lapply_reg_state.c',
+            'alpha/Lcreate_addr_space.c',
+            'alpha/Lget_proc_info.c',
+            'alpha/Lget_save_loc.c',
+            'alpha/Lglobal.c',
+            'alpha/Linit.c',
+            'alpha/Linit_local.c',
+            'alpha/Linit_remote.c',
+            'alpha/Lis_signal_frame.c',
+            'alpha/Lregs.c',
+            'alpha/Lreg_states_iterate.c',
+            'alpha/Lresume.c',
+            'alpha/Lstep.c',
+            'alpha/setcontext.S',
+        ),
+    ]
+    _libunwind_generic_srcs = [
+        _libunwind_srcs_alpha_common,
+        _libunwind_srcs_generic,
+        files(
+            'mi/Gis_plt_entry.c',
+            'alpha/Gapply_reg_state.c',
+            'alpha/Gcreate_addr_space.c',
+            'alpha/Gget_proc_info.c',
+            'alpha/Gget_save_loc.c',
+            'alpha/Gglobal.c',
+            'alpha/Ginit.c',
+            'alpha/Ginit_local.c',
+            'alpha/Ginit_remote.c',
+            'alpha/Gis_signal_frame.c',
+            'alpha/Gregs.c',
+            'alpha/Greg_states_iterate.c',
+            'alpha/Gresume.c',
+            'alpha/Gstep.c',
+        ),
+    ]
+    _libunwind_setjmp_srcs += files('alpha/siglongjmp.S')
 elif target_machine.cpu_family() == 'arm'
     _libunwind_srcs_arm_common = [
         _libunwind_srcs_common,
@@ -894,6 +942,7 @@ if target_machine.cpu_family() in ['arm', 'parisc', 'ppc', 'x86', 'sh4']
     )
 elif target_machine.cpu_family() in [
     'aarch64',
+    'alpha',
     'ia64',
     'ppc64',
     'x86_64',

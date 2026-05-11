@@ -417,6 +417,7 @@ endif
 # code. This table converts the former into the latter.
 archnames = {
     'aarch64': 'aarch64',
+    'alpha': 'alpha',
     'arm': 'arm',
     'parisc': 'hppa',
     'ia64': 'ia64',
