@@ -16,7 +16,11 @@ _check_nms = configure_file(
     },
 )
 
+# Prevent tail-call elimination so caller frames stay on the stack for
+# backtrace assertions. Autotools applies this via AM_CFLAGS in
+# tests/Makefile.am; in Meson scope to tests only via libc_deps augmentation.
 _args = cc.get_supported_arguments('-fno-optimize-sibling-calls')
+libc_deps = [libc_deps, declare_dependency(compile_args: _args)]
 _inc = [internal_inc, include_directories('../src')]
 _opts = ['debug=true']
 _env = {'UNW_DEBUG_LEVEL': '4'}
@@ -542,12 +546,12 @@ if not unw_remote_only
         )
         test(_exe.name(), _exe, env: _env)
 
-        _args = ['-fno-inline', '-march=armv8-a+sve']
-        if cc.has_multi_arguments(_args)
+        _sve_args = ['-fno-inline', '-march=armv8-a+sve']
+        if cc.has_multi_arguments(_sve_args)
             _exe = executable(
                 'Garm64-test-sve-signal',
                 'Garm64-test-sve-signal.c',
-                c_args: _args,
+                c_args: _sve_args,
                 link_with: [libunwind_generic_lib, libunwind_lib],
                 include_directories: _inc,
                 dependencies: [libc_deps],
@@ -558,7 +562,7 @@ if not unw_remote_only
             _exe = executable(
                 'Larm64-test-sve-signal',
                 'Larm64-test-sve-signal.c',
-                c_args: _args,
+                c_args: _sve_args,
                 link_with: libunwind_lib,
                 include_directories: _inc,
                 dependencies: [libc_deps],

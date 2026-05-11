@@ -173,6 +173,7 @@ elif target_machine.system() == 'sunos'
     add_project_arguments('-D__EXTENSIONS__', language: 'c')
 endif
 
+
 # Intel CET support: enable if the compiler has CET on by default or if forced
 _cet_flags = ['-mshstk', '-fcf-protection']
 _cet_on_by_default = not cc.compiles('''
