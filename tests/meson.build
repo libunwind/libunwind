@@ -193,8 +193,6 @@ if not unw_remote_only
         _exe.name(),
         _exe,
         env: _env,
-        # https://github.com/libunwind/libunwind/issues/670
-        should_fail: target_machine.cpu_family() == 'ppc',
     )
 
     _exe = executable(
@@ -473,8 +471,6 @@ if not unw_remote_only
             _exe.name(),
             _exe,
             env: _env,
-            # https://github.com/libunwind/libunwind/issues/560
-            should_fail: target_machine.cpu_family() == 'ppc',
         )
     endif
 
@@ -581,8 +577,6 @@ if not unw_remote_only
             _exe.name(),
             _exe,
             env: _env,
-            # https://github.com/libunwind/libunwind/issues/559
-            should_fail: target_machine.cpu_family() == 'ppc',
         )
 
         _exe = executable(
@@ -597,8 +591,6 @@ if not unw_remote_only
             _exe.name(),
             _exe,
             env: _env,
-            # https://github.com/libunwind/libunwind/issues/559
-            should_fail: target_machine.cpu_family() == 'ppc',
         )
 
         _exe = executable(
@@ -716,8 +708,6 @@ if not unw_remote_only
         test(
             _exe.name(),
             _exe,
-            # https://github.com/libunwind/libunwind/issues/561
-            should_fail: target_machine.cpu_family() == 'ppc',
             env: _env,
         )
     endif
