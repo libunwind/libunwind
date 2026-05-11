@@ -173,6 +173,19 @@ elif target_machine.system() == 'sunos'
     add_project_arguments('-D__EXTENSIONS__', language: 'c')
 endif
 
+# Intel CET support: enable if the compiler has CET on by default or if forced
+_cet_flags = ['-mshstk', '-fcf-protection']
+_cet_on_by_default = not cc.compiles('''
+    #if defined(__x86_64__) && defined(__CET__)
+    # error CET is on by default
+    #endif
+    int x;
+    ''', name: 'CET not enabled by default')
+if _cet_on_by_default and cc.has_multi_arguments(_cet_flags)
+    add_project_arguments(_cet_flags, language: ['c', 'cpp'])
+    add_project_link_arguments('-Wl,-z,cet-report=error', language: ['c', 'cpp'])
+endif
+
 # While all builds support a "remote" libunwind (i.e. unwinding a separate process), not all
 # systems support a "local" libunwind (i.e. monitoring itself). Determine if the local build is
 # possible and if not set UNW_REMOTE_ONLY to optimize away some details that only matter for that.
