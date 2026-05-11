@@ -173,6 +173,15 @@ elif target_machine.system() == 'sunos'
     add_project_arguments('-D__EXTENSIONS__', language: 'c')
 endif
 
+# Required for backtrace tests: prevent tail-call elimination so callers remain
+# on the stack for the unwinder to find. Autotools applies this via AM_CFLAGS
+# in tests/Makefile.am; in Meson it is simplest to apply project-wide (the
+# flag is harmless on library code).
+add_project_arguments(
+    cc.get_supported_arguments('-fno-optimize-sibling-calls'),
+    language: ['c', 'cpp'],
+)
+
 # Intel CET support: enable if the compiler has CET on by default or if forced
 _cet_flags = ['-mshstk', '-fcf-protection']
 _cet_on_by_default = not cc.compiles('''
