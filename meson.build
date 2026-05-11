@@ -174,6 +174,16 @@ elif target_machine.system() == 'sunos'
 endif
 
 
+# Ensure PT_GNU_EH_FRAME is emitted so libunwind can locate .eh_frame data via
+# dl_iterate_phdr. GCC enables -fasynchronous-unwind-tables automatically at
+# -O2+, but not at -O0 (the Meson debug default). Without it the MIPS (and
+# some other) linker never creates the PT_GNU_EH_FRAME program header, causing
+# unw_step to stop after one frame.
+add_project_arguments(
+    cc.get_supported_arguments('-fasynchronous-unwind-tables'),
+    language: ['c', 'cpp'],
+)
+
 # Intel CET support: enable if the compiler has CET on by default or if forced
 _cet_flags = ['-mshstk', '-fcf-protection']
 _cet_on_by_default = not cc.compiles('''
