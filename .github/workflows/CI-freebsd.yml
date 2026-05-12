@@ -7,7 +7,7 @@ on:
   pull_request:
     paths:
       - '**'
-      - '!README'
+      - '!README.md'
       - '!doc/**'
       - '!.**'
       - '.github/workflows/CI-freebsd.yml'
