@@ -106,6 +106,7 @@ jobs:
           - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 14, container: ubuntu:26.04 }
           - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 14, container: ubuntu:26.04 }
           - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 14, container: ubuntu:26.04 }
+          - {target: loongarch64, host: loongarch64-linux-gnu, qemu: loongarch64, gccver: 14, container: ubuntu:26.04 }
           - {target: mips64el, host: mips64el-linux-gnuabi64, qemu: mips64el, gccver: 14, container: ubuntu:24.04 }
           - {target: mips64,   host: mips64-linux-gnuabi64,   qemu: mips64,   gccver: 14, container: ubuntu:24.04 }
           - {target: mipsn32el, host: mips64el-linux-gnuabin32, qemu: mipsn32el, gccver: 14, container: ubuntu:24.04, cc: "mips64el-linux-gnuabi64-gcc-14 -mabi=n32", cxx: "mips64el-linux-gnuabi64-g++-14 -mabi=n32", packages: "g++-14-multilib-mips64el-linux-gnuabi64", cross_lib: "/usr/mips64el-linux-gnuabi64" }
