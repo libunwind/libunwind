@@ -115,6 +115,7 @@ jobs:
           - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04, qemu_xfail: &ppc64_qemu_xfail "Gtest-bt:Gtest-concurrent:Gtest-resume-sig:Gtest-resume-sig-rt:Gtest-trace:Ltest-bt:Ltest-concurrent:Ltest-init-local-signal:Ltest-resume-sig:Ltest-resume-sig-rt:Ltest-sig-context:Ltest-trace" }
           - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04, qemu_xfail: *ppc64_qemu_xfail }
           - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 14, container: ubuntu:26.04 }
+          - {target: riscv32,  host: riscv32-linux-gnu,       qemu: riscv32,  gccver: 14, container: ubuntu:26.04 }
           - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04 }
           - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04 }
 
