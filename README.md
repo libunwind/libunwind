@@ -44,7 +44,7 @@ This library supports several architecture/operating-system combinations:
 | Linux   | IA-64        | ✓      |
 | Linux   | PA-RISC      | Works well, but C library missing unwind-info |
 | Linux   | MIPS         | ✓      |
-| Linux   | RISC-V       | 64-bit only |
+| Linux   | RISC-V       | ✓      |
 | Linux   | LoongArch    | 64-bit only |
 | HP-UX   | IA-64        | Mostly works, but known to have serious limitations |
 | FreeBSD | x86-64       | ✓      |
@@ -52,7 +52,7 @@ This library supports several architecture/operating-system combinations:
 | FreeBSD | AArch64      | ✓      |
 | FreeBSD | PPC32        | ✓      |
 | FreeBSD | PPC64        | ✓      |
-| FreeBSD | RISC-V       | 64-bit only |
+| FreeBSD | RISC-V       | ✓      |
 | QNX     | Aarch64      | ✓      |
 | QNX     | x86-64       | ✓      |
 | Solaris | x86-64       | ✓      |
