@@ -121,7 +121,9 @@ _UCD_create(const char *filename)
       goto err;
     }
   unsigned size = ui->phdrs_count = (_64bits ? elf_header64.e_phnum : elf_header32.e_phnum);
-  coredump_phdr_t *phdrs = ui->phdrs = memset(malloc(size * sizeof(phdrs[0])), 0, size * sizeof(phdrs[0]));
+  coredump_phdr_t *phdrs = ui->phdrs = calloc(size, sizeof(phdrs[0]));
+  if (!phdrs)
+    goto err;
   if (_64bits)
     {
       coredump_phdr_t *cur = phdrs;
