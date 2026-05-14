@@ -85,7 +85,9 @@ typedef enum
 
     UNW_TDEP_IP = UNW_SH_PR,
     UNW_TDEP_SP = UNW_SH_R15,
-    UNW_TDEP_EH = UNW_SH_R0
+    /* GCC uses R4/R5 as exception data registers on SH4
+       (__builtin_eh_return_data_regno(0) = 4).  */
+    UNW_TDEP_EH = UNW_SH_R4
   }
 sh_regnum_t;
 
