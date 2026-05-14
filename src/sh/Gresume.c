@@ -38,8 +38,9 @@ sh_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (c->sigcontext_format == SH_SCF_NONE)
     {
-      /* Since there are no signals involved here we restore the non scratch
-         registers only.  */
+      /* Restore callee-saved registers and the EH data registers R4/R5
+         (UNW_TDEP_EH), which _Unwind_SetGR writes into the ucontext so
+         the landing pad receives the exception object and selector.  */
       unsigned long regs[8];
       regs[0] = uc->uc_mcontext.gregs[8];
       regs[1] = uc->uc_mcontext.gregs[9];
@@ -49,7 +50,9 @@ sh_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       regs[5] = uc->uc_mcontext.gregs[13];
       regs[6] = uc->uc_mcontext.gregs[14];
       regs[7] = uc->uc_mcontext.gregs[15];
-      unsigned long pc = uc->uc_mcontext.pr;
+      unsigned long pc  = uc->uc_mcontext.pr;
+      unsigned long eh0 = uc->uc_mcontext.gregs[4]; /* exception object */
+      unsigned long eh1 = uc->uc_mcontext.gregs[5]; /* exception selector */
 
       struct regs_overlay {
         char x[sizeof(regs)];
@@ -65,12 +68,16 @@ sh_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
         "mov.l @%0+, r14\n"
         "mov.l @%0,  r15\n"
         "lds %1, pr\n"
+        "mov %2, r4\n"
         "rts\n"
-        "nop\n"
+        "mov %3, r5\n"
         :
         : "r" (regs),
           "r" (pc),
+          "r" (eh0),
+          "r" (eh1),
           "m" (*(struct regs_overlay *)regs)
+        : "r4", "r5", "r8", "r9", "r10", "r11", "r13", "r14"
       );
     }
   else
