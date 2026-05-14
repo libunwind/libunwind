@@ -116,6 +116,7 @@ jobs:
           - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 14, container: ubuntu:26.04 }
           - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04 }
           - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04 }
+          - {target: sh4,      host: sh4-linux-gnu,           qemu: sh4,      gccver: 14, container: ubuntu:26.04, qemu_skip: "Gtest-sig-context:Gtest-trace:Ltest-init-local-signal:Ltest-sig-context:Ltest-trace" }
 
     steps:
       - name: Install git
