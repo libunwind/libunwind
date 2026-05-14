@@ -37,10 +37,10 @@ alpha_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t uc = *c->uc;
 
-  uc.uc_mcontext.sc_pc = c->dwarf.ip;
-
   /* Ensure c->pi is up-to-date.  */
   dwarf_make_proc_info (&c->dwarf);
+
+  uc.uc_mcontext.sc_pc = c->dwarf.ip;
 
   switch (c->sigcontext_format)
     {
