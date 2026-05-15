@@ -562,6 +562,38 @@ arm_find_proc_info2 (unw_addr_space_t as, unw_word_t ip,
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_DWARF) && (methods & UNW_ARM_METHOD_DWARF))
     ret = dwarf_find_proc_info (as, ip, pi, need_unwind_info, arg);
 
+  /* DWARF .debug_frame tables have no personality/LSDA info.  If DWARF
+     succeeded but yielded no handler, also probe ARM exidx to pick up the
+     personality function and lsda so that C++ exception handling works.
+     This requires a second dl_iterate_phdr pass; the extra cost is paid only
+     by DWARF-unwound frames in binaries that also carry .ARM.exidx.  */
+  if (ret >= 0 && pi->handler == 0
+      && UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX)
+      && (methods & UNW_ARM_METHOD_EXIDX))
+    {
+      struct arm_cb_data cb_data;
+      memset (&cb_data, 0, sizeof (cb_data));
+      cb_data.ip = ip;
+      cb_data.pi = pi;
+      cb_data.di.format = -1;
+      intrmask_t saved_mask2;
+      SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask2);
+      as->iterate_phdr_function (arm_phdr_cb, &cb_data);
+      SIGPROCMASK (SIG_SETMASK, &saved_mask2, NULL);
+      if (cb_data.di.format != -1)
+        {
+          unw_proc_info_t exidx_pi;
+          memset (&exidx_pi, 0, sizeof (exidx_pi));
+          if (arm_search_unwind_table (as, ip, &cb_data.di, &exidx_pi,
+                                       need_unwind_info, arg) == 0
+              && exidx_pi.handler != 0)
+            {
+              pi->handler = exidx_pi.handler;
+              pi->lsda    = exidx_pi.lsda;
+            }
+        }
+    }
+
   if (ret < 0 && UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX) &&
       (methods & UNW_ARM_METHOD_EXIDX))
     {
