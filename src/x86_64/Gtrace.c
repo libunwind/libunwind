@@ -74,7 +74,7 @@ trace_cache_free (void *arg)
   Debug(5, "freed cache %p\n", cache);
 }
 
-/* Initialise frame tracing for threaded use. */
+/* Initialize frame tracing for threaded use. */
 static void
 trace_cache_init_once (void)
 {
@@ -97,8 +97,8 @@ trace_cache_buckets (size_t n)
   return frames;
 }
 
-/* Allocate and initialise hash table for frame cache lookups.
-   Returns the cache initialised with (1ULL << HASH_LOW_BITS) hash
+/* Allocate and initialize hash table for frame cache lookups.
+   Returns the cache initialized with (1ULL << HASH_LOW_BITS) hash
    buckets, or NULL if there was a memory allocation problem. */
 static unw_trace_cache_t *
 trace_cache_create (void)
@@ -203,7 +203,7 @@ trace_cache_get (void)
   }
 }
 
-/* Initialise frame properties for address cache slot F at address
+/* Initialize frame properties for address cache slot F at address
    RIP using current CFA, RBP and RSP values.  Modifies CURSOR to
    that location, performs one unw_step(), and fills F with what
    was discovered about the location.  Returns F.
@@ -220,7 +220,7 @@ trace_init_addr (unw_tdep_frame_t *f,
   struct dwarf_cursor *d = &c->dwarf;
   int ret = -UNW_EINVAL;
 
-  /* Initialise frame properties: unknown, not last. */
+  /* Initialize frame properties: unknown, not last. */
   f->virtual_address = rip;
   f->frame_type = UNW_X86_64_FRAME_OTHER;
   f->last_frame = 0;

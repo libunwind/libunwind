@@ -445,6 +445,46 @@ arm_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
       pi->unwind_info = (void *) entry;
       pi->format = UNW_INFO_FORMAT_ARM_EXIDX;
     }
+
+  /* Extract personality function and LSDA from the ARM exception tables.
+     For non-compact extab entries the first extab word is a prel31 offset
+     to the personality function; pr_cache.ehtp must point to that word.
+     Set pi->lsda to the extab base so _Unwind_RaiseException can assign
+     ucb->pr_cache.ehtp = pi->lsda before each personality call.
+     Compact model entries (ARM_EXIDX_COMPACT set in the extab word) have
+     inline opcodes only; compact model 2 (__aeabi_unwind_cpp_pr2) can carry
+     LSDA but is not handled here.  */
+  {
+    unw_word_t data;
+    if ((*as->acc.access_mem)(as, entry + 4, &data, 0, arg) == 0)
+      {
+        if (data == ARM_EXIDX_CANT_UNWIND)
+          {
+            /* Nothing to do.  */
+          }
+        else if (!(data & ARM_EXIDX_COMPACT))
+          {
+            /* Pointer to .ARM.extab entry.  */
+            unw_word_t extbl_data;
+            if (prel31_to_addr (as, arg, entry + 4, &extbl_data) == 0)
+              {
+                unw_word_t extbl_word0;
+                if ((*as->acc.access_mem)(as, extbl_data, &extbl_word0,
+                                          0, arg) == 0
+                    && !(extbl_word0 & ARM_EXIDX_COMPACT))
+                  {
+                    /* Non-compact: word 0 is prel31 to personality.  */
+                    unw_word_t pers;
+                    if (prel31_to_addr (as, arg, extbl_data, &pers) == 0)
+                      pi->handler = pers;
+                    /* lsda = base of extab entry (for pr_cache.ehtp).  */
+                    pi->lsda = extbl_data;
+                  }
+              }
+          }
+      }
+  }
+
   return 0;
 }
 
