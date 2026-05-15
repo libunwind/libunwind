@@ -59,7 +59,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       *valp = c->dwarf.cfa;
       return 0;
 
-    /* FIXME: Initialise coprocessor & shadow registers?  */
+    /* FIXME: Initialize coprocessor & shadow registers?  */
 
     default:
       Debug (1, "bad register number %u\n", reg);
