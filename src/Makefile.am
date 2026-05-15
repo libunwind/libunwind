@@ -273,6 +273,12 @@ libunwind_la_SOURCES_generic =                 \
 	mi/Gget_elf_filename.c
 
 if SUPPORT_CXX_EXCEPTIONS
+if ARCH_ARM
+# ARM EHABI exception handling – a single file provides all _Unwind_* symbols
+# using the 3-argument personality calling convention required by ARM EABI.
+libunwind_la_SOURCES_local_unwind = arm/Gexcept.c
+endif ARCH_ARM
+if !ARCH_ARM
 libunwind_la_SOURCES_local_unwind =            \
 	unwind/Backtrace.c                     \
 	unwind/DeleteException.c               \
@@ -292,6 +298,7 @@ libunwind_la_SOURCES_local_unwind =            \
 	unwind/Resume_or_Rethrow.c             \
 	unwind/SetGR.c                         \
 	unwind/SetIP.c
+endif !ARCH_ARM
 
 #  _ReadULEB()/_ReadSLEB() are needed for Intel C++ 8.0 compatibility
 libunwind_la_SOURCES_os_linux_local =          \
