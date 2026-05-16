@@ -74,6 +74,9 @@ hppa_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   else
     {
       Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
+      /* _Uhppa_getcontext doesn't save FR0 (the FPSR); a stale value
+         with cause+enable bits set would fault inside setcontext. */
+      uc->uc_mcontext.sc_fr[0] = 0;
       setcontext (uc);
     }
 #else
