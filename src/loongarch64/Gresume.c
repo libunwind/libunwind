@@ -106,6 +106,9 @@ establish_machine_state (struct cursor *c)
       if (tdep_access_reg (c, reg, &val, 0) >= 0)
         as->acc.access_reg (as, reg, &val, 1, arg);
     }
+
+  val = c->dwarf.ip;
+  as->acc.access_reg (as, UNW_LOONGARCH64_PC, &val, 1, arg);
 }
 
 int
