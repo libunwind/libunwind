@@ -65,7 +65,12 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_MIPS_R28:
 
     case UNW_MIPS_R30:
+      loc = c->dwarf.loc[reg - UNW_MIPS_R0];
+      break;
+
     case UNW_MIPS_R31:
+      if (write)
+        c->dwarf.ip = *valp;            /* update the IP cache */
       loc = c->dwarf.loc[reg - UNW_MIPS_R0];
       break;
 
