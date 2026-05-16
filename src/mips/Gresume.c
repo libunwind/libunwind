@@ -36,6 +36,9 @@ mips_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   Debug (8, "resuming at ip=%llx via setcontext()\n",
          (unsigned long long) c->dwarf.ip);
+  /* _Umips_getcontext doesn't save the FP CSR (fpc_csr); stale cause+enable
+     bits would make setcontext's ctc1 raise SIGFPE immediately. */
+  uc->uc_mcontext.fpc_csr = 0;
   setcontext (uc);
   return -UNW_EINVAL;
 }
