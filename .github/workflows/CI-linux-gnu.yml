@@ -191,3 +191,117 @@ jobs:
             **/test-suite.log
             **/config.log
           if-no-files-found: warn
+
+
+  build-gnu-cross-meson:
+    runs-on: ubuntu-24.04
+    container:
+      image: ${{ matrix.config.container }}
+      options: --privileged
+    timeout-minutes: 30
+    name: ${{ matrix.config.host }} (meson)
+
+    strategy:
+      fail-fast: false
+      matrix:
+        config:
+          - {host: aarch64-linux-gnu,         qemu: aarch64,   gccver: 14, container: ubuntu:26.04, meson_cross: aarch64-unknown-linux-gnu }
+          - {host: alpha-linux-gnu,           qemu: alpha,     gccver: 14, container: ubuntu:26.04, meson_cross: alpha-unknown-linux-gnu }
+          - {host: arm-linux-gnueabihf,       qemu: arm,       gccver: 14, container: ubuntu:26.04, meson_cross: arm-linux-gnueabihf }
+          - {host: arm-linux-gnueabi,         qemu: arm,       gccver: 14, container: ubuntu:26.04, meson_cross: arm-linux-gnueabi }
+          - {host: hppa-linux-gnu,            qemu: hppa,      gccver: 14, container: ubuntu:26.04, meson_cross: hppa-linux-gnu }
+          - {host: mips64el-linux-gnuabi64,   qemu: mips64el,  gccver: 14, container: ubuntu:24.04, meson_cross: mips64el-unknown-linux-gnu }
+          - {host: mips64-linux-gnuabi64,     qemu: mips64,    gccver: 14, container: ubuntu:24.04, meson_cross: mips64-unknown-linux-gnu }
+          - {host: mips64el-linux-gnuabin32,  qemu: mipsn32el, gccver: 14, container: ubuntu:24.04, meson_cross: mipsn32el-unknown-linux-gnu,
+             meson_gcc_prefix: mips64el-linux-gnuabi64, gcc_flags: -mabi=n32, meson_c_args: "'-mabi=n32'",
+             packages: g++-14-multilib-mips64el-linux-gnuabi64 }
+          - {host: mips64-linux-gnuabin32,    qemu: mipsn32,   gccver: 14, container: ubuntu:24.04, meson_cross: mipsn32-unknown-linux-gnu,
+             meson_gcc_prefix: mips64-linux-gnuabi64, gcc_flags: -mabi=n32, meson_c_args: "'-mabi=n32'",
+             packages: g++-14-multilib-mips64-linux-gnuabi64 }
+          - {host: mipsel-linux-gnu,          qemu: mipsel,    gccver: 14, container: ubuntu:24.04, meson_cross: mipsel-linux-gnu }
+          - {host: mips-linux-gnu,            qemu: mips,      gccver: 14, container: ubuntu:24.04, meson_cross: mips-linux-gnu }
+          - {host: powerpc64-linux-gnu,       qemu: ppc64,     gccver: 14, container: ubuntu:26.04, meson_cross: powerpc64-unknown-linux-gnu,
+             qemu_xfail: *ppc64_qemu_skip }
+          - {host: powerpc64le-linux-gnu,     qemu: ppc64le,   gccver: 14, container: ubuntu:26.04, meson_cross: powerpc64le-unknown-linux-gnu,
+             qemu_xfail: *ppc64_qemu_skip }
+          - {host: powerpc-linux-gnu,         qemu: ppc,       gccver: 14, container: ubuntu:26.04, meson_cross: powerpc-unknown-linux-gnu }
+          - {host: riscv64-linux-gnu,         qemu: riscv64,   gccver: 14, container: ubuntu:26.04, meson_cross: riscv64-unknown-linux-gnu }
+          - {host: s390x-linux-gnu,           qemu: s390x,     gccver: 14, container: ubuntu:26.04, meson_cross: s390x-ibm-linux-gnu }
+
+    steps:
+      - name: Install git
+        run: |
+          apt-get update
+          apt-get install -y git
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Install ${{ matrix.config.host }} Toolchain
+        run: |
+          apt-get install -y meson ninja-build \
+                             ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
+                             qemu-user
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
+      - name: Configure with Meson
+        run: |
+          set -x
+          export PATH="$PWD/scripts:$PATH"
+
+          # mipsn32 uses the n64 toolchain prefix; all others use host directly
+          gcc_prefix='${{ matrix.config.meson_gcc_prefix || matrix.config.host }}'
+          cc="${gcc_prefix}-gcc-${{ matrix.config.gccver }}"
+          cxx="${gcc_prefix}-g++-${{ matrix.config.gccver }}"
+          ar="${gcc_prefix}-ar"
+          strip_tool="${gcc_prefix}-strip"
+
+          ew="['$PWD/scripts/meson-qemu-exe-wrapper', '--qemu=qemu-${{ matrix.config.qemu }}', '--gcc=${cc}'"
+          [ -n '${{ matrix.config.gcc_flags }}' ]  && ew="${ew}, '--gcc-flags=${{ matrix.config.gcc_flags }}'"
+          [ -n '${{ matrix.config.qemu_xfail }}' ] && ew="${ew}, '--xfail=${{ matrix.config.qemu_xfail }}'"
+          ew="${ew}]"
+
+          {
+            printf '[binaries]\n'
+            printf "c = '%s'\n"   "${cc}"
+            printf "cpp = '%s'\n" "${cxx}"
+            printf "ar = '%s'\n"  "${ar}"
+            printf "strip = '%s'\n" "${strip_tool}"
+            printf "exe_wrapper = %s\n" "${ew}"
+            if [ -n "${{ matrix.config.meson_c_args }}" ]; then
+              printf '\n[built-in options]\n'
+              printf "c_args = [%s]\n"       "${{ matrix.config.meson_c_args }}"
+              printf "cpp_args = [%s]\n"     "${{ matrix.config.meson_c_args }}"
+              printf "c_link_args = [%s]\n"  "${{ matrix.config.meson_c_args }}"
+              printf "cpp_link_args = [%s]\n" "${{ matrix.config.meson_c_args }}"
+            fi
+          } > /tmp/meson-ci-binaries.ini
+          cat /tmp/meson-ci-binaries.ini
+
+          meson setup build-meson \
+            --optimization=g \
+            --cross-file cross/${{ matrix.config.meson_cross }}.ini \
+            --cross-file /tmp/meson-ci-binaries.ini
+
+      - name: Build
+        run: meson compile -C build-meson -j$(nproc)
+
+      - name: Test
+        run: |
+          set -x
+          bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          ulimit -c unlimited
+          meson test -C build-meson -j$(nproc) --timeout-multiplier 2
+        env:
+          UNW_DEBUG_LEVEL: 4
+
+      - name: Upload Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.config.host }}-meson
+          path: |
+            build-meson/meson-logs/
+          if-no-files-found: warn

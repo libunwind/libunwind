@@ -29,10 +29,10 @@
 #include "libunwind_i.h"
 
 /**
- * This weakly-defined version of this public API function does nothing other
+ * Default implementation of this public API function that does nothing other
  * than always return false.
  */
-WEAK int
+int
 unw_is_plt_entry (unw_cursor_t *c UNUSED)
 {
 	return 0;

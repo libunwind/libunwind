@@ -176,8 +176,11 @@ extern int unw_tdep_is_fpreg (int);
    across a shared library boundary with lazy PLT binding, the dynamic
    linker's PLT resolver trashes GP before getcontext can save it.
    This inline wrapper captures GP before the cross-module call and
-   fixes up the saved value afterward.  */
-static inline int
+   fixes up the saved value afterward.
+
+   The wrapper must be always_inline so that _Ualpha_getcontext captures
+   the caller's $26 (pc) and $30 (sp), not the wrapper's.  */
+static __attribute__((always_inline)) inline int
 unw_tdep_getcontext (unw_tdep_context_t *uc)
 {
     unsigned long saved_gp;
