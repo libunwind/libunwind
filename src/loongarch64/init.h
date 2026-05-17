@@ -53,6 +53,7 @@ common_init (struct cursor *c, unsigned use_prev_instr)
   c->sigcontext_pc = 0;
 
   c->dwarf.args_size = 0;
+  c->dwarf.eh_valid_mask = 0;
   c->dwarf.stash_frames = 0;
   c->dwarf.use_prev_instr = use_prev_instr;
   c->dwarf.pi_valid = 0;

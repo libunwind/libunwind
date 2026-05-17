@@ -36,13 +36,39 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
   switch (reg)
     {
     case UNW_LOONGARCH64_R0:
-    case UNW_LOONGARCH64_R1:
     case UNW_LOONGARCH64_R2:
+      loc = c->dwarf.loc[reg - UNW_LOONGARCH64_R0];
+      break;
+
+    case UNW_LOONGARCH64_R1:
+      if (write)
+        c->dwarf.ip = *valp;
+      loc = c->dwarf.loc[UNW_LOONGARCH64_R1];
+      break;
 
     case UNW_LOONGARCH64_R4:
     case UNW_LOONGARCH64_R5:
     case UNW_LOONGARCH64_R6:
     case UNW_LOONGARCH64_R7:
+      {
+        unsigned int n = reg - UNW_LOONGARCH64_R4;
+        unsigned int mask = 1 << n;
+        if (write)
+          {
+            c->dwarf.eh_args[n] = *valp;
+            c->dwarf.eh_valid_mask |= mask;
+            return 0;
+          }
+        else if ((c->dwarf.eh_valid_mask & mask) != 0)
+          {
+            *valp = c->dwarf.eh_args[n];
+            return 0;
+          }
+        else
+          loc = c->dwarf.loc[reg - UNW_LOONGARCH64_R0];
+      }
+      break;
+
     case UNW_LOONGARCH64_R8:
     case UNW_LOONGARCH64_R9:
     case UNW_LOONGARCH64_R10:
