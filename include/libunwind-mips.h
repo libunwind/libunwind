@@ -117,7 +117,7 @@ typedef enum
 
     UNW_TDEP_IP = UNW_MIPS_R31,
     UNW_TDEP_SP = UNW_MIPS_R29,
-    UNW_TDEP_EH = UNW_MIPS_R0   /* FIXME.  */
+    UNW_TDEP_EH = UNW_MIPS_R4
   }
 mips_regnum_t;
 
@@ -129,7 +129,7 @@ typedef enum
   }
 mips_abi_t;
 
-#define UNW_TDEP_NUM_EH_REGS    2       /* FIXME for MIPS.  */
+#define UNW_TDEP_NUM_EH_REGS    2
 
 typedef struct unw_tdep_save_loc
   {
