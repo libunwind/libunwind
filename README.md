@@ -57,34 +57,6 @@ This library supports several architecture/operating-system combinations:
 | QNX     | x86-64       | ✓      |
 | Solaris | x86-64       | ✓      |
 
-## Libc Requirements
-
-libunwind depends on getcontext(), setcontext() functions which are missing
-from C libraries like musl-libc because they are considered to be "obsolescent"
-API by POSIX document.  The following table tries to track current status of
-such dependencies
-
- - r, requires
- - p, provides its own implementation
- - empty, no requirement
-
-| Architecture | getcontext | setcontext |
-|--------------|------------|------------|
-|    aarch64   |     p      |      p     |
-|    alpha     |     p      |      p     |
-|    arm       |     p      |            |
-|    hppa      |     p      |      p     |
-|    ia64      |     p      |      r     |
-|    loongarch |     p      |            |
-|    mips      |     p      |            |
-|    ppc32     |     r      |            |
-|    ppc64     |     r      |      r     |
-|    riscv     |     p      |      p     |
-|    s390x     |     p      |      p     |
-|    sh        |     r      |            |
-|    x86       |     p      |      r     |
-|    x86\_64   |     p      |      p     |
-
 ## General Build Instructions
 
 In general, this library can be built and installed with the following
