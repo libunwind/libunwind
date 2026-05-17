@@ -66,10 +66,8 @@ unw_resume (unw_cursor_t *cursor)
       return -UNW_EINVAL;
     }
 
-Debug(1, "==smw> before establish_machine_state\n");
   establish_machine_state (c);
 
-Debug(1, "==smw> before acc.resume\n");
   return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
                                      c->dwarf.as_arg);
 }
