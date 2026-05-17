@@ -97,132 +97,13 @@ commands:
 
 where `PREFIX` is the installation prefix.  By default, a prefix of
 `/usr/local` is used, such that `libunwind.a` is installed in
-`/usr/local/lib` and `unwind.h` is installed in `/usr/local/include`.  For
-testing, you may want to use a prefix of `/usr/local` instead.
-
-
-### Building with Intel compiler
-
-#### Version 8 and later
-
-Starting with version 8, the preferred name for the IA-64 Intel
-compiler is `icc` (same name as on x86).  Thus, the configure-line
-should look like this:
-
-    $ ./configure CC=icc CFLAGS="-g -O3 -ip" CXX=icc CCAS=gcc CCASFLAGS=-g \
-        LDFLAGS="-L$PWD/src/.libs"
-
-
-### Building on HP-UX
-
-For the time being, libunwind must be built with GCC on HP-UX.
-
-libunwind should be configured and installed on HP-UX like this:
-
-    $ ./configure CFLAGS="-g -O2 -mlp64" CXXFLAGS="-g -O2 -mlp64"
-
-Caveat: Unwinding of 32-bit (ILP32) binaries is not supported at the moment.
-
-### Building for PowerPC64 / Linux
-
-For building for power64 you should use:
-
-    $ ./configure CFLAGS="-g -O2 -m64" CXXFLAGS="-g -O2 -m64"
-
-If your power support altivec registers:
-
-    $ ./configure CFLAGS="-g -O2 -m64 -maltivec" CXXFLAGS="-g -O2 -m64 -maltivec"
-
-To check if your processor has support for vector registers (altivec):
-
-    cat /proc/cpuinfo | grep altivec
-
-and should have something like this:
-
-    cpu             : PPC970, altivec supported
-
-If libunwind seems to not work (backtracing failing), try to compile
-it with `-O0`, without optimizations. There are some compiler problems
-depending on the version of your gcc.
-
-### Building on FreeBSD
-
-General building instructions apply. To build and execute several tests
-on older versions of FreeBSD, you need libexecinfo library available in
-ports as devel/libexecinfo. This port has been removed as of 2017 and is
-indeed no longer needed.
+`/usr/local/lib` and `unwind.h` is installed in `/usr/local/include`.
 
 ## Regression Testing
 
 After building the library, you can run a set of regression tests with:
 
     $ make check
-
-### Expected results on x86 Linux
-
-The following tests are expected to fail on x86 Linux:
-
-* `test-ptrace`
-
-### Expected results on x86-64 Linux
-
-All tests are expected to pass on x86_64-linux-gnu.
-
-### Expected results on PA-RISC Linux
-
-The following tests are expected to fail on hppa-linux-gnu hosts:
-
-* `Gtest-bt` (backtrace truncated at `kill()` due to lack of unwind-info)
-* `Ltest-bt` (likewise)
-* `Gtest-resume-sig` (`Gresume.c:my_rt_sigreturn()` is wrong somehow)
-* `Ltest-resume-sig` (likewise)
-* `Gtest-init` (likewise)
-* `Ltest-init` (likewise)
-* `Gtest-dyn1` (no dynamic unwind info support yet)
-* `Ltest-dyn1` (no dynamic unwind info support yet)
-* `test-setjmp` (`longjmp()` not implemented yet)
-* `run-check-namespace` (toolchain doesn't support `HIDDEN` yet)
-
-### Expected results on HP-UX
-
-`make check` is currently unsupported for HP-UX.  You can try to run
-it, but most tests will fail (and some may fail to terminate).  The
-only test programs that are known to work at this time are:
-
-* `tests/bt`
-* `tests/Gperf-simple`
-* `tests/test-proc-info`
-* `tests/test-static-link`
-* `tests/Gtest-init`
-* `tests/Ltest-init`
-* `tests/Gtest-resume-sig`
-* `tests/Ltest-resume-sig`
-
-### Expected results on ppc64-linux-gnu
-
-`make check` currently has the following failures.
-
-* `Gtest-concurrent`
-* `Ltest-concurrent`
-* `Ltest-init-local-signal`
-* `Gtest-exc`
-* `Ltest-exc`
-* `Gtest-resume-sig`
-* `Ltest-resume-sig`
-* `Gtest-resume-sig-rt`
-* `Ltest-resume-sig-rt`
-
-### Expected results on Solaris x86-64
-
-`make check` is passing 27 out of 33 tests. The following six tests are consistently
-failing:
-
-* `Gtest-concurrent`
-* `Ltest-concurrent`
-* `Ltest-init-local-signal`
-* `Lrs-race`
-* `test-setjmp`
-* `x64-unwind-badjmp-signal-frame`
 
 ## Performance Testing
 
