@@ -259,7 +259,8 @@ dwarf_put (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t val)
 
 #define tdep_get_as(c)                  ((c)->dwarf.as)
 #define tdep_get_as_arg(c)              ((c)->dwarf.as_arg)
-#define tdep_get_ip(c)                  ((c)->dwarf.ip)
+/* HPPA IAOQ stores privilege level in the low 2 bits; strip them. */
+#define tdep_get_ip(c)                  ((c)->dwarf.ip & ~(unw_word_t)3)
 #define tdep_big_endian(as)             1
 
 extern atomic_bool tdep_init_done;
