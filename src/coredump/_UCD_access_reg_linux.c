@@ -162,6 +162,48 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
       [UNW_X86_64_RSP]    = offsetof(struct user_regs_struct, rsp) / sizeof(long),
       [UNW_X86_64_RIP]    = offsetof(struct user_regs_struct, rip) / sizeof(long),
     };
+#elif defined(UNW_TARGET_ALPHA)
+  if (regnum > UNW_ALPHA_R30 && regnum != UNW_ALPHA_PC)
+    goto badreg;
+
+  /* NT_PRSTATUS pr_reg stores R0-R30 sequentially at indices 0-30, with PC
+   * at index 31. The EF_* constants in <asm/reg.h> describe the kernel
+   * exception frame layout and must not be used to index pr_reg. */
+  static const uint8_t remap_regs[UNW_ALPHA_PC + 1] =
+    {
+      [UNW_ALPHA_R0]  = 0,
+      [UNW_ALPHA_R1]  = 1,
+      [UNW_ALPHA_R2]  = 2,
+      [UNW_ALPHA_R3]  = 3,
+      [UNW_ALPHA_R4]  = 4,
+      [UNW_ALPHA_R5]  = 5,
+      [UNW_ALPHA_R6]  = 6,
+      [UNW_ALPHA_R7]  = 7,
+      [UNW_ALPHA_R8]  = 8,
+      [UNW_ALPHA_R9]  = 9,
+      [UNW_ALPHA_R10] = 10,
+      [UNW_ALPHA_R11] = 11,
+      [UNW_ALPHA_R12] = 12,
+      [UNW_ALPHA_R13] = 13,
+      [UNW_ALPHA_R14] = 14,
+      [UNW_ALPHA_R15] = 15,
+      [UNW_ALPHA_R16] = 16,
+      [UNW_ALPHA_R17] = 17,
+      [UNW_ALPHA_R18] = 18,
+      [UNW_ALPHA_R19] = 19,
+      [UNW_ALPHA_R20] = 20,
+      [UNW_ALPHA_R21] = 21,
+      [UNW_ALPHA_R22] = 22,
+      [UNW_ALPHA_R23] = 23,
+      [UNW_ALPHA_R24] = 24,
+      [UNW_ALPHA_R25] = 25,
+      [UNW_ALPHA_R26] = 26,
+      [UNW_ALPHA_R27] = 27,
+      [UNW_ALPHA_R28] = 28,
+      [UNW_ALPHA_R29] = 29,
+      [UNW_ALPHA_R30] = 30,
+      [UNW_ALPHA_PC]  = 31,
+    };
 #else
 #error Port me
 #endif
