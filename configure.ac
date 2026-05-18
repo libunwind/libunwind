@@ -124,7 +124,7 @@ AC_ARG_ENABLE([coredump],
 )
 AS_IF([test "$enable_coredump" = "check"],
       [AS_CASE([$host_arch],
-               [aarch64*|alpha*|arm*|mips*|riscv*|sh*|x86*|loongarch64], [enable_coredump=yes],
+               [aarch64*|alpha*|arm*|hppa*|mips*|ppc*|riscv*|sh*|x86*|loongarch64], [enable_coredump=yes],
                [enable_coredump=no])]
 )
 AC_MSG_RESULT([$enable_coredump])

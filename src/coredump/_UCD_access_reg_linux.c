@@ -53,8 +53,53 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
 #elif defined(UNW_TARGET_SH)
   if (regnum > UNW_SH_PR)
     goto badreg;
-#elif defined(UNW_TARGET_IA64) || defined(UNW_TARGET_HPPA) || defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
+#elif defined(UNW_TARGET_IA64)
   if (regnum >= ARRAY_SIZE(ui->prstatus->pr_reg))
+    goto badreg;
+#elif defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
+# include <asm/ptrace.h>
+
+  if ((unsigned) regnum <= 31u)
+    /* R0-R31: UNW_PPCxx_Rn = PT_Rn = n, identity */;
+  else
+    {
+      /* DWARF register numbers for special regs, same on ppc32 and ppc64
+       * except NIP (PC): 77 on ppc32, 114 on ppc64.  */
+      static const uint8_t ppc_unw[] =
+        {
+          65,   /* LR  */
+          66,   /* CTR */
+          68,   /* CCR */
+          76,   /* XER */
+#if defined(UNW_TARGET_PPC32)
+          77,   /* NIP (PC) */
+#else
+          114,  /* NIP (PC) */
+#endif
+        };
+      static const uint8_t ppc_pt[] =
+        {
+          PT_LNK, PT_CTR, PT_CCR, PT_XER, PT_NIP,
+        };
+
+      size_t i;
+      for (i = 0; i < ARRAY_SIZE(ppc_unw); i++)
+        if (ppc_unw[i] == (uint8_t) regnum)
+          break;
+      if (i == ARRAY_SIZE(ppc_unw))
+        goto badreg;
+      regnum = ppc_pt[i];
+    }
+#elif defined(UNW_TARGET_HPPA)
+# include <asm/ptrace.h>
+
+  if ((unsigned) regnum <= 31u)
+    /* GR0-GR31: identity */;
+  else if (regnum == UNW_HPPA_IP)
+    regnum = offsetof(struct user_regs_struct, iaoq[0]) / sizeof(long);
+  else if (regnum == UNW_HPPA_SAR)
+    regnum = offsetof(struct user_regs_struct, sar) / sizeof(long);
+  else
     goto badreg;
 #elif defined(UNW_TARGET_RISCV)
   if (regnum == UNW_RISCV_PC)
