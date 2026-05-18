@@ -74,6 +74,8 @@ hppa_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
   else
     {
       Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
+      /* CFA after unw_step equals the frame's body SP on HPPA's upward-growing stack. */
+      uc->uc_mcontext.sc_gr[30] = c->dwarf.cfa;
       setcontext (uc);
     }
 #else
