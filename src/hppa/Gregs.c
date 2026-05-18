@@ -38,11 +38,15 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     {
     case UNW_HPPA_IP:
       if (write)
-        c->dwarf.ip = *valp;            /* update the IP cache */
-      if (c->dwarf.pi_valid && (*valp < c->dwarf.pi.start_ip
-                                || *valp >= c->dwarf.pi.end_ip))
-        c->dwarf.pi_valid = 0;          /* new IP outside of current proc */
-      break;
+        {
+          c->dwarf.ip = *valp;
+          if (c->dwarf.pi_valid && (*valp < c->dwarf.pi.start_ip
+                                    || *valp >= c->dwarf.pi.end_ip))
+            c->dwarf.pi_valid = 0;
+        }
+      else
+        *valp = c->dwarf.ip;
+      return 0;
 
     case UNW_HPPA_CFA:
       if (write)
