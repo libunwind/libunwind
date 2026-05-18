@@ -293,7 +293,7 @@ x86_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UN
 
   Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
 #if !defined(__ANDROID__)
-  setcontext (uc);
+  _Ux86_setcontext (uc);
 #endif
   return -UNW_EINVAL;
 }
