@@ -56,6 +56,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 extern void x86_local_addr_space_init (void);
 extern int x86_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
                              void *arg);
+extern int _Ux86_setcontext (const ucontext_t *ucp);
 extern dwarf_loc_t x86_scratch_loc (struct cursor *c, unw_regnum_t reg);
 extern dwarf_loc_t x86_get_scratch_loc (struct cursor *c, unw_regnum_t reg);
 extern void *x86_r_uc_addr (ucontext_t *uc, int reg);

@@ -42,6 +42,7 @@
     <elf-symbol name='_Ux86_getcontext' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Ux86_setcontext' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_Ux86_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='backtrace' type='func-type' binding='weak-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='unw_backtrace' type='func-type' binding='global-binding' visibility='default-visibility' alias='backtrace' is-defined='yes'/>

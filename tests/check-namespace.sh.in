@@ -202,6 +202,7 @@ check_local_unw_abi () {
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
 	    match _UL${plat}_dwarf_find_unwind_table
+	    match _U${plat}_setcontext
 	    ;;
 	x86_64)
 	    match _U${plat}_getcontext
