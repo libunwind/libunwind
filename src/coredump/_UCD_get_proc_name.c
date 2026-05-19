@@ -29,52 +29,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # include <sys/elf.h>
 #endif
 
-
-static off_t
-_get_text_offset (uint8_t *image)
-{
-  off_t offset = 0;
-  typedef union
-  {
-    Elf32_Ehdr h32;
-    Elf64_Ehdr h64;
-  } elf_header_t;
-
-  elf_header_t *elf_header = (elf_header_t *)image;
-  bool _64bits     = (elf_header->h32.e_ident[EI_CLASS] == ELFCLASS64);
-  off_t e_phofs    = _64bits ? elf_header->h64.e_phoff  : elf_header->h32.e_phoff;
-  unsigned e_phnum = _64bits ? elf_header->h64.e_phnum  : elf_header->h32.e_phnum;
-
-  for (unsigned i = 0; i < e_phnum; ++i)
-    {
-      if (_64bits)
-        {
-          Elf64_Phdr *phdr = (Elf64_Phdr *) (image + e_phofs);
-
-          if (phdr[i].p_type == PT_LOAD && (phdr[i].p_flags & PF_X) == PF_X)
-            {
-              offset = phdr[i].p_offset;
-              break;
-            }
-        }
-
-      else
-        {
-          Elf32_Phdr *phdr = (Elf32_Phdr *) (image + e_phofs);
-
-          if ((phdr[i].p_flags & PF_X) == PF_X)
-            {
-              offset = phdr[i].p_offset;
-              break;
-            }
-        }
-    }
-
-  Debug (4, "returning offset %ld\n", (long)offset);
-  return offset;
-}
-
-
 /* Find the ELF image that contains IP and return the "closest"
    procedure name, if there is one.  With some caching, this could be
    sped up greatly, but until an application materializes that's
@@ -95,14 +49,9 @@ elf_w (CD_get_proc_name) (struct UCD_info *ui, unw_addr_space_t as, unw_word_t i
   coredump_phdr_t *cphdr = _UCD_get_elf_image (ui, ip);
 
   if (!cphdr)
-    {
-      Debug (1, "returns error: _UCD_get_elf_image failed\n");
-      return -UNW_ENOINFO;
-    }
+    return -UNW_ENOINFO;
 
-  segbase = 0; /* everything is relative to the beginning of the ELF file */
-  /* Adjust IP to be relative to start of the .text section of the ELF file */
-  ip = ip - cphdr->p_vaddr + _get_text_offset (ui->edi.ei.image);
+  segbase = cphdr->p_vaddr;
   ret = elf_w (get_proc_name_in_image) (as, &ui->edi.ei, segbase, ip, buf, buf_len, offp);
   if (ret == -UNW_ENOINFO)
     {
