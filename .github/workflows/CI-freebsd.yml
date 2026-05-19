@@ -63,7 +63,7 @@ jobs:
 
             printf '\n Configuration \n'
             autoreconf -ifv
-            ./configure --enable-debug
+            ./configure --enable-debug --enable-coredump
             
             printf '\n Build \n'
             make -j$(nproc)
