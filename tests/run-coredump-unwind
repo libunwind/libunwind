@@ -42,16 +42,40 @@ if [ "$1" = "-minidebuginfo" ]; then
   add_minidebug $TEMPDIR/crasher
 fi
 
+COREFILE=$TEMPDIR/core
+
 # create core dump
-(
-    cd $TEMPDIR
-    ulimit -c 10000
-    ./crasher backing_files
-) 2>/dev/null
-COREFILE=$TEMPDIR/core*
-if ! test -f "$COREFILE"; then
-    echo "crasher process did not produce coredump, test skipped"
-    exit 77
+CORE_PATTERN=$(cat /proc/sys/kernel/core_pattern 2>/dev/null || echo "core")
+if echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >/dev/null 2>&1; then
+    # systemd-coredump intercepts the crash; retrieve core via coredumpctl
+    BEFORE=$(date '+%Y-%m-%d %H:%M:%S')
+    (
+        cd $TEMPDIR
+        ./crasher backing_files
+    ) 2>/dev/null
+    # poll for the coredump (systemd-coredump processes asynchronously)
+    i=0
+    while [ $i -lt 10 ]; do
+        coredumpctl dump --quiet --since="$BEFORE" --output="$COREFILE" \
+            "$TEMPDIR/crasher" 2>/dev/null && break
+        sleep 1
+        i=$((i + 1))
+    done
+    if ! test -f "$COREFILE"; then
+        echo "coredumpctl could not retrieve coredump, test skipped"
+        exit 77
+    fi
+else
+    (
+        cd $TEMPDIR
+        ulimit -c 10000
+        ./crasher backing_files
+    ) 2>/dev/null
+    if ! test -f $TEMPDIR/core*; then
+        echo "crasher process did not produce coredump, test skipped"
+        exit 77
+    fi
+    COREFILE=$TEMPDIR/core*
 fi
 
 # magic option -testcase enables checking for the specific contents of the stack
