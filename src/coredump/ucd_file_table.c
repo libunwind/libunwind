@@ -91,20 +91,24 @@ _ucd_file_open (ucd_file_t *ucd_file)
 {
   ucd_file->fd = open(ucd_file->filename, O_RDONLY);
   if (ucd_file->fd == -1)
-	{
-	  Debug(0, "error %d in open(%s): %s\n", errno, ucd_file->filename, strerror(errno));
-	  return;
-	}
+    {
+      Debug(0, "error %d in open(%s): %s\n", errno, ucd_file->filename, strerror(errno));
+      return;
+    }
 
   struct stat sbuf;
   int sstat = fstat(ucd_file->fd, &sbuf);
   if (sstat != 0)
     {
-	  Debug(0, "error %d in fstat(%s): %s\n", errno, ucd_file->filename, strerror(errno));
-	  close(ucd_file->fd);
-	  ucd_file->fd = -1;
+      Debug(0, "error %d in fstat(%s): %s\n", errno, ucd_file->filename, strerror(errno));
+      close(ucd_file->fd);
+      ucd_file->fd = -1;
+      ucd_file->size = 0;
     }
-  ucd_file->size = sbuf.st_size;
+  else
+    {
+      ucd_file->size = sbuf.st_size;
+    }
 }
 
 
@@ -115,22 +119,21 @@ uint8_t *
 ucd_file_map (ucd_file_t *ucd_file)
 {
   if (ucd_file->image != NULL)
-    {
-      return ucd_file->image;
-    }
+    return ucd_file->image;
 
   if (ucd_file->fd == -1)
-    {
-      _ucd_file_open (ucd_file);
-	}
+    _ucd_file_open (ucd_file);
+
+  if (ucd_file->fd == -1)
+    return NULL;
 
   ucd_file->image = mi_mmap(NULL, ucd_file->size, PROT_READ, MAP_PRIVATE, ucd_file->fd, 0);
   if (ucd_file->image == MAP_FAILED)
-	{
-	  Debug(0, "error in mmap(%s)\n", ucd_file->filename);
-	  ucd_file->image = NULL;
-	  return NULL;
-	}
+    {
+      Debug(0, "error in mmap(%s)\n", ucd_file->filename);
+      ucd_file->image = NULL;
+      return NULL;
+    }
   return ucd_file->image;
 }
 
