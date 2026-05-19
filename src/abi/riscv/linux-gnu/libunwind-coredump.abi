@@ -642,7 +642,7 @@
         <var-decl name='__glibc_reserved' type-id='type-id-133' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='coredump_phdr' is-struct='yes' visibility='default' size-in-bits='448' hash='6cedb813cde587cf' id='type-id-134'>
+    <class-decl name='coredump_phdr' is-struct='yes' visibility='default' size-in-bits='512' hash='0396a0002cab77bc' id='type-id-134'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='p_type' type-id='type-id-74' visibility='default'/>
       </data-member>
@@ -666,6 +666,9 @@
       </data-member>
       <data-member access='public' layout-offset-in-bits='384'>
         <var-decl name='p_backing_file_index' type-id='type-id-136' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='p_mapoff' type-id='type-id-135' visibility='default'/>
       </data-member>
     </class-decl>
     <class-decl name='elf_dyn_info' is-struct='yes' visibility='default' size-in-bits='1408' hash='115a2ca68d0d06c7' id='type-id-123'>
@@ -885,7 +888,7 @@
     <typedef-decl name='__pid_t' type-id='type-id-16' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-141'/>
     <typedef-decl name='__suseconds_t' type-id='type-id-17' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-145'/>
     <typedef-decl name='__time_t' type-id='type-id-17' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-144'/>
-    <typedef-decl name='coredump_phdr_t' type-id='type-id-134' size-in-bits='448' id='type-id-169'/>
+    <typedef-decl name='coredump_phdr_t' type-id='type-id-134' size-in-bits='512' id='type-id-169'/>
     <typedef-decl name='elf_fpregset_t' type-id='type-id-170' size-in-bits='4224' id='type-id-126'/>
     <typedef-decl name='elf_gregset_t' type-id='type-id-171' size-in-bits='2048' hash='ee3b3df47d26e133' id='type-id-143'/>
     <typedef-decl name='int16_t' type-id='type-id-165' size-in-bits='16' hash='6c2352eccdcd3eea' id='type-id-157'/>

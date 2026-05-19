@@ -610,7 +610,7 @@
         <var-decl name='fpregset' type-id='type-id-138' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='coredump_phdr' size-in-bits='256' is-struct='yes' visibility='default' id='type-id-139'>
+    <class-decl name='coredump_phdr' size-in-bits='288' is-struct='yes' visibility='default' id='type-id-139'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='p_type' type-id='type-id-77' visibility='default'/>
       </data-member>
@@ -634,6 +634,9 @@
       </data-member>
       <data-member access='public' layout-offset-in-bits='224'>
         <var-decl name='p_backing_file_index' type-id='type-id-141' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='p_mapoff' type-id='type-id-140' visibility='default'/>
       </data-member>
     </class-decl>
     <class-decl name='elf_dyn_info' size-in-bits='832' is-struct='yes' visibility='default' id='type-id-135'>
