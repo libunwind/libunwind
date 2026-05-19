@@ -50,7 +50,7 @@ jobs:
           set -x
           gcc --version
           autoreconf -i
-          ./configure --enable-debug
+          ./configure --enable-debug --enable-coredump
         env:
           CFLAGS: -g -O0 -Wall -Wextra
           CXXFLAGS: -g -O0
