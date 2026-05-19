@@ -45,7 +45,6 @@ CD_elf_map_image(struct UCD_info *ui, coredump_phdr_t *phdr)
       ei->image = mi_mmap(NULL, phdr->p_memsz, PROT_READ, MAP_PRIVATE, ui->coredump_fd, phdr->p_offset);
       if (ei->image == MAP_FAILED)
         {
-          Debug(0, "error in mmap()\n");
           ei->image = NULL;
           return NULL;
         }
@@ -57,18 +56,13 @@ CD_elf_map_image(struct UCD_info *ui, coredump_phdr_t *phdr)
           mi_munmap(remainder_base, remainder_len);
         }
     } else {
-      ucd_file_t *ucd_file =  ucd_file_table_at(&ui->ucd_file_table, phdr->p_backing_file_index);
+      ucd_file_t *ucd_file = ucd_file_table_at(&ui->ucd_file_table, phdr->p_backing_file_index);
       if (ucd_file == NULL)
-        {
-          Debug(0, "error retrieving backing file for index %d\n", phdr->p_backing_file_index);
-          return NULL;
-        }
+        return NULL;
       /* addr, length, prot, flags, fd, fd_offset */
       ei->image = ucd_file_map (ucd_file);
       if (ei->image == NULL)
-        {
-          return NULL;
-        }
+        return NULL;
       ei->size = ucd_file->size;
     }
 
