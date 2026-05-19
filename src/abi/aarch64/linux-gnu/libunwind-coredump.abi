@@ -619,7 +619,7 @@
         <var-decl name='fpregset' type-id='type-id-132' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='coredump_phdr' is-struct='yes' visibility='default' size-in-bits='448' hash='6cedb813cde587cf' id='type-id-133'>
+    <class-decl name='coredump_phdr' is-struct='yes' visibility='default' size-in-bits='512' hash='0396a0002cab77bc' id='type-id-133'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='p_type' type-id='type-id-74' visibility='default'/>
       </data-member>
@@ -643,6 +643,9 @@
       </data-member>
       <data-member access='public' layout-offset-in-bits='384'>
         <var-decl name='p_backing_file_index' type-id='type-id-135' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='p_mapoff' type-id='type-id-134' visibility='default'/>
       </data-member>
     </class-decl>
     <class-decl name='elf_dyn_info' is-struct='yes' visibility='default' size-in-bits='1408' hash='115a2ca68d0d06c7' id='type-id-129'>
@@ -873,7 +876,7 @@
     <typedef-decl name='__pid_t' type-id='type-id-15' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-140'/>
     <typedef-decl name='__suseconds_t' type-id='type-id-17' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-144'/>
     <typedef-decl name='__time_t' type-id='type-id-17' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-143'/>
-    <typedef-decl name='coredump_phdr_t' type-id='type-id-133' size-in-bits='448' id='type-id-169'/>
+    <typedef-decl name='coredump_phdr_t' type-id='type-id-133' size-in-bits='512' id='type-id-169'/>
     <typedef-decl name='elf_fpregset_t' type-id='type-id-164' size-in-bits='4224' id='type-id-132'/>
     <typedef-decl name='elf_greg_t' type-id='type-id-77' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-118'/>
     <typedef-decl name='elf_gregset_t' type-id='type-id-119' size-in-bits='2176' hash='69ac61d844172851' id='type-id-142'/>

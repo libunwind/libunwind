@@ -74,8 +74,9 @@ get_unwind_info(struct UCD_info *ui, unw_addr_space_t as, unw_word_t ip)
 
   /* segbase: where it is mapped in virtual memory */
   segbase = phdr->p_vaddr;
-  /* mapoff doesn't matter since the entire file is loaded */
-  mapoff  = 0;
+  /* mapoff: file offset of this mapping (from NT_FILE), needed to correctly
+   * compute load_base for PIE binaries */
+  mapoff  = phdr->p_mapoff;
 
   /* Here, SEGBASE is the starting-address of the (mmap'ped) segment
      which covers the IP we're looking for.  */
