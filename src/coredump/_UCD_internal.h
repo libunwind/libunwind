@@ -71,6 +71,7 @@ struct coredump_phdr
     uoff_t           p_memsz;
     uoff_t           p_align;
     ucd_file_index_t p_backing_file_index;
+    uoff_t           p_mapoff;   /* file offset of this mapping (from NT_FILE) */
   };
 
 typedef struct coredump_phdr coredump_phdr_t;

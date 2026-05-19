@@ -105,7 +105,9 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
               if (len > 0 && !_path_ends_with(strings, len, deleted, deleted_len))
                 {
                   ui->phdrs[p].p_backing_file_index = ucd_file_table_insert (&ui->ucd_file_table, strings);
-                  Debug (3, "adding '%s' at index %d\n", strings, ui->phdrs[p].p_backing_file_index);
+                  /* NT_FILE offset is in pages; convert to bytes */
+                  ui->phdrs[p].p_mapoff = entry.offset * hdr.pagesz;
+                  Debug (3, "adding '%s' at index %d (mapoff=0x%lx)\n", strings, ui->phdrs[p].p_backing_file_index, (unsigned long)ui->phdrs[p].p_mapoff);
                 }
               else
                 {
