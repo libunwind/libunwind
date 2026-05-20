@@ -180,6 +180,19 @@ main(int argc UNUSED, char **argv)
     argv++;
   }
 
+  /* Register backing files supplied as VADDR:PATH arguments.
+   * Needed when the core lacks NT_FILE notes (e.g. QEMU user-mode cores). */
+  while (*argv)
+    {
+      char *colon = strchr(*argv, ':');
+      if (colon)
+        {
+          unsigned long vaddr = strtoul(*argv, NULL, 0);
+          _UCD_add_backing_file_at_vaddr(ui, vaddr, colon + 1);
+        }
+      argv++;
+    }
+
   for (;;)
     {
       unw_word_t ip;
