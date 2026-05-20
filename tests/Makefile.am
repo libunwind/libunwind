@@ -199,6 +199,16 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 TESTS = $(check_PROGRAMS)
 if !CROSS_BUILD
  TESTS += $(check_SCRIPTS)
+else
+# For cross builds, include coredump tests - they run under QEMU
+if BUILD_COREDUMP
+if OS_LINUX
+ TESTS += run-coredump-unwind
+if HAVE_LZMA
+  TESTS += run-coredump-unwind-mdi
+endif
+endif
+endif
 endif
 
 # Use if arch defines but does not support PTRACE_SINGLESTEP
@@ -419,3 +429,20 @@ Laarch64_test_frame_size_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
 Laarch64_test_frame_size_LDADD = $(LIBUNWIND_internal)
 Gaarch64_test_frame_size_LDADD = $(LIBUNWIND_arch)
 aarch64_test_lr_fallback_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
+
+# Copy scripts from source directory to build directory (for cross builds)
+# Use .PHONY to prevent VPATH from resolving targets to source directory
+.PHONY: run-coredump-unwind run-coredump-unwind-mdi
+
+run-coredump-unwind:
+	cp $(abs_srcdir)/run-coredump-unwind $@
+
+run-coredump-unwind-mdi:
+	cp $(abs_srcdir)/run-coredump-unwind-mdi $@
+
+# Also copy scripts with .sh extension (for other scripts)
+# Using explicit absolute path and .PHONY to avoid VPATH issues
+.PHONY: %.sh
+
+%.sh:
+	cp $(abs_srcdir)/$@ $@
