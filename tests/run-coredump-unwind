@@ -92,10 +92,11 @@ else
             ./crasher backing_files
         fi
     ) 2>/dev/null
-    # Find core file: native kernels write core* patterns; QEMU writes
-    # qemu_<binary>_<timestamp>_<pid>.core in the working directory.
+    # Find core file: QEMU writes qemu_<binary>_<timestamp>_<pid>.core in the
+    # working directory; native kernels and old/failing QEMU write core* patterns.
+    # Prefer the QEMU-generated guest core when both exist.
     COREFILE=
-    for f in "$TEMPDIR"/core* "$TEMPDIR"/qemu_crasher*.core; do
+    for f in "$TEMPDIR"/qemu_crasher*.core "$TEMPDIR"/core*; do
         if [ -f "$f" ]; then
             COREFILE="$f"
             break
@@ -104,6 +105,39 @@ else
     if [ -z "$COREFILE" ]; then
         echo "crasher process did not produce coredump, test skipped"
         exit 77
+    fi
+
+    # When qemu-ARCH fails to write a guest core it re-raises the signal to
+    # itself and the kernel writes a host (x86-64) core instead.  Detect this
+    # and skip rather than report a spurious failure.
+    #
+    # Try readelf first; fall back to od (always available) in case readelf
+    # is not installed (e.g. CI containers that only have cross-binutils).
+    if [ -n "$QEMU_ARCH" ]; then
+        core_machine=$(readelf -h "$COREFILE" 2>/dev/null | grep 'Machine:')
+        case "$core_machine" in
+            *X86-64*|*80386*)
+                echo "qemu-$QEMU_ARCH crashed writing guest core (got host x86 core); test skipped"
+                exit 77
+                ;;
+            '')
+                # readelf not available; inspect ELF header bytes with od.
+                # EI_DATA (byte 5): 1=LE, 2=BE.  A LE core on a BE target or
+                # any core whose e_machine is EM_X86_64(62)/EM_386(3) is a host
+                # x86 core.
+                ei_data=$(od -An -j5 -N1 -tu1 "$COREFILE" 2>/dev/null | tr -d ' ')
+                if [ "$ei_data" = "1" ]; then
+                    # LE file: e_machine at offset 18 is also stored LE.
+                    e_mach=$(od -An -j18 -N2 -tu2 "$COREFILE" 2>/dev/null | tr -d ' ')
+                    case "$e_mach" in
+                        62|3)
+                            echo "qemu-$QEMU_ARCH crashed writing guest core (got host x86 core); test skipped"
+                            exit 77
+                            ;;
+                    esac
+                fi
+                ;;
+        esac
     fi
 fi
 
