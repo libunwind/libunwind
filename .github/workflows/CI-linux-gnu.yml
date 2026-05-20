@@ -99,9 +99,9 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 14, container: ubuntu:26.04 }
+          - {target: aarch64,  host: aarch64-linux-gnu,       qemu: aarch64,  gccver: 14, container: ubuntu:26.04, dpkg_arch: arm64    }
           - {target: alpha,    host: alpha-linux-gnu,         qemu: alpha,    gccver: 14, container: ubuntu:26.04 }
-          - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 14, container: ubuntu:26.04 }
+          - {target: armhf,    host: arm-linux-gnueabihf,     qemu: arm,      gccver: 14, container: ubuntu:26.04, dpkg_arch: armhf    }
           - {target: arm,      host: arm-linux-gnueabi,       qemu: arm,      gccver: 14, container: ubuntu:26.04 }
           - {target: hppa,     host: hppa-linux-gnu,          qemu: hppa,     gccver: 14, container: ubuntu:26.04 }
           - {target: loongarch64, host: loongarch64-linux-gnu, qemu: loongarch64, gccver: 14, container: ubuntu:26.04 }
@@ -112,10 +112,10 @@ jobs:
           - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 14, container: ubuntu:24.04 }
           - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 14, container: ubuntu:24.04 }
           - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04, qemu_skip: &ppc64_qemu_skip "Gtest-bt:Gtest-concurrent:Gtest-resume-sig:Gtest-resume-sig-rt:Gtest-trace:Ltest-bt:Ltest-concurrent:Ltest-init-local-signal:Ltest-resume-sig:Ltest-resume-sig-rt:Ltest-sig-context:Ltest-trace:test-async-sig" }
-          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04, qemu_skip: *ppc64_qemu_skip }
+          - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04, dpkg_arch: ppc64el,  qemu_skip: *ppc64_qemu_skip }
           - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 14, container: ubuntu:26.04 }
-          - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04 }
-          - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04 }
+          - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04, dpkg_arch: riscv64  }
+          - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04, dpkg_arch: s390x    }
 
     steps:
       - name: Install git
@@ -129,12 +129,30 @@ jobs:
 
       - name: Install ${{ matrix.config.host }} Toolchain
         run: |
+          if [ -n "$DPKG_ARCH" ]; then
+            dpkg --add-architecture "$DPKG_ARCH"
+            CODENAME=$(. /etc/os-release && echo "$VERSION_CODENAME")
+            # Restrict existing sources to amd64 so archive.ubuntu.com doesn't
+            # 404 on ports-only arches; ports.ubuntu.com handles $DPKG_ARCH.
+            for f in /etc/apt/sources.list.d/*.sources; do
+              [ -f "$f" ] && sed -i '/^Architectures:/!s/^Types:/Architectures: amd64\nTypes:/' "$f"
+            done
+            sed -i 's/^deb http/deb [arch=amd64] http/' /etc/apt/sources.list 2>/dev/null || true
+            echo "deb [arch=$DPKG_ARCH] http://ports.ubuntu.com/ubuntu-ports $CODENAME main restricted universe" \
+              >> /etc/apt/sources.list.d/ports.list
+            echo "deb [arch=$DPKG_ARCH] http://ports.ubuntu.com/ubuntu-ports $CODENAME-updates main restricted universe" \
+              >> /etc/apt/sources.list.d/ports.list
+            apt-get update
+          fi
           apt-get install -y autoconf automake libtool make \
                              ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
                              qemu-user \
-                             abigail-tools
+                             xz-utils \
+                             abigail-tools \
+                             ${DPKG_ARCH:+liblzma-dev:$DPKG_ARCH}
         env:
           DEBIAN_FRONTEND: noninteractive
+          DPKG_ARCH: ${{ matrix.config.dpkg_arch || '' }}
 
       - name: Configure with ${{ matrix.config.cc }}
         run: |
