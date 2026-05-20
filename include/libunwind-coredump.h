@@ -45,6 +45,8 @@ extern void _UCD_select_thread(struct UCD_info *, int);
 extern pid_t _UCD_get_pid(struct UCD_info *);
 extern int _UCD_get_cursig(struct UCD_info *);
 
+extern int _UCD_add_backing_file_at_vaddr (struct UCD_info *, unsigned long, const char *);
+
 extern int _UCD_find_proc_info (unw_addr_space_t, unw_word_t,
                                 unw_proc_info_t *, int, void *);
 extern void _UCD_put_unwind_info (unw_addr_space_t, unw_proc_info_t *, void *);
