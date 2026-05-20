@@ -105,6 +105,19 @@ else
         echo "crasher process did not produce coredump, test skipped"
         exit 77
     fi
+
+    # When qemu-ARCH lacks guest core-dump support, it re-raises the signal to
+    # itself and the kernel writes a host (x86-64) core instead of a guest core.
+    # Detect this and skip rather than report a spurious failure.
+    if [ -n "$QEMU_ARCH" ]; then
+        core_machine=$(readelf -h "$COREFILE" 2>/dev/null | grep 'Machine:')
+        case "$core_machine" in
+            *X86-64*|*80386*)
+                echo "qemu-$QEMU_ARCH crashed writing guest core (got host x86 core); test skipped"
+                exit 77
+                ;;
+        esac
+    fi
 fi
 
 # magic option -testcase enables checking for the specific contents of the stack
