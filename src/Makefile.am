@@ -23,7 +23,7 @@
 # Set the DSO versions
 SOVERSION=10:0:2		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
-COREDUMP_SO_VERSION=0:0:0
+COREDUMP_SO_VERSION=1:0:1
 
 AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
@@ -157,6 +157,7 @@ endif
 noinst_HEADERS += coredump/_UCD_internal.h     \
                   coredump/ucd_file_table.h
 libunwind_coredump_la_SOURCES =                \
+	coredump/_UCD_add_backing_file_at_vaddr.c \
 	coredump/_UCD_access_mem.c             \
 	coredump/_UCD_accessors.c              \
 	coredump/_UCD_corefile_elf.c           \
