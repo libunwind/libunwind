@@ -76,8 +76,7 @@ jobs:
           UNW_DEBUG_LEVEL: 4
 
       - name: Upload Test Logs
-        # This step only runs if the "Build and Test" step fails
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.config.triple }}-${{ matrix.toolchain.compiler }}${{ matrix.optimization.CFLAGS }}
@@ -201,8 +200,7 @@ jobs:
           CROSS_LIB: ${{ matrix.config.cross_lib || format('/usr/{0}', matrix.config.host) }}
 
       - name: Upload Test Logs
-        # This step only runs if the "Build and Test" step fails
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.config.host }}

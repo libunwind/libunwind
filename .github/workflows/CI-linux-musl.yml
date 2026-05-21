@@ -71,8 +71,7 @@ jobs:
         shell: alpine.sh {0}
 
       - name: Upload Test Logs
-        # This step only runs if the "Build and Test" step fails
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.arch }}-linux-musl
