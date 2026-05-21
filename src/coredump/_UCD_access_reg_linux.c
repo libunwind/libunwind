@@ -26,6 +26,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UCD_internal.h"
 
+#if defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64) || defined(UNW_TARGET_HPPA) || defined(UNW_TARGET_ALPHA)
+# include <asm/ptrace.h>
+#endif
+
 int
 _UCD_access_reg (unw_addr_space_t  as UNUSED,
                  unw_regnum_t      regnum,
@@ -57,8 +61,6 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
   if (regnum >= ARRAY_SIZE(ui->prstatus->pr_reg))
     goto badreg;
 #elif defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
-# include <asm/ptrace.h>
-
   if ((unsigned) regnum <= 31u)
     /* R0-R31: UNW_PPCxx_Rn = PT_Rn = n, identity */;
   else
@@ -91,8 +93,6 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
       regnum = ppc_pt[i];
     }
 #elif defined(UNW_TARGET_HPPA)
-# include <asm/ptrace.h>
-
   if ((unsigned) regnum <= 31u)
     /* GR0-GR31: identity */;
   else if (regnum == UNW_HPPA_IP)
