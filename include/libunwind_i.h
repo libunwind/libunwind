@@ -428,7 +428,7 @@ static inline void invalidate_edi (struct elf_dyn_info *edi)
 #endif
 
 #ifndef tdep_get_func_addr
-# define tdep_get_func_addr(as,addr,v)          (*(v) = addr, 0)
+# define tdep_get_func_addr(as,addr,v,arg)       (*(v) = addr, 0)
 #endif
 
 #ifndef DWARF_VAL_LOC

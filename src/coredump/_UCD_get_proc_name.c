@@ -52,7 +52,7 @@ elf_w (CD_get_proc_name) (struct UCD_info *ui, unw_addr_space_t as, unw_word_t i
     return -UNW_ENOINFO;
 
   segbase = cphdr->p_vaddr;
-  ret = elf_w (get_proc_name_in_image) (as, &ui->edi.ei, segbase, ip, buf, buf_len, offp);
+  ret = elf_w (get_proc_name_in_image) (as, &ui->edi.ei, segbase, ip, buf, buf_len, offp, ui);
   if (ret == -UNW_ENOINFO)
     {
       /* maybe symtab is stripped, try debuglink */
@@ -63,7 +63,7 @@ elf_w (CD_get_proc_name) (struct UCD_info *ui, unw_addr_space_t as, unw_word_t i
           ret = elf_w (load_debuginfo) (ucd_file->filename, &ei, 1);
           if (ret == 0)
             {
-              ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp);
+              ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp, ui);
               mi_munmap(ei.image, ei.size);
               ei.image = NULL;
             }
