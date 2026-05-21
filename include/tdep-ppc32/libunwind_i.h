@@ -317,6 +317,6 @@ extern int tdep_access_reg (struct cursor *c, unw_regnum_t reg,
 extern int tdep_access_fpreg (struct cursor *c, unw_regnum_t reg,
                               unw_fpreg_t * valp, int write);
 extern int tdep_get_func_addr (unw_addr_space_t as, unw_word_t addr,
-                               unw_word_t *entry_point);
+                               unw_word_t *entry_point, void *arg);
 
 #endif /* PPC64_LIBUNWIND_I_H */

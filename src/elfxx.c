@@ -56,6 +56,7 @@ struct symbol_lookup_context
   struct elf_image  *ei;
   Elf_W (Addr)       load_offset;
   Elf_W (Addr)      *min_dist;
+  void              *arg;
 };
 
 /**
@@ -219,7 +220,7 @@ elf_w (lookup_symbol_from_dynamic) (unw_addr_space_t                    as UNUSE
           val = sym->st_value;
           if (sym->st_shndx != SHN_ABS)
             val += load_offset;
-          if (tdep_get_func_addr (as, val, &val) < 0)
+          if (tdep_get_func_addr (as, val, &val, context->arg) < 0)
             continue;
           Debug (16, "0x%016lx info=0x%02x %s\n",
                  (long) val, sym->st_info, strtab + sym->st_name);
@@ -295,7 +296,7 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
                   val = sym->st_value;
                   if (sym->st_shndx != SHN_ABS)
                     val += load_offset;
-                  if (tdep_get_func_addr (as, val, &val) < 0)
+                  if (tdep_get_func_addr (as, val, &val, context->arg) < 0)
                     continue;
                   Debug (16, "0x%016lx info=0x%02x %s\n",
                          (long) val, sym->st_info, strtab + sym->st_name);
@@ -382,15 +383,17 @@ static int
 elf_w (lookup_symbol) (unw_addr_space_t as,
                        unw_word_t ip, struct elf_image *ei,
                        Elf_W (Addr) load_offset,
-                       char *buf, size_t buf_len, Elf_W (Addr) *min_dist)
+                       char *buf, size_t buf_len, Elf_W (Addr) *min_dist,
+                       void *arg)
 {
   struct symbol_lookup_context context =
     {
       .as = as,
-      .ip = ip, 
+      .ip = ip,
       .ei = ei,
       .load_offset = load_offset,
       .min_dist = min_dist,
+      .arg = arg,
     };
   struct symbol_callback_data data =
     {
@@ -430,15 +433,17 @@ static int
 elf_w (lookup_ip_range)(unw_addr_space_t as,
                         unw_word_t ip, struct elf_image *ei,
                         Elf_W (Addr) load_offset, Elf_W (Addr) *start_ip,
-                        Elf_W (Addr) *end_ip, Elf_W (Addr) *min_dist)
+                        Elf_W (Addr) *end_ip, Elf_W (Addr) *min_dist,
+                        void *arg)
 {
   struct symbol_lookup_context context =
     {
       .as = as,
-      .ip = ip, 
+      .ip = ip,
       .ei = ei,
       .load_offset = load_offset,
-      .min_dist = min_dist
+      .min_dist = min_dist,
+      .arg = arg,
     };
   struct ip_range_callback_data data =
     {
@@ -638,14 +643,14 @@ HIDDEN int
 elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
                        unsigned long segbase,
                        unw_word_t ip,
-                       char *buf, size_t buf_len, unw_word_t *offp)
+                       char *buf, size_t buf_len, unw_word_t *offp, void *arg)
 {
   Elf_W (Addr) load_offset;
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
   load_offset = elf_w (get_load_offset) (ei, segbase);
-  ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist);
+  ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist, arg);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
      there as well and replace the previously found if it is closer. */
@@ -653,7 +658,7 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
   if (elf_w (extract_minidebuginfo) (ei, &mdi))
     {
       int ret_mdi = elf_w (lookup_symbol) (as, ip, &mdi, load_offset, buf,
-                                           buf_len, &min_dist);
+                                           buf_len, &min_dist, arg);
 
       /* Closer symbol was found (possibly truncated). */
       if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
@@ -688,7 +693,7 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
-  ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp);
+  ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp, arg);
 
   mi_munmap (ei.image, ei.size);
   ei.image = NULL;
@@ -700,14 +705,14 @@ HIDDEN int
 elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
                        unsigned long segbase,
                        unw_word_t ip,
-                       unw_word_t *start, unw_word_t *end)
+                       unw_word_t *start, unw_word_t *end, void *arg)
 {
   Elf_W (Addr) load_offset;
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
   load_offset = elf_w (get_load_offset) (ei, segbase);
-  ret = elf_w (lookup_ip_range) (as, ip, ei, load_offset, start, end, &min_dist);
+  ret = elf_w (lookup_ip_range) (as, ip, ei, load_offset, start, end, &min_dist, arg);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
      there as well and replace the previously found if it is closer. */
@@ -715,7 +720,7 @@ elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
   if (elf_w (extract_minidebuginfo) (ei, &mdi))
     {
       int ret_mdi = elf_w (lookup_ip_range) (as, ip, &mdi, load_offset, start,
-                                             end, &min_dist);
+                                             end, &min_dist, arg);
 
       /* Closer symbol was found (possibly truncated). */
       if (ret_mdi == 0 || ret_mdi == -UNW_ENOMEM)
@@ -748,7 +753,7 @@ elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
-  ret = elf_w (get_proc_ip_range_in_image) (as, &ei, segbase, ip, start, end);
+  ret = elf_w (get_proc_ip_range_in_image) (as, &ei, segbase, ip, start, end, arg);
 
   mi_munmap (ei.image, ei.size);
   ei.image = NULL;
