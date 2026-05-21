@@ -976,10 +976,17 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
     {
 #ifndef UNW_LOCAL_ONLY
       int64_t found_start = 0, found_fde = 0;
-      int64_t last_ip_offset64 = di->end_ip - ip_base;
+      /* Cast through unw_sword_t to preserve the sign of the offset on
+       * 32-bit targets: ip - ip_base is computed in unsigned unw_word_t
+       * arithmetic and would wrap for ip < ip_base (which happens when
+       * the IP is below segbase).  The explicit signed-narrowing cast
+       * sign-extends the 32-bit result to int64_t correctly.  On 64-bit
+       * targets unw_sword_t is int64_t so the cast is a no-op.  */
+      int64_t rel_ip = (int64_t)(unw_sword_t)(ip - ip_base);
+      int64_t last_ip_offset64 = (int64_t)(unw_sword_t)(di->end_ip - ip_base);
       segbase = di->u.rti.segbase;
       if ((ret = remote_lookup (as, (uintptr_t) table_data, table_len,
-                                ip - ip_base, &found_start, &found_fde,
+                                rel_ip, &found_start, &found_fde,
                                 &last_ip_offset64, is_table64, arg)) < 0)
         return ret;
       if (ret)
