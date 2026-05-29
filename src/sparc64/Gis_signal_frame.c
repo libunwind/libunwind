@@ -50,10 +50,18 @@ unw_is_signal_frame (unw_cursor_t * cursor)
   if (ip == 0)
     return 0;
 
-  /* Read up one 8-byte words at the IP.  */
+  /* The kernel sets I7 = &sf->insns[0] - 2 (pointer arithmetic on unsigned
+     int*, so -2 * 4 = -8 bytes), meaning ip = trampoline_addr - 8.
+     Read at ip + 8 to reach the actual trampoline instructions.
+     The trampoline lives in a stack-allocated signal frame whose base is
+     at least 8-byte aligned, and insns[0] is at offset 488 (= 61 * 8),
+     so ip + 8 is always 8-byte aligned for real signal frames.  Guard
+     against misaligned access on non-signal-frame IPs.  */
+  if ((ip + 8) & 7)
+    return 0;
 
   a = unw_get_accessors (as);
-  if ((ret = (*a->access_mem) (as, ip, &w, 0, arg)) < 0)
+  if ((ret = (*a->access_mem) (as, ip + 8, &w, 0, arg)) < 0)
     return 0;
 
   i0 = w >> 32;
