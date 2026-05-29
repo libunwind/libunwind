@@ -98,13 +98,20 @@ static int
 access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 	    void *arg)
 {
-  if (write)
+  if (unlikely (write))
     {
       Debug (12, "mem[%lx] <- %lx\n", addr, *val);
       *(unw_word_t *) addr = *val;
     }
   else
     {
+      const struct cursor *c = (const struct cursor *) arg;
+      if (likely (c != NULL) && unlikely (c->validate)
+          && unlikely (!unw_address_is_valid (addr, sizeof (unw_word_t))))
+        {
+          Debug (12, "mem[%lx] -> invalid\n", addr);
+          return -1;
+        }
       *val = *(unw_word_t *) addr;
       Debug (12, "mem[%lx] -> %lx\n", addr, *val);
     }
@@ -116,7 +123,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
 	    int write, void *arg)
 {
   unw_word_t *addr;
-  ucontext_t *uc = arg;
+  ucontext_t *uc = ((struct cursor *) arg)->uc;
 
   if (UNW_SPARC64_F0 <= reg && reg <= UNW_SPARC64_F63)
     goto badreg;
@@ -146,7 +153,7 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
 	      int write, void *arg)
 {
-  ucontext_t *uc = arg;
+  ucontext_t *uc = ((struct cursor *) arg)->uc;
   unw_fpreg_t *addr;
 
   if ((reg < UNW_SPARC64_FIRST_FPREG) || (reg > UNW_SPARC64_LAST_FPREG))
