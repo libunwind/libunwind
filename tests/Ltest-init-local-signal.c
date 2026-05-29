@@ -14,6 +14,8 @@ static const int max_steps = 10;
 
 #if defined __FreeBSD__
 #define	TRAMPOLINE_DEPTH	4
+#elif defined __sparc__ && defined __arch64__
+#define	TRAMPOLINE_DEPTH	2
 #else
 #define	TRAMPOLINE_DEPTH	2
 #endif
