@@ -25,37 +25,28 @@ OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
-#include "ucontext_i.h"
+#include <stddef.h>
 #include <signal.h>
+#include <asm/ptrace.h>
 
-/* This definition originates in /usr/include/asm-ppc64/ptrace.h, but is
-   defined there only when __KERNEL__ is defined.  We reproduce it here for
-   our use at the user level in order to locate the ucontext record, which
-   appears to be at this offset relative to the stack pointer when in the
-   context of the signal handler return trampoline code -
-   __kernel_sigtramp_rt64.  */
-#define __SIGNAL_FRAMESIZE 128
+#define SPARC64_STACK_BIAS 2047
 
-/* This definition comes from the document "64-bit PowerPC ELF Application
-   Binary Interface Supplement 1.9", section 3.2.2.
-   http://www.linux-foundation.org/spec/ELF/ppc64/PPC-elf64abi-1.9.html#STACK */
-
-typedef struct
-{
-  long unsigned back_chain;
-  long unsigned cr_save;
-  long unsigned lr_save;
-  /* many more fields here, but they are unused by this code */
-} stack_frame_t;
-
+/* Linux SPARC64 rt_signal_frame layout (from arch/sparc/kernel/signal_64.c).
+   UREG_I2 passed to the SA_SIGINFO handler = &sf->info.  The kernel
+   (and QEMU via save_reg_win) saves the faulting window's I-registers
+   into ss.ins[]/ss.fp/ss.callers_pc, NOT into pt_regs.u_regs[8..15]
+   (QEMU incorrectly stores O-registers there).  */
+struct sparc64_rt_signal_frame {
+  struct sparc_stackf  ss;   /* 192 bytes: register save area + stack header */
+  siginfo_t            info; /* 128 bytes */
+  struct pt_regs       regs; /* saved register state at time of signal */
+};
 
 int
 unw_step (unw_cursor_t * cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  stack_frame_t dummy;
-  unw_word_t back_chain_offset, lr_save_offset, v_regs_ptr;
-  struct dwarf_loc back_chain_loc, lr_save_loc, sp_loc, ip_loc, v_regs_loc;
+  int validate = c->validate;
   int ret;
 
   Debug (1, "(cursor=%p, ip=0x%016lx)\n", c, (unsigned long) c->dwarf.ip);
@@ -67,9 +58,13 @@ unw_step (unw_cursor_t * cursor)
       return 0;
     }
 
-  /* Try DWARF-based unwinding... */
+  /* Validate all addresses before dereferencing. */
+  c->validate = 1;
 
+  /* Try DWARF-based unwinding first.  */
   ret = dwarf_step (&c->dwarf);
+
+  c->validate = validate;
 
   if (ret < 0 && ret != -UNW_ENOINFO)
     {
@@ -77,246 +72,115 @@ unw_step (unw_cursor_t * cursor)
       return ret;
     }
 
-		   /* XXX */
-#if 0
-  if (unlikely (ret < 0))
+  if (unlikely (ret == -UNW_ENOINFO))
     {
       if (likely (!unw_is_signal_frame (cursor)))
-	{
-	  /* DWARF unwinding failed.  As of 09/26/2006, gcc in 64-bit mode
-	     produces the mandatory level of traceback record in the code, but
-	     I get the impression that this is transitory, that eventually gcc
-	     will not produce any traceback records at all.  So, for now, we
-	     won't bother to try to find and use these records.
+        {
+          /* No DWARF info: fall back to SPARC64 register-window conventions.
+             After SAVE, the old O-registers become I-registers:
+               I6 = old O6 = caller's biased sp (physical sp = I6+BIAS)
+               I7 = old O7 = address of CALL instruction in caller
+             The caller's register-save area (RSA) is at I6+BIAS:
+               L0-L7 at RSA+0..+56, I0-I7 at RSA+64..+120.  */
+          unw_word_t fp, ra;
+          int i;
 
-	     We can, however, attempt to unwind the frame by using the callback
-	     chain.  This is very crude, however, and won't be able to unwind
-	     any registers besides the IP, SP, and LR . */
+          if (dwarf_get (&c->dwarf, c->dwarf.loc[UNW_SPARC64_I6], &fp) < 0)
+            {
+              Debug (2, "returning %d\n", ret);
+              return ret;
+            }
+          if (fp == 0)
+            return 0;
 
-	  back_chain_offset = ((void *) &dummy.back_chain - (void *) &dummy);
-	  lr_save_offset = ((void *) &dummy.lr_save - (void *) &dummy);
+          if (dwarf_get (&c->dwarf, c->dwarf.loc[UNW_SPARC64_I7], &ra) < 0)
+            {
+              Debug (2, "returning %d\n", ret);
+              return ret;
+            }
 
-	  back_chain_loc = DWARF_LOC (c->dwarf.cfa + back_chain_offset, 0);
+          c->dwarf.ip  = ra;
+          c->dwarf.cfa = fp + SPARC64_STACK_BIAS;
 
-	  if ((ret =
-	       dwarf_get (&c->dwarf, back_chain_loc, &c->dwarf.cfa)) < 0)
-	    {
-	      Debug (2,
-		 "Unable to retrieve CFA from back chain in stack frame - %d\n",
-		 ret);
-	      return ret;
-	    }
-	  if (c->dwarf.cfa == 0)
-	    /* Unless the cursor or stack is corrupt or uninitialized we've most
-	       likely hit the top of the stack */
-	    return 0;
+          for (i = UNW_SPARC64_L0; i <= UNW_SPARC64_L7; i++)
+            c->dwarf.loc[i] = DWARF_MEM_LOC (&c->dwarf,
+                c->dwarf.cfa + (i - UNW_SPARC64_L0) * sizeof (unsigned long));
 
-	  lr_save_loc = DWARF_LOC (c->dwarf.cfa + lr_save_offset, 0);
+          for (i = UNW_SPARC64_I0; i <= UNW_SPARC64_I7; i++)
+            c->dwarf.loc[i] = DWARF_MEM_LOC (&c->dwarf,
+                c->dwarf.cfa + (i - UNW_SPARC64_L0) * sizeof (unsigned long));
 
-	  if ((ret = dwarf_get (&c->dwarf, lr_save_loc, &c->dwarf.ip)) < 0)
-	    {
-	      Debug (2,
-		 "Unable to retrieve IP from lr save in stack frame - %d\n",
-		 ret);
-	      return ret;
-	    }
-	  ret = 1;
-	}
-      else
-	{
-          /* Find the sigcontext record by taking the CFA and adjusting by
-             the dummy signal frame size.
+          return (c->dwarf.ip != 0) ? 1 : 0;
+        }
 
-             Note that there isn't any way to determined if SA_SIGINFO was
-             set in the sa_flags parameter to sigaction when the signal
-             handler was established.  If it was not set, the ucontext
-             record is not required to be on the stack, in which case the
-             following code will likely cause a seg fault or other crash
-             condition.  */
+      /* Signal frame: after dwarf_step through the signal handler via
+         DW_CFA_GNU_window_save, loc[I6] holds the memory address sf+112
+         (= &rt_signal_frame.ss.fp).  Derive sf from that.
+         c->dwarf.cfa at this point is the CFA of the interrupted frame,
+         not the base of the signal frame.  */
+      unw_word_t sf = c->dwarf.loc[UNW_SPARC64_I6].val
+                      - offsetof (struct sparc64_rt_signal_frame, ss.fp);
+      unw_word_t regs_base = sf + offsetof (struct sparc64_rt_signal_frame, regs);
+      unw_word_t tpc_addr = regs_base + offsetof (struct pt_regs, tpc);
+      /* O6 (UREG_FP) from pt_regs.u_regs[14]: the interrupted function's
+         biased stack pointer.  CFA = O6 + STACK_BIAS.  */
+      unw_word_t o6_addr = regs_base + UREG_FP * sizeof (unsigned long);
+      /* I6 and I7 are in the interrupted function's register save area at
+         its physical stack pointer (CFA): I6 at CFA+112, I7 at CFA+120.  */
 
-	  unw_word_t ucontext = c->dwarf.cfa + __SIGNAL_FRAMESIZE;
+      unw_word_t o6_val;
+      struct dwarf_loc loc;
+      int i;
 
-	  Debug (1, "signal frame, skip over trampoline\n");
+      Debug (1, "signal frame: cfa=0x%lx sf=0x%lx tpc_addr=0x%lx o6_addr=0x%lx\n",
+             (unsigned long) c->dwarf.cfa, (unsigned long) sf,
+             (unsigned long) tpc_addr, (unsigned long) o6_addr);
 
-	  c->sigcontext_format = PPC_SCF_LINUX_RT_SIGFRAME;
-	  c->sigcontext_addr = ucontext;
+      /* PC of interrupted code.  */
+      loc = DWARF_MEM_LOC (&c->dwarf, tpc_addr);
+      if ((ret = dwarf_get (&c->dwarf, loc, &c->dwarf.ip)) < 0)
+        return ret;
 
-	  sp_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R1, 0);
-	  ip_loc = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_NIP, 0);
+      /* O6 (stack pointer) of the interrupted frame from pt_regs.  */
+      loc = DWARF_MEM_LOC (&c->dwarf, o6_addr);
+      if ((ret = dwarf_get (&c->dwarf, loc, &o6_val)) < 0)
+        return ret;
+      c->dwarf.cfa = o6_val + SPARC64_STACK_BIAS;
 
-	  ret = dwarf_get (&c->dwarf, sp_loc, &c->dwarf.cfa);
-	  if (ret < 0)
-	    {
-	      Debug (2, "returning %d\n", ret);
-	      return ret;
-	    }
-	  ret = dwarf_get (&c->dwarf, ip_loc, &c->dwarf.ip);
-	  if (ret < 0)
-	    {
-	      Debug (2, "returning %d\n", ret);
-	      return ret;
-	    }
+      /* Set O6 loc so the DWARF CFA rule (CFA = O6 + STACK_BIAS) for the
+         interrupted function uses the correct stack pointer from pt_regs,
+         not the stale O6 from the unwind context.  */
+      c->dwarf.loc[UNW_SPARC64_O6] = DWARF_MEM_LOC (&c->dwarf, o6_addr);
 
-	  /* Instead of just restoring the non-volatile registers, do all
-	     of the registers for now.  This will incur a performance hit,
-	     but it's rare enough not to cause too much of a problem, and
-	     might be useful in some cases.  */
-	  c->dwarf.loc[UNW_PPC64_R0] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R0, 0);
-	  c->dwarf.loc[UNW_PPC64_R1] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R1, 0);
-	  c->dwarf.loc[UNW_PPC64_R2] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R2, 0);
-	  c->dwarf.loc[UNW_PPC64_R3] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R3, 0);
-	  c->dwarf.loc[UNW_PPC64_R4] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R4, 0);
-	  c->dwarf.loc[UNW_PPC64_R5] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R5, 0);
-	  c->dwarf.loc[UNW_PPC64_R6] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R6, 0);
-	  c->dwarf.loc[UNW_PPC64_R7] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R7, 0);
-	  c->dwarf.loc[UNW_PPC64_R8] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R8, 0);
-	  c->dwarf.loc[UNW_PPC64_R9] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R9, 0);
-	  c->dwarf.loc[UNW_PPC64_R10] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R10, 0);
-	  c->dwarf.loc[UNW_PPC64_R11] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R11, 0);
-	  c->dwarf.loc[UNW_PPC64_R12] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R12, 0);
-	  c->dwarf.loc[UNW_PPC64_R13] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R13, 0);
-	  c->dwarf.loc[UNW_PPC64_R14] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R14, 0);
-	  c->dwarf.loc[UNW_PPC64_R15] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
-	  c->dwarf.loc[UNW_PPC64_R16] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R16, 0);
-	  c->dwarf.loc[UNW_PPC64_R17] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R17, 0);
-	  c->dwarf.loc[UNW_PPC64_R18] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R18, 0);
-	  c->dwarf.loc[UNW_PPC64_R19] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R19, 0);
-	  c->dwarf.loc[UNW_PPC64_R20] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R20, 0);
-	  c->dwarf.loc[UNW_PPC64_R21] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R21, 0);
-	  c->dwarf.loc[UNW_PPC64_R22] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R22, 0);
-	  c->dwarf.loc[UNW_PPC64_R23] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R23, 0);
-	  c->dwarf.loc[UNW_PPC64_R24] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R24, 0);
-	  c->dwarf.loc[UNW_PPC64_R25] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R25, 0);
-	  c->dwarf.loc[UNW_PPC64_R26] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R26, 0);
-	  c->dwarf.loc[UNW_PPC64_R27] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R27, 0);
-	  c->dwarf.loc[UNW_PPC64_R28] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R28, 0);
-	  c->dwarf.loc[UNW_PPC64_R29] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R29, 0);
-	  c->dwarf.loc[UNW_PPC64_R30] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R30, 0);
-	  c->dwarf.loc[UNW_PPC64_R31] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R31, 0);
+      /* O7 (return address register) from pt_regs.u_regs[15].  Leaf functions
+         use O7 as their DWARF RA column; without this, DWARF_WHERE_SAME would
+         propagate the stale O7 from the previous frame (sighandler's step sets
+         loc[O7] = sf+120 = ka_restorer-8), causing a false second signal-frame
+         detection.  */
+      c->dwarf.loc[UNW_SPARC64_O7] = DWARF_MEM_LOC (&c->dwarf,
+          regs_base + UREG_RETPC * sizeof (unsigned long));
 
-	  c->dwarf.loc[UNW_PPC64_LR] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_LINK, 0);
-	  c->dwarf.loc[UNW_PPC64_CTR] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_CTR, 0);
-	  /* This CR0 assignment is probably wrong.  There are 8 dwarf columns
-	     assigned to the CR registers, but only one CR register in the
-	     mcontext structure */
-	  c->dwarf.loc[UNW_PPC64_CR0] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_CCR, 0);
-	  c->dwarf.loc[UNW_PPC64_XER] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_XER, 0);
-	  c->dwarf.loc[UNW_PPC64_NIP] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_NIP, 0);
+      /* G registers (G1-G7) from pt_regs.u_regs[1..7].  */
+      for (i = UNW_SPARC64_G1; i <= UNW_SPARC64_G7; i++)
+        c->dwarf.loc[i] = DWARF_MEM_LOC (&c->dwarf,
+            regs_base + i * sizeof (unsigned long));
 
-	  /* TODO: Is there a way of obtaining the value of the
-	     pseudo frame pointer (which is sp + some fixed offset, I
-	     assume), based on the contents of the ucontext record
-	     structure?  For now, set this loc to null. */
-	  c->dwarf.loc[UNW_PPC64_FRAME_POINTER] = DWARF_NULL_LOC;
+      /* L0-I7: read from the signal frame's ss (saved by kernel/QEMU via
+         save_reg_win), not from the RSA at c->dwarf.cfa which may be
+         uninitialized in QEMU user-mode emulation.  */
+      for (i = UNW_SPARC64_L0; i <= UNW_SPARC64_I7; i++)
+        c->dwarf.loc[i] = DWARF_MEM_LOC (&c->dwarf,
+            sf + (i - UNW_SPARC64_L0) * sizeof (unsigned long));
 
-	  c->dwarf.loc[UNW_PPC64_F0] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R0, 0);
-	  c->dwarf.loc[UNW_PPC64_F1] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R1, 0);
-	  c->dwarf.loc[UNW_PPC64_F2] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R2, 0);
-	  c->dwarf.loc[UNW_PPC64_F3] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R3, 0);
-	  c->dwarf.loc[UNW_PPC64_F4] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R4, 0);
-	  c->dwarf.loc[UNW_PPC64_F5] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R5, 0);
-	  c->dwarf.loc[UNW_PPC64_F6] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R6, 0);
-	  c->dwarf.loc[UNW_PPC64_F7] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R7, 0);
-	  c->dwarf.loc[UNW_PPC64_F8] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R8, 0);
-	  c->dwarf.loc[UNW_PPC64_F9] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R9, 0);
-	  c->dwarf.loc[UNW_PPC64_F10] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R10, 0);
-	  c->dwarf.loc[UNW_PPC64_F11] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R11, 0);
-	  c->dwarf.loc[UNW_PPC64_F12] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R12, 0);
-	  c->dwarf.loc[UNW_PPC64_F13] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R13, 0);
-	  c->dwarf.loc[UNW_PPC64_F14] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R14, 0);
-	  c->dwarf.loc[UNW_PPC64_F15] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R15, 0);
-	  c->dwarf.loc[UNW_PPC64_F16] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R16, 0);
-	  c->dwarf.loc[UNW_PPC64_F17] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R17, 0);
-	  c->dwarf.loc[UNW_PPC64_F18] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R18, 0);
-	  c->dwarf.loc[UNW_PPC64_F19] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R19, 0);
-	  c->dwarf.loc[UNW_PPC64_F20] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R20, 0);
-	  c->dwarf.loc[UNW_PPC64_F21] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R21, 0);
-	  c->dwarf.loc[UNW_PPC64_F22] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R22, 0);
-	  c->dwarf.loc[UNW_PPC64_F23] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R23, 0);
-	  c->dwarf.loc[UNW_PPC64_F24] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R24, 0);
-	  c->dwarf.loc[UNW_PPC64_F25] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R25, 0);
-	  c->dwarf.loc[UNW_PPC64_F26] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R26, 0);
-	  c->dwarf.loc[UNW_PPC64_F27] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R27, 0);
-	  c->dwarf.loc[UNW_PPC64_F28] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R28, 0);
-	  c->dwarf.loc[UNW_PPC64_F29] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R29, 0);
-	  c->dwarf.loc[UNW_PPC64_F30] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R30, 0);
-	  c->dwarf.loc[UNW_PPC64_F31] =
-	    DWARF_LOC (ucontext + UC_MCONTEXT_FREGS_R31, 0);
-	  /* Note that there is no .eh_section register column for the
-	     FPSCR register.  I don't know why this is.  */
+      /* O0-O5: not captured; leave as stale from previous frame.  */
 
-	  ret = 1;
-	}
+      c->sigcontext_format = SPARC64_SCF_LINUX_RT_SIGFRAME;
+      c->sigcontext_addr   = sf;
+      c->sigcontext_sp     = o6_val;
+      c->sigcontext_pc     = c->dwarf.ip;
+
+      ret = 1;
     }
-#endif
 
   return ret;
 }
