@@ -37,9 +37,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    into ss.ins[]/ss.fp/ss.callers_pc, NOT into pt_regs.u_regs[8..15]
    (QEMU incorrectly stores O-registers there).  */
 struct sparc64_rt_signal_frame {
-  struct sparc_stackf  ss;   /* 192 bytes: register save area + stack header */
-  siginfo_t            info; /* 128 bytes */
-  struct pt_regs       regs; /* saved register state at time of signal */
+  struct sparc_stackf  ss;       /* 192 bytes: register save area + stack header */
+  siginfo_t            info;     /* 128 bytes */
+  struct pt_regs       regs;     /* 160 bytes: saved register state at time of signal */
+  unsigned long        fpu_save; /* 8 bytes */
+  stack_t              stack;    /* 24 bytes */
+  unsigned long        mask;     /* pre-signal mask (first word of sigset_t), at offset 512 */
 };
 
 int
@@ -72,6 +75,23 @@ unw_step (unw_cursor_t * cursor)
       return ret;
     }
 
+  if (ret > 0)
+    {
+      /* After dwarf_step the cursor's IP holds the saved O7 of the next
+         frame, which on SPARC is the address of the CALL instruction
+         itself.  If that frame is the rt_sigreturn trampoline, fall
+         through to the signal-frame setup below; otherwise bump IP past
+         the call + delay slot so the rest of libunwind (FDE/LSDA lookup,
+         _Unwind_GetIP, unw_resume) can treat IP as the "after the call"
+         address that personality routines and setcontext both expect.  */
+      if (likely (!unw_is_signal_frame (cursor)))
+        {
+          c->dwarf.ip += 8;
+          return ret;
+        }
+      goto signal_frame;
+    }
+
   if (unlikely (ret == -UNW_ENOINFO))
     {
       if (likely (!unw_is_signal_frame (cursor)))
@@ -99,7 +119,8 @@ unw_step (unw_cursor_t * cursor)
               return ret;
             }
 
-          c->dwarf.ip  = ra;
+          /* See note above: bump to address after CALL + delay slot.  */
+          c->dwarf.ip  = ra + 8;
           c->dwarf.cfa = fp + SPARC64_STACK_BIAS;
 
           for (i = UNW_SPARC64_L0; i <= UNW_SPARC64_L7; i++)
@@ -113,11 +134,13 @@ unw_step (unw_cursor_t * cursor)
           return (c->dwarf.ip != 0) ? 1 : 0;
         }
 
+    signal_frame:
       /* Signal frame: after dwarf_step through the signal handler via
          DW_CFA_GNU_window_save, loc[I6] holds the memory address sf+112
          (= &rt_signal_frame.ss.fp).  Derive sf from that.
          c->dwarf.cfa at this point is the CFA of the interrupted frame,
          not the base of the signal frame.  */
+      ;
       unw_word_t sf = c->dwarf.loc[UNW_SPARC64_I6].val
                       - offsetof (struct sparc64_rt_signal_frame, ss.fp);
       unw_word_t regs_base = sf + offsetof (struct sparc64_rt_signal_frame, regs);

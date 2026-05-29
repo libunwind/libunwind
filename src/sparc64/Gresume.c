@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <stdlib.h>
 #include <ucontext.h>
+#include <asm/ptrace.h>
 
 #include "unwind_i.h"
 
@@ -42,11 +43,42 @@ sparc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (unlikely (c->sigcontext_format != SPARC64_SCF_NONE))
     {
-      /* Signal frame resume is not yet implemented for SPARC64.
-         Fall through to the non-signal path, which may not restore
-         the signal mask correctly, but will at least reach the landing
-         pad for the common C++ exception handling case.  */
-      Debug (1, "WARNING: signal frame resume not fully implemented\n");
+      /* QEMU's sparc64_set_context (ta 0x6f) loads L0-L7 and I0-I5
+         from the register-save area (RSA) at O6+STACK_BIAS.  Unlike
+         the real kernel which flushes all register windows to their
+         RSAs before signal delivery, QEMU user mode only saves the
+         interrupted window to sf->ss (via save_reg_win), leaving the
+         RSA at the interrupted frame's stack pointer uninitialised.
+         Copy the saved window to the RSA so setcontext finds correct
+         L/I register values.  I6 and I7 come from mc_fp and mc_i7. */
+      const struct sparc_stackf *ss =
+        (const struct sparc_stackf *) c->sigcontext_addr;
+      unsigned long *rsa =
+        (unsigned long *) (c->sigcontext_sp + SPARC64_STACK_BIAS);
+      unsigned i;
+
+      for (i = 0; i < 8; i++)
+        rsa[i] = ss->locals[i];        /* L0-L7 at RSA+0..+56   */
+      for (i = 0; i < 6; i++)
+        rsa[8 + i] = ss->ins[i];       /* I0-I5 at RSA+64..+104 */
+
+      Debug (8, "signal frame: populated RSA at %p from sf->ss\n", rsa);
+
+      /* Restore the pre-signal mask.  The rt_signal_frame layout places
+         the pre-signal sigset_t at offset 512 from the frame base:
+           ss(192) + info(128) + regs(160) + fpu_save(8) + stack(24) = 512.
+         glibc's setcontext() copies uc->uc_sigmask (offset 536, named
+         UC_SIGMASK in glibc's ucontext_i.h) into the compact __uc_sigmask
+         slot (offset 16) immediately before the `ta 0x6f` trap; the kernel
+         (and QEMU's sparc64_set_context) reads the mask from that compact
+         slot.  Writing offset 16 directly would be clobbered by glibc's
+         copy, so write to uc_sigmask instead.  Without this, setcontext
+         restores the mask that was active inside the signal handler (with
+         SIGUSR1/SIGUSR2 blocked), preventing delivery of the pending
+         signal after resumption.  */
+      uc->uc_sigmask.__val[0] =
+        *(const unsigned long *)
+          ((const char *)(uintptr_t)c->sigcontext_addr + 512);
     }
 
   Debug (8, "resuming at ip=%llx via setcontext()\n",
@@ -97,16 +129,24 @@ establish_machine_state (struct cursor *c)
   if (dwarf_get (&c->dwarf, c->dwarf.loc[UNW_SPARC64_I7], &val) >= 0)
     uc->uc_mcontext.mc_i7 = val;
 
-  /* UNW_TDEP_IP (O7) stores the CALL instruction address (SPARC convention).
-     For normal DWARF frames, ip = the CALL instruction; setcontext must
-     resume at ip+8, which is where execution resumes after the callee
-     returns (RETL restores PC to O7+8, past CALL and its delay slot).
-     For signal frames, ip = the actual interrupted PC (tpc from pt_regs),
-     so no adjustment is needed.  */
-  if (c->sigcontext_format == SPARC64_SCF_NONE)
-    uc->uc_mcontext.mc_gregs[MC_PC] = c->dwarf.ip + 8;
-  else
-    uc->uc_mcontext.mc_gregs[MC_PC] = c->dwarf.ip;
+  /* c->dwarf.ip is normalized to the "after the call" address by unw_step()
+     (see comment in src/sparc64/Gstep.c) and to the interrupted PC by the
+     signal-frame step path; either way setcontext should resume at exactly
+     this address.  */
+  uc->uc_mcontext.mc_gregs[MC_PC] = c->dwarf.ip;
+
+  if (c->sigcontext_format != SPARC64_SCF_NONE)
+    {
+      /* For signal frames, tdep_access_reg(UNW_TDEP_IP) returns c->dwarf.ip
+         (the interrupted PC), not the real O7 (return address).  The loop
+         above therefore wrote tpc into MC_O7, which is wrong: leaf functions
+         use RETL (jmpl %o7+8) to return, so a wrong O7 causes an infinite
+         loop in the callee's error-handling path.  Override MC_O7 with the
+         actual O7 saved in pt_regs (stored in c->dwarf.loc[UNW_SPARC64_O7]
+         by the signal-frame step).  */
+      if (dwarf_get (&c->dwarf, c->dwarf.loc[UNW_SPARC64_O7], &val) >= 0)
+        uc->uc_mcontext.mc_gregs[MC_O7] = val;
+    }
 
   /* Set NPC = PC + 4, required by the kernel's setcontext handler.  */
   uc->uc_mcontext.mc_gregs[MC_NPC] =
@@ -127,5 +167,5 @@ unw_resume (unw_cursor_t *cursor)
     return ret;
 
   return (*c->dwarf.as->acc.resume) (c->dwarf.as, (unw_cursor_t *) c,
-				     c->dwarf.as_arg);
+                                     c->dwarf.as_arg);
 }
