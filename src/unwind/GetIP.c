@@ -25,7 +25,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind-internal.h"
 
-unsigned long
+unw_word_t
 _Unwind_GetIP (struct _Unwind_Context *context)
 {
   unw_word_t val;
@@ -34,5 +34,5 @@ _Unwind_GetIP (struct _Unwind_Context *context)
   return val;
 }
 
-unsigned long __libunwind_Unwind_GetIP (struct _Unwind_Context *)
+unw_word_t __libunwind_Unwind_GetIP (struct _Unwind_Context *)
      ALIAS (_Unwind_GetIP);

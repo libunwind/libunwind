@@ -88,9 +88,9 @@ extern _Unwind_Reason_Code _Unwind_ForcedUnwind (struct _Unwind_Exception *,
                                                  _Unwind_Stop_Fn, void *);
 extern void _Unwind_Resume (struct _Unwind_Exception *);
 extern void _Unwind_DeleteException (struct _Unwind_Exception *);
-extern unsigned long _Unwind_GetGR (struct _Unwind_Context *, int);
-extern void _Unwind_SetGR (struct _Unwind_Context *, int, unsigned long);
-extern unsigned long _Unwind_GetIP (struct _Unwind_Context *);
+extern unw_word_t _Unwind_GetGR (struct _Unwind_Context *, int);
+extern void _Unwind_SetGR (struct _Unwind_Context *, int, unw_word_t);
+extern unw_word_t _Unwind_GetIP (struct _Unwind_Context *);
 extern unsigned long _Unwind_GetIPInfo (struct _Unwind_Context *, int *);
 extern void _Unwind_SetIP (struct _Unwind_Context *, unsigned long);
 extern unsigned long _Unwind_GetLanguageSpecificData (struct _Unwind_Context*);

@@ -30,7 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 void
 _Unwind_SetGR (struct _Unwind_Context *context, int index,
-               unsigned long new_value)
+               unw_word_t new_value)
 {
 #ifdef UNW_TARGET_X86
   index = dwarf_to_unw_regnum(index);
@@ -43,5 +43,5 @@ _Unwind_SetGR (struct _Unwind_Context *context, int index,
 #endif
 }
 
-void __libunwind_Unwind_SetGR (struct _Unwind_Context *, int, unsigned long)
+void __libunwind_Unwind_SetGR (struct _Unwind_Context *, int, unw_word_t)
      ALIAS (_Unwind_SetGR);
