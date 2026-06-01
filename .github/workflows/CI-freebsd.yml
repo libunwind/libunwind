@@ -35,7 +35,7 @@ jobs:
         uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
       - name: Build and test on ${{ matrix.architecture }}-freebsd-${{ matrix.os_version }} using ${{ matrix.compiler }}
-        uses: cross-platform-actions/action@v1.0.0
+        uses: cross-platform-actions/action@v1.2.0
         env:
             IGNORE_OSVERSION: yes
         with:
