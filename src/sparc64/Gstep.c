@@ -29,8 +29,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <signal.h>
 #include <asm/ptrace.h>
 
-#define SPARC64_STACK_BIAS 2047
-
 /* Linux SPARC64 rt_signal_frame layout (from arch/sparc/kernel/signal_64.c).
    UREG_I2 passed to the SA_SIGINFO handler = &sf->info.  The kernel
    (and QEMU via save_reg_win) saves the faulting window's I-registers
