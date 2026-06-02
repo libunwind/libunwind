@@ -773,7 +773,9 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     /* $31 is hardwired zero, no entry needed */
     [UNW_ALPHA_PC]  = 0x0f8     /* gregset index 31 */
 #elif defined(UNW_TARGET_SPARC64)
-    /* Global and output registers are available in pt_regs.  */
+    /* Offsets into elf_gregset_t (36 × 8 bytes) as returned by
+       PTRACE_GETREGSET(NT_PRSTATUS): g0-g7 at [0..7], o0-o7 at [8..15],
+       l0-l7 at [16..23], i0-i7 at [24..31], tstate at [32], tpc at [33].  */
 
     [UNW_SPARC64_G0]       = (0 * 8),
     [UNW_SPARC64_G1]       = (1 * 8),
@@ -793,27 +795,28 @@ const int _UPT_reg_offset[UNW_REG_LAST + 1] =
     [UNW_SPARC64_O6]       = (14 * 8),
     [UNW_SPARC64_O7]       = (15 * 8),
 
-    /* XXX    [UNW_SPARC64_PC]       = (17 * 8), */
+    /* PC (tpc) is at index 33 in elf_gregset_t returned by PTRACE_GETREGSET. */
+    [UNW_SPARC64_PC]       = (33 * 8),
 
-    /* Local and input registers are not available in pt_regs.  */
+    /* Local and input registers are at indices 16-31 in elf_gregset_t.  */
 
-    [UNW_SPARC64_L0]       = -1,
-    [UNW_SPARC64_L1]       = -1,
-    [UNW_SPARC64_L2]       = -1,
-    [UNW_SPARC64_L3]       = -1,
-    [UNW_SPARC64_L4]       = -1,
-    [UNW_SPARC64_L5]       = -1,
-    [UNW_SPARC64_L6]       = -1,
-    [UNW_SPARC64_L7]       = -1,
+    [UNW_SPARC64_L0]       = (16 * 8),
+    [UNW_SPARC64_L1]       = (17 * 8),
+    [UNW_SPARC64_L2]       = (18 * 8),
+    [UNW_SPARC64_L3]       = (19 * 8),
+    [UNW_SPARC64_L4]       = (20 * 8),
+    [UNW_SPARC64_L5]       = (21 * 8),
+    [UNW_SPARC64_L6]       = (22 * 8),
+    [UNW_SPARC64_L7]       = (23 * 8),
 
-    [UNW_SPARC64_I0]       = -1,
-    [UNW_SPARC64_I1]       = -1,
-    [UNW_SPARC64_I2]       = -1,
-    [UNW_SPARC64_I3]       = -1,
-    [UNW_SPARC64_I4]       = -1,
-    [UNW_SPARC64_I5]       = -1,
-    [UNW_SPARC64_I6]       = -1,
-    [UNW_SPARC64_I7]       = -1,
+    [UNW_SPARC64_I0]       = (24 * 8),
+    [UNW_SPARC64_I1]       = (25 * 8),
+    [UNW_SPARC64_I2]       = (26 * 8),
+    [UNW_SPARC64_I3]       = (27 * 8),
+    [UNW_SPARC64_I4]       = (28 * 8),
+    [UNW_SPARC64_I5]       = (29 * 8),
+    [UNW_SPARC64_I6]       = (30 * 8),
+    [UNW_SPARC64_I7]       = (31 * 8),
 
     /* The 64 32-bit floating-point registers are available in the
        structure returned by PTRACE_GETFPREGS  */
