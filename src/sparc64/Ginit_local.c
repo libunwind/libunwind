@@ -30,8 +30,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <signal.h>
 #include <asm/ptrace.h>
 
-#define SPARC64_STACK_BIAS 2047
-
 #ifdef UNW_REMOTE_ONLY
 
 int

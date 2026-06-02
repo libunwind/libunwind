@@ -49,8 +49,8 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_TDEP_SP:
       if (write)
 	return -UNW_EREADONLYREG;
-      /* CFA = physical SP; O6 register stores biased SP (physical - 2047). */
-      *valp = c->dwarf.cfa - 2047;
+      /* CFA = physical SP; O6 register stores biased SP (CFA - STACK_BIAS). */
+      *valp = c->dwarf.cfa - SPARC64_STACK_BIAS;
       return 0;
 
 
