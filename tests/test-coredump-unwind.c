@@ -203,7 +203,12 @@ main(int argc UNUSED, char **argv)
       unw_proc_info_t pi;
       ret = unw_get_proc_info(&c, &pi);
       if (ret < 0)
-        error_msg_and_die("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
+        {
+          /* No FDE for this frame — treat as end of stack (e.g. _start on
+           * arches where glibc doesn't terminate the DWARF chain). */
+          log("unw_get_proc_info(ip=0x%lx) failed: ret=%d, stopping\n", (long) ip, ret);
+          break;
+        }
 
       if (!testcase)
         {
