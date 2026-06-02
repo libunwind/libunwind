@@ -110,7 +110,11 @@ unw_backtrace2 (void **buffer, int size, unw_context_t* uc2, int flag)
   // and add 1 to it (the one we retrieved above)
   if (unlikely (tdep_trace (&cursor, buffer, &n) < 0))
     {
-      return slow_backtrace (buffer, remaining_size, &uc, flag) + 1;
+      /* slow_backtrace is only reached when tdep_trace fails, so uc2 has not
+         been modified.  For signal frames, unw_init_local2 derives addresses
+         (ss, regs) relative to the uc pointer; passing the local copy &uc
+         gives wrong relative addresses.  Use the original uc2 pointer.  */
+      return slow_backtrace (buffer, remaining_size, uc2, flag) + 1;
     }
 
   return n + 1;
