@@ -193,14 +193,33 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
       [UNW_X86_64_RSP]    = offsetof(struct user_regs_struct, rsp) / sizeof(long),
       [UNW_X86_64_RIP]    = offsetof(struct user_regs_struct, rip) / sizeof(long),
     };
+#elif defined(UNW_TARGET_SPARC)
+  /* SPARC64 NT_PRSTATUS pr_reg layout (see arch/sparc/include/asm/elf_64.h):
+   *   [0..7]   G0-G7
+   *   [8..15]  O0-O7  (O6 = SP, O7 = link register)
+   *   [16..23] L0-L7
+   *   [24..31] I0-I7  (I6 = FP)
+   *   [32]     TSTATE
+   *   [33]     TPC
+   *   [34]     TNPC
+   *   [35]     Y
+   * UNW_SPARC64_{G0..I7} enum values are 0..31, so identity-map them.
+   * UNW_SPARC64_PC (103) maps to slot 33 (TPC).
+   */
+  if (regnum == UNW_SPARC64_PC)
+    regnum = 33;  /* TPC */
+  else if (regnum > UNW_SPARC64_I7)
+    goto badreg;
 #else
 #error Port me
 #endif
 
+#if !defined(UNW_TARGET_SPARC)
   if (regnum >= (unw_regnum_t)ARRAY_SIZE(remap_regs))
     goto badreg;
 
   regnum = remap_regs[regnum];
+#endif
 #endif
 
   /* pr_reg is a long[] array, but it contains struct user_regs_struct's
