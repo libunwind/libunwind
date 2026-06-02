@@ -1001,7 +1001,14 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 	  /* Update use_prev_instr for the next frame. */
 	  assert(c->pi.unwind_info);
 	  struct dwarf_cie_info *dci = c->pi.unwind_info;
+#ifdef UNW_TARGET_SPARC
+	  /* On SPARC, O7 = address of CALL instruction itself (not call+N),
+	     and DWARF CFI annotations start at the CALL instruction.
+	     No backward adjustment of ip is ever needed.  */
+	  next_use_prev_instr = 0;
+#else
 	  next_use_prev_instr = ! dci->signal_frame;
+#endif
 	  ret = create_state_record_for (c, sr, c->ip);
 	}
       put_unwind_info (c, &c->pi);
@@ -1140,7 +1147,11 @@ dwarf_reg_states_iterate(struct dwarf_cursor *c,
       /* Update use_prev_instr for the next frame. */
       assert(c->pi.unwind_info);
       struct dwarf_cie_info *dci = c->pi.unwind_info;
+#ifdef UNW_TARGET_SPARC
+      next_use_prev_instr = 0;
+#else
       next_use_prev_instr = ! dci->signal_frame;
+#endif
       switch (c->pi.format)
 	{
 	case UNW_INFO_FORMAT_TABLE:

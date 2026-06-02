@@ -40,12 +40,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if 0
 #define sparc_scratch_loc		UNW_OBJ(scratch_loc)
 #endif
-#define setcontext                     UNW_ARCH_OBJ(setcontext)
-
 extern void sparc64_local_addr_space_init (void);
 extern int sparc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 				 void *arg);
-extern int setcontext (const ucontext_t *ucp);
 #if 0
 extern dwarf_loc_t sparc64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 #endif
