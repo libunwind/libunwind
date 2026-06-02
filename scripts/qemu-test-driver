@@ -202,9 +202,17 @@ if command -v "qemu-${qemu_arch}-static" >/dev/null 2>&1; then
 else
   qemu_cmd="qemu-${qemu_arch}"
 fi
+# Export QEMU env so shell scripts run natively can pass it to qemu-<arch>.
+QEMU_ARCH=$qemu_arch
+export QEMU_ARCH
+export QEMU_SET_ENV
+export QEMU_LD_PREFIX
 # If the test binary is a libtool wrapper shell script, run the actual
 # ELF from .libs/ directly (QEMU cannot exec a host-arch shell script).
+# If it's a real shell script with no .libs/ ELF counterpart, run it
+# natively under sh.
 test_bin=$1
+run_native=no
 if test -f "$test_bin" && head -1 "$test_bin" | grep -q '^#!'; then
   test_dir=$(dirname "$test_bin")
   test_name=$(basename "$test_bin")
@@ -212,13 +220,22 @@ if test -f "$test_bin" && head -1 "$test_bin" | grep -q '^#!'; then
   if test -f "$elf_bin"; then
     shift
     set -- "$elf_bin" "$@"
+  else
+    run_native=yes
   fi
 fi
 # Test script is run here.
-if test x$verbose != xno; then
-  printf "%s\n" "${qemu_cmd} $@"
+if test x$run_native = xyes; then
+  if test x$verbose != xno; then
+    printf "%s\n" "sh $@"
+  fi
+  sh "$@" >$log_file 2>&1
+else
+  if test x$verbose != xno; then
+    printf "%s\n" "${qemu_cmd} $@"
+  fi
+  ${qemu_cmd} "$@" >$log_file 2>&1
 fi
-${qemu_cmd} "$@" >$log_file 2>&1
 estatus=$?
 
 if test $enable_hard_errors = no && test $estatus -eq 99; then
