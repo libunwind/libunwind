@@ -30,9 +30,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "unwind_i.h"
 
-/* SPARC V9 ABI: the stack pointer O6 stores (physical_SP - 2047). */
-#define SPARC64_STACK_BIAS 2047
-
 #ifndef UNW_REMOTE_ONLY
 
 HIDDEN inline int

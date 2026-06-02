@@ -62,7 +62,7 @@ common_init (struct cursor *c, unsigned use_prev_instr)
      is the true CFA.  Local init (Ginit_local.c) adds this explicitly;
      remote/coredump init reaches here via the register accessor and must
      do the same. */
-  c->dwarf.cfa += 0x7ff;
+  c->dwarf.cfa += SPARC64_STACK_BIAS;
 
   c->sigcontext_format = SPARC64_SCF_NONE;
   c->sigcontext_addr = 0;

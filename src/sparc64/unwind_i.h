@@ -47,4 +47,7 @@ extern int sparc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
 extern dwarf_loc_t sparc64_scratch_loc (struct cursor *c, unw_regnum_t reg);
 #endif
 
+/* SPARC V9 ABI: the stack pointer O6 stores (physical_SP - STACK_BIAS). */
+#define SPARC64_STACK_BIAS 2047
+
 #endif /* unwind_i_h */
