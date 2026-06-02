@@ -88,19 +88,28 @@ static int
 _handle_nt_file_note (uint8_t *desc, void *arg)
 {
   struct UCD_info *ui = (struct UCD_info *)arg;
-  core_nt_file_hdr_t *mapinfo = (core_nt_file_hdr_t *)desc;
-  core_nt_file_entry_t *maps = (core_nt_file_entry_t *) (desc + mapinfo_offset);
-  char *strings = (char *) (desc + mapinfo_offset + sizeof (core_nt_file_entry_t) * mapinfo->count);
 
-  for (unsigned long i = 0; i < mapinfo->count; ++i)
+  /* desc may not be naturally aligned (it sits at an odd offset within the
+   * PT_NOTE segment), so use memcpy to read the header and each entry to
+   * avoid SIGBUS on strict-alignment architectures such as SPARC64. */
+  core_nt_file_hdr_t hdr;
+  memcpy (&hdr, desc, sizeof (hdr));
+
+  uint8_t *entries_base = desc + mapinfo_offset;
+  char *strings = (char *) (entries_base + sizeof (core_nt_file_entry_t) * hdr.count);
+
+  for (unsigned long i = 0; i < hdr.count; ++i)
     {
+      core_nt_file_entry_t entry;
+      memcpy (&entry, entries_base + i * sizeof (core_nt_file_entry_t), sizeof (entry));
+
       size_t len = strlen (strings);
 
       for (unsigned p = 0; p < ui->phdrs_count; ++p)
         {
           if (ui->phdrs[p].p_type == PT_LOAD
-              && maps[i].start >= ui->phdrs[p].p_vaddr
-              && maps[i].end <= ui->phdrs[p].p_vaddr + ui->phdrs[p].p_memsz)
+              && entry.start >= ui->phdrs[p].p_vaddr
+              && entry.end <= ui->phdrs[p].p_vaddr + ui->phdrs[p].p_memsz)
             {
               if (len > 0 && !_path_ends_with(strings, len, deleted, deleted_len))
                 {
