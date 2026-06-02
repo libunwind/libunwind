@@ -1215,7 +1215,7 @@ libunwind_local_la_SOURCES =               \
         sparc64/Lregs.c                          \
         sparc64/Lreg_states_iterate.c            \
         sparc64/Lresume.c                        \
-        sparc64/Lstep.c                          \
+        sparc64/Lstep.c
 libunwind_setjmp_la_SOURCES +=                   \
         sparc64/longjmp.S                        \
         sparc64/siglongjmp.S
