@@ -53,14 +53,13 @@ _UCD_add_backing_file_at_vaddr(struct UCD_info *ui,
           && (uoff_t)vaddr >= phdr->p_vaddr
           && (uoff_t)vaddr <  phdr->p_vaddr + phdr->p_memsz)
         {
-          /* Skip phdrs already populated by NT_FILE; their p_mapoff is correct. */
+          /* Skip phdrs already populated by NT_FILE. */
           if (phdr->p_backing_file_index != ucd_file_no_index)
             return UNW_ESUCCESS;
           ucd_file_index_t idx = ucd_file_table_insert (&ui->ucd_file_table, path);
           if (idx == ucd_file_no_index)
             return -UNW_ENOMEM;
           phdr->p_backing_file_index = idx;
-          phdr->p_mapoff = 0;
           return UNW_ESUCCESS;
         }
     }
