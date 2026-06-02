@@ -235,7 +235,23 @@ typedef ucontext_t unw_tdep_context_t;
    using the "getcontext" name just because it's using libunwind.  We
    can't just use __getcontext() either, because that isn't exported
    by glibc...  */
-#define unw_tdep_getcontext(uc)		(getcontext (uc), 0)
+
+/* glibc SPARC64 getcontext saves MC_PC as an address inside libc
+   (the retl in getcontext itself), not the caller's return address.
+   Adjust MC_PC to the caller's return address (MC_O7 + 8) so that
+   unw_init_local places the cursor at the calling function, not
+   one frame deeper inside libc.  */
+#define unw_tdep_getcontext(uc) ({                                      \
+    int _r = getcontext (uc);                                           \
+    if (_r == 0)                                                        \
+      {                                                                 \
+        __typeof__ ((uc)->uc_mcontext.mc_gregs[0]) _o7 =               \
+            (uc)->uc_mcontext.mc_gregs[MC_O7];                         \
+        (uc)->uc_mcontext.mc_gregs[MC_PC]  = _o7 + 8;                 \
+        (uc)->uc_mcontext.mc_gregs[MC_NPC] = _o7 + 12;                \
+      }                                                                 \
+    _r;                                                                 \
+  })
 
 #include "libunwind-dynamic.h"
 
