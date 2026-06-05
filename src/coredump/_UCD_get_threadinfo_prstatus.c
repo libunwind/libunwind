@@ -22,6 +22,8 @@
  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
  SOFTWARE.
 */
+#include <stddef.h>
+
 #include "_UCD_internal.h"
 
 #if defined(HAVE_ELF_H)
@@ -71,7 +73,7 @@ _count_thread_notes(uint32_t  n_namesz UNUSED,
  */
 static int
 _save_thread_notes(uint32_t  n_namesz UNUSED,
-                   uint32_t  n_descsz UNUSED,
+                   uint32_t  n_descsz,
                    uint32_t  n_type,
                    char     *name UNUSED,
                    uint8_t  *desc,
@@ -100,7 +102,33 @@ _save_thread_notes(uint32_t  n_namesz UNUSED,
 #else
   if (n_type == NT_PRSTATUS)
     {
-      memcpy(&ui->threads[ui->n_threads].prstatus, desc, sizeof(UCD_proc_status_t));
+      size_t copy_sz = n_descsz < sizeof(UCD_proc_status_t) ? n_descsz : sizeof(UCD_proc_status_t);
+      UCD_proc_status_t *dst = &ui->threads[ui->n_threads].prstatus;
+      memset(dst, 0, sizeof(*dst));
+      memcpy(dst, desc, copy_sz);
+#if defined(HAVE_STRUCT_ELF_PRSTATUS)
+      /* Ubuntu 26.04+ compiles 32-bit targets (arm, mips, ppc32) with 64-bit time_t
+       * (_TIME_BITS=64), shifting pr_reg in the host's struct elf_prstatus from offset 72
+       * to 104 due to wider timeval fields.  The kernel always writes NT_PRSTATUS using
+       * the target's native timeval width (8 bytes on 32-bit), so n_descsz is smaller than
+       * sizeof(UCD_proc_status_t).  The formula n_descsz - gregset_sz - sizeof(int) gives
+       * the exact kernel pr_reg offset because 32-bit-target kernel structs carry no tail
+       * padding (total is always 4-byte aligned).  Skip the fixup when sizes match —
+       * identical n_descsz and sizeof means the host struct layout matches the kernel's. */
+      if (n_descsz != sizeof(UCD_proc_status_t))
+        {
+          size_t gregset_sz      = sizeof(((UCD_proc_status_t *)0)->pr_reg);
+          size_t host_pr_reg_off = offsetof(UCD_proc_status_t, pr_reg);
+          if (n_descsz >= gregset_sz + sizeof(int))
+            {
+              size_t actual_pr_reg_off = n_descsz - gregset_sz - sizeof(int);
+              if (actual_pr_reg_off != host_pr_reg_off)
+                memmove((uint8_t *)dst + host_pr_reg_off,
+                        desc + actual_pr_reg_off,
+                        gregset_sz);
+            }
+        }
+#endif
       ++ui->n_threads;
     }
 #endif
