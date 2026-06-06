@@ -398,6 +398,14 @@ ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 
 if BUILD_COREDUMP
 test_coredump_unwind_LDADD = $(LIBUNWIND_coredump) $(LIBUNWIND)
+# ARM defaults to -fno-asynchronous-unwind-tables, so GCC only emits .ARM.exidx
+# entries for C++ exception-propagating functions; pure C functions get CANTUNWIND.
+# Other platforms (x86, x86_64, aarch64, ...) default to -fasynchronous-unwind-tables
+# and always emit .eh_frame for all functions.  The MDI test strips the binary,
+# removing .debug_frame (non-SHF_ALLOC), leaving only .ARM.exidx for unwinding.
+# -funwind-tables forces proper .ARM.exidx entries for all functions so the
+# stripped binary can be unwound.
+crasher_CFLAGS = $(AM_CFLAGS) -funwind-tables
 endif
 
 Gia64_test_nat_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
