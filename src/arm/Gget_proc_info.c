@@ -30,11 +30,20 @@ unw_get_proc_info (unw_cursor_t *cursor, unw_proc_info_t *pi)
   struct cursor *c = (struct cursor *) cursor;
   int ret;
 
-  /* We can only unwind using Dwarf into on ARM: return failure code
-     if it's not present.  */
   ret = dwarf_make_proc_info (&c->dwarf);
   if (ret < 0)
-    return ret;
+    {
+      /* dwarf_make_proc_info fails for ARM_EXIDX frames: fetch_proc_info
+       * populated c->dwarf.pi correctly, but create_state_record_for returns
+       * -UNW_ENOINFO because exidx frames are stepped by arm_exidx_step, not
+       * the DWARF machinery.  The proc_info data is valid; return it. */
+      if (c->dwarf.pi.format == UNW_INFO_FORMAT_ARM_EXIDX)
+        {
+          *pi = c->dwarf.pi;
+          return 0;
+        }
+      return ret;
+    }
 
   *pi = c->dwarf.pi;
   return 0;
