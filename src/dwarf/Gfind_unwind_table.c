@@ -77,15 +77,16 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
             end_ip = phdr[i].p_vaddr + phdr[i].p_memsz;
 
           /* Find the PT_LOAD segment that corresponds to the memory mapping.
-             When there are multiple executable segments, we need to match
-             the one whose file offset corresponds to mapoff. */
-          if ((phdr[i].p_flags & PF_X) == PF_X) {
-            if (ptxt == NULL || phdr[i].p_offset == mapoff) {
+             mapoff (from /proc/PID/maps) equals the p_offset of the mapped
+             segment, so an exact p_offset == mapoff match is unambiguous.
+             Among multiple exact matches (unusual), prefer PF_X.  When no
+             segment has p_offset == mapoff (e.g. vDSO), fall back to the
+             first PF_X segment. */
+          if (phdr[i].p_offset == mapoff) {
+            if (ptxt == NULL || (phdr[i].p_flags & PF_X) == PF_X)
               ptxt = phdr + i;
-            } else {
-              Debug(5, "skipping PT_LOAD segment at p_offset=0x%lx (does not match mapoff=0x%lx)\n",
-                    (long)phdr[i].p_offset, (long)mapoff);
-            }
+          } else if ((phdr[i].p_flags & PF_X) == PF_X && ptxt == NULL) {
+            ptxt = phdr + i;
           }
           if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
             max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
