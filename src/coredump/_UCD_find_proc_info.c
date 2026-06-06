@@ -160,14 +160,22 @@ _UCD_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
                                     pi, need_unwind_info, arg);
 
 #if UNW_TARGET_ARM
-  if (ret == -UNW_ENOINFO && ui->edi.di_arm.format != -1)
-    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_arm, pi,
-                                    need_unwind_info, arg);
-#endif
-
+  /* Try .debug_frame before .ARM.exidx: exidx CANTUNWIND entries cover the
+   * entire range from one function start to the next, so a CANTUNWIND for a
+   * leaf function bleeds into the following non-leaf.  The DWARF .debug_frame
+   * has per-function FDEs and gives the correct result. */
   if (ret == -UNW_ENOINFO && ui->edi.di_debug.format != -1)
     ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
                                     need_unwind_info, arg);
+
+  if (ret == -UNW_ENOINFO && ui->edi.di_arm.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_arm, pi,
+                                    need_unwind_info, arg);
+#else
+  if (ret == -UNW_ENOINFO && ui->edi.di_debug.format != -1)
+    ret = tdep_search_unwind_table (as, ip, &ui->edi.di_debug, pi,
+                                    need_unwind_info, arg);
+#endif
 
   Debug(1, "returns %d\n", ret);
 
