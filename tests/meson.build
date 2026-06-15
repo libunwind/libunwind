@@ -593,6 +593,18 @@ if not unw_remote_only
             override_options: _opts,
         )
         test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'ppc64-test-altivec',
+            'ppc64-test-altivec.c',
+            'ppc64-test-altivec-utils.c',
+            c_args: ['-maltivec'],
+            link_with: libunwind_generic_lib,
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
     elif target_machine.cpu_family() == 'x86_64'
         _exe = executable(
             'Gx64-test-dwarf-expressions',
@@ -637,8 +649,43 @@ if not unw_remote_only
         test(_exe.name(), _exe, env: _env)
 
         _exe = executable(
-            'aarch64-test-frame-record',
+            'Laarch64-test-frame-record',
             'aarch64-test-frame-record.c',
+            c_args: ['-DUNW_LOCAL_ONLY'],
+            link_with: libunwind_internal_local_lib,
+            link_args: ['-Wl,--allow-multiple-definition'],
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'Gaarch64-test-frame-record',
+            'aarch64-test-frame-record.c',
+            link_with: libunwind_internal_lib,
+            link_args: ['-Wl,--allow-multiple-definition'],
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'Laarch64-test-frame-size',
+            'aarch64-test-frame-size.c',
+            c_args: ['-DUNW_LOCAL_ONLY'],
+            link_with: libunwind_internal_local_lib,
+            link_args: ['-Wl,--allow-multiple-definition'],
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'Gaarch64-test-frame-size',
+            'aarch64-test-frame-size.c',
             link_with: libunwind_internal_lib,
             link_args: ['-Wl,--allow-multiple-definition'],
             include_directories: _inc,
@@ -671,6 +718,18 @@ if not unw_remote_only
             )
             test(_exe.name(), _exe, env: _env)
         endif
+
+        _exe = executable(
+            'aarch64-test-lr-fallback',
+            'aarch64-test-lr-fallback.c',
+            'aarch64-test-lr-fallback-asm.S',
+            c_args: ['-DUNW_LOCAL_ONLY'],
+            link_with: libunwind_lib,
+            include_directories: _inc,
+            dependencies: [libc_deps, threads_dep],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
     elif target_machine.cpu_family() == 'arm'
         _exe = executable(
             'Garm-test-debug-frame-bt',
