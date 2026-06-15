@@ -488,6 +488,18 @@ if not unw_remote_only
             override_options: _opts,
         )
         test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'ppc64-test-altivec',
+            'ppc64-test-altivec.c',
+            'ppc64-test-altivec-utils.c',
+            c_args: ['-maltivec'],
+            link_with: libunwind_generic_lib,
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
     elif target_machine.cpu_family() == 'x86_64'
         _exe = executable(
             'Gx64-test-dwarf-expressions',
@@ -566,6 +578,18 @@ if not unw_remote_only
             )
             test(_exe.name(), _exe, env: _env)
         endif
+
+        _exe = executable(
+            'aarch64-test-lr-fallback',
+            'aarch64-test-lr-fallback.c',
+            'aarch64-test-lr-fallback-asm.S',
+            c_args: ['-DUNW_LOCAL_ONLY'],
+            link_with: libunwind_lib,
+            include_directories: _inc,
+            dependencies: [libc_deps, threads_dep],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
     endif
 
     if enable_unw_resume_tests
