@@ -979,6 +979,13 @@ endif
 
 _libs = []
 
+# Match autotools LDFLAGS_NOSTARTFILES: suppress crti.o/crtn.o so _init/_fini
+# are not exported from shared libraries (musl exposes them without this).
+# Cannot use get_supported_link_arguments() — Meson tests flags by linking an
+# executable, which fails with -nostartfiles (no _start). The flag is valid for
+# shared library links on all GCC/clang toolchains.
+_nostartfiles = ['-nostartfiles']
+
 _libunwind_libs = []
 if not unw_remote_only
     libunwind_lib = library(
@@ -987,6 +994,7 @@ if not unw_remote_only
         include_directories: internal_inc,
         link_whole: [libunwind_dwarf_local_lib, libunwind_elf_lib],
         dependencies: [libc_deps, lzma_dep, zlib_dep],
+        link_args: _nostartfiles,
         version: '8.2.0',
         install: true,
     )
@@ -1022,6 +1030,7 @@ libunwind_generic_lib = library(
     link_with: [_libunwind_libs],
     link_whole: [libunwind_dwarf_generic_lib, libunwind_elf_lib],
     dependencies: [libc_deps, lzma_dep, zlib_dep],
+    link_args: _nostartfiles,
     version: '8.2.0',
     install: true,
 )
@@ -1045,6 +1054,7 @@ if build_coredump
         include_directories: internal_inc,
         link_with: libunwind_generic_lib,
         dependencies: [libc_deps, lzma_dep, zlib_dep],
+        link_args: _nostartfiles,
         version: '0.0.0',
         install: true,
     )
@@ -1082,6 +1092,7 @@ if build_nto
         include_directories: internal_inc,
         link_with: [libunwind_generic_lib, _libunwind_libs],
         dependencies: [libc_deps, lzma_dep, zlib_dep],
+        link_args: _nostartfiles,
         install: true,
     )
     _libs += libunwind_nto_lib
@@ -1114,6 +1125,7 @@ if build_ptrace
         include_directories: internal_inc,
         link_with: libunwind_generic_lib,
         dependencies: [libc_deps, lzma_dep, zlib_dep],
+        link_args: _nostartfiles,
         version: '0.0.0',
         install: true,
     )
@@ -1137,6 +1149,7 @@ if build_setjmp
         _libunwind_setjmp_srcs,
         include_directories: internal_inc,
         link_with: [libunwind_elf_lib, libunwind_generic_lib, _libunwind_libs],
+        link_args: _nostartfiles,
         version: '0.0.0',
         install: true,
     )
