@@ -57,7 +57,12 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_S390X_R12:
     case UNW_S390X_R13:
     case UNW_S390X_R14:
+      loc = c->dwarf.loc[reg];
+      break;
+
     case UNW_S390X_IP:
+      if (write)
+        c->dwarf.ip = *valp;
       loc = c->dwarf.loc[reg];
       break;
 
