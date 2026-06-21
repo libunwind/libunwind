@@ -38,8 +38,11 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 
   if (c->sigcontext_format == ARM_SCF_NONE)
     {
-      /* Since there are no signals involved here we restore the non scratch
-         registers only.  */
+      /* Restore callee-saved registers and branch via LR.
+         r0 and r1 are also restored from the initial context because
+         ARM EHABI exception handling uses _Unwind_SetGR to place the
+         exception object pointer (r0) and filter value (r1) there for
+         C++ landing pads.  */
       unsigned long regs[10];
       regs[0] = uc->regs[4];
       regs[1] = uc->regs[5];
@@ -57,10 +60,14 @@ arm_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       } MAY_ALIAS;
 
       __asm__ __volatile__ (
+        "ldr r0, %1\n"
+        "ldr r1, %2\n"
         "ldmia %0, {r4-r12, lr}\n"
         "mov sp, r12\n"
         "bx lr\n"
         : : "r" (regs),
+            "m" (uc->regs[0]),
+            "m" (uc->regs[1]),
             "m" (*(struct regs_overlay *)regs)
       );
     }
