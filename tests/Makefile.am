@@ -199,6 +199,16 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 TESTS = $(check_PROGRAMS)
 if !CROSS_BUILD
  TESTS += $(check_SCRIPTS)
+else
+# For cross builds, include coredump tests - they run under QEMU
+if BUILD_COREDUMP
+if OS_LINUX
+ TESTS += run-coredump-unwind
+if HAVE_LZMA
+  TESTS += run-coredump-unwind-mdi
+endif
+endif
+endif
 endif
 
 # Use if arch defines but does not support PTRACE_SINGLESTEP
@@ -388,6 +398,14 @@ ia64_test_setjmp_LDADD = $(LIBUNWIND_setjmp)
 
 if BUILD_COREDUMP
 test_coredump_unwind_LDADD = $(LIBUNWIND_coredump) $(LIBUNWIND)
+# ARM defaults to -fno-asynchronous-unwind-tables, so GCC only emits .ARM.exidx
+# entries for C++ exception-propagating functions; pure C functions get CANTUNWIND.
+# Other platforms (x86, x86_64, aarch64, ...) default to -fasynchronous-unwind-tables
+# and always emit .eh_frame for all functions.  The MDI test strips the binary,
+# removing .debug_frame (non-SHF_ALLOC), leaving only .ARM.exidx for unwinding.
+# -funwind-tables forces proper .ARM.exidx entries for all functions so the
+# stripped binary can be unwound.
+crasher_CFLAGS = $(AM_CFLAGS) -funwind-tables
 endif
 
 Gia64_test_nat_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
@@ -419,3 +437,20 @@ Laarch64_test_frame_size_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
 Laarch64_test_frame_size_LDADD = $(LIBUNWIND_internal)
 Gaarch64_test_frame_size_LDADD = $(LIBUNWIND_arch)
 aarch64_test_lr_fallback_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
+
+# Copy scripts from source directory to build directory (for cross builds)
+# Use .PHONY to prevent VPATH from resolving targets to source directory
+.PHONY: run-coredump-unwind run-coredump-unwind-mdi
+
+run-coredump-unwind:
+	test $(abs_srcdir)/run-coredump-unwind -ef $@ || cp $(abs_srcdir)/run-coredump-unwind $@
+
+run-coredump-unwind-mdi:
+	test $(abs_srcdir)/run-coredump-unwind-mdi -ef $@ || cp $(abs_srcdir)/run-coredump-unwind-mdi $@
+
+# Also copy scripts with .sh extension (for other scripts)
+# Using explicit absolute path and .PHONY to avoid VPATH issues
+.PHONY: %.sh
+
+%.sh:
+	cp $(abs_srcdir)/$@ $@

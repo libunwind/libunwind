@@ -88,7 +88,6 @@ missing_opts=
 test x"$test_name" = x && missing_opts="$missing_opts --test-name"
 test x"$log_file"  = x && missing_opts="$missing_opts --log-file"
 test x"$trs_file"  = x && missing_opts="$missing_opts --trs-file"
-test x"$qemu_arch"  = x && missing_opts="$missing_opts --qemu-arch"
 if test x"$missing_opts" != x; then
   usage_error "the following mandatory options are missing:$missing_opts"
 fi
@@ -175,12 +174,68 @@ trap "st=130; $do_exit" 2
 trap "st=141; $do_exit" 13
 trap "st=143; $do_exit" 15
 
-qemu_cmd="qemu-${qemu_arch}"
-# Test script is run here.
-if test x$verbose != xno; then
-  printf "%s\n" "${qemu_cmd} $@"
+if test x"$qemu_arch" = x; then
+  # Detect the ELF to probe: if the binary is a libtool wrapper, use .libs/<name>
+  detect_bin=$1
+  if test -f "$detect_bin" && head -1 "$detect_bin" 2>/dev/null | grep -q '^#!'; then
+    _d=$(dirname "$detect_bin"); _n=$(basename "$detect_bin")
+    test -f "$_d/.libs/$_n" && detect_bin="$_d/.libs/$_n"
+  fi
+  case $(file "$detect_bin" 2>/dev/null) in
+    *"SPARC V9"*)   qemu_arch=sparc64;;
+    *"SPARC"*)      qemu_arch=sparc;;
+    *"AArch64"*)    qemu_arch=aarch64;;
+    *"ARM"*)        qemu_arch=arm;;
+    *"MIPS"*)       qemu_arch=mips;;
+    *"PowerPC 64"*) qemu_arch=ppc64;;
+    *"PowerPC"*)    qemu_arch=ppc;;
+    *"RISC-V"*)     qemu_arch=riscv64;;
+    *"s390"*)       qemu_arch=s390x;;
+    *"Alpha"*)      qemu_arch=alpha;;
+    *"PA-RISC"*)    qemu_arch=hppa;;
+    *"SH4"*)        qemu_arch=sh4;;
+    *) usage_error "cannot auto-detect QEMU arch from '$detect_bin'; use --qemu-arch";;
+  esac
 fi
-${qemu_cmd} "$@" >$log_file 2>&1
+if command -v "qemu-${qemu_arch}-static" >/dev/null 2>&1; then
+  qemu_cmd="qemu-${qemu_arch}-static"
+else
+  qemu_cmd="qemu-${qemu_arch}"
+fi
+# Export QEMU env so shell scripts run natively can pass it to qemu-<arch>.
+QEMU_ARCH=$qemu_arch
+export QEMU_ARCH
+export QEMU_SET_ENV
+export QEMU_LD_PREFIX
+# If the test binary is a libtool wrapper shell script, run the actual
+# ELF from .libs/ directly (QEMU cannot exec a host-arch shell script).
+# If it's a real shell script with no .libs/ ELF counterpart, run it
+# natively under sh.
+test_bin=$1
+run_native=no
+if test -f "$test_bin" && head -1 "$test_bin" | grep -q '^#!'; then
+  test_dir=$(dirname "$test_bin")
+  test_name=$(basename "$test_bin")
+  elf_bin="$test_dir/.libs/$test_name"
+  if test -f "$elf_bin"; then
+    shift
+    set -- "$elf_bin" "$@"
+  else
+    run_native=yes
+  fi
+fi
+# Test script is run here.
+if test x$run_native = xyes; then
+  if test x$verbose != xno; then
+    printf "%s\n" "sh $@"
+  fi
+  sh "$@" >$log_file 2>&1
+else
+  if test x$verbose != xno; then
+    printf "%s\n" "${qemu_cmd} $@"
+  fi
+  ${qemu_cmd} "$@" >$log_file 2>&1
+fi
 estatus=$?
 
 if test $enable_hard_errors = no && test $estatus -eq 99; then

@@ -63,7 +63,7 @@ jobs:
 
             printf '\n Configuration \n'
             autoreconf -ifv
-            ./configure --enable-debug
+            ./configure --enable-debug --enable-coredump
             
             printf '\n Build \n'
             make -j$(nproc)
@@ -73,8 +73,7 @@ jobs:
             make check -j$(nproc)
 
       - name: Upload Test Logs
-        # This step only runs if the "Build and Test" step fails
-        if: failure()
+        if: always()
         uses: actions/upload-artifact@v7
         with:
           name: logs-${{ matrix.architecture }}-freebsd${{ matrix.os_version }}-${{ matrix.compiler }}

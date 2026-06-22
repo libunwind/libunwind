@@ -157,6 +157,7 @@ endif
 noinst_HEADERS += coredump/_UCD_internal.h     \
                   coredump/ucd_file_table.h
 libunwind_coredump_la_SOURCES =                \
+	coredump/_UCD_add_backing_file_at_vaddr.c \
 	coredump/_UCD_access_mem.c             \
 	coredump/_UCD_accessors.c              \
 	coredump/_UCD_corefile_elf.c           \

@@ -476,7 +476,11 @@ fetch_proc_info (struct dwarf_cursor *c, unw_word_t ip)
 
   if (c->pi.format != UNW_INFO_FORMAT_DYNAMIC
       && c->pi.format != UNW_INFO_FORMAT_TABLE
-      && c->pi.format != UNW_INFO_FORMAT_REMOTE_TABLE)
+      && c->pi.format != UNW_INFO_FORMAT_REMOTE_TABLE
+#ifdef UNW_TARGET_ARM
+      && c->pi.format != UNW_INFO_FORMAT_ARM_EXIDX
+#endif
+      )
     return -UNW_ENOINFO;
 
   c->pi_valid = 1;
@@ -754,6 +758,15 @@ create_state_record_for (struct dwarf_cursor *c, dwarf_state_record_t *sr,
     case UNW_INFO_FORMAT_DYNAMIC:
       ret = parse_dynamic (c, ip, sr);
       break;
+
+#ifdef UNW_TARGET_ARM
+    case UNW_INFO_FORMAT_ARM_EXIDX:
+      /* ARM exidx proc info is stepped by arm_exidx_step(), not the DWARF
+         path; signal dwarf_step() to skip so the cursor is not advanced
+         with an uninitialized state record. */
+      ret = -UNW_ENOINFO;
+      break;
+#endif
 
     default:
       Debug (1, "Unexpected unwind-info format %d\n", c->pi.format);

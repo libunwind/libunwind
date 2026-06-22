@@ -58,9 +58,10 @@ _UCD_access_mem (unw_addr_space_t  as UNUSED,
               return -UNW_EINVAL;
             }
 
-          off_t image_offset = addr - phdr->p_vaddr;
+          off_t image_offset = phdr->p_mapoff + (addr - phdr->p_vaddr);
 
-          if (phdr->p_vaddr <= addr && addr_last < phdr->p_vaddr + ucd_file->size)
+          if (phdr->p_vaddr <= addr && addr_last < phdr->p_vaddr + phdr->p_memsz
+              && (uintptr_t) image_offset + sizeof (*val) <= ucd_file->size)
             {
               memcpy (val, ucd_file->image + image_offset, sizeof (*val));
               Debug (16, "%#010llx <- [addr:%#010llx file:%s]\n",

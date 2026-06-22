@@ -180,6 +180,19 @@ main(int argc UNUSED, char **argv)
     argv++;
   }
 
+  /* Register backing files supplied as VADDR:PATH arguments.
+   * Needed when the core lacks NT_FILE notes (e.g. QEMU user-mode cores). */
+  while (*argv)
+    {
+      char *colon = strchr(*argv, ':');
+      if (colon)
+        {
+          unsigned long vaddr = strtoul(*argv, NULL, 0);
+          _UCD_add_backing_file_at_vaddr(ui, vaddr, colon + 1);
+        }
+      argv++;
+    }
+
   for (;;)
     {
       unw_word_t ip;
@@ -190,7 +203,12 @@ main(int argc UNUSED, char **argv)
       unw_proc_info_t pi;
       ret = unw_get_proc_info(&c, &pi);
       if (ret < 0)
-        error_msg_and_die("unw_get_proc_info(ip=0x%lx) failed: ret=%d\n", (long) ip, ret);
+        {
+          /* No FDE for this frame — treat as end of stack (e.g. _start on
+           * arches where glibc doesn't terminate the DWARF chain). */
+          log("unw_get_proc_info(ip=0x%lx) failed: ret=%d, stopping\n", (long) ip, ret);
+          break;
+        }
 
       if (!testcase)
         {
