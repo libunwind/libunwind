@@ -34,12 +34,31 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
   
   switch (reg)
     {
+    case UNW_MIPS_R4:
+    case UNW_MIPS_R5:
+      {
+        unsigned int n = reg - UNW_MIPS_R4;
+        unsigned int mask = 1 << n;
+        if (write)
+          {
+            c->dwarf.eh_args[n] = *valp;
+            c->dwarf.eh_valid_mask |= mask;
+            return 0;
+          }
+        else if ((c->dwarf.eh_valid_mask & mask) != 0)
+          {
+            *valp = c->dwarf.eh_args[n];
+            return 0;
+          }
+        else
+          loc = c->dwarf.loc[reg - UNW_MIPS_R0];
+      }
+      break;
+
     case UNW_MIPS_R0:
     case UNW_MIPS_R1:
     case UNW_MIPS_R2:
     case UNW_MIPS_R3:
-    case UNW_MIPS_R4:
-    case UNW_MIPS_R5:
     case UNW_MIPS_R6:
     case UNW_MIPS_R7:
     case UNW_MIPS_R8:
@@ -65,7 +84,12 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_MIPS_R28:
 
     case UNW_MIPS_R30:
+      loc = c->dwarf.loc[reg - UNW_MIPS_R0];
+      break;
+
     case UNW_MIPS_R31:
+      if (write)
+        c->dwarf.ip = *valp;            /* update the IP cache */
       loc = c->dwarf.loc[reg - UNW_MIPS_R0];
       break;
 
