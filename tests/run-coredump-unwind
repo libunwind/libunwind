@@ -8,6 +8,22 @@ add_minidebug()
   debuginfo="$1" ## we don't have separate debuginfo file
   binary="$1"
 
+  # Use cross-compile tools when running under QEMU (cross build).
+  # Derive the host triple from QEMU_LD_PREFIX (e.g. /usr/aarch64-linux-gnu).
+  if [ -n "$QEMU_LD_PREFIX" ]; then
+    cross_prefix="$(basename "$QEMU_LD_PREFIX")-"
+  else
+    cross_prefix=""
+  fi
+  NM="${cross_prefix}nm"
+  OBJCOPY="${cross_prefix}objcopy"
+  STRIP="${cross_prefix}strip"
+
+  if ! command -v xz >/dev/null 2>&1; then
+    echo "xz not found, skipping minidebuginfo test"
+    exit 77
+  fi
+
   dynsyms=`mktemp`
   funcsyms=`mktemp`
   keep_symbols=`mktemp`
@@ -15,21 +31,21 @@ add_minidebug()
 
   # Extract the dynamic symbols from the main binary, there is no need to also have these
   # in the normal symbol table
-  nm -D "$binary" --format=posix --defined-only | awk '{ print $1 }' | sort > "$dynsyms"
-  # Extract all the text (i.e. function) symbols from the debuginfo 
-  nm "$debuginfo" --format=posix --defined-only | awk '{ if ($2 == "T" || $2 == "t") print $1 }' | sort > "$funcsyms"
+  $NM -D "$binary" --format=posix --defined-only | awk '{ print $1 }' | sort > "$dynsyms"
+  # Extract all the text (i.e. function) symbols from the debuginfo
+  $NM "$debuginfo" --format=posix --defined-only | awk '{ if ($2 == "T" || $2 == "t") print $1 }' | sort > "$funcsyms"
   # Keep all the function symbols not already in the dynamic symbol table
   comm -13 "$dynsyms" "$funcsyms" > "$keep_symbols"
   # Copy the full debuginfo, keeping only a minimal set of symbols and removing some unnecessary sections
-  objcopy -S --remove-section .gdb_index --remove-section .comment --keep-symbols="$keep_symbols" "$debuginfo" "$mini_debuginfo" &> /dev/null
+  $OBJCOPY -S --remove-section .gdb_index --remove-section .comment --keep-symbols="$keep_symbols" "$debuginfo" "$mini_debuginfo" >/dev/null 2>&1
   wait
   #Inject the compressed data into the .gnu_debugdata section of the original binary
   xz "$mini_debuginfo"
   mini_debuginfo="${mini_debuginfo}.xz"
-  objcopy --add-section .gnu_debugdata="$mini_debuginfo" "$binary"
+  $OBJCOPY --add-section .gnu_debugdata="$mini_debuginfo" "$binary"
   rm -f "$dynsyms" "$funcsyms" "$keep_symbols" "$mini_debuginfo"
 
-  strip "$binary" ## throw away the symbol table
+  $STRIP "$binary" ## throw away the symbol table
 }
 
 
@@ -42,17 +58,77 @@ if [ "$1" = "-minidebuginfo" ]; then
   add_minidebug $TEMPDIR/crasher
 fi
 
+COREFILE=$TEMPDIR/core
+
 # create core dump
-(
-    cd $TEMPDIR
-    ulimit -c 10000
-    ./crasher backing_files
-) 2>/dev/null
-COREFILE=$TEMPDIR/core*
-if ! test -f "$COREFILE"; then
-    echo "crasher process did not produce coredump, test skipped"
-    exit 77
+CORE_PATTERN=$(cat /proc/sys/kernel/core_pattern 2>/dev/null || echo "core")
+if echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >/dev/null 2>&1; then
+    # systemd-coredump intercepts the crash; retrieve core via coredumpctl
+    BEFORE=$(date '+%Y-%m-%d %H:%M:%S')
+    (
+        cd $TEMPDIR
+        ./crasher backing_files
+    ) 2>/dev/null
+    # poll for the coredump (systemd-coredump processes asynchronously)
+    i=0
+    while [ $i -lt 10 ]; do
+        coredumpctl dump --quiet --since="$BEFORE" --output="$COREFILE" \
+            "$TEMPDIR/crasher" 2>/dev/null && break
+        sleep 1
+        i=$((i + 1))
+    done
+    if ! test -f "$COREFILE"; then
+        echo "coredumpctl could not retrieve coredump, test skipped"
+        exit 77
+    fi
+else
+    (
+        cd $TEMPDIR
+        ulimit -c unlimited
+        if [ -n "$QEMU_ARCH" ]; then
+            # QEMU_LD_PREFIX and QEMU_SET_ENV are inherited from the environment
+            qemu-$QEMU_ARCH ./crasher backing_files
+        else
+            ./crasher backing_files
+        fi
+    ) 2>/dev/null
+    # Find core file: native kernels write core* patterns; QEMU writes
+    # qemu_<binary>_<timestamp>_<pid>.core in the working directory.
+    COREFILE=
+    for f in "$TEMPDIR"/core* "$TEMPDIR"/qemu_crasher*.core; do
+        if [ -f "$f" ]; then
+            COREFILE="$f"
+            break
+        fi
+    done
+    if [ -z "$COREFILE" ]; then
+        echo "crasher process did not produce coredump, test skipped"
+        exit 77
+    fi
+
+    # When qemu-ARCH lacks guest core-dump support, it re-raises the signal to
+    # itself and the kernel writes a host (x86-64) core instead of a guest core.
+    # Detect this and skip rather than report a spurious failure.
+    if [ -n "$QEMU_ARCH" ]; then
+        core_machine=$(readelf -h "$COREFILE" 2>/dev/null | grep 'Machine:')
+        case "$core_machine" in
+            *X86-64*|*80386*)
+                echo "qemu-$QEMU_ARCH crashed writing guest core (got host x86 core); test skipped"
+                exit 77
+                ;;
+        esac
+    fi
 fi
 
 # magic option -testcase enables checking for the specific contents of the stack
-./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+if [ -n "$QEMU_ARCH" ]; then
+    # binfmt_misc is not reliably available in cross-build CI containers, so
+    # invoke qemu explicitly.  The uninstalled libraries live in ../src/.libs
+    # relative to the test build directory; pass that path into the QEMU guest
+    # via QEMU_SET_ENV so the dynamic linker finds libunwind-coredump.so.0 etc.
+    lib_path=$(cd "$TESTDIR/../src" && pwd)/.libs
+    QEMU_SET_ENV="LD_LIBRARY_PATH=$lib_path${QEMU_SET_ENV:+,$QEMU_SET_ENV}" \
+    qemu-$QEMU_ARCH .libs/test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+else
+    ./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+fi

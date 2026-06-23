@@ -14,6 +14,12 @@ static const int max_steps = 10;
 
 #if defined __FreeBSD__
 #define	TRAMPOLINE_DEPTH	4
+#elif defined __sparc__ && defined __arch64__
+/* libunwind's SPARC64 step combines the handler-frame unwind and the
+   rt_signal_frame trampoline setup into a single unw_step() call, so
+   only one step is consumed between unw_getcontext() in the handler
+   and the interrupted frame seen via ucontext_t.  */
+#define	TRAMPOLINE_DEPTH	1
 #else
 #define	TRAMPOLINE_DEPTH	2
 #endif

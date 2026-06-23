@@ -1,0 +1,53 @@
+/* libunwind - a platform-independent unwind library
+   Copyright (C) 2014 Oracle Inc.
+   Contributed by
+     Jose E. Marchesi <jose.marchesi@oracle.com>
+
+This file is part of libunwind.
+
+Permission is hereby granted, free of charge, to any person obtaining
+a copy of this software and associated documentation files (the
+"Software"), to deal in the Software without restriction, including
+without limitation the rights to use, copy, modify, merge, publish,
+distribute, sublicense, and/or sell copies of the Software, and to
+permit persons to whom the Software is furnished to do so, subject to
+the following conditions:
+
+The above copyright notice and this permission notice shall be
+included in all copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,
+EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF
+MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND
+NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
+WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
+
+#ifndef unwind_i_h
+#define unwind_i_h
+
+#include <stdint.h>
+
+#include <libunwind-sparc64.h>
+
+#include <libunwind_i.h>
+#include <sys/ucontext.h>
+
+#define sparc64_lock			UNW_OBJ(lock)
+#define sparc64_local_resume		UNW_OBJ(local_resume)
+#define sparc64_local_addr_space_init	UNW_OBJ(local_addr_space_init)
+#if 0
+#define sparc_scratch_loc		UNW_OBJ(scratch_loc)
+#endif
+extern void sparc64_local_addr_space_init (void);
+extern int sparc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor,
+				 void *arg);
+#if 0
+extern dwarf_loc_t sparc64_scratch_loc (struct cursor *c, unw_regnum_t reg);
+#endif
+
+/* SPARC V9 ABI: the stack pointer O6 stores (physical_SP - STACK_BIAS). */
+#define SPARC64_STACK_BIAS 2047
+
+#endif /* unwind_i_h */

@@ -36,6 +36,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #if HAVE_DECL_PTRACE_SETREGSET && (defined(__linux__) && !defined(UNW_TARGET_X86))
 #include <sys/uio.h>
+#ifdef UNW_TARGET_SPARC64
+#include <sys/procfs.h>
+#endif
 int
 _UPT_access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
                  int write, void *arg)
