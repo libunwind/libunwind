@@ -40,6 +40,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define SZFREG 4
 # define STORE_FP fsw
 # define LOAD_FP flw
+#elif __riscv_flen == 0
+/* Soft-float ABI: no hardware FP registers. Leave STORE_FP/LOAD_FP undefined so
+   the context save/restore paths that are guarded by them are skipped. */
+# define SZFREG 0
 #else
 # error "Unsupported RISC-V floating-point length"
 #endif

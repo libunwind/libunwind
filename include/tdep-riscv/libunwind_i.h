@@ -187,6 +187,11 @@ dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
   int r = (*c->as->acc.access_mem) (c->as, addr, &mword, 0, c->as_arg);
   memcpy(valp, &mword, 4);
   return r;
+#elif __riscv_flen == 0
+  /* Soft-float ABI: no FP registers, so an FP DWARF location can only be in
+     memory. Access it as a plain word; this path is never taken for register
+     locations. */
+  return (*c->as->acc.access_mem) (c->as, addr, valp, 0, c->as_arg);
 #else
 # error "dwarf_getfp: FIXME"
 #endif
@@ -222,6 +227,11 @@ dwarf_putfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t val)
     return r;
   memcpy(&mword, valp, 4);
   return (*c->as->acc.access_mem) (c->as, addr, &mword, 1, c->as_arg);
+#elif __riscv_flen == 0
+  /* Soft-float ABI: no FP registers, so an FP DWARF location can only be in
+     memory. Access it as a plain word; this path is never taken for register
+     locations. */
+  return (*c->as->acc.access_mem) (c->as, addr, valp, 1, c->as_arg);
 #else
 # error "dwarf_putfp: FIXME"
 #endif

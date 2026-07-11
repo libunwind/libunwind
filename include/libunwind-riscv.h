@@ -68,6 +68,10 @@ typedef int64_t unw_sword_t;
 typedef double unw_tdep_fpreg_t;
 #elif __riscv_flen == 32
 typedef float unw_tdep_fpreg_t;
+#elif __riscv_flen == 0
+/* Soft-float ABI: no hardware FP registers. The type is only a placeholder for
+   the register-slot size and is never accessed. */
+typedef uint64_t unw_tdep_fpreg_t;
 #else
 # error "Unsupported RISC-V floating-point size"
 #endif
