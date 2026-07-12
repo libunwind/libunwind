@@ -29,7 +29,9 @@ jobs:
     name: riscv64-linux-musl (rv64ima, soft-float)
 
     env:
-      MIRROR: https://opensource.interpretica.io/bflat/alpine/b8/main/riscv64
+      # apk appends /$arch to the repository URL, so REPO is the base and the
+      # package index itself lives at $REPO/riscv64/.
+      REPO: https://opensource.interpretica.io/bflat/alpine/b8/main
       ROOTFS: /opt/rv64ima
       # Failures already present on the hard-float riscv64-linux-musl job, i.e.
       # not caused by the soft-float ABI.  Anything outside this list is a
@@ -50,12 +52,12 @@ jobs:
       - name: Bootstrap the soft-float rootfs
         run: |
           set -eux
-          apk=$(curl -fsSL "$MIRROR/" | grep -oE 'apk-tools-static-[^"<]+\.apk' | head -1)
+          apk=$(curl -fsSL "$REPO/riscv64/" | grep -oE 'apk-tools-static-[^"<]+\.apk' | head -1)
           tmp=$(mktemp -d)
-          curl -fsSL "$MIRROR/$apk" | tar -xz -C "$tmp"
+          curl -fsSL "$REPO/riscv64/$apk" | tar -xz -C "$tmp"
           sudo mkdir -p "$ROOTFS"
           sudo "$tmp/sbin/apk.static" \
-              --arch riscv64 --repository "$MIRROR" --allow-untrusted \
+              --arch riscv64 --repository "$REPO" --allow-untrusted \
               --root "$ROOTFS" --initdb --no-progress add \
               alpine-base build-base make musl-dev linux-headers \
               libucontext-dev xz-dev g++ libstdc++-dev
