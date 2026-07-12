@@ -1,0 +1,133 @@
+name: CI - RISC-V soft-float
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '**'
+      - '!README.md'
+      - '!doc/**'
+      - '!.**'
+      - '.github/workflows/CI-riscv-softfloat.yml'
+  push:
+    branches:
+      - v[0-9].*
+      - master
+      - 'ci/**'
+
+jobs:
+  # Build and run the test suite for the soft-float RISC-V ABI (rv64ima, lp64,
+  # __riscv_flen == 0).  No distribution ships a soft-float riscv64 userspace --
+  # Alpine and Debian both target lp64d -- so the rootfs is bootstrapped from the
+  # bflat soft-float Alpine port and executed through the qemu-riscv64 binfmt
+  # handler, which is the same emulation path the other musl jobs use.
+  rv64ima-softfloat:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    name: riscv64-linux-musl (rv64ima, soft-float)
+
+    env:
+      MIRROR: https://opensource.interpretica.io/bflat/alpine/b8/main/riscv64
+      ROOTFS: /opt/rv64ima
+      # Failures already present on the hard-float riscv64-linux-musl job, i.e.
+      # not caused by the soft-float ABI.  Anything outside this list is a
+      # genuine regression and fails the job.
+      EXPECTED_FAILURES: test-setjmp
+
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Register the qemu-riscv64 binfmt handler
+        uses: docker/setup-qemu-action@29109295f81e9208d7d86ff1c6c12d2833863392 # v3.6.0
+        with:
+          platforms: riscv64
+
+      - name: Generate configure (host autotools; output is arch-independent)
+        run: autoreconf -i
+
+      - name: Bootstrap the soft-float rootfs
+        run: |
+          set -eux
+          apk=$(curl -fsSL "$MIRROR/" | grep -oE 'apk-tools-static-[^"<]+\.apk' | head -1)
+          tmp=$(mktemp -d)
+          curl -fsSL "$MIRROR/$apk" | tar -xz -C "$tmp"
+          sudo mkdir -p "$ROOTFS"
+          sudo "$tmp/sbin/apk.static" \
+              --arch riscv64 --repository "$MIRROR" --allow-untrusted \
+              --root "$ROOTFS" --initdb --no-progress add \
+              alpine-base build-base make musl-dev linux-headers \
+              libucontext-dev xz-dev g++ libstdc++-dev
+
+      - name: Assert the rootfs toolchain really is soft-float
+        run: |
+          set -eux
+          sudo chroot "$ROOTFS" /bin/sh -c '
+              gcc --version | head -1
+              gcc -dM -E - </dev/null | grep -E "__riscv(_flen|_float_abi|_xlen)?" || true
+              # __riscv_flen is only defined when an F/D extension is present; if
+              # it is, the rootfs is hard-float and this job would prove nothing.
+              if gcc -dM -E - </dev/null | grep -q __riscv_flen; then
+                  echo "rootfs toolchain is hard-float -- aborting" >&2
+                  exit 1
+              fi
+          '
+
+      - name: Configure and build
+        run: |
+          set -eux
+          sudo mkdir -p "$ROOTFS/libunwind" "$ROOTFS/proc" "$ROOTFS/sys" "$ROOTFS/dev"
+          sudo mount -t proc none "$ROOTFS/proc"
+          sudo mount --rbind /sys "$ROOTFS/sys"
+          sudo mount --rbind /dev "$ROOTFS/dev"
+          sudo cp -a . "$ROOTFS/libunwind"
+          sudo chroot "$ROOTFS" /bin/sh -c '
+              cd /libunwind
+              ./configure --enable-debug \
+                  CFLAGS="-g -O0 -Wall -Wextra" CXXFLAGS="-g -O0" LDFLAGS="-g -O0"
+              make -j$(nproc)
+          '
+
+      - name: Test
+        run: |
+          set -eu
+          # The suite is expected to have pre-existing failures (see
+          # EXPECTED_FAILURES), so make's exit status alone is not the verdict:
+          # the FAIL list in test-suite.log is.
+          sudo chroot "$ROOTFS" /bin/sh -c '
+              cd /libunwind && UNW_DEBUG_LEVEL=5 make check -j$(nproc)
+          ' && checked=ok || checked=failed
+
+          log="$ROOTFS/libunwind/tests/test-suite.log"
+          if [ ! -f "$log" ]; then
+              echo "::error::no test-suite.log -- the suite did not run (make check $checked)"
+              exit 1
+          fi
+
+          sudo grep -E '^(FAIL|ERROR):' "$log" | awk '{print $2}' | sort -u > /tmp/failed || true
+          printf '%s\n' $EXPECTED_FAILURES | sort -u > /tmp/expected
+          unexpected=$(comm -23 /tmp/failed /tmp/expected)
+
+          echo "failed:     $(tr '\n' ' ' < /tmp/failed)"
+          echo "expected:   $(tr '\n' ' ' < /tmp/expected)"
+
+          if [ -n "$unexpected" ]; then
+              echo "::error::unexpected test failures on rv64ima soft-float: $(echo $unexpected)"
+              exit 1
+          fi
+          if [ "$checked" = failed ] && [ ! -s /tmp/failed ]; then
+              echo "::error::make check failed without reporting a failing test (build error?)"
+              exit 1
+          fi
+          echo "no unexpected failures"
+
+      - name: Upload test logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-riscv64-softfloat
+          path: |
+            /opt/rv64ima/libunwind/**/test-suite.log
+            /opt/rv64ima/libunwind/**/config.log
+          if-no-files-found: warn
