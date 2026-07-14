@@ -27,7 +27,6 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    (http://www.linuxbase.org/spec/).  */
 
 #include <stddef.h>
-#include <stdio.h>
 #include <limits.h>
 
 #include "dwarf_i.h"
@@ -663,13 +662,11 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
       a = unw_get_accessors_int (unw_local_addr_space);
       addr = (unw_word_t) (uintptr_t) (&hdr->eh_frame);
 
-      /* (Optionally) read eh_frame_ptr: */
       if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
                                              &addr, hdr->eh_frame_ptr_enc, pi,
                                              &eh_frame_start, NULL)) < 0)
         return ret;
 
-      /* (Optionally) read fde_count: */
       if ((ret = dwarf_read_encoded_pointer (unw_local_addr_space, a,
                                              &addr, hdr->fde_count_enc, pi,
                                              &fde_count, NULL)) < 0)
@@ -795,8 +792,10 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 
       /* search the table: */
       if (cb_data.di.format != -1)
+        {
 	ret = dwarf_search_unwind_table_int (as, ip, &cb_data.di,
 					     pi, need_unwind_info, arg);
+        }
       else
 	ret = -UNW_ENOINFO;
 
