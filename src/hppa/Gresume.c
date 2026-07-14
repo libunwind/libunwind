@@ -55,7 +55,7 @@ hppa_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
 {
 #if defined(__linux__)
   struct cursor *c = (struct cursor *) cursor;
-  ucontext_t *uc = c->dwarf.as_arg;
+  ucontext_t *uc = c->uc;
 
   /* Ensure c->pi is up-to-date.  On PA-RISC, it's relatively common to be
      missing DWARF unwind info.  We don't want to fail in that case,
