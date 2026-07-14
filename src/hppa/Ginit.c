@@ -105,15 +105,13 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
     }
   else
     {
-      /* validate address */
-      const struct cursor *c = (const struct cursor *)arg;
-
+      const struct cursor *c = (const struct cursor *) arg;
       if (likely (c != NULL) && unlikely (c->validate)
-          && unlikely (!unw_address_is_valid (addr, sizeof(unw_word_t)))) {
-        Debug (16, "mem[%x] -> invalid\n", addr);
-        return -1;
-      }
-
+          && unlikely (!unw_address_is_valid (addr, sizeof (unw_word_t))))
+        {
+          Debug (12, "mem[%x] -> invalid\n", addr);
+          return -1;
+        }
       memcpy (val, (void *) addr, sizeof(unw_word_t));
       Debug (12, "mem[%x] -> %x\n", addr, *val);
     }
@@ -125,7 +123,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
             void *arg)
 {
   unw_word_t *addr;
-  ucontext_t *uc = arg;
+  ucontext_t *uc = ((struct cursor *) arg)->uc;
 
   if ((unsigned int) (reg - UNW_HPPA_FR) < 32)
     goto badreg;
@@ -159,7 +157,7 @@ static int
 access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
               int write, void *arg)
 {
-  ucontext_t *uc = arg;
+  ucontext_t *uc = ((struct cursor *) arg)->uc;
   unw_fpreg_t *addr;
 
   if ((unsigned) (reg - UNW_HPPA_FR) > 32)

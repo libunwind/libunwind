@@ -47,9 +47,9 @@ unw_init_local_common (unw_cursor_t *cursor, ucontext_t *uc, unsigned use_prev_i
   Debug (1, "(cursor=%p)\n", c);
 
   c->dwarf.as = unw_local_addr_space;
-  c->dwarf.as_arg = cursor;
-  c->dwarf.as_arg = uc;
-  c->validate = 1;
+  c->uc = uc;
+  c->dwarf.as_arg = c;
+  c->validate = 0;
 
   return common_init (c, use_prev_instr);
 }
