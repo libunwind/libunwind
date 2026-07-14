@@ -84,10 +84,10 @@ struct MAY_ALIAS cursor
 # define DWARF_LOC(r, t)        ((dwarf_loc_t) { .val = (r) })
 # define DWARF_IS_REG_LOC(l)    0
 # define DWARF_REG_LOC(c,r)     (DWARF_LOC((unw_word_t)                      \
-                                 tdep_uc_addr((c)->as_arg, (r)), 0))
+                                 tdep_uc_addr(((struct cursor *)(c))->uc, (r)), 0))
 # define DWARF_MEM_LOC(c,m)     DWARF_LOC ((m), 0)
 # define DWARF_FPREG_LOC(c,r)   (DWARF_LOC((unw_word_t)                      \
-                                 tdep_uc_addr((c)->as_arg, (r)), 0))
+                                 tdep_uc_addr(((struct cursor *)(c))->uc, (r)), 0))
 
 static inline int
 dwarf_getfp (struct dwarf_cursor *c, dwarf_loc_t loc, unw_fpreg_t *val)
