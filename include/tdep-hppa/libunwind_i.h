@@ -61,6 +61,8 @@ struct MAY_ALIAS cursor
   {
     struct dwarf_cursor dwarf;          /* must be first */
 
+    ucontext_t *uc;
+
     /* Format of sigcontext structure and address at which it is
        stored: */
     enum
@@ -110,7 +112,11 @@ dwarf_get (struct dwarf_cursor *c, dwarf_loc_t loc, unw_word_t *val)
 {
   if (!DWARF_GET_LOC (loc))
     return -1;
-  *val = *(unw_word_t *) DWARF_GET_LOC (loc);
+  unw_word_t addr = DWARF_GET_LOC (loc);
+  if (unlikely (((struct cursor *) c)->validate)
+      && unlikely (!unw_address_is_valid (addr, sizeof (unw_word_t))))
+    return -1;
+  *val = *(unw_word_t *) addr;
   return 0;
 }
 

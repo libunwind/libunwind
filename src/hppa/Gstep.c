@@ -187,11 +187,11 @@ unw_step (unw_cursor_t *cursor)
   if (unw_is_signal_frame (cursor) > 0)
     return hppa_handle_signal_frame (cursor);
 
-  /* Restore default memory validation state */
-  c->validate = validate;
-
   /* Try DWARF-based unwinding... */
   ret = dwarf_step (&c->dwarf);
+
+  /* Restore default memory validation state */
+  c->validate = validate;
 
   if (unlikely (ret == -UNW_ESTOPUNWIND))
     return ret;
