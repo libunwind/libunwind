@@ -244,7 +244,11 @@ jobs:
           make -C build check -j8
         env:
           UNW_DEBUG_LEVEL: 4
-          ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0
+          # replace_intrin=0 keeps AddressSanitizer from checking the
+          # memcpy() calls the unwinder uses to read the target's stack:
+          # reading another frame's memory is what an unwinder does, and
+          # ASan cannot tell that from an overflow.
+          ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0:replace_intrin=0
 
       - name: Upload Test Logs
         if: failure()
@@ -272,11 +276,14 @@ jobs:
           - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04 }
           - {target: armhf,     host: arm-linux-gnueabihf,      qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: arm,       host: arm-linux-gnueabi,        qemu: arm,       gccver: 14, container: ubuntu:26.04 }
-          - {target: ppc64,     host: powerpc64-linux-gnu,      qemu: ppc64,     gccver: 14, container: ubuntu:26.04 }
-          - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04 }
+          - {target: ppc64,     host: powerpc64-linux-gnu,      qemu: ppc64,     gccver: 14, container: ubuntu:26.04, qemu_skip: *ppc64_qemu_skip }
+          - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04, qemu_skip: *ppc64_qemu_skip }
           - {target: ppc,       host: powerpc-linux-gnu,        qemu: ppc,       gccver: 14, container: ubuntu:26.04 }
           - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04 }
-          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04 }
+          # AddressSanitizer maps a shadow region covering the entire address
+          # space.  On s390x that mapping is 512TB, which QEMU's user-mode
+          # emulation cannot provide, so only UBSan is enabled there.
+          - {target: s390x,     host: s390x-linux-gnu,          qemu: s390x,     gccver: 14, container: ubuntu:26.04, sanitizers: undefined }
 
     steps:
       - name: Install git
@@ -310,9 +317,9 @@ jobs:
         env:
           CC: ${{ matrix.config.cc || format('{0}-gcc-{1}', matrix.config.host, matrix.config.gccver) }}
           CXX: ${{ matrix.config.cxx || format('{0}-g++-{1}', matrix.config.host, matrix.config.gccver) }}
-          CFLAGS: "-Wall -Wextra -g -Og -fsanitize=undefined,address -fno-sanitize-recover=all"
-          CXXFLAGS: "-Wall -Wextra -g -Og -fsanitize=undefined,address -fno-sanitize-recover=all"
-          LDFLAGS: "-fsanitize=undefined,address"
+          CFLAGS: "-Wall -Wextra -g -Og -fsanitize=${{ matrix.config.sanitizers || 'undefined,address' }} -fno-sanitize-recover=all"
+          CXXFLAGS: "-Wall -Wextra -g -Og -fsanitize=${{ matrix.config.sanitizers || 'undefined,address' }} -fno-sanitize-recover=all"
+          LDFLAGS: "-fsanitize=${{ matrix.config.sanitizers || 'undefined,address' }}"
 
       - name: Build
         run: |
@@ -324,12 +331,22 @@ jobs:
           bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
           cd build
-          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}" \
+          # AddressSanitizer re-executes the program to disable address space
+          # randomization, and that re-exec fails under QEMU's user-mode
+          # emulation (ENOEXEC).  Disable randomization up front (the
+          # personality flag is inherited by the test programs) so that ASan
+          # does not need to.
+          setarch -R \
+          make check LOG_DRIVER_FLAGS="--qemu-arch ${{ matrix.config.qemu }}${{ matrix.config.qemu_skip && format(' --qemu-skip={0}', matrix.config.qemu_skip) || '' }}" \
                      QEMU_LD_PREFIX="$CROSS_LIB" \
-                     LDFLAGS="-L$CROSS_LIB/lib -fsanitize=undefined,address"
+                     LDFLAGS="-L$CROSS_LIB/lib -fsanitize=${{ matrix.config.sanitizers || 'undefined,address' }}"
         env:
           UNW_DEBUG_LEVEL: 4
-          ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0
+          # replace_intrin=0 keeps AddressSanitizer from checking the
+          # memcpy() calls the unwinder uses to read the target's stack:
+          # reading another frame's memory is what an unwinder does, and
+          # ASan cannot tell that from an overflow.
+          ASAN_OPTIONS: detect_odr_violation=0:detect_leaks=0:replace_intrin=0
           CROSS_LIB: ${{ matrix.config.cross_lib || format('/usr/{0}', matrix.config.host) }}
 
       - name: Upload Test Logs
