@@ -39,6 +39,11 @@ int num_mallocs;
 int num_callocs;
 int in_unwind;
 
+/* AddressSanitizer installs its own allocator and cannot cope with the
+   program replacing malloc()/calloc(), so the interposers are left out
+   entirely when it is enabled; main() skips the test in that case.  */
+#if !UNW_TEST_ASAN
+
 void *
 calloc(size_t n, size_t s)
 {
@@ -75,6 +80,7 @@ malloc(size_t s)
   }
   return func(s);
 }
+#endif /* !UNW_TEST_ASAN */
 
 static void
 do_backtrace (void)
