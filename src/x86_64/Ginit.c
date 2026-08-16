@@ -142,15 +142,15 @@ access_fpreg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_fpreg_t *val,
 
   if (write)
     {
-      Debug (12, "%s <- %08lx.%08lx.%08lx\n", unw_regname (reg),
-             ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
+      Debug (12, "%s <- %016" PRIx64 "\n", unw_regname (reg),
+             fpreg_debug_value (val));
       *(unw_fpreg_t *) addr = *val;
     }
   else
     {
       *val = *(unw_fpreg_t *) addr;
-      Debug (12, "%s -> %08lx.%08lx.%08lx\n", unw_regname (reg),
-             ((long *)val)[0], ((long *)val)[1], ((long *)val)[2]);
+      Debug (12, "%s -> %016" PRIx64 "\n", unw_regname (reg),
+             fpreg_debug_value (val));
     }
   return 0;
 

@@ -48,6 +48,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/types.h>  /* HP-UX needs this before include of pthread.h */
 
 #include <assert.h>
+#include <inttypes.h>
 #include <libunwind.h>
 #include <pthread.h>
 #include <signal.h>
@@ -303,6 +304,18 @@ extern pthread_mutex_t _U_dyn_info_list_lock;
 
 #define unw_address_is_valid UNWI_ARCH_OBJ(address_is_valid)
 HIDDEN bool unw_address_is_valid(unw_word_t, size_t);
+
+/* Return the leading 8 bytes of a floating-point register, for use in debug
+   output.  unw_fpreg_t is a different size on every architecture, so this
+   only ever looks at the part that all of them have.  */
+static inline uint64_t
+fpreg_debug_value (unw_fpreg_t const *val)
+{
+  uint64_t ret;
+
+  memcpy (&ret, val, sizeof (ret));
+  return ret;
+}
 
 
 #if defined(UNW_DEBUG)
