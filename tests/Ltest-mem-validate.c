@@ -38,6 +38,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <sys/types.h>
 #include <sys/wait.h>
 
+#include "unw_test.h"
+
 #define panic(...)				\
 	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
@@ -118,6 +120,8 @@ main (int argc UNUSED, char **argv UNUSED)
   int start, count;
   unw_context_t uc;
   unw_cursor_t cursor;
+
+  UNW_TEST_SKIP_IF_ASAN ("the test deliberately unwinds over inaccessible memory");
 
   /*
    * We need to make the frame at least the size protected by

@@ -376,6 +376,8 @@ sighandler (int signal, siginfo_t *siginfo UNUSED, void *context)
 int
 main (int argc, char **argv UNUSED)
 {
+  UNW_TEST_SKIP_IF_ASAN ("ASan interceptor frames change the backtrace depth");
+
   verbose = (argc > 1);
 
   if (verbose)

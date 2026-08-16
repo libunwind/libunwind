@@ -30,6 +30,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <dlfcn.h>
 #include <pthread.h>
 
+#include "unw_test.h"
+
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
@@ -107,6 +109,8 @@ int
 main (void)
 {
   int i, num_errors;
+
+  UNW_TEST_SKIP_IF_ASAN ("the ASan allocator is used instead of malloc()/calloc()");
 
   /* Create (and leak) 100 TSDs, then call backtrace()
      and check that it doesn't call malloc()/calloc().  */

@@ -113,6 +113,8 @@ foo1 (void)
 int
 main (void)
 {
+  UNW_TEST_SKIP_IF_ASAN ("the ASan allocator is used instead of malloc()");
+
   foo1 ();
 
   if (malloc_call_count > 0)

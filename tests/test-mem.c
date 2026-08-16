@@ -35,6 +35,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <sys/resource.h>
 
+#include "unw_test.h"
+
 #define panic(...)				\
 	{ fprintf (stderr, __VA_ARGS__); exit (-1); }
 
@@ -96,6 +98,8 @@ int
 main (int argc, char **argv UNUSED)
 {
   struct rlimit rlim UNUSED;
+
+  UNW_TEST_SKIP_IF_ASAN ("the ASan allocator cannot run out of memory cleanly");
 
   verbose = argc > 1;
 
