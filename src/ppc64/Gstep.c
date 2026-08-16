@@ -50,6 +50,9 @@ typedef struct
   /* many more fields here, but they are unused by this code */
 } stack_frame_t;
 
+/* The ABI requires the stack pointer to be quadword aligned.  */
+#define STACK_ALIGN 16
+
 /* Read a single 32-bit instruction at ADDR via the accessors.  The access_mem
    callback reads sizeof(unw_word_t) (8 bytes on ppc64) at a time and requires
    the kernel's word alignment (PTRACE_PEEKDATA on Linux rejects misaligned
@@ -334,6 +337,16 @@ unw_step (unw_cursor_t * cursor)
                 libunwind doesn't handle this case.
               */
               Debug (2, "fallback\n");
+
+              /* The ELF ABI requires the stack pointer to be quadword
+                 aligned.  If it is not, the frame is bogus and following the
+                 back chain would read through a wild pointer.  */
+              if (c->dwarf.cfa & (STACK_ALIGN - 1))
+                {
+                  Debug (2, "unaligned CFA 0x%016lx, stopping unwind\n",
+                         c->dwarf.cfa);
+                  return -UNW_EBADFRAME;
+                }
 
               back_chain_offset = ((void *) &dummy.back_chain - (void *) &dummy);
               lr_save_offset = ((void *) &dummy.lr_save - (void *) &dummy);
