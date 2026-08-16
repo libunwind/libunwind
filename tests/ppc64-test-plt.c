@@ -45,12 +45,17 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 
   const unw_word_t *paddr = (const unw_word_t*) addr;
 
-  if ((void*) paddr < mock_mem_start || (void*) paddr > mock_mem_end)
+  /* The whole word has to be inside the mock region: a real accessor would
+     fail rather than read past the end of a mapping.  */
+  if ((const char*) paddr < (const char*) mock_mem_start
+      || (const char*) paddr + sizeof (*val) > (const char*) mock_mem_end)
     {
       return -1;
     }
 
-  *val = *paddr;
+  /* The caller may ask for an address that is only instruction-aligned, so
+     copy the word out rather than dereferencing a misaligned pointer.  */
+  memcpy (val, paddr, sizeof (*val));
   return 0;
 }
 
