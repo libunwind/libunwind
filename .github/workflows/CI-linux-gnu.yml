@@ -273,13 +273,16 @@ jobs:
       fail-fast: false
       matrix:
         config:
-          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04 }
+          # AddressSanitizer's shadow mapping does not survive QEMU's
+          # user-mode emulation on aarch64 or riscv64: every test dies with
+          # SIGSEGV before reaching main().  Only UBSan is enabled there.
+          - {target: aarch64,   host: aarch64-linux-gnu,        qemu: aarch64,   gccver: 14, container: ubuntu:26.04, sanitizers: undefined }
           - {target: armhf,     host: arm-linux-gnueabihf,      qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: arm,       host: arm-linux-gnueabi,        qemu: arm,       gccver: 14, container: ubuntu:26.04 }
           - {target: ppc64,     host: powerpc64-linux-gnu,      qemu: ppc64,     gccver: 14, container: ubuntu:26.04, qemu_skip: *ppc64_qemu_skip }
           - {target: ppc64le,   host: powerpc64le-linux-gnu,    qemu: ppc64le,   gccver: 14, container: ubuntu:26.04, qemu_skip: *ppc64_qemu_skip }
           - {target: ppc,       host: powerpc-linux-gnu,        qemu: ppc,       gccver: 14, container: ubuntu:26.04 }
-          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04 }
+          - {target: riscv64,   host: riscv64-linux-gnu,        qemu: riscv64,   gccver: 14, container: ubuntu:26.04, sanitizers: undefined }
           # AddressSanitizer maps a shadow region covering the entire address
           # space.  On s390x that mapping is 512TB, which QEMU's user-mode
           # emulation cannot provide, so only UBSan is enabled there.
