@@ -1356,9 +1356,11 @@ MAINTAINERCLEANFILES = Makefile.in
 #
 # Running the ABI checks require configuring with CFLAGS="-g -Og".
 # The result is output in a file with the `.abidiff` extension which is also
-# printed to stdout if there is an ABI mismatch detected.
+# printed to stdout if there is an ABI mismatch detected.  A mismatch, or a
+# library with no baseline at all, fails the build so that CI catches it.
 #
 # This also requires libabigail tools of at least version 2.0 to be installed.
+# If they are not, no ABI dump is generated and the check is skipped.
 #
 .la.abi:
 	$(AM_V_GEN)soname=$$(sed -n -e "s#dlname='\(.*\)\.[0-9]*'#\1#p" $<); \
@@ -1377,13 +1379,29 @@ MAINTAINERCLEANFILES = Makefile.in
 abi_srcdir = "$(top_srcdir)/src/abi"
 abi_targetdir = "$(abi_srcdir)/$(arch)/$(target_os)"
 .abi.abidiff:
-	$(AM_V_GEN)if test -f "$<"; then \
+	$(AM_V_GEN)if test ! -f "$<"; then \
+		printf "(no ABI dump for %s, is libabigail installed?)\n" "$<"; \
+	elif test ! -f "$(abi_targetdir)/$<"; then \
+		printf "warning: %s has no ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
+		printf "Create one with: make -C src %s && cp src/%s %s/\n" \
+		       "$<" "$<" "$(abi_targetdir)"; \
+	else \
 		$(ABIDIFF) --suppressions "$(abi_srcdir)/libunwind.supp" \
-		           -l "$(abi_targetdir)/$<" "$<" >$@ \
-			|| cat $@; \
+		           -l "$(abi_targetdir)/$<" "$<" >$@ 2>&1; \
+		if test -s $@; then \
+			cat $@; \
+			printf "%s does not match its ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
+			printf "If the change is intended, update the baseline with:\n"; \
+			printf "  make -C src %s && cp src/%s %s/\n" "$<" "$<" "$(abi_targetdir)"; \
+			exit 1; \
+		fi; \
 	fi
 
-abi-check: $(lib_LTLIBRARIES:.la=.abidiff) 
+# Keep the ABI dumps around so that they can be copied over a baseline that
+# needs updating.
+.PRECIOUS: $(lib_LTLIBRARIES:.la=.abi)
+
+abi-check: $(lib_LTLIBRARIES:.la=.abidiff)
 
 .PHONY: abi-check
 

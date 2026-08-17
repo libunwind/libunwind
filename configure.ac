@@ -603,6 +603,9 @@ AS_IF([test x"$ABICHECK" != "x"], [
            ABICHECK=":"
            ABIDIFF=":"]
     )
+], [
+    ABICHECK=":"
+    ABIDIFF=":"
 ])
 AC_SUBST(ABICHECK)
 AC_SUBST(ABIDIFF)
