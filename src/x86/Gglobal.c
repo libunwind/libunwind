@@ -44,15 +44,17 @@ HIDDEN void
 tdep_init (void)
 {
   intrmask_t saved_mask;
+  intrmask_t full_mask;
+  sigfillset (&full_mask);
 
-  sigfillset (&unwi_full_mask);
-
-  lock_acquire (&x86_lock, saved_mask);
+  SIGPROCMASK (SIG_SETMASK, &full_mask, &saved_mask);
+  mutex_lock (&x86_lock);
   {
     if (atomic_load(&tdep_init_done))
       /* another thread else beat us to it... */
       goto out;
 
+    sigfillset (&unwi_full_mask);
     mi_init ();
 
     dwarf_init ();
@@ -63,5 +65,6 @@ tdep_init (void)
     atomic_store(&tdep_init_done, 1); /* signal that we're initialized... */
   }
  out:
-  lock_release (&x86_lock, saved_mask);
+  mutex_unlock (&x86_lock);
+  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 }

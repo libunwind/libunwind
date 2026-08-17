@@ -72,6 +72,15 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_ALPHA_R28:
     case UNW_ALPHA_R29:
     case UNW_ALPHA_PC:
+      if (write)
+        {
+          c->dwarf.ip = *valp;
+          /* Alpha landing pads reconstruct GP via `ldah gp,X($ra); lda gp,Y(gp)`,
+             so $ra must equal the landing pad address.  Mirror aarch64's approach:
+             write the new IP into the saved-$ra location so that
+             establish_machine_state() restores $ra = landing pad automatically.  */
+          dwarf_put (&c->dwarf, c->dwarf.loc[UNW_ALPHA_R26], *valp);
+        }
       loc = c->dwarf.loc[reg];
       break;
 

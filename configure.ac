@@ -284,14 +284,9 @@ AC_MSG_CHECKING([if C++ exception support should be built])
 AC_ARG_ENABLE([cxx_exceptions],
               [AS_HELP_STRING([--enable-cxx-exceptions],
                               [use libunwind to handle C++ exceptions
-                               @<:@default=autodetect@:>@])],
+                               @<:@default=no@:>@])],
               [],
-              [enable_cxx_exceptions=check]
-)
-AS_IF([test $enable_cxx_exceptions = check],
-      [AS_CASE([$target_arch],
-               [aarch64*|alpha*|arm*|hppa*|mips*|x86*|s390x*|loongarch64], [enable_cxx_exceptions=no],
-               [enable_cxx_exceptions=yes])]
+              [enable_cxx_exceptions=no]
 )
 AC_MSG_RESULT([$enable_cxx_exceptions])
 AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])

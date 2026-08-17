@@ -117,7 +117,7 @@ typedef enum
 
     UNW_TDEP_IP = UNW_MIPS_R31,
     UNW_TDEP_SP = UNW_MIPS_R29,
-    UNW_TDEP_EH = UNW_MIPS_R0   /* FIXME.  */
+    UNW_TDEP_EH = UNW_MIPS_R4
   }
 mips_regnum_t;
 
@@ -129,7 +129,7 @@ typedef enum
   }
 mips_abi_t;
 
-#define UNW_TDEP_NUM_EH_REGS    2       /* FIXME for MIPS.  */
+#define UNW_TDEP_NUM_EH_REGS    2
 
 typedef struct unw_tdep_save_loc
   {
@@ -165,8 +165,11 @@ extern int unw_tdep_is_fpreg (int);
    When getcontext is called across a shared library boundary with lazy PLT
    binding, the dynamic linker's PLT resolver trashes GP before getcontext
    can save it.  This inline wrapper captures GP before the cross-module
-   call and fixes up the saved value afterward.  */
-static inline int
+   call and fixes up the saved value afterward.
+
+   The wrapper must be always_inline so that _Umips_getcontext captures
+   the caller's $31 (ra/pc) and $sp, not the wrapper's.  */
+static __attribute__((always_inline)) inline int
 unw_tdep_getcontext (ucontext_t *uc)
 {
     unsigned long saved_gp;

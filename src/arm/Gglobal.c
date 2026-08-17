@@ -40,14 +40,17 @@ HIDDEN void
 tdep_init (void)
 {
   intrmask_t saved_mask;
+  intrmask_t full_mask;
+  sigfillset (&full_mask);
 
-  sigfillset (&unwi_full_mask);
-
-  lock_acquire (&arm_lock, saved_mask);
+  SIGPROCMASK (SIG_SETMASK, &full_mask, &saved_mask);
+  mutex_lock (&arm_lock);
   {
     if (atomic_load(&tdep_init_done))
       /* another thread else beat us to it... */
       goto out;
+
+    sigfillset (&unwi_full_mask);
 
     /* read ARM unwind method setting */
     const char* str = getenv ("UNW_ARM_UNWIND_METHOD");
@@ -66,5 +69,6 @@ tdep_init (void)
     atomic_store(&tdep_init_done, 1); /* signal that we're initialized... */
   }
  out:
-  lock_release (&arm_lock, saved_mask);
+  mutex_unlock (&arm_lock);
+  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
 }

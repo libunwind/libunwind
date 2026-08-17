@@ -45,6 +45,10 @@ loongarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       asm volatile (
         "ld.d $ra, %0, 8\n"
         "ld.d $sp, %0, 3*8\n"
+        "ld.d $a0, %0, 4*8\n"
+        "ld.d $a1, %0, 5*8\n"
+        "ld.d $a2, %0, 6*8\n"
+        "ld.d $a3, %0, 7*8\n"
         "ld.d $fp, %0, 22*8\n"
         "ld.d $s0, %0, 23*8\n"
         "ld.d $s1, %0, 24*8\n"
@@ -102,6 +106,9 @@ establish_machine_state (struct cursor *c)
       if (tdep_access_reg (c, reg, &val, 0) >= 0)
         as->acc.access_reg (as, reg, &val, 1, arg);
     }
+
+  val = c->dwarf.ip;
+  as->acc.access_reg (as, UNW_LOONGARCH64_PC, &val, 1, arg);
 }
 
 int

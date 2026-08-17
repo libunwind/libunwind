@@ -64,6 +64,7 @@ static void _cont_thread (int ctl_fd, pthread_t tid)
 void unw_nto_destroy (void *arg)
 {
   unw_nto_internal_t *uni = (unw_nto_internal_t *)arg;
+  invalidate_edi (&uni->edi);
   int ctl_fd = unw_nto_procfs_open_ctl (uni->pid);
 
   if (ctl_fd < 0)

@@ -28,6 +28,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #define UNW_LOCAL_ONLY
 
+/* Request GNU extensions (_Unwind_Trace_Fn, _UA_END_OF_STACK) from unwind.h */
+#ifndef _GNU_SOURCE
+# define _GNU_SOURCE
+#endif
+
 #include <unwind.h>
 #include <stdlib.h>
 #include <libunwind.h>

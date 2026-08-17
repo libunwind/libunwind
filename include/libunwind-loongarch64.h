@@ -107,7 +107,7 @@ typedef enum
 
     UNW_TDEP_IP = UNW_LOONGARCH64_R1,
     UNW_TDEP_SP = UNW_LOONGARCH64_R3,
-    UNW_TDEP_EH = UNW_LOONGARCH64_R0   /* FIXME.  */
+    UNW_TDEP_EH = UNW_LOONGARCH64_R4
   }
 loongarch64_regnum_t;
 

@@ -36,7 +36,7 @@ man3_MANS = libunwind.man libunwind-dynamic.man libunwind-ia64.man	\
 	unw_get_elf_filename.man			\
 	unw_get_elf_filename_by_ip.man
 
-EXTRA_DIST = NOTES libunwind.trans					\
+EXTRA_DIST = NOTES libc-requirements.md libunwind.trans				\
 	libunwind.tex libunwind-dynamic.tex libunwind-ia64.tex		\
 	libunwind-coredump.tex \
 	libunwind-ptrace.tex \
