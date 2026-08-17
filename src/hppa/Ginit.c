@@ -136,8 +136,12 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val, int write,
 
   if (write)
     {
-      memcpy ((void *) addr, val, sizeof(unw_word_t));
-      Debug (12, "%s <- %x\n", unw_regname (reg), *val);
+      unw_word_t wval = *val;
+      /* HPPA IAOQ encodes privilege level in the low 2 bits (3 = user mode). */
+      if (reg == UNW_HPPA_IP)
+        wval |= 3;
+      memcpy ((void *) addr, &wval, sizeof(unw_word_t));
+      Debug (12, "%s <- %x\n", unw_regname (reg), wval);
     }
   else
     {
