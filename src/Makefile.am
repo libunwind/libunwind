@@ -853,7 +853,8 @@ libunwind_ppc_la_SOURCES_ppc_generic =         \
 noinst_HEADERS +=                              \
 	ppc32/init.h                           \
 	ppc32/unwind_i.h                       \
-	ppc32/ucontext_i.h
+	ppc32/ucontext_i.h                     \
+	ppc32/ucontext_offsets.h
 libunwind_la_SOURCES_ppc32_common =            \
 	$(libunwind_la_SOURCES_common)         \
 	ppc32/get_func_addr.c                  \
@@ -866,6 +867,8 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_ppc32_common)   \
 	$(libunwind_la_SOURCES_local)          \
 	$(libunwind_la_SOURCES_ppc)            \
+	ppc32/getcontext.S                     \
+	ppc32/setcontext.S                     \
 	ppc32/Lapply_reg_state.c               \
 	ppc32/Lcreate_addr_space.c             \
 	ppc32/Lglobal.c                        \

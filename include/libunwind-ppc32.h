@@ -215,7 +215,7 @@ typedef ucontext_t unw_tdep_context_t __attribute__((aligned(16)));
    (uc)->uc_mcontext.uc_regs->gregs[32]                                \
      = (uc)->uc_mcontext.uc_regs->gregs[36],                           \
    0)
-#else
+#elif !defined(__linux__)
 #define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
 #endif
 
@@ -229,6 +229,12 @@ typedef struct
 unw_tdep_proc_info_t;
 
 #include "libunwind-common.h"
+
+#if defined(__linux__) && !defined(__GLIBC__)
+/* glibc provides getcontext(); use our implementation otherwise.  */
+#define unw_tdep_getcontext             UNW_ARCH_OBJ(getcontext)
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
+#endif
 
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);

@@ -93,7 +93,7 @@ ppc32_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
          be delivered after the resume.  */
       sigprocmask (SIG_SETMASK, &sig_uc->uc_sigmask, NULL);
 
-      setcontext (sig_uc);
+      ppc32_setcontext (sig_uc);
     }
   else if (unlikely (c->sigcontext_format == PPC_SCF_LINUX_SIGFRAME))
     {
@@ -135,7 +135,7 @@ ppc32_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
                     "keeping handler's signal mask\n", ret);
         }
 
-      setcontext (uc);
+      ppc32_setcontext (uc);
     }
   else
     {
@@ -148,7 +148,7 @@ ppc32_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       Debug (8, "resuming at ip=%lx via setcontext()\n",
              (unsigned long) c->dwarf.ip);
       sigprocmask (SIG_SETMASK, &uc->uc_sigmask, NULL);
-      setcontext (uc);
+      ppc32_setcontext (uc);
     }
   return -UNW_EINVAL;
 }

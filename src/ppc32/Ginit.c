@@ -30,6 +30,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "ucontext_i.h"
 #include "unwind_i.h"
+#include "ucontext_offsets.h"
 
 #ifdef UNW_REMOTE_ONLY
 
