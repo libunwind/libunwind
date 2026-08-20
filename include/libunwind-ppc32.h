@@ -198,6 +198,17 @@ unw_tdep_save_loc_t;
    alignment here to avoid misaligned-pointer UB on every getcontext call.  */
 typedef ucontext_t unw_tdep_context_t __attribute__((aligned(16)));
 
+#include "libunwind-dynamic.h"
+
+typedef struct
+  {
+    /* no ppc32-specific auxiliary proc-info */
+    UNW_EMPTY_STRUCT
+  }
+unw_tdep_proc_info_t;
+
+#include "libunwind-common.h"
+
 /* XXX this is not ideal: an application should not be prevented from
    using the "getcontext" name just because it's using libunwind.  We
    can't just use __getcontext() either, because that isn't exported
@@ -215,20 +226,15 @@ typedef ucontext_t unw_tdep_context_t __attribute__((aligned(16)));
    (uc)->uc_mcontext.uc_regs->gregs[32]                                \
      = (uc)->uc_mcontext.uc_regs->gregs[36],                           \
    0)
-#else
+#elif UNW_HAS_LIBC_GETCONTEXT
+/* Some other C library provides it, libucontext for one.  */
 #define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+#else
+/* Nothing provides it, so libunwind builds its own.  The same test picks
+   the sources in src/Makefile.am, so the two cannot disagree.  */
+#define unw_tdep_getcontext             UNW_ARCH_OBJ(getcontext)
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
 #endif
-
-#include "libunwind-dynamic.h"
-
-typedef struct
-  {
-    /* no ppc32-specific auxiliary proc-info */
-    UNW_EMPTY_STRUCT
-  }
-unw_tdep_proc_info_t;
-
-#include "libunwind-common.h"
 
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);

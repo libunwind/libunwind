@@ -84,6 +84,16 @@ AC_MSG_NOTICE([--- Checking for libraries ---])
 AC_SEARCH_LIBS([__uc_get_grs], [uca])
 AC_SEARCH_LIBS([getcontext], [ucontext])
 
+dnl Whether the C library, or libucontext standing in for it, provides
+dnl getcontext().  Architectures that ship their own implementation use
+dnl this to decide whether to build it, and libunwind-common.h passes the
+dnl answer on to the installed headers, which cannot read config.h.
+AS_IF([test "x$ac_cv_search_getcontext" = xno],
+      [UNW_HAS_LIBC_GETCONTEXT=0], [UNW_HAS_LIBC_GETCONTEXT=1])
+AC_SUBST([UNW_HAS_LIBC_GETCONTEXT])
+AM_CONDITIONAL([HAVE_LIBC_GETCONTEXT],
+               [test "x$ac_cv_search_getcontext" != xno])
+
 dnl Checks for library functions.
 AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
 		ttrace mincore pipe2 sigaltstack execvpe)

@@ -853,12 +853,23 @@ libunwind_ppc_la_SOURCES_ppc_generic =         \
 noinst_HEADERS +=                              \
 	ppc32/init.h                           \
 	ppc32/unwind_i.h                       \
-	ppc32/ucontext_i.h
+	ppc32/ucontext_i.h                     \
+	ppc32/ucontext_offsets.h
 libunwind_la_SOURCES_ppc32_common =            \
 	$(libunwind_la_SOURCES_common)         \
 	ppc32/get_func_addr.c                  \
 	ppc32/is_fpreg.c                       \
 	ppc32/regname.c 
+
+if HAVE_LIBC_GETCONTEXT
+libunwind_la_SOURCES_ppc32_context =
+else
+# No getcontext() in the C library, so build our own.  The installed
+# libunwind-ppc32.h keys off the same configure test.
+libunwind_la_SOURCES_ppc32_context =           \
+	ppc32/getcontext.S                     \
+	ppc32/setcontext.S
+endif
 
 if ARCH_PPC32
 # The list of files that go into libunwind:
@@ -866,6 +877,7 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_ppc32_common)   \
 	$(libunwind_la_SOURCES_local)          \
 	$(libunwind_la_SOURCES_ppc)            \
+	$(libunwind_la_SOURCES_ppc32_context)  \
 	ppc32/Lapply_reg_state.c               \
 	ppc32/Lcreate_addr_space.c             \
 	ppc32/Lglobal.c                        \
