@@ -56,7 +56,7 @@ is_signal_frame (struct cursor *c)
 
   a = unw_get_accessors_int (as);
 
-#if __WORDSIZE == 64
+#ifdef __powerpc64__
   {
     unw_word_t w0, w1;
     if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
@@ -103,7 +103,7 @@ is_signal_frame (struct cursor *c)
   if ((i0 == 0x38210080 && i1 == 0x380000ac && i2 == 0x44000002)
       || (i0 == 0x380000ac && i1 == 0x44000002))
     return 1;
-#if __WORDSIZE == 32
+#ifndef __powerpc64__
   /* ppc64 has no legacy __NR_sigreturn path, so only recognize this on
      ppc32 to avoid any chance of mismatching unrelated code there.  */
   if ((i0 == 0x38210040 && i1 == 0x38000077 && i2 == 0x44000002)
