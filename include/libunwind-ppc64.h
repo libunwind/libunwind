@@ -69,15 +69,18 @@ extern "C" {
 
 #define UNW_TDEP_CURSOR_LEN 280
 
-#if __WORDSIZE==32
-typedef uint32_t unw_word_t;
-typedef int32_t unw_sword_t;
-#define UNW_WORD_MAX UINT32_MAX
-#else
+/* This header only ever describes a 64-bit PowerPC target, so there is
+   nothing to select.  The word size used to be picked with the
+   glibc-specific __WORDSIZE, which musl only defines in <sys/reg.h> and
+   <sys/user.h>: undefined, it made the 32-bit half unreachable here and
+   selected the 64-bit types on ppc32 in libunwind-ppc32.h.  */
+#ifndef __powerpc64__
+# error "libunwind-ppc64.h requires a 64-bit PowerPC target"
+#endif
+
 typedef uint64_t unw_word_t;
 typedef int64_t unw_sword_t;
 #define UNW_WORD_MAX UINT64_MAX
-#endif
 
 typedef double unw_tdep_fpreg_t;
 

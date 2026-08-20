@@ -67,7 +67,12 @@ extern "C" {
 
 #define UNW_TDEP_CURSOR_LEN 280
 
-#if __WORDSIZE==32
+/* Use the compiler's ABI macro rather than the glibc-specific
+   __WORDSIZE, which musl only defines in <sys/reg.h> and <sys/user.h>:
+   an undefined macro would silently select the 64-bit types on a 32-bit
+   target.  mips and riscv key off _MIPS_SIM and __riscv_xlen the same
+   way.  */
+#ifndef __powerpc64__
 typedef uint32_t unw_word_t;
 typedef int32_t unw_sword_t;
 # define UNW_WORD_MAX UINT32_MAX
