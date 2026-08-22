@@ -314,13 +314,13 @@ typedef struct dwarf_cursor
     void *as_arg;               /* argument to address-space callbacks */
     unw_addr_space_t as;        /* reference to per-address-space info */
 
+    dwarf_loc_t loc[DWARF_NUM_PRESERVED_REGS];
+
     unw_word_t cfa;     /* canonical frame address; aka frame-pointer */
     unw_word_t ip;              /* instruction pointer */
     unw_word_t args_size;       /* size of arguments */
     unw_word_t eh_args[UNW_TDEP_NUM_EH_REGS];
     unsigned int eh_valid_mask;
-
-    dwarf_loc_t loc[DWARF_NUM_PRESERVED_REGS];
 
     unsigned int stash_frames :1; /* stash frames for fast lookup */
     unsigned int use_prev_instr :1; /* use previous (= call) or current (= signal) instruction? */
