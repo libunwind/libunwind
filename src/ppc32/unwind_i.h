@@ -36,6 +36,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <ucontext.h>
 
 #define ppc32_lock                      UNW_OBJ(lock)
+#if defined(__linux__) && !defined(__GLIBC__)
+/* glibc provides setcontext(); use our own implementation otherwise.
+   Kept under its own name instead of defining over the libc one, so that
+   a translation unit reaching <ucontext.h> after this header does not
+   find the prototype rewritten under it.  */
+# define ppc32_setcontext               UNW_ARCH_OBJ (setcontext)
+extern int ppc32_setcontext (const ucontext_t *ucp);
+#else
+# define ppc32_setcontext               setcontext
+#endif
+
 #define ppc32_local_resume              UNW_OBJ(local_resume)
 #define ppc32_local_addr_space_init     UNW_OBJ(local_addr_space_init)
 

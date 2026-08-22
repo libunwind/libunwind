@@ -67,7 +67,12 @@ extern "C" {
 
 #define UNW_TDEP_CURSOR_LEN 280
 
-#if __WORDSIZE==32
+/* Use the compiler's ABI macro rather than the glibc-specific
+   __WORDSIZE, which musl only defines in <sys/reg.h> and <sys/user.h>:
+   an undefined macro would silently select the 64-bit types on a 32-bit
+   target.  mips and riscv key off _MIPS_SIM and __riscv_xlen the same
+   way.  */
+#ifndef __powerpc64__
 typedef uint32_t unw_word_t;
 typedef int32_t unw_sword_t;
 # define UNW_WORD_MAX UINT32_MAX
@@ -210,7 +215,7 @@ typedef ucontext_t unw_tdep_context_t __attribute__((aligned(16)));
    (uc)->uc_mcontext.uc_regs->gregs[32]                                \
      = (uc)->uc_mcontext.uc_regs->gregs[36],                           \
    0)
-#else
+#elif !defined(__linux__)
 #define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
 #endif
 
@@ -224,6 +229,12 @@ typedef struct
 unw_tdep_proc_info_t;
 
 #include "libunwind-common.h"
+
+#if defined(__linux__) && !defined(__GLIBC__)
+/* glibc provides getcontext(); use our implementation otherwise.  */
+#define unw_tdep_getcontext             UNW_ARCH_OBJ(getcontext)
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
+#endif
 
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);
