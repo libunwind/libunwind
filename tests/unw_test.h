@@ -48,6 +48,42 @@ enum {
 };
 
 /**
+ * Nonzero when the test program is built with AddressSanitizer enabled.
+ *
+ * ASan replaces the allocator and inserts interceptor frames into the call
+ * stack, so tests that interpose on malloc(), that count stack frames, or
+ * that deliberately access invalid memory cannot work when it is enabled.
+ */
+#if defined(__SANITIZE_ADDRESS__)
+# define UNW_TEST_ASAN 1
+#elif defined(__has_feature)
+# if __has_feature(address_sanitizer)
+#  define UNW_TEST_ASAN 1
+# endif
+#endif
+#ifndef UNW_TEST_ASAN
+# define UNW_TEST_ASAN 0
+#endif
+
+/**
+ * Skip the test when it is built with AddressSanitizer enabled.
+ *
+ * Use at the top of main() in tests that are incompatible with ASan, passing
+ * a short explanation of why the test cannot run.
+ */
+#define UNW_TEST_SKIP_IF_ASAN(reason)                                   \
+  do                                                                    \
+    {                                                                   \
+      if (UNW_TEST_ASAN)                                                \
+        {                                                               \
+          fprintf (stderr, "skipping under AddressSanitizer: %s\n",     \
+                   reason);                                             \
+          return UNW_TEST_EXIT_SKIP;                                    \
+        }                                                               \
+    }                                                                   \
+  while (0)
+
+/**
  * libunwind test assertion macro
  *
  * Use for testing a condition and printing out a useful error message when that

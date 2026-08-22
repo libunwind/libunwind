@@ -79,6 +79,9 @@ typedef struct
   /* many more fields here, but they are unused by this code */
 } stack_frame_t;
 
+/* The ABI requires the stack pointer to be quadword aligned.  */
+#define STACK_ALIGN 16
+
 
 int
 unw_step (unw_cursor_t * cursor)
@@ -128,6 +131,16 @@ unw_step (unw_cursor_t * cursor)
       /* DWARF unwinding failed.  Attempt to unwind the frame by using
          the back chain.  This is very crude and won't be able to unwind
          any registers besides the IP, SP, and LR. */
+
+      /* The ELF ABI requires the stack pointer to be quadword aligned.  If
+         it is not, the frame is bogus and following the back chain would
+         read through a wild pointer.  */
+      if (c->dwarf.cfa & (STACK_ALIGN - 1))
+        {
+          Debug (2, "unaligned CFA 0x%08lx, stopping unwind\n",
+                 (unsigned long) c->dwarf.cfa);
+          return -UNW_EBADFRAME;
+        }
 
       back_chain_offset = ((void *) &dummy.back_chain - (void *) &dummy);
       lr_save_offset = ((void *) &dummy.lr_save - (void *) &dummy);

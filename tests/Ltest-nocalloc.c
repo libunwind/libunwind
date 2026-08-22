@@ -30,12 +30,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <dlfcn.h>
 #include <pthread.h>
 
+#include "unw_test.h"
+
 #define panic(args...)				\
 	{ fprintf (stderr, args); exit (-1); }
 
 int num_mallocs;
 int num_callocs;
 int in_unwind;
+
+/* AddressSanitizer installs its own allocator and cannot cope with the
+   program replacing malloc()/calloc(), so the interposers are left out
+   entirely when it is enabled; main() skips the test in that case.  */
+#if !UNW_TEST_ASAN
 
 void *
 calloc(size_t n, size_t s)
@@ -73,6 +80,7 @@ malloc(size_t s)
   }
   return func(s);
 }
+#endif /* !UNW_TEST_ASAN */
 
 static void
 do_backtrace (void)
@@ -107,6 +115,8 @@ int
 main (void)
 {
   int i, num_errors;
+
+  UNW_TEST_SKIP_IF_ASAN ("the ASan allocator is used instead of malloc()/calloc()");
 
   /* Create (and leak) 100 TSDs, then call backtrace()
      and check that it doesn't call malloc()/calloc().  */
