@@ -86,12 +86,14 @@ elf_w (section_table) (const struct elf_image *ei)
 {
   Elf_W (Ehdr) *ehdr = ei->image;
   Elf_W (Off) soff;
+  size_t table_size;
 
   soff = ehdr->e_shoff;
-  if (soff + ehdr->e_shnum * ehdr->e_shentsize > ei->size)
+  table_size = (size_t) ehdr->e_shnum * ehdr->e_shentsize;
+  if (soff > ei->size || table_size > ei->size - (size_t) soff)
     {
-      Debug (1, "section table outside of image? (%lu > %lu)\n",
-             (unsigned long) (soff + ehdr->e_shnum * ehdr->e_shentsize),
+      Debug (1, "section table outside of image? (%lu + %lu > %lu)\n",
+             (unsigned long) soff, (unsigned long) table_size,
              (unsigned long) ei->size);
       return NULL;
     }
