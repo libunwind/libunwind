@@ -39,6 +39,10 @@
 int malloc_call_count;
 int in_unwind;
 
+/* AddressSanitizer installs its own allocator and cannot cope with the
+   program replacing malloc(), so the interposer is left out entirely when it
+   is enabled; main() skips the test in that case.  */
+#if !UNW_TEST_ASAN
 /**
  * Intercepted malloc() call.
  *
@@ -68,6 +72,7 @@ malloc (size_t sz)
     }
   return real_malloc (sz);
 }
+#endif /* !UNW_TEST_ASAN */
 
 static void
 do_backtrace (void)
@@ -113,6 +118,8 @@ foo1 (void)
 int
 main (void)
 {
+  UNW_TEST_SKIP_IF_ASAN ("the ASan allocator is used instead of malloc()");
+
   foo1 ();
 
   if (malloc_call_count > 0)

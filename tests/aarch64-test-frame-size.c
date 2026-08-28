@@ -42,11 +42,16 @@ access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val,
   if (write != 0)
     return -1;
 
-  if ((void *) addr < arg ||
-      (char *) addr > (const char *) arg + procedure_size * sizeof(uint32_t))
+  /* The whole word has to be inside the mock procedure: a real accessor
+     would fail rather than read past the end of a mapping.  */
+  if ((const char *) addr < (const char *) arg ||
+      (const char *) addr + sizeof (*val) >
+      (const char *) arg + procedure_size * sizeof(uint32_t))
     return -1;
 
-  *val = *(const unw_word_t *) addr;
+  /* The caller asks for instruction-aligned addresses, so copy the word out
+     rather than dereferencing a misaligned pointer.  */
+  memcpy (val, (const void *) addr, sizeof (*val));
   return 0;
 }
 
