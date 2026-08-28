@@ -248,6 +248,7 @@ build_coredump = get_option('coredump').require(
         'ppc64',
         's390x',
         'sh4',
+        'sparc64',
         'x86',
         'x86_64',
         'riscv32',
@@ -442,6 +443,7 @@ archnames = {
     'riscv64': 'riscv',
     's390x': 's390x',
     'sh4': 'sh',
+    'sparc64': 'sparc64',
     'x86': 'x86',
     'x86_64': 'x86_64',
 }

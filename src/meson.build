@@ -788,6 +788,52 @@ elif target_machine.cpu_family() == 'sh4'
         ),
     ]
     _libunwind_setjmp_srcs += files('sh/siglongjmp.S')
+elif target_machine.cpu_family() == 'sparc64'
+    _libunwind_srcs_sparc64_common = [
+        _libunwind_srcs_common,
+        files('sparc64/is_fpreg.c', 'sparc64/regname.c'),
+    ]
+    _libunwind_srcs = [
+        _libunwind_srcs_sparc64_common,
+        _libunwind_srcs_local,
+        files(
+            'mi/Lis_plt_entry.c',
+            'sparc64/Lapply_reg_state.c',
+            'sparc64/Lcreate_addr_space.c',
+            'sparc64/Lget_proc_info.c',
+            'sparc64/Lget_save_loc.c',
+            'sparc64/Lglobal.c',
+            'sparc64/Linit.c',
+            'sparc64/Linit_local.c',
+            'sparc64/Linit_remote.c',
+            'sparc64/Lis_signal_frame.c',
+            'sparc64/Lreg_states_iterate.c',
+            'sparc64/Lregs.c',
+            'sparc64/Lresume.c',
+            'sparc64/Lstep.c',
+        ),
+    ]
+    _libunwind_generic_srcs = [
+        _libunwind_srcs_sparc64_common,
+        _libunwind_srcs_generic,
+        files(
+            'mi/Gis_plt_entry.c',
+            'sparc64/Gapply_reg_state.c',
+            'sparc64/Gcreate_addr_space.c',
+            'sparc64/Gget_proc_info.c',
+            'sparc64/Gget_save_loc.c',
+            'sparc64/Gglobal.c',
+            'sparc64/Ginit.c',
+            'sparc64/Ginit_local.c',
+            'sparc64/Ginit_remote.c',
+            'sparc64/Gis_signal_frame.c',
+            'sparc64/Greg_states_iterate.c',
+            'sparc64/Gregs.c',
+            'sparc64/Gresume.c',
+            'sparc64/Gstep.c',
+        ),
+    ]
+    _libunwind_setjmp_srcs += files('sparc64/longjmp.S', 'sparc64/siglongjmp.S')
 elif target_machine.cpu_family() == 'x86'
     _libunwind_srcs_x86_common = [
         _libunwind_srcs_common,
@@ -948,6 +994,7 @@ elif target_machine.cpu_family() in [
     'ppc64',
     'x86_64',
     's390x',
+    'sparc64',
 ]
     libunwind_elf_lib = static_library(
         'unwind-elf64',
