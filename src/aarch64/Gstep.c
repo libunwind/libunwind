@@ -559,6 +559,10 @@ get_frame_state (unw_cursor_t *cursor)
 
   start_ip = c->dwarf.ip - offp;
 
+  frame_state_t saved_fs;
+  saved_fs.loc = NONE;
+  saved_fs.offset = 0;
+
   /* Check for frame record instructions since the start of the procedure (start_ip).
    * access_mem reads WSIZE bytes, so two instructions are checked in each iteration
    */
@@ -581,7 +585,32 @@ get_frame_state (unw_cursor_t *cursor)
           /* Frame-record tracking.  Detects the STP/MOV/LDP sequence that
              creates and destroys a frame record, tracking fs.loc through
              NONE -> AT_SP_OFFSET -> AT_FP -> (back to NONE).  */
+          frame_record_location_t prev_loc = fs.loc;
+          int32_t prev_offset = fs.offset;
           track_frame_record (insn, ip + j * 4, &fs.loc, &fs.offset);
+
+          /* If track_frame_record detected an LDP (AT_FP -> NONE), save the
+             pre-LDP state so we can restore it if we later see a RET that
+             the IP is past (mid-function epilogue pattern). */
+          if (prev_loc == AT_FP && fs.loc == NONE)
+            {
+              saved_fs.loc = prev_loc;
+              saved_fs.offset = prev_offset;
+            }
+
+          /* Check for RET instruction (0xd65f03c0).  If IP is past a RET,
+             execution reached this point via a branch that skipped the
+             epilogue, so the frame record is still intact.  Restore the
+             state from before the epilogue. */
+          if (fs.loc == NONE && saved_fs.loc != NONE && insn == 0xd65f03c0)
+            {
+              fs = saved_fs;
+              saved_fs.loc = NONE;
+              saved_fs.offset = 0;
+
+              Debug (4, "ip=0x%lx => past RET, restoring frame state to loc=%d\n",
+                     (long)(ip + j * 4), fs.loc);
+            }
         }
     }
 
