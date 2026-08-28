@@ -23,6 +23,11 @@ LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
 OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION
 WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
+/* Nonzero when the C library provides getcontext(), possibly through
+   libucontext.  Architectures that ship their own implementation key off
+   this, so that the installed headers and the build agree.  */
+#define UNW_HAS_LIBC_GETCONTEXT	@UNW_HAS_LIBC_GETCONTEXT@
+
 #define UNW_VERSION_MAJOR	@PKG_MAJOR@
 #define UNW_VERSION_MINOR	@PKG_MINOR@
 #define UNW_VERSION_EXTRA	@PKG_EXTRA@
