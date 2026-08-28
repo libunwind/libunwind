@@ -1210,6 +1210,7 @@ if ARCH_SPARC64
 libunwind_local_la_SOURCES =               \
         $(libunwind_la_SOURCES_sparc64_common)   \
         $(libunwind_la_SOURCES_local)          \
+        mi/Lis_plt_entry.c                     \
         sparc64/Lapply_reg_state.c               \
         sparc64/Lcreate_addr_space.c             \
         sparc64/Lget_proc_info.c                 \
@@ -1233,6 +1234,7 @@ endif # ARCH_SPARC64
 libunwind_sparc64_la_SOURCES =                   \
         $(libunwind_la_SOURCES_sparc64_common)   \
         $(libunwind_la_SOURCES_generic)        \
+        mi/Gis_plt_entry.c                     \
         sparc64/Gapply_reg_state.c               \
         sparc64/Gcreate_addr_space.c             \
         sparc64/Gget_proc_info.c                 \
