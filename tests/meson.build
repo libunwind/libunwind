@@ -840,6 +840,7 @@ if not unw_remote_only
             'riscv',
             'arm',
             'loongarch64',
+            'sparc64',
         ]
 
         _exe = executable(
