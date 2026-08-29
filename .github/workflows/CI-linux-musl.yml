@@ -36,10 +36,11 @@ jobs:
           branch: edge
           arch: ${{ matrix.arch }}
           packages: >
-            autoconf 
-            automake 
-            build-base 
-            libtool 
+            autoconf
+            automake
+            build-base
+            g++
+            libtool
             libucontext-dev
             linux-headers
             xz-dev
@@ -50,7 +51,7 @@ jobs:
           set -x
           gcc --version
           autoreconf -i
-          ./configure --enable-debug --enable-coredump
+          ./configure --enable-debug --enable-coredump --enable-cxx-exceptions
         env:
           CFLAGS: -g -O0 -Wall -Wextra
           CXXFLAGS: -g -O0
@@ -101,6 +102,7 @@ jobs:
           arch: ${{ matrix.arch }}
           packages: >
             build-base
+            g++
             libucontext-dev
             linux-headers
             meson
@@ -111,7 +113,7 @@ jobs:
         run: >-
           meson setup
           --optimization=0
-          -Ddebug_logs=true -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled
+          -Ddebug_logs=true -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled -Dcxx_exceptions=enabled
           --warnlevel 2 --fatal-meson-warnings
           builddir
         shell: alpine.sh {0}
