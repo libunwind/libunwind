@@ -1468,6 +1468,17 @@ MAINTAINERCLEANFILES = Makefile.in
 
 abi_srcdir = "$(top_srcdir)/src/abi"
 abi_targetdir = "$(abi_srcdir)/$(arch)/$(target_os)"
+
+# The checked-in baselines are generated without --enable-cxx-exceptions, so
+# when it's on, additionally suppress reports about the extra _Unwind_*
+# symbols it adds -- they're expected, not a regression.
+if SUPPORT_CXX_EXCEPTIONS
+ABI_SUPPRESSIONS = --suppressions "$(abi_srcdir)/libunwind.supp" \
+                    --suppressions "$(abi_srcdir)/cxx-exceptions.supp"
+else
+ABI_SUPPRESSIONS = --suppressions "$(abi_srcdir)/libunwind.supp"
+endif
+
 .abi.abidiff:
 	$(AM_V_GEN)if test ! -f "$<"; then \
 		printf "(no ABI dump for %s, is libabigail installed?)\n" "$<"; \
@@ -1476,9 +1487,10 @@ abi_targetdir = "$(abi_srcdir)/$(arch)/$(target_os)"
 		printf "Create one with: make -C src %s && cp src/%s %s/\n" \
 		       "$<" "$<" "$(abi_targetdir)"; \
 	else \
-		$(ABIDIFF) --suppressions "$(abi_srcdir)/libunwind.supp" \
+		$(ABIDIFF) $(ABI_SUPPRESSIONS) \
 		           -l "$(abi_targetdir)/$<" "$<" >$@ 2>&1; \
-		if test -s $@; then \
+		abidiff_status=$$?; \
+		if test $$abidiff_status -ne 0; then \
 			cat $@; \
 			printf "%s does not match its ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
 			printf "If the change is intended, update the baseline with:\n"; \
