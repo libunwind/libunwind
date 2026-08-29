@@ -1,0 +1,16 @@
+# Abigail suppressions file
+#
+# The symbols below are only exported when libunwind is built with
+# --enable-cxx-exceptions / -Dcxx_exceptions=enabled. They are expected
+# additions on top of the arch's checked-in baseline (which is generated
+# without that option) on any arch where CI builds with the option on, so
+# suppress reports about them being *added* -- but not about them being
+# removed or changed, since that would still indicate a real regression.
+
+# _Unwind_* symbols are exported under an internal alias too
+# (__libunwind_Unwind_*). abidiff matches symbol_name_regexp against the
+# combined primary-name+aliases string, so this must stay unanchored -- an
+# anchored ^...$ pattern won't match past the first name in that string.
+[suppress_function]
+  change_kind = added-function
+  symbol_name_regexp = _Unwind_|_Read[SU]LEB

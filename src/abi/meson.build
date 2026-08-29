@@ -21,7 +21,18 @@ _abi_cmd = [
     '--out-file',
     '@OUTPUT@',
 ]
-_abidiff_cmd = [abidiff, '--suppressions', files('libunwind.supp'), '-l']
+# The checked-in baselines are generated without cxx_exceptions, so when it's
+# enabled, additionally suppress reports about the extra _Unwind_* symbols it
+# adds -- they're expected, not a regression.
+_abi_suppressions = [files('libunwind.supp')]
+if support_cxx_exceptions
+    _abi_suppressions += files('cxx-exceptions.supp')
+endif
+_abidiff_cmd = [abidiff]
+foreach _supp : _abi_suppressions
+    _abidiff_cmd += ['--suppressions', _supp]
+endforeach
+_abidiff_cmd += ['-l']
 _abidiffs = []
 foreach _lib : _libs
     _abifn = 'lib@0@.abi'.format(_lib.name())
