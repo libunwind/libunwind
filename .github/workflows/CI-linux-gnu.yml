@@ -48,7 +48,7 @@ jobs:
           autoreconf -i
           mkdir build
           cd build
-          ../configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }} --enable-debug --enable-coredump
+          ../configure --build=x86_64-pc-linux-gnu --host=${{ matrix.target.triple }} --enable-debug --enable-coredump --enable-cxx-exceptions
         env:
           CC: ${{ matrix.toolchain.CC }}
           CXX: ${{ matrix.toolchain.CXX }}
@@ -164,7 +164,7 @@ jobs:
           ../configure --build=$(config/config.guess) \
                        --host=${{ matrix.config.host }} \
                        --with-testdriver="$(pwd)/libtool execute $(pwd)/../scripts/qemu-test-driver" \
-                       --enable-debug --enable-coredump
+                       --enable-debug --enable-coredump --enable-cxx-exceptions
         env:
           CC: ${{ matrix.config.cc || format('{0}-gcc-{1}', matrix.config.host, matrix.config.gccver) }}
           CXX: ${{ matrix.config.cxx || format('{0}-g++-{1}', matrix.config.host, matrix.config.gccver) }}
@@ -319,6 +319,7 @@ jobs:
 
           meson setup build-meson \
             --optimization=g \
+            -Dcxx_exceptions=enabled \
             --cross-file cross/${{ matrix.config.meson_cross }}.ini \
             --cross-file /tmp/meson-ci-binaries.ini
 
