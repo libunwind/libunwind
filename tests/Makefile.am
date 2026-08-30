@@ -162,9 +162,10 @@ if USE_ELF64
  check_PROGRAMS_cdep += test-elf64-gnu-hash
 endif
 
-if SUPPORT_CXX_EXCEPTIONS
- check_PROGRAMS_cdep += Ltest-cxx-exceptions
-endif
+# Doesn't need SUPPORT_CXX_EXCEPTIONS (libunwind's own _Unwind_* API): this
+# just throws/catches via the toolchain's libgcc and checks that libunwind's
+# DWARF unwinder can walk the frames.
+check_PROGRAMS_cdep += Ltest-cxx-exceptions
 
 if ARCH_IA64
  check_PROGRAMS_cdep += Gtest-dyn1 Ltest-dyn1
