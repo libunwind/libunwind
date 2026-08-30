@@ -229,6 +229,7 @@ jobs:
           - {host: arm-linux-gnueabihf,       qemu: arm,       gccver: 14, container: ubuntu:26.04, meson_cross: arm-linux-gnueabihf, dpkg_arch: armhf }
           - {host: arm-linux-gnueabi,         qemu: arm,       gccver: 14, container: ubuntu:26.04, meson_cross: arm-linux-gnueabi }
           - {host: hppa-linux-gnu,            qemu: hppa,      gccver: 14, container: ubuntu:26.04, meson_cross: hppa-linux-gnu }
+          - {host: loongarch64-linux-gnu,     qemu: loongarch64, gccver: 14, container: ubuntu:26.04, meson_cross: loongarch64-linux-gnu }
           - {host: mips64el-linux-gnuabi64,   qemu: mips64el,  gccver: 14, container: ubuntu:24.04, meson_cross: mips64el-unknown-linux-gnu }
           - {host: mips64-linux-gnuabi64,     qemu: mips64,    gccver: 14, container: ubuntu:24.04, meson_cross: mips64-unknown-linux-gnu }
           - {host: mips64el-linux-gnuabin32,  qemu: mipsn32el, gccver: 14, container: ubuntu:24.04, meson_cross: mipsn32el-unknown-linux-gnu,
@@ -246,6 +247,10 @@ jobs:
           - {host: powerpc-linux-gnu,         qemu: ppc,       gccver: 14, container: ubuntu:26.04, meson_cross: powerpc-unknown-linux-gnu }
           - {host: riscv64-linux-gnu,         qemu: riscv64,   gccver: 14, container: ubuntu:26.04, meson_cross: riscv64-unknown-linux-gnu, dpkg_arch: riscv64 }
           - {host: s390x-linux-gnu,           qemu: s390x,     gccver: 14, container: ubuntu:26.04, meson_cross: s390x-ibm-linux-gnu, dpkg_arch: s390x }
+          - {host: sh4-linux-gnu,             qemu: sh4,       gccver: 14, container: ubuntu:26.04, meson_cross: sh4-linux-gnu,
+             qemu_xfail: "Gtest-sig-context:Gtest-trace:Ltest-init-local-signal:Ltest-sig-context:Ltest-trace" }
+          - {host: sparc64-linux-gnu,         qemu: sparc64,   gccver: 14, container: ubuntu:26.04, meson_cross: sparc64-linux-gnu,
+             qemu_xfail: "Gtest-exc:Gtest-resume-sig:Gtest-resume-sig-rt:Ltest-cxx-exceptions:Ltest-exc:Ltest-resume-sig:Ltest-resume-sig-rt" }
 
     steps:
       - name: Install git
