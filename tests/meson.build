@@ -55,7 +55,15 @@ if host_machine.system() != 'windows'
     )
     test(_exe.name(), _exe, env: _env)
 
-    if not unw_remote_only
+    # lzma_dep/zlib_dep are occasionally resolved to a shared object with no
+    # matching static archive (e.g. Ubuntu's liblzma-dev/zlib1g-dev), which
+    # -static can't link against. Probe for that instead of assuming it works.
+    if not unw_remote_only and cc.links(
+        'int main(void) { return 0; }',
+        args: ['-static'],
+        dependencies: [libc_deps, lzma_dep, zlib_dep],
+        name: 'fully static linking',
+    )
         _exe = executable(
             'test-static-link',
             'test-static-link-loc.c',

@@ -31,6 +31,11 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
 
+    - name: Install build dependencies
+      run: |
+        sudo apt update
+        sudo apt install -y liblzma-dev zlib1g-dev
+
     - name: Initialize CodeQL
       uses: github/codeql-action/init@e4fba868fa4b1b91e1fdab776edc8cfbe6e9fb81 # v3.29.5
       with:
