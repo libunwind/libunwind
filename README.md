@@ -59,33 +59,45 @@ This library supports several architecture/operating-system combinations:
 
 ## General Build Instructions
 
-In general, this library can be built and installed with the following
-commands:
+This library uses Meson as its build system. It can be built and installed
+with the following commands:
+
+    $ meson setup build --prefix=PREFIX
+    $ meson compile -C build
+    $ meson install -C build
+
+where `PREFIX` is the installation prefix.  By default, a prefix of
+`/usr/local` is used, such that `libunwind.a` is installed in
+`/usr/local/lib` and `unwind.h` is installed in `/usr/local/include`.
+
+### Autotools (deprecated)
+
+An Autotools build is still provided, but is deprecated and planned for
+removal in a future release. New usage should build with Meson instead.
 
     $ autoreconf -i # Needed only for building from git. Depends on libtool.
     $ ./configure --prefix=PREFIX
     $ make
     $ make install
 
-where `PREFIX` is the installation prefix.  By default, a prefix of
-`/usr/local` is used, such that `libunwind.a` is installed in
-`/usr/local/lib` and `unwind.h` is installed in `/usr/local/include`.
-
 ## Regression Testing
 
 After building the library, you can run a set of regression tests with:
 
-    $ make check
+    $ meson test -C build
+
+With Autotools, use `make check` instead.
 
 ## Performance Testing
 
 This distribution includes a few simple performance tests which give
 some idea of the basic cost of various libunwind operations.  After
 building the library, you can run these tests with the following
-commands:
+command:
 
-    $ cd tests
-    $ make perf
+    $ meson test -C build --benchmark
+
+With Autotools, run `make perf` from the `tests` directory instead.
 
 ## Contacting the Developers
 
