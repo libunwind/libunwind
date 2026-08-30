@@ -324,24 +324,9 @@ build_setjmp = get_option('setjmp').require(
     unw_remote_only,
 ).allowed()
 
-# Determine whether we should support the C++ unwinding interface (_Unwind_*)
-# Matches configure.ac: disable for arches where the toolchain's libgcc provides
-# _Unwind_*, enable for arches where libunwind provides it (ppc64le, riscv64, etc.)
-support_cxx_exceptions = get_option('cxx_exceptions').require(
-    host_machine.cpu_family() not in [
-        'aarch64',
-        'alpha',
-        'arm',
-        'parisc',  # Meson cpu_family name for hppa
-        'mips',
-        'mips64',
-        'x86',
-        'x86_64',
-        's390x',
-        'loongarch64',
-    ],
-    error_message: 'not supported on this architecture',
-).allowed()
+# Determine whether we should support the C++ unwinding interface (_Unwind_*).
+# No arch restriction: opt-in only (default disabled), matching configure.ac.
+support_cxx_exceptions = get_option('cxx_exceptions').allowed()
 
 # Propagate other options through to the code as #defines
 if get_option('weak_backtrace')
