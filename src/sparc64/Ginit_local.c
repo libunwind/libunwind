@@ -50,7 +50,7 @@ unw_init_local_common (unw_cursor_t *cursor, unw_context_t *uc, unsigned use_pre
      that DWARF-based unwinding can read I-registers from memory.  Without
      this, unspilled windows contain stale/garbage data and the unwind chain
      never terminates.  */
-  asm volatile ("flushw");
+  __asm__ volatile ("flushw");
 
   if (!atomic_load(&tdep_init_done))
     tdep_init ();
