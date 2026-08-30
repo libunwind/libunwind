@@ -40,6 +40,7 @@ This library supports several architecture/operating-system combinations:
 | Linux   | PPC64        | ✓      |
 | Linux   | PPC64LE      | ✓      |
 | Linux   | s390x        | ✓      |
+| Linux   | SPARC64      | ✓      |
 | Linux   | SuperH       | ✓      |
 | Linux   | IA-64        | ✓      |
 | Linux   | PA-RISC      | Works well, but C library missing unwind-info |
