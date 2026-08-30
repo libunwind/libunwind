@@ -62,6 +62,7 @@ if target_machine.system() == 'linux'
     _libunwind_srcs_x86_os_local = files(
         'x86/Los-linux.c',
         'x86/getcontext-linux.S',
+        'x86/setcontext.S',
     )
     _libunwind_srcs_x86_64_os = files('x86_64/Gos-linux.c')
     _libunwind_srcs_x86_64_os_local = files('x86_64/Los-linux.c')
