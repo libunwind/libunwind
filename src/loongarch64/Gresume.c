@@ -41,8 +41,8 @@ loongarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
     {
       /* Since there are no signals involved here we restore EH and non scratch
          registers only.  */
-      register void *gregs asm("$t0") = uc->uc_mcontext.__gregs;
-      asm volatile (
+      register void *gregs __asm__("$t0") = uc->uc_mcontext.__gregs;
+      __asm__ volatile (
         "ld.d $ra, %0, 8\n"
         "ld.d $sp, %0, 3*8\n"
         "ld.d $a0, %0, 4*8\n"
@@ -77,7 +77,7 @@ loongarch64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
       Debug (8, "resuming at ip=0x%lx via sigreturn() (trampoline @ 0x%lx, sp @ 0x%lx)\n",
         c->dwarf.ip, c->sigcontext_pc, c->sigcontext_sp);
 
-      asm volatile (
+      __asm__ volatile (
         "move $sp, %0\n"
         "jr %1\n"
         : : "r" (c->sigcontext_sp), "r" (c->sigcontext_pc)
