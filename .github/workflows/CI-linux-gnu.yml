@@ -212,6 +212,98 @@ jobs:
           if-no-files-found: warn
 
 
+  build-gnu-native-meson:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20 # Anything more than about 20 minutes is likely a testsuite hang.
+    name: ${{ matrix.target.triple }} (meson) ${{ matrix.toolchain.compiler }} ${{ matrix.optimization.buildtype }}
+
+    strategy:
+      fail-fast: false
+      matrix:
+        target:
+          - { arch: i686,   triple: i686-pc-linux-gnu   }
+          - { arch: x86_64, triple: x86_64-pc-linux-gnu }
+        toolchain:
+          - { compiler: gcc,   CC: gcc-14,   CXX: g++-14     }
+          - { compiler: clang, CC: clang-18, CXX: clang++-18 }
+        optimization:
+          - { buildtype: debugoptimized, optimization: '0' }
+          - { buildtype: release,        optimization: '3' }
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install ${{ matrix.target.triple }} Toolchain
+        run: |
+          if [ '${{ matrix.target.arch }}' = 'i686' ]; then
+            sudo dpkg --add-architecture i386
+          fi
+          sudo apt update
+          sudo apt install -y g++-14-multilib meson ninja-build abigail-tools \
+                               liblzma-dev zlib1g-dev
+          if [ '${{ matrix.target.arch }}' = 'i686' ]; then
+            sudo apt install -y liblzma-dev:i386 zlib1g-dev:i386
+          fi
+
+      - name: Configure with Meson
+        run: |
+          set -x
+          extra_cross_file=
+          if [ '${{ matrix.target.arch }}' = 'i686' ]; then
+            {
+              printf '[binaries]\n'
+              printf "c = '%s'\n"   "${{ matrix.toolchain.CC }}"
+              printf "cpp = '%s'\n" "${{ matrix.toolchain.CXX }}"
+              printf "ar = 'ar'\n"
+              printf "strip = 'strip'\n"
+              printf '\n[built-in options]\n'
+              printf "c_args = ['-m32']\n"
+              printf "cpp_args = ['-m32']\n"
+              printf "c_link_args = ['-m32']\n"
+              printf "cpp_link_args = ['-m32']\n"
+              printf '\n[host_machine]\n'
+              printf "system = 'linux'\n"
+              printf "cpu_family = 'x86'\n"
+              printf "cpu = 'i686'\n"
+              printf "endian = 'little'\n"
+              printf '\n[properties]\n'
+              printf 'needs_exe_wrapper = false\n'
+            } > /tmp/meson-ci-i686.ini
+            cat /tmp/meson-ci-i686.ini
+            extra_cross_file='--cross-file /tmp/meson-ci-i686.ini'
+          fi
+
+          meson setup build-meson \
+            --buildtype=${{ matrix.optimization.buildtype }} --optimization=${{ matrix.optimization.optimization }} \
+            -Ddebug_logs=true -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled -Dcxx_exceptions=enabled \
+            $extra_cross_file
+        env:
+          CC: ${{ matrix.toolchain.CC }}
+          CXX: ${{ matrix.toolchain.CXX }}
+          CFLAGS: "-g -Wall -Wextra -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
+          CXXFLAGS: "-g -Wall -Wextra -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
+
+      - name: Build
+        run: meson compile -C build-meson -j$(nproc)
+
+      - name: Test
+        if: ${{ success() }}
+        run: |
+          set -x
+          sudo bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
+          ulimit -c unlimited
+          meson test -C build-meson -j$(nproc) --print-errorlogs
+        env:
+          UNW_DEBUG_LEVEL: 4
+
+      - name: Upload Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.target.triple }}-meson-${{ matrix.toolchain.compiler }}-${{ matrix.optimization.buildtype }}
+          path: build-meson/meson-logs/
+          if-no-files-found: warn
+
+
   build-gnu-cross-meson:
     runs-on: ubuntu-24.04
     container:
