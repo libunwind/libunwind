@@ -892,21 +892,22 @@ if not unw_remote_only
         test(_exe.name(), _exe, env: _env)
     endif
 
-    if support_cxx_exceptions
-        _exe = executable(
-            'Ltest-cxx-exceptions',
-            'Ltest-cxx-exceptions.cxx',
-            link_with: libunwind_lib,
-            include_directories: _inc,
-            dependencies: [libc_deps],
-            override_options: _opts,
-        )
-        test(
-            _exe.name(),
-            _exe,
-            env: _env,
-        )
-    endif
+    # Doesn't need support_cxx_exceptions (libunwind's own _Unwind_* API):
+    # this just throws/catches via the toolchain's libgcc and checks that
+    # libunwind's DWARF unwinder can walk the frames.
+    _exe = executable(
+        'Ltest-cxx-exceptions',
+        'Ltest-cxx-exceptions.cxx',
+        link_with: libunwind_lib,
+        include_directories: _inc,
+        dependencies: [libc_deps],
+        override_options: _opts,
+    )
+    test(
+        _exe.name(),
+        _exe,
+        env: _env,
+    )
 
     if target_machine.system() == 'linux' and build_coredump
         _crasher = executable(
