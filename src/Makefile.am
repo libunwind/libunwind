@@ -780,7 +780,7 @@ libunwind_loongarch64_la_LDFLAGS =             \
 	-version-info $(SOVERSION)
 libunwind_loongarch64_la_LIBADD =              \
 	libunwind-dwarf-generic.la             \
-	libunwind-elf64.la                     \
+	libunwind-elfxx.la                     \
 	$(libunwind_libadd)
 
 ### target MIPS:
@@ -1027,7 +1027,7 @@ libunwind_riscv_la_LDFLAGS =                   \
 	-version-info $(SOVERSION)
 libunwind_riscv_la_LIBADD =                    \
 	libunwind-dwarf-generic.la             \
-	libunwind-elf64.la                     \
+	libunwind-elfxx.la                     \
 	$(libunwind_libadd)
 
 ### target Alpha:
