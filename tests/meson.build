@@ -221,8 +221,10 @@ if not unw_remote_only
     )
     test(_exe.name(), _exe, env: _env)
 
-    # Only enable Ltest-mem-validate on archs without conservative checks.
-    if not cfg.has('CONSERVATIVE_CHECKS') or target_machine.cpu_family() not in [
+    # x86_64 and s390x only validate memory addresses while unwinding when
+    # conservative checks are enabled, so the test can only pass there in that
+    # configuration.  Every other arch validates unconditionally.
+    if cfg.has('CONSERVATIVE_CHECKS') or target_machine.cpu_family() not in [
         'x86_64',
         's390x',
     ]
