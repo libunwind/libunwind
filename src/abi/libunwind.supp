@@ -23,6 +23,12 @@
 # SOFTWARE.
 #
 
-# Don't report about the (internal) global debug level
+# Don't report about the (internal) global debug level.  It only exists in
+# --enable-debug / -Ddebug_logs=true builds, and the two rules are both needed:
+# the first matches when the variable carries debug info, the second when
+# abidiff only sees the ELF symbol.
 [suppress_variable]
-  name_regexp=_UI.*_debug_level
+  name_regexp = _UI.*_debug_level
+
+[suppress_variable]
+  symbol_name_regexp = _UI.*_debug_level
