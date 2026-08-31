@@ -1,3 +1,16 @@
+# DSO versions.  These must be kept in sync with the libtool -version-info
+# numbers in src/Makefile.am: a libtool `current:revision:age' becomes the
+# Meson version `(current - age).age.revision'.
+#
+#   SOVERSION           = 11:0:0  ->  11.0.0
+#   COREDUMP_SO_VERSION = 1:0:1  ->   0.1.0
+#   PTRACE_SO_VERSION   = 0:0:0  ->   0.0.0
+#   SETJMP_SO_VERSION   = 0:0:0  ->   0.0.0
+_soversion = '11.0.0'
+_coredump_soversion = '0.1.0'
+_ptrace_soversion = '0.0.0'
+_setjmp_soversion = '0.0.0'
+
 _libunwind_coredump_srcs = files(
     'coredump/_UCD_access_mem.c',
     'coredump/_UCD_accessors.c',
@@ -1044,7 +1057,7 @@ if not unw_remote_only
         link_whole: [libunwind_dwarf_local_lib, libunwind_elf_lib],
         dependencies: [libc_deps, lzma_dep, zlib_dep],
         link_args: _nostartfiles,
-        version: '8.2.0',
+        version: _soversion,
         install: true,
     )
     _libunwind_libs = [libunwind_lib]
@@ -1093,7 +1106,7 @@ libunwind_generic_lib = library(
     link_whole: [libunwind_dwarf_generic_lib, libunwind_elf_lib],
     dependencies: [libc_deps, lzma_dep, zlib_dep],
     link_args: _nostartfiles,
-    version: '8.2.0',
+    version: _soversion,
     install: true,
 )
 _libs += libunwind_generic_lib
@@ -1117,7 +1130,7 @@ if build_coredump
         link_with: libunwind_generic_lib,
         dependencies: [libc_deps, lzma_dep, zlib_dep],
         link_args: _nostartfiles,
-        version: '0.0.0',
+        version: _coredump_soversion,
         install: true,
     )
     _libs += libunwind_coredump_lib
@@ -1188,7 +1201,7 @@ if build_ptrace
         link_with: libunwind_generic_lib,
         dependencies: [libc_deps, lzma_dep, zlib_dep],
         link_args: _nostartfiles,
-        version: '0.0.0',
+        version: _ptrace_soversion,
         install: true,
     )
     _libs += libunwind_ptrace_lib
@@ -1212,7 +1225,7 @@ if build_setjmp
         include_directories: internal_inc,
         link_with: [libunwind_elf_lib, libunwind_generic_lib, _libunwind_libs],
         link_args: _nostartfiles,
-        version: '0.0.0',
+        version: _setjmp_soversion,
         install: true,
     )
     _libs += libunwind_setjmp_lib

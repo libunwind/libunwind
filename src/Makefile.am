@@ -21,9 +21,10 @@
 #
 
 # Set the DSO versions
-SOVERSION=10:0:2		# See comments at end of file.
+SOVERSION=11:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 COREDUMP_SO_VERSION=1:0:1
+PTRACE_SO_VERSION=0:0:0
 
 AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
@@ -226,6 +227,9 @@ libunwind_ptrace_la_SOURCES =                  \
 	ptrace/_UPT_reg_offset.c               \
 	ptrace/_UPT_resume.c                   \
 	ptrace/_UPT_ptrauth_insn_mask.c
+libunwind_ptrace_la_LDFLAGS =                  \
+	$(COMMON_SO_LDFLAGS)                   \
+	-version-info $(PTRACE_SO_VERSION)
 libunwind_ptrace_la_LIBADD =                   \
 	libunwind-$(arch).la                   \
 	$(LIBLZMA) $(LIBZ)
