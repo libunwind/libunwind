@@ -144,6 +144,11 @@ jobs:
             echo "deb [arch=$DPKG_ARCH] http://ports.ubuntu.com/ubuntu-ports $CODENAME-updates main restricted universe" \
               >> /etc/apt/sources.list.d/ports.list
             apt-get update
+            # zlib1g and friends are Multi-Arch: same, so the foreign-arch
+            # package must match the installed amd64 version exactly. The
+            # base image lags the archive, so upgrade before pulling in any
+            # :$DPKG_ARCH development packages.
+            apt-get upgrade -y
           fi
           apt-get install -y autoconf automake libtool make \
                              ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
@@ -370,6 +375,11 @@ jobs:
             echo "deb [arch=$DPKG_ARCH] http://ports.ubuntu.com/ubuntu-ports $CODENAME-updates main restricted universe" \
               >> /etc/apt/sources.list.d/ports.list
             apt-get update
+            # zlib1g and friends are Multi-Arch: same, so the foreign-arch
+            # package must match the installed amd64 version exactly. The
+            # base image lags the archive, so upgrade before pulling in any
+            # :$DPKG_ARCH development packages.
+            apt-get upgrade -y
           fi
           apt-get install -y meson ninja-build \
                              ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
