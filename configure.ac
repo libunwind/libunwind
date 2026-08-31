@@ -54,6 +54,11 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
+dnl Meson defines _FILE_OFFSET_BITS=64 for the whole project, so do the same
+dnl here.  Otherwise off_t, and with it struct coredump_phdr, differ between
+dnl the two build systems on 32-bit targets, and they cannot share an ABI
+dnl baseline.  Large core files are worth supporting in their own right.
+AC_SYS_LARGEFILE
 AC_CHECK_SIZEOF(off_t)
 
 dnl Checks for header files.
