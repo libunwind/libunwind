@@ -1486,10 +1486,13 @@ endif
 .abi.abidiff:
 	$(AM_V_GEN)if test ! -f "$<"; then \
 		printf "(no ABI dump for %s, is libabigail installed?)\n" "$<"; \
+	elif test ! -d "$(abi_targetdir)"; then \
+		printf "(no ABI baselines for %s, skipping)\n" "$(abi_targetdir)"; \
 	elif test ! -f "$(abi_targetdir)/$<"; then \
-		printf "warning: %s has no ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
+		printf "error: %s has no ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
 		printf "Create one with: make -C src %s && cp src/%s %s/\n" \
 		       "$<" "$<" "$(abi_targetdir)"; \
+		exit 1; \
 	else \
 		$(ABIDIFF) $(ABI_SUPPRESSIONS) \
 		           -l "$(abi_targetdir)/$<" "$<" >$@ 2>&1; \
@@ -1508,6 +1511,8 @@ endif
 .PRECIOUS: $(lib_LTLIBRARIES:.la=.abi)
 
 abi-check: $(lib_LTLIBRARIES:.la=.abidiff)
+
+check-local: abi-check
 
 # Generate the ABI dumps without comparing them, and report which ones exist,
 # so that scripts/regen-abi-baselines does not have to duplicate either the
