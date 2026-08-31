@@ -1505,7 +1505,19 @@ endif
 
 abi-check: $(lib_LTLIBRARIES:.la=.abidiff)
 
-.PHONY: abi-check
+# Generate the ABI dumps without comparing them, and report which ones exist,
+# so that scripts/regen-abi-baselines does not have to duplicate either the
+# list of installed libraries or the mapping from target triple to baseline
+# directory.
+abi-dump: $(lib_LTLIBRARIES:.la=.abi)
+
+abi-files:
+	@printf '%s\n' $(lib_LTLIBRARIES:.la=.abi)
+
+abi-targetdir:
+	@printf '%s\n' $(abi_targetdir)
+
+.PHONY: abi-check abi-dump abi-files abi-targetdir
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets

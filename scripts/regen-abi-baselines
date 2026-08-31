@@ -1,0 +1,205 @@
+#!/bin/sh
+# Regenerate (or verify) the libabigail ABI baselines in src/abi.
+#
+# For each target in the table below this cross-compiles libunwind and either
+# copies the resulting ABI dumps over the checked-in baselines or runs
+# abidiff against them.
+#
+# The baseline directory is not computed here: it is asked of the configured
+# build tree via `make -C src abi-targetdir`, so the mapping from target
+# triple to src/abi/<arch>/<os>[/<variant>] lives in exactly one place.
+#
+# Copyright (c) 2026 libunwind contributors
+# SPDX-License-Identifier: MIT
+
+set -eu
+
+progname=$(basename "$0")
+srcdir=$(cd "$(dirname "$0")/.." && pwd)
+builddir=
+only=
+check=false
+jobs=$(nproc 2>/dev/null || echo 4)
+
+usage()
+{
+    cat >&2 <<EOF
+Usage: $progname [OPTIONS]
+
+  --check            Do not touch the baselines; run abidiff against them and
+                     report the result for each target.
+  --target=NAME      Only process NAME (repeatable).  See the list below.
+  --builddir=DIR     Where to put the build trees (default: a temporary
+                     directory, removed on exit).
+  --jobs=N           Parallelism for make (default: $jobs).
+  --list             List the known targets and exit.
+  --help             This message.
+
+Targets whose cross compiler is not installed are reported as SKIP.
+EOF
+    exit "${1:-2}"
+}
+
+# name | --host triple | compiler prefix | compiler flags | extra flags
+targets='
+aarch64|aarch64-unknown-linux-gnu|aarch64-unknown-linux-gnu||
+alpha|alpha-unknown-linux-gnu|alpha-unknown-linux-gnu||
+arm|armv7a-unknown-linux-gnueabihf|armv7a-unknown-linux-gnueabihf||
+hppa|hppa2.0-unknown-linux-gnu|hppa2.0-unknown-linux-gnu||
+loongarch64|loongarch64-unknown-linux-gnu|loongarch64-unknown-linux-gnu||
+mips-o32|mips64-unknown-linux-gnu|mips64-unknown-linux-gnu|-mabi=32|
+mips-n32|mips64-unknown-linux-gnu|mips64-unknown-linux-gnu|-mabi=n32|
+mips-n64|mips64-unknown-linux-gnu|mips64-unknown-linux-gnu||
+mips-o32el|mips64el-unknown-linux-gnu|mips64el-unknown-linux-gnu|-mabi=32|
+mips-n32el|mips64el-unknown-linux-gnu|mips64el-unknown-linux-gnu|-mabi=n32|
+mips-n64el|mips64el-unknown-linux-gnu|mips64el-unknown-linux-gnu||
+ppc32|powerpc-unknown-linux-gnu|powerpc-unknown-linux-gnu||
+ppc64|powerpc64-unknown-linux-gnu|powerpc64-unknown-linux-gnu||
+ppc64le|powerpc64le-unknown-linux-gnu|powerpc64le-unknown-linux-gnu||
+riscv32|riscv32-unknown-linux-gnu|riscv32-unknown-linux-gnu||
+riscv64|riscv64-unknown-linux-gnu|riscv64-unknown-linux-gnu||
+s390x|s390x-ibm-linux-gnu|s390x-ibm-linux-gnu||
+sh|sh4-unknown-linux-gnu|sh4-unknown-linux-gnu||
+sparc64|sparc64-unknown-linux-gnu|sparc64-unknown-linux-gnu||
+x86|i686-pc-linux-gnu|x86_64-pc-linux-gnu|-m32|
+x86_64|x86_64-pc-linux-gnu|x86_64-pc-linux-gnu||
+'
+
+for arg
+do
+    case $arg in
+        --check)        check=true ;;
+        --target=*)     only="$only ${arg#--target=}" ;;
+        --builddir=*)   builddir=${arg#--builddir=} ;;
+        --jobs=*)       jobs=${arg#--jobs=} ;;
+        --list)         printf '%s\n' "$targets" | sed -n 's/^\([^|]*\)|.*/\1/p'; exit 0 ;;
+        --help)         usage 0 ;;
+        *)              printf '%s: unknown option %s\n' "$progname" "$arg" >&2; usage ;;
+    esac
+done
+
+test -f "$srcdir/configure" || {
+    printf '%s: %s/configure does not exist, run autoreconf -i first\n' \
+           "$progname" "$srcdir" >&2
+    exit 1
+}
+
+if test -z "$builddir"
+then
+    builddir=$(mktemp -d)
+    trap 'rm -rf "$builddir"' EXIT
+fi
+mkdir -p "$builddir"
+
+# Some crossdev sysroots keep the startup files somewhere the compiler does not
+# look by default (riscv64 is the usual offender).  Emit -B/-L for them, but
+# only after confirming that the compiler cannot link without help and that the
+# candidate directory actually fixes it -- a wrong -L breaks multilib targets
+# such as mips o32/n32.
+sysroot_flags()
+{
+    _pfx=$1
+    _flags=$2
+    _probe=$(mktemp -d)
+    printf 'int main(void){return 0;}\n' > "$_probe/t.c"
+
+    if "$_pfx-gcc" $_flags "$_probe/t.c" -o "$_probe/t" >/dev/null 2>&1
+    then
+        rm -rf "$_probe"
+        return 0
+    fi
+
+    _sysroot=$("$_pfx-gcc" $_flags -print-sysroot 2>/dev/null) || _sysroot=
+    if test -n "$_sysroot"
+    then
+        _multi=$("$_pfx-gcc" $_flags -print-multi-directory 2>/dev/null) || _multi=.
+        for _d in "$_sysroot/usr/lib/$_multi" "$_sysroot/usr/lib$_multi" \
+                  "$_sysroot/usr/lib64" "$_sysroot/usr/lib32" "$_sysroot/usr/lib"
+        do
+            test -f "$_d/crt1.o" || continue
+            if "$_pfx-gcc" $_flags "-B$_d" "-L$_d" "$_probe/t.c" -o "$_probe/t" \
+                   >/dev/null 2>&1
+            then
+                printf ' -B%s -L%s' "$_d" "$_d"
+                break
+            fi
+        done
+    fi
+    rm -rf "$_probe"
+}
+
+status=0
+printf '%-14s %s\n' TARGET RESULT
+
+while IFS='|' read -r name host pfx ccflags extra
+do
+    test -n "$name" || continue
+    if test -n "$only"
+    then
+        case " $only " in *" $name "*) ;; *) continue ;; esac
+    fi
+
+    if ! command -v "$pfx-gcc" >/dev/null 2>&1
+    then
+        printf '%-14s SKIP (no %s-gcc)\n' "$name" "$pfx"
+        continue
+    fi
+
+    extra="$extra$(sysroot_flags "$pfx" "$ccflags")"
+    b="$builddir/$name"
+    log="$builddir/$name.log"
+    mkdir -p "$b"
+
+    if ! (
+        cd "$b" &&
+        "$srcdir/configure" --host="$host" \
+            --enable-debug --enable-coredump --disable-tests \
+            CC="$pfx-gcc $ccflags $extra" \
+            CXX="$pfx-g++ $ccflags $extra" \
+            CFLAGS="-g -Og" CXXFLAGS="-g -Og" LDFLAGS="$ccflags $extra" &&
+        make -C src -j"$jobs"
+    ) >"$log" 2>&1
+    then
+        printf '%-14s BUILD FAILED (see %s)\n' "$name" "$log"
+        status=1
+        continue
+    fi
+
+    if $check
+    then
+        if make -C "$b/src" abi-check >>"$log" 2>&1
+        then
+            printf '%-14s OK\n' "$name"
+        else
+            printf '%-14s ABI MISMATCH (see %s)\n' "$name" "$log"
+            status=1
+        fi
+        continue
+    fi
+
+    abis=$(make -C "$b/src" -s abi-files)
+    if test -z "$abis"
+    then
+        printf '%-14s NO LIBRARIES\n' "$name"
+        status=1
+        continue
+    fi
+    if ! make -C "$b/src" abi-dump >>"$log" 2>&1
+    then
+        printf '%-14s ABIDW FAILED (see %s)\n' "$name" "$log"
+        status=1
+        continue
+    fi
+
+    targetdir=$(make -C "$b/src" -s abi-targetdir)
+    mkdir -p "$targetdir"
+    for a in $abis
+    do
+        cp "$b/src/$a" "$targetdir/$a"
+    done
+    printf '%-14s UPDATED %s\n' "$name" "${targetdir#"$srcdir"/}"
+done <<EOF
+$targets
+EOF
+
+exit $status
