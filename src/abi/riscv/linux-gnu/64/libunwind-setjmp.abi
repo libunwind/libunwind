@@ -1,5 +1,7 @@
 <abi-corpus version='2.4' architecture='elf-riscv' soname='libunwind-setjmp.so.0'>
   <elf-needed>
+    <dependency name='libunwind-riscv.so.11'/>
+    <dependency name='libunwind.so.11'/>
     <dependency name='libc.so.6'/>
   </elf-needed>
   <elf-variable-symbols>
@@ -19,7 +21,7 @@
     <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-variable-symbols>
-  <abi-instr address-size='64' path='../../src/mi/init.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/init.c' language='LANG_C11'>
     <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-1'/>
     <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-2'>
       <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-4'/>

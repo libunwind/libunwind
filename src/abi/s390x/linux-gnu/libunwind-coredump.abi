@@ -1,6 +1,7 @@
 <abi-corpus version='2.4' architecture='elf-ibm-s390' soname='libunwind-coredump.so.0'>
   <elf-needed>
-    <dependency name='libunwind-s390x.so.8'/>
+    <dependency name='libunwind-s390x.so.11'/>
+    <dependency name='libunwind.so.11'/>
     <dependency name='libc.so.6'/>
   </elf-needed>
   <elf-function-symbols>
@@ -33,12 +34,7 @@
     <elf-symbol name='_Us390x_get_elf_image' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__errno_location' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__isoc23_strtol' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__memcpy_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__read_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__snprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__stack_chk_fail' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__strcat_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__strcpy_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__vsnprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='calloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='close' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
@@ -48,14 +44,14 @@
     <elf-symbol name='lseek' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='malloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='memchr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='memcmp' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='memcpy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='memmove' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='mmap' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='munmap' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='open' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='read' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='realloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='setbuf' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strcat' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='strdup' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='strncpy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
@@ -68,7 +64,7 @@
     <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-variable-symbols>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_access_mem.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_access_mem.c' language='LANG_C11'>
     <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='320' hash='e7f9696e246a3049' id='type-id-2'>
       <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-4'/>
     </array-type-def>
@@ -525,7 +521,7 @@
       <return type-id='type-id-109'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_access_reg_linux.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_access_reg_linux.c' language='LANG_C11'>
     <function-decl name='_UCD_access_reg' mangled-name='_UCD_access_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_access_reg' hash='de9ef2afa3de58e1'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-85'/>
@@ -535,11 +531,11 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_accessors.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_accessors.c' language='LANG_C11'>
     <typedef-decl name='unw_accessors_t' type-id='type-id-48' size-in-bits='704' id='type-id-110'/>
     <var-decl name='_UCD_accessors' type-id='type-id-110' mangled-name='_UCD_accessors' visibility='default' elf-symbol-id='_UCD_accessors'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_add_backing_file_at_vaddr.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_add_backing_file_at_vaddr.c' language='LANG_C11'>
     <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-1'/>
     <type-decl name='double' size-in-bits='64' hash='e9e9b320886d9aa6' id='type-id-86'/>
     <type-decl name='float' size-in-bits='32' hash='d7ec3bf03d3c5690' id='type-id-111'/>
@@ -930,7 +926,7 @@
     <type-decl name='void' id='type-id-109'/>
     <pointer-type-def type-id='type-id-109' id='type-id-34'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_create.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_create.c' language='LANG_C11'>
     <typedef-decl name='pid_t' type-id='type-id-136' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-182'/>
     <function-decl name='_UCD_create' mangled-name='_UCD_create' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_create' hash='43519b72d294604c'>
       <parameter type-id='type-id-29' name='filename'/>
@@ -954,13 +950,13 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_destroy.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_destroy.c' language='LANG_C11'>
     <function-decl name='_UCD_destroy' mangled-name='_UCD_destroy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_destroy' hash='24f9a1ed696ed060'>
       <parameter type-id='type-id-180' name='ui'/>
       <return type-id='type-id-109'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_find_proc_info.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_find_proc_info.c' language='LANG_C11'>
     <function-decl name='_UCD_find_proc_info' mangled-name='_UCD_find_proc_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_find_proc_info' hash='1864dd1e0496fd23'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-36'/>
@@ -970,7 +966,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_get_elf_filename.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_elf_filename.c' language='LANG_C11'>
     <function-decl name='_UCD_get_elf_filename' mangled-name='_UCD_get_elf_filename' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_elf_filename' hash='d51136ed14244e3c'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-36'/>
@@ -981,7 +977,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_get_mapinfo_linux.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_mapinfo_linux.c' language='LANG_C11'>
     <function-decl name='_UCD_get_mapinfo' mangled-name='_UCD_get_mapinfo' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_mapinfo' hash='afc9197e873e1f78'>
       <parameter type-id='type-id-180' name='ui'/>
       <parameter type-id='type-id-120' name='phdrs'/>
@@ -989,7 +985,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_get_proc_name.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_proc_name.c' language='LANG_C11'>
     <function-decl name='_UCD_get_proc_name' mangled-name='_UCD_get_proc_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_proc_name' hash='d51136ed14244e3c'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-36'/>
@@ -1000,7 +996,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UCD_get_threadinfo_prstatus.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_threadinfo_prstatus.c' language='LANG_C11'>
     <function-decl name='_UCD_get_threadinfo' mangled-name='_UCD_get_threadinfo' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_threadinfo' hash='afc9197e873e1f78'>
       <parameter type-id='type-id-180' name='ui'/>
       <parameter type-id='type-id-120' name='phdrs'/>
@@ -1008,7 +1004,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UPT_access_fpreg.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_access_fpreg.c' language='LANG_C11'>
     <function-decl name='_UCD_access_fpreg' mangled-name='_UCD_access_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_access_fpreg' hash='e53f2e8cc9ea833a'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-85'/>
@@ -1018,7 +1014,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UPT_get_dyn_info_list_addr.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_get_dyn_info_list_addr.c' language='LANG_C11'>
     <function-decl name='_UCD_get_dyn_info_list_addr' mangled-name='_UCD_get_dyn_info_list_addr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_dyn_info_list_addr' hash='f99fa444964bcd86'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-108'/>
@@ -1026,7 +1022,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UPT_put_unwind_info.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_put_unwind_info.c' language='LANG_C11'>
     <function-decl name='_UCD_put_unwind_info' mangled-name='_UCD_put_unwind_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_put_unwind_info' hash='cde0cac56bacd918'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-104'/>
@@ -1034,7 +1030,7 @@
       <return type-id='type-id-109'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/coredump/_UPT_resume.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_resume.c' language='LANG_C11'>
     <function-decl name='_UCD_resume' mangled-name='_UCD_resume' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_resume' hash='641d5ea074bc3beb'>
       <parameter type-id='type-id-77'/>
       <parameter type-id='type-id-102'/>
@@ -1042,7 +1038,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/init.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/init.c' language='LANG_C11'>
     <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-183'>
       <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-179'/>
     </array-type-def>

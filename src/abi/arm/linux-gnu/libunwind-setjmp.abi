@@ -1,0 +1,174 @@
+<abi-corpus version='2.4' architecture='elf-arm' soname='libunwind-setjmp.so.0'>
+  <elf-needed>
+    <dependency name='libunwind-arm.so.11'/>
+    <dependency name='libunwind.so.11'/>
+    <dependency name='libgcc_s.so.1'/>
+    <dependency name='libc.so.6'/>
+  </elf-needed>
+  <elf-variable-symbols>
+    <elf-symbol name='_UIarm_debug_level' size='4' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-variable-symbols>
+  <undefined-elf-function-symbols>
+    <elf-symbol name='__aeabi_unwind_cpp_pr0' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__errno_location' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__isoc23_strtol' version='GLIBC_2.38' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='getenv' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='setbuf' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strlen' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='sysconf' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='write' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+  </undefined-elf-function-symbols>
+  <undefined-elf-variable-symbols>
+    <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+  </undefined-elf-variable-symbols>
+  <abi-instr address-size='32' path='/home/mattst88/projects/libunwind/src/mi/init.c' language='LANG_C11'>
+    <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-1'/>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-2'>
+      <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-3' size-in-bits='32' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-4'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='224' hash='b690bafeeb4b78a6' id='type-id-5'>
+      <subrange length='28' lower-bound='0' upper-bound='27' type-id='type-id-3' size-in-bits='32' is-anonymous='yes' hash='050c3236984f813b' id='type-id-6'/>
+    </array-type-def>
+    <type-decl name='int' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-7'/>
+    <type-decl name='long int' size-in-bits='32' hash='bfe66886a48d6d55#2' id='type-id-8'/>
+    <type-decl name='long long int' size-in-bits='64' hash='5ae7f9eec1fc43d6#3' id='type-id-9'/>
+    <type-decl name='signed char' size-in-bits='8' hash='3c595c3350588f18' id='type-id-10'/>
+    <class-decl name='_IO_FILE' is-struct='yes' visibility='default' size-in-bits='1216' hash='46d4866c000c1017' id='type-id-11'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='_flags' type-id='type-id-7' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='_IO_read_ptr' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='_IO_read_end' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='_IO_read_base' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='_IO_write_base' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='_IO_write_ptr' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='_IO_write_end' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='224'>
+        <var-decl name='_IO_buf_base' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='_IO_buf_end' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='_IO_save_base' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='_IO_backup_base' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='_IO_save_end' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='_markers' type-id='type-id-13' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='416'>
+        <var-decl name='_chain' type-id='type-id-14' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='_fileno' type-id='type-id-7' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='480'>
+        <var-decl name='_flags2' type-id='type-id-7' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='504'>
+        <var-decl name='_short_backupbuf' type-id='type-id-2' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='_old_offset' type-id='type-id-15' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='544'>
+        <var-decl name='_cur_column' type-id='type-id-16' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='560'>
+        <var-decl name='_vtable_offset' type-id='type-id-10' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='568'>
+        <var-decl name='_shortbuf' type-id='type-id-2' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='_lock' type-id='type-id-17' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='_offset' type-id='type-id-18' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='_codecvt' type-id='type-id-19' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='736'>
+        <var-decl name='_wide_data' type-id='type-id-20' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='_freeres_list' type-id='type-id-14' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='800'>
+        <var-decl name='_freeres_buf' type-id='type-id-21' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='_prevchain' type-id='type-id-22' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='864'>
+        <var-decl name='_mode' type-id='type-id-7' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='_total_written' type-id='type-id-23' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='960'>
+        <var-decl name='_unused3' type-id='type-id-7' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='992'>
+        <var-decl name='_unused2' type-id='type-id-5' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__sigset_t' is-struct='yes' naming-typedef-id='type-id-24' visibility='default' size-in-bits='1024' hash='15c83a08a703b389' id='type-id-25'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__val' type-id='type-id-26' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='FILE' type-id='type-id-11' size-in-bits='1216' id='type-id-27'/>
+    <typedef-decl name='_IO_lock_t' type-id='type-id-28' id='type-id-29'/>
+    <typedef-decl name='__int64_t' type-id='type-id-9' size-in-bits='64' hash='5ae7f9eec1fc43d6' id='type-id-30'/>
+    <typedef-decl name='__off64_t' type-id='type-id-30' size-in-bits='64' hash='5ae7f9eec1fc43d6' id='type-id-18'/>
+    <typedef-decl name='__off_t' type-id='type-id-8' size-in-bits='32' hash='bfe66886a48d6d55' id='type-id-15'/>
+    <typedef-decl name='__sigset_t' type-id='type-id-25' size-in-bits='1024' id='type-id-24'/>
+    <typedef-decl name='__uint64_t' type-id='type-id-31' size-in-bits='64' hash='ebdfc4685a1e82df' id='type-id-23'/>
+    <typedef-decl name='intrmask_t' type-id='type-id-32' size-in-bits='1024' id='type-id-33'/>
+    <typedef-decl name='sigset_t' type-id='type-id-24' size-in-bits='1024' id='type-id-32'/>
+    <type-decl name='unsigned int' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-3'/>
+    <type-decl name='unsigned long int' size-in-bits='32' hash='55dfcdcafc0c15e8#2' id='type-id-34'/>
+    <array-type-def dimensions='1' type-id='type-id-34' size-in-bits='1024' hash='912a38d1628f6f2c' id='type-id-26'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-3' size-in-bits='32' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-35'/>
+    </array-type-def>
+    <type-decl name='unsigned long long int' size-in-bits='64' hash='ebdfc4685a1e82df#3' id='type-id-31'/>
+    <type-decl name='unsigned short int' size-in-bits='16' hash='d7723bb93a30b11d#4' id='type-id-16'/>
+    <pointer-type-def type-id='type-id-27' size-in-bits='32' hash='3ad7bb9efca569aa' id='type-id-36'/>
+    <pointer-type-def type-id='type-id-11' size-in-bits='32' hash='7f015823be526319' id='type-id-14'/>
+    <pointer-type-def type-id='type-id-14' size-in-bits='32' hash='d4d0f5824cd8709c' id='type-id-22'/>
+    <pointer-type-def type-id='type-id-1' size-in-bits='32' hash='6812f8e849bfc813' id='type-id-12'/>
+    <pointer-type-def type-id='type-id-37' size-in-bits='32' id='type-id-19'/>
+    <pointer-type-def type-id='type-id-29' size-in-bits='32' id='type-id-17'/>
+    <pointer-type-def type-id='type-id-38' size-in-bits='32' id='type-id-13'/>
+    <pointer-type-def type-id='type-id-39' size-in-bits='32' id='type-id-20'/>
+    <class-decl name='_IO_codecvt' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-37'/>
+    <class-decl name='_IO_marker' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-38'/>
+    <class-decl name='_IO_wide_data' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-39'/>
+    <var-decl name='_UIarm_debug_level' type-id='type-id-8' mangled-name='_UIarm_debug_level' visibility='default' elf-symbol-id='_UIarm_debug_level'/>
+    <var-decl name='stdout' type-id='type-id-36' visibility='default' elf-symbol-id='stdout'/>
+    <var-decl name='stderr' type-id='type-id-36' visibility='default' elf-symbol-id='stderr'/>
+    <type-decl name='void' id='type-id-28'/>
+    <pointer-type-def type-id='type-id-28' id='type-id-21'/>
+  </abi-instr>
+</abi-corpus>

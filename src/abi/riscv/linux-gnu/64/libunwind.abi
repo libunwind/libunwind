@@ -1,4 +1,4 @@
-<abi-corpus version='2.4' architecture='elf-riscv' soname='libunwind.so.8'>
+<abi-corpus version='2.4' architecture='elf-riscv' soname='libunwind.so.11'>
   <elf-needed>
     <dependency name='libc.so.6'/>
     <dependency name='ld-linux-riscv64-lp64d.so.1'/>
@@ -22,7 +22,7 @@
     <elf-symbol name='_ULriscv_init_local' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ULriscv_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ULriscv_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_is_plt_entry' type='func-type' binding='weak-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULriscv_is_plt_entry' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ULriscv_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ULriscv_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_ULriscv_resume' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
@@ -57,11 +57,7 @@
     <elf-symbol name='__errno_location' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__fprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__isoc23_strtol' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__memcpy_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__snprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__stack_chk_fail' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__strcat_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__strcpy_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__tls_get_addr' version='GLIBC_2.27' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__vsnprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='abort' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
@@ -103,13 +99,12 @@
     <elf-symbol name='write' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-function-symbols>
   <undefined-elf-variable-symbols>
-    <elf-symbol name='__stack_chk_guard' version='GLIBC_2.27' is-default-version='yes' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-variable-symbols>
-  <abi-instr address-size='64' path='../../src/dwarf/Lexpr.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lexpr.c' language='LANG_C11'>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lfde.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lfde.c' language='LANG_C11'>
     <class-decl name='mempool' is-struct='yes' visibility='default' size-in-bits='640' hash='f32580f7b9eca881' id='type-id-1'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='lock' type-id='type-id-2' visibility='default'/>
@@ -137,7 +132,7 @@
     </class-decl>
     <pointer-type-def type-id='type-id-5' size-in-bits='64' hash='6641927d5bef0db6' id='type-id-4'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lfind_proc_info-lsb.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lfind_proc_info-lsb.c' language='LANG_C11'>
     <class-decl name='table_entry' is-struct='yes' visibility='default' size-in-bits='64' hash='dac5261ebba77b18' id='type-id-6'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='start_ip_offset' type-id='type-id-7' visibility='default'/>
@@ -167,7 +162,7 @@
       <return type-id='type-id-12'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lfind_unwind_table.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lfind_unwind_table.c' language='LANG_C11'>
     <class-decl name='elf_dyn_info' is-struct='yes' visibility='default' size-in-bits='1408' hash='115a2ca68d0d06c7' id='type-id-18'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='ei' type-id='type-id-19' visibility='default'/>
@@ -190,7 +185,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lget_proc_info_in_range.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lget_proc_info_in_range.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_proc_info_in_range' mangled-name='_ULriscv_get_proc_info_in_range' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_info_in_range' hash='649f642c38b17bce'>
       <parameter type-id='type-id-9' name='start_ip'/>
       <parameter type-id='type-id-9' name='end_ip'/>
@@ -206,18 +201,18 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lparser.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lparser.c' language='LANG_C11'>
     <var-decl name='stderr' type-id='type-id-23' visibility='default' elf-symbol-id='stderr'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Ldestroy_addr_space.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Ldestroy_addr_space.c' language='LANG_C11'>
     <function-decl name='_ULriscv_destroy_addr_space' mangled-name='_ULriscv_destroy_addr_space' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_destroy_addr_space' hash='d8863beea7ee21b2'>
       <parameter type-id='type-id-8' name='as'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lfind_dynamic_proc_info.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lfind_dynamic_proc_info.c' language='LANG_C11'>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_accessors.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_accessors.c' language='LANG_C11'>
     <typedef-decl name='unw_accessors_t' type-id='type-id-25' size-in-bits='704' id='type-id-26'/>
     <pointer-type-def type-id='type-id-26' size-in-bits='64' hash='4056d11781822b4a' id='type-id-27'/>
     <function-decl name='_Uriscv_get_accessors' mangled-name='_Uriscv_get_accessors' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_get_accessors' hash='b6ee49c4226212f1'>
@@ -225,7 +220,7 @@
       <return type-id='type-id-27'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_elf_filename.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_elf_filename.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_elf_filename_by_ip' mangled-name='_ULriscv_get_elf_filename_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_elf_filename_by_ip' hash='d51136ed14244e3c'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
@@ -252,7 +247,7 @@
       <return type-id='type-id-12'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_fpreg.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_fpreg.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_fpreg' mangled-name='_ULriscv_get_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_fpreg' hash='5785fdb3b0b9a50b'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
@@ -260,7 +255,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_proc_info_by_ip.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_proc_info_by_ip.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_proc_info_by_ip' mangled-name='_ULriscv_get_proc_info_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_info_by_ip' hash='26bc85b0478f1fc3'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
@@ -269,7 +264,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_proc_name.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_proc_name.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_proc_name_by_ip' mangled-name='_ULriscv_get_proc_name_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_name_by_ip' hash='d51136ed14244e3c'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
@@ -287,7 +282,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_reg.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_reg.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_reg' mangled-name='_ULriscv_get_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_reg' hash='df0aa54464f40429'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
@@ -295,13 +290,13 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lis_plt_entry.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lis_plt_entry.c' language='LANG_C11'>
     <function-decl name='_ULriscv_is_plt_entry' mangled-name='_ULriscv_is_plt_entry' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_is_plt_entry' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_cache_size.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_cache_size.c' language='LANG_C11'>
     <function-decl name='_ULriscv_set_cache_size' mangled-name='_ULriscv_set_cache_size' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_cache_size' hash='fcb84a63bdaf3ddd'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-3' name='size'/>
@@ -309,14 +304,14 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_caching_policy.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_caching_policy.c' language='LANG_C11'>
     <function-decl name='_ULriscv_set_caching_policy' mangled-name='_ULriscv_set_caching_policy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_caching_policy' hash='86316ffc25a0fd79'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-33' name='policy'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_fpreg.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_fpreg.c' language='LANG_C11'>
     <function-decl name='_ULriscv_set_fpreg' mangled-name='_ULriscv_set_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_fpreg' hash='8233026935fa1664'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
@@ -324,14 +319,14 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_iterate_phdr_function.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_iterate_phdr_function.c' language='LANG_C11'>
     <function-decl name='_ULriscv_set_iterate_phdr_function' mangled-name='_ULriscv_set_iterate_phdr_function' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_iterate_phdr_function' hash='363eeb0dab339793'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-35' name='function'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_reg.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_reg.c' language='LANG_C11'>
     <function-decl name='_ULriscv_set_reg' mangled-name='_ULriscv_set_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_reg' hash='a2032be85d4c307e'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
@@ -339,7 +334,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/backtrace.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/backtrace.c' language='LANG_C11'>
     <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='unknown' hash='6915b710ae33e54a' id='type-id-37'>
       <subrange length='unknown' lower-bound='0' upper-bound='0' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-39'/>
     </array-type-def>
@@ -457,7 +452,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/dyn-cancel.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/dyn-cancel.c' language='LANG_C11'>
     <type-decl name='short int' size-in-bits='16' hash='6c2352eccdcd3eea#3' id='type-id-67'/>
     <class-decl name='unw_dyn_info' is-struct='yes' visibility='default' size-in-bits='640' hash='4f99f842c6574402' id='type-id-68'>
       <data-member access='public' layout-offset-in-bits='0'>
@@ -608,18 +603,18 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/dyn-info-list.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/dyn-info-list.c' language='LANG_C11'>
     <function-decl name='_U_dyn_info_list_addr' mangled-name='_U_dyn_info_list_addr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_U_dyn_info_list_addr' hash='e0055d99adb0e173'>
       <return type-id='type-id-9'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/dyn-register.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/dyn-register.c' language='LANG_C11'>
     <function-decl name='_U_dyn_register' mangled-name='_U_dyn_register' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_U_dyn_register' hash='b813da609a6d763e'>
       <parameter type-id='type-id-10' name='di'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/flush_cache.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/flush_cache.c' language='LANG_C11'>
     <function-decl name='_Uriscv_flush_cache' mangled-name='_Uriscv_flush_cache' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_flush_cache' hash='b57dcb5ab79da224'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='lo'/>
@@ -627,7 +622,7 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/init.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/init.c' language='LANG_C11'>
     <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-94'>
       <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-93'/>
     </array-type-def>
@@ -761,15 +756,15 @@
     <var-decl name='_UIriscv_debug_level' type-id='type-id-113' mangled-name='_UIriscv_debug_level' visibility='default' elf-symbol-id='_UIriscv_debug_level'/>
     <var-decl name='stdout' type-id='type-id-23' visibility='default' elf-symbol-id='stdout'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/mempool.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/mempool.c' language='LANG_C11'>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/strerror.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/strerror.c' language='LANG_C11'>
     <function-decl name='_Uriscv_strerror' mangled-name='_Uriscv_strerror' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_strerror' hash='7cffa03161e7e042'>
       <parameter type-id='type-id-12' name='err_code'/>
       <return type-id='type-id-22'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/os-linux.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/os-linux.c' language='LANG_C11'>
     <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-36'/>
     <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='320' hash='e7f9696e246a3049' id='type-id-119'>
       <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-120'/>
@@ -1249,28 +1244,28 @@
       <return type-id='type-id-24'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lapply_reg_state.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lapply_reg_state.c' language='LANG_C11'>
     <function-decl name='_ULriscv_apply_reg_state' mangled-name='_ULriscv_apply_reg_state' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_apply_reg_state' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-13' name='reg_states_data'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lcreate_addr_space.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lcreate_addr_space.c' language='LANG_C11'>
     <function-decl name='_ULriscv_create_addr_space' mangled-name='_ULriscv_create_addr_space' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_create_addr_space' hash='29e3b15bac8c112e'>
       <parameter type-id='type-id-27' name='a'/>
       <parameter type-id='type-id-12' name='byte_order'/>
       <return type-id='type-id-8'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lget_proc_info.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lget_proc_info.c' language='LANG_C11'>
     <function-decl name='_ULriscv_get_proc_info' mangled-name='_ULriscv_get_proc_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_info' hash='0ac1c8ece24ab99e'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-11' name='pi'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lget_save_loc.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lget_save_loc.c' language='LANG_C11'>
     <enum-decl name='unw_save_loc_type' size-in-bits='32' alignment-in-bits='32' hash='ebff08c3ccec97c8' id='type-id-205'>
       <underlying-type type-id='type-id-130'/>
       <enumerator name='UNW_SLT_NONE' value='0'/>
@@ -1312,16 +1307,16 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lglobal.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lglobal.c' language='LANG_C11'>
     <array-type-def dimensions='1' type-id='type-id-213' size-in-bits='528' hash='ecc04b5be9158853' id='type-id-214'>
       <subrange length='66' lower-bound='0' upper-bound='65' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='f16033cdc24c72d4' id='type-id-215'/>
     </array-type-def>
     <qualified-type-def type-id='type-id-173' const='yes' hash='5a6582fbecdbfc78' id='type-id-213'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Linit.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Linit.c' language='LANG_C11'>
     <var-decl name='_ULriscv_local_addr_space' type-id='type-id-8' mangled-name='_ULriscv_local_addr_space' visibility='default' elf-symbol-id='_ULriscv_local_addr_space'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Linit_local.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Linit_local.c' language='LANG_C11'>
     <function-decl name='_ULriscv_init_local' mangled-name='_ULriscv_init_local' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_init_local' hash='5bf6f557768ab998'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-65' name='uc'/>
@@ -1334,7 +1329,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Linit_remote.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Linit_remote.c' language='LANG_C11'>
     <function-decl name='_ULriscv_init_remote' mangled-name='_ULriscv_init_remote' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_init_remote' hash='5e95f80d0e407377'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-8' name='as'/>
@@ -1342,13 +1337,13 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lis_signal_frame.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lis_signal_frame.c' language='LANG_C11'>
     <function-decl name='_ULriscv_is_signal_frame' mangled-name='_ULriscv_is_signal_frame' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_is_signal_frame' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lreg_states_iterate.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lreg_states_iterate.c' language='LANG_C11'>
     <typedef-decl name='unw_reg_states_callback' type-id='type-id-216' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-217'/>
     <pointer-type-def type-id='type-id-218' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-216'/>
     <function-decl name='_ULriscv_reg_states_iterate' mangled-name='_ULriscv_reg_states_iterate' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_reg_states_iterate' hash='343c6131f1714830'>
@@ -1366,36 +1361,36 @@
       <return type-id='type-id-12'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lresume.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lresume.c' language='LANG_C11'>
     <function-decl name='_ULriscv_resume' mangled-name='_ULriscv_resume' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_resume' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lstep.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/Lstep.c' language='LANG_C11'>
     <function-decl name='_ULriscv_step' mangled-name='_ULriscv_step' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_step' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/getcontext.S' language='LANG_Mips_Assembler'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/getcontext.S' language='LANG_Mips_Assembler'>
     <function-decl name='_Uriscv_getcontext' mangled-name='_Uriscv_getcontext' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_getcontext' hash='7f32ffea222edbe7'>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/is_fpreg.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/is_fpreg.c' language='LANG_C11'>
     <function-decl name='_Uriscv_is_fpreg' mangled-name='_Uriscv_is_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_is_fpreg' hash='d628501fd2223339'>
       <parameter type-id='type-id-12' name='regnum'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/regname.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/regname.c' language='LANG_C11'>
     <function-decl name='_Uriscv_regname' mangled-name='_Uriscv_regname' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_regname' hash='7cffa03161e7e042'>
       <parameter type-id='type-id-189' name='reg'/>
       <return type-id='type-id-22'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/setcontext.S' language='LANG_Mips_Assembler'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/riscv/setcontext.S' language='LANG_Mips_Assembler'>
     <function-decl name='_Uriscv_setcontext' mangled-name='_Uriscv_setcontext' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_setcontext' hash='7f32ffea222edbe7'>
       <return type-id='type-id-24'/>
     </function-decl>
