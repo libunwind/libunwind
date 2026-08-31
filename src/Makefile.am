@@ -1467,7 +1467,7 @@ MAINTAINERCLEANFILES = Makefile.in
 	fi
 
 abi_srcdir = "$(top_srcdir)/src/abi"
-abi_targetdir = "$(abi_srcdir)/$(arch)/$(target_os)"
+abi_targetdir = "$(abi_srcdir)/$(arch)/$(abi_target_os)$(abi_variant_dir)"
 
 # The checked-in baselines are generated without --enable-cxx-exceptions, so
 # when it's on, additionally suppress reports about the extra _Unwind_*

@@ -433,6 +433,27 @@ archnames = {
     'x86_64': 'x86_64',
 }
 
+# Some architecture names above cover several incompatible data models, which
+# need separate ABI baselines. Compute a subdirectory name for those, empty for
+# everything else. Probing the compiler is necessary because cpu_family() alone
+# cannot tell mips n32 from n64 (both report 'mips64').
+abi_variant = ''
+if archnames[target_machine.cpu_family()] == 'mips'
+    if cc.get_define('_ABIO32') != ''
+        abi_variant = 'o32'
+    elif cc.get_define('_ABIN32') != ''
+        abi_variant = 'n32'
+    elif cc.get_define('_ABI64') != ''
+        abi_variant = 'n64'
+    endif
+elif archnames[target_machine.cpu_family()] == 'riscv'
+    abi_variant = cc.get_define('__riscv_xlen') == '32' ? '32' : '64'
+elif archnames[target_machine.cpu_family()] == 'ppc64'
+    # glibc's struct _libc_vscr, reachable from ucontext_t, is laid out
+    # differently on big- and little-endian ppc64.
+    abi_variant = target_machine.endian() == 'big' ? 'be' : 'le'
+endif
+
 subdir('include')
 subdir('doc')
 subdir('src')

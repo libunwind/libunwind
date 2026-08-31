@@ -7,6 +7,9 @@ endif
 _canonical = ''
 if target_machine.system() == 'linux'
     _canonical = archnames[target_machine.cpu_family()] / 'linux-gnu'
+    if abi_variant != ''
+        _canonical = _canonical / abi_variant
+    endif
     _canonical = fs.exists(_canonical) ? _canonical : ''
 endif
 
