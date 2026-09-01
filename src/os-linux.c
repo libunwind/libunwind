@@ -34,8 +34,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "os-linux.h"
 
 #ifndef MAX_VDSO_SIZE
-/*Dont know what is the Max Size in my system it was 8192 or twice the page size*/
-# define MAX_VDSO_SIZE ((size_t) 2 * sysconf (_SC_PAGESIZE))
+/* An upper bound on the size of an anonymous mapping worth copying out of
+   the target in the hope that it is the vDSO.  Two pages was too small: the
+   32-bit vDSO of a current Linux kernel is mapped with three.  */
+# define MAX_VDSO_SIZE ((size_t) 8 * sysconf (_SC_PAGESIZE))
 #endif
 
 #ifndef MAP_32BIT
