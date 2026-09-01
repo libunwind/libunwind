@@ -557,7 +557,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
   unw_accessors_t *a;
   long n;
   int found = 0;
-  struct dwarf_eh_frame_hdr synth_eh_frame_hdr;
+  Elf_W (Addr) eh_frame = 0;
 #ifdef CONFIG_DEBUG_FRAME
   unw_word_t start, end;
 #endif /* CONFIG_DEBUG_FRAME*/
@@ -611,24 +611,14 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
     }
   else
     {
-      Elf_W (Addr) eh_frame;
       Debug (1, "no .eh_frame_hdr section found\n");
       eh_frame = dwarf_find_eh_frame_section (info);
       if (eh_frame)
-        {
-          Debug (1, "using synthetic .eh_frame_hdr section for %s\n",
-                 info->dlpi_name);
-	  synth_eh_frame_hdr.version = DW_EH_VERSION;
-	  synth_eh_frame_hdr.eh_frame_ptr_enc = DW_EH_PE_absptr |
-	    ((sizeof(Elf_W (Addr)) == 4) ? DW_EH_PE_udata4 : DW_EH_PE_udata8);
-          synth_eh_frame_hdr.fde_count_enc = DW_EH_PE_omit;
-          synth_eh_frame_hdr.table_enc = DW_EH_PE_omit;
-	  synth_eh_frame_hdr.eh_frame = eh_frame;
-          hdr = &synth_eh_frame_hdr;
-        }
+        Debug (1, "using the .eh_frame section of %s directly\n",
+               info->dlpi_name);
     }
 
-  if (hdr)
+  if (hdr || eh_frame)
     {
       if (p_dynamic)
         {
@@ -651,6 +641,28 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
            absolute.  */
         di->gp = 0;
       pi->gp = di->gp;
+
+      if (hdr == NULL)
+        {
+          /* There is no .eh_frame_hdr section, hence no binary search
+             table: search the .eh_frame section linearly.  */
+          eh_frame_start = eh_frame;
+          eh_frame_end = max_load_addr; /* XXX can we do better? */
+          fde_count = ~0UL;
+
+          Debug (1, "eh_frame_start = %lx eh_frame_end = %lx\n",
+                 eh_frame_start, eh_frame_end);
+
+          found = linear_search (unw_local_addr_space, ip,
+                                 eh_frame_start, eh_frame_end, fde_count,
+                                 pi, need_unwind_info, NULL);
+          if (found != 1)
+            found = 0;
+          else
+            cb_data->single_fde = 1;
+
+          goto out;
+        }
 
       if (hdr->version != DW_EH_VERSION)
         {
@@ -734,6 +746,7 @@ dwarf_callback (struct dl_phdr_info *info, size_t size, void *ptr)
         }
     }
 
+out:
 #ifdef CONFIG_DEBUG_FRAME
   /* Find the start/end of the described region by parsing the phdr_info
      structure.  */
