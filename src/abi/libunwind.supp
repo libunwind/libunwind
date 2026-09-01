@@ -23,6 +23,32 @@
 # SOFTWARE.
 #
 
-# Don't report about the (internal) global debug level
+# Don't report about the (internal) global debug level.  It only exists in
+# --enable-debug / -Ddebug_logs=true builds, and the two rules are both needed:
+# the first matches when the variable carries debug info, the second when
+# abidiff only sees the ELF symbol.
 [suppress_variable]
-  name_regexp=_UI.*_debug_level
+  name_regexp = _UI.*_debug_level
+
+[suppress_variable]
+  symbol_name_regexp = _UI.*_debug_level
+
+# Don't report about the width of time_t.
+#
+# struct UCD_thread_info holds nothing but libc-defined blobs: an
+# elf_prstatus, which embeds four struct timevals, and an elf_fpregset_t.  On a
+# 32-bit target its layout therefore depends on whether the libc the library
+# was built against uses a 32- or a 64-bit time_t, which is a distribution
+# policy and not a property of the architecture: Ubuntu switched arm, hppa,
+# ppc32 and sh4 to 64-bit time_t in its t64 transition while leaving i386 and
+# mips alone, and other distributions have not switched at all.  A single
+# checked-in baseline cannot describe both.
+#
+# Nothing is really lost by not comparing these.  struct UCD_info is opaque in
+# libunwind-coredump.h, so none of this is an interface anyone can depend on,
+# and it only reaches the ABI dump because abidiff follows the pointer in the
+# exported signatures.  The library does not treat the host layout as
+# authoritative either: _UCD_get_threadinfo_prstatus() relocates pr_reg when
+# the core file's notes disagree with it.
+[suppress_type]
+  name_regexp = ^(timeval|elf_prstatus|UCD_thread_info)$

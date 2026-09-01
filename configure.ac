@@ -54,6 +54,11 @@ dnl Checks for typedefs, structures, and compiler characteristics.
 AC_C_CONST
 AC_C_INLINE
 AC_TYPE_SIZE_T
+dnl Meson defines _FILE_OFFSET_BITS=64 for the whole project, so do the same
+dnl here.  Otherwise off_t, and with it struct coredump_phdr, differ between
+dnl the two build systems on 32-bit targets, and they cannot share an ABI
+dnl baseline.  Large core files are worth supporting in their own right.
+AC_SYS_LARGEFILE
 AC_CHECK_SIZEOF(off_t)
 
 dnl Checks for header files.
@@ -628,6 +633,59 @@ AC_SUBST(ABIDIFF)
 arch="$target_arch"
 ARCH=`echo $target_arch | tr [a-z] [A-Z]`
 
+dnl The ABI dumps do not record the floating-point ABI, so linux-gnueabi,
+dnl linux-gnueabihf, linux-gnuabi64 and friends all share the plain linux-gnu
+dnl baselines.  This also keeps the autotools and Meson builds looking in the
+dnl same place.
+AS_CASE([$target_os],
+  [linux-gnu*], [abi_target_os=linux-gnu],
+  [abi_target_os=$target_os])
+
+dnl Some architecture names cover several incompatible data models, which need
+dnl separate ABI baselines.  Compute a subdirectory name for those, empty for
+dnl everything else.  The probes are compile-only so that they work when
+dnl cross-compiling.
+AC_MSG_CHECKING([for ABI baseline variant])
+abi_variant_dir=""
+AS_CASE([$arch],
+  [mips], [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifndef _ABIO32
+#error not o32
+#endif
+]])], [abi_variant_dir="/o32"])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifndef _ABIN32
+#error not n32
+#endif
+]])], [abi_variant_dir="/n32"])
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#ifndef _ABI64
+#error not n64
+#endif
+]])], [abi_variant_dir="/n64"])
+  ],
+  [riscv], [
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if __riscv_xlen != 32
+#error not rv32
+#endif
+]])], [abi_variant_dir="/32"], [abi_variant_dir="/64"])
+  ],
+  [ppc64], [
+    dnl glibc's struct _libc_vscr, reachable from ucontext_t, is laid out
+    dnl differently on big- and little-endian ppc64, so the two need separate
+    dnl baselines.
+    AC_COMPILE_IFELSE([AC_LANG_PROGRAM([[
+#if __BYTE_ORDER__ != __ORDER_BIG_ENDIAN__
+#error not big endian
+#endif
+]])], [abi_variant_dir="/be"], [abi_variant_dir="/le"])
+  ])
+AS_IF([test x"$abi_variant_dir" = x],
+      [AC_MSG_RESULT([none])],
+      [AC_MSG_RESULT([`echo $abi_variant_dir | sed 's,^/,,'`])])
+
 dnl create shell variables from the M4 macros:
 PKG_MAJOR=pkg_major
 PKG_MINOR=pkg_minor
@@ -638,6 +696,8 @@ PKG_MAINTAINER=pkg_maintainer
 AC_SUBST(build_arch)
 AC_SUBST(target_os)
 AC_SUBST(arch)
+AC_SUBST(abi_variant_dir)
+AC_SUBST(abi_target_os)
 AC_SUBST(ARCH)
 AC_SUBST(LDFLAGS_STATIC_LIBCXA)
 AC_SUBST(LDFLAGS_NOSTARTFILES)

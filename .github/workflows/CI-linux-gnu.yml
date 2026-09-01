@@ -181,17 +181,7 @@ jobs:
           CFLAGS: "-Wall -Wextra -g -Og -fstrict-aliasing -Wstrict-aliasing -Werror=strict-aliasing"
 
       - name: ABI Check
-        run: |
-            case ${{ matrix.config.target }} in
-            aarch64|riscv*|s390x|x86*)
-                make -C build/src abi-check
-                ;;
-            *)
-                srcdir=$(pwd)
-                cd build/tests
-                ./check-namespace.sh
-                ;;
-            esac
+        run: make -C build/src abi-check
 
       - name: Test
         run: |
@@ -381,7 +371,7 @@ jobs:
             # :$DPKG_ARCH development packages.
             apt-get upgrade -y
           fi
-          apt-get install -y meson ninja-build \
+          apt-get install -y meson ninja-build abigail-tools \
                              ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
                              qemu-user \
                              ${DPKG_ARCH:+liblzma-dev:$DPKG_ARCH} \

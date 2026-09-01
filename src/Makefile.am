@@ -21,9 +21,10 @@
 #
 
 # Set the DSO versions
-SOVERSION=10:0:2		# See comments at end of file.
+SOVERSION=11:0:0		# See comments at end of file.
 SETJMP_SO_VERSION=0:0:0
 COREDUMP_SO_VERSION=1:0:1
+PTRACE_SO_VERSION=0:0:0
 
 AM_CPPFLAGS = $(UNW_DEBUG_CPPFLAGS) \
               $(UNW_REMOTE_CPPFLAGS) \
@@ -226,6 +227,9 @@ libunwind_ptrace_la_SOURCES =                  \
 	ptrace/_UPT_reg_offset.c               \
 	ptrace/_UPT_resume.c                   \
 	ptrace/_UPT_ptrauth_insn_mask.c
+libunwind_ptrace_la_LDFLAGS =                  \
+	$(COMMON_SO_LDFLAGS)                   \
+	-version-info $(PTRACE_SO_VERSION)
 libunwind_ptrace_la_LIBADD =                   \
 	libunwind-$(arch).la                   \
 	$(LIBLZMA) $(LIBZ)
@@ -780,7 +784,7 @@ libunwind_loongarch64_la_LDFLAGS =             \
 	-version-info $(SOVERSION)
 libunwind_loongarch64_la_LIBADD =              \
 	libunwind-dwarf-generic.la             \
-	libunwind-elf64.la                     \
+	libunwind-elfxx.la                     \
 	$(libunwind_libadd)
 
 ### target MIPS:
@@ -1027,7 +1031,7 @@ libunwind_riscv_la_LDFLAGS =                   \
 	-version-info $(SOVERSION)
 libunwind_riscv_la_LIBADD =                    \
 	libunwind-dwarf-generic.la             \
-	libunwind-elf64.la                     \
+	libunwind-elfxx.la                     \
 	$(libunwind_libadd)
 
 ### target Alpha:
@@ -1467,7 +1471,7 @@ MAINTAINERCLEANFILES = Makefile.in
 	fi
 
 abi_srcdir = "$(top_srcdir)/src/abi"
-abi_targetdir = "$(abi_srcdir)/$(arch)/$(target_os)"
+abi_targetdir = "$(abi_srcdir)/$(arch)/$(abi_target_os)$(abi_variant_dir)"
 
 # The checked-in baselines are generated without --enable-cxx-exceptions, so
 # when it's on, additionally suppress reports about the extra _Unwind_*
@@ -1482,10 +1486,13 @@ endif
 .abi.abidiff:
 	$(AM_V_GEN)if test ! -f "$<"; then \
 		printf "(no ABI dump for %s, is libabigail installed?)\n" "$<"; \
+	elif test ! -d "$(abi_targetdir)"; then \
+		printf "(no ABI baselines for %s, skipping)\n" "$(abi_targetdir)"; \
 	elif test ! -f "$(abi_targetdir)/$<"; then \
-		printf "warning: %s has no ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
+		printf "error: %s has no ABI baseline in %s\n" "$<" "$(abi_targetdir)"; \
 		printf "Create one with: make -C src %s && cp src/%s %s/\n" \
 		       "$<" "$<" "$(abi_targetdir)"; \
+		exit 1; \
 	else \
 		$(ABIDIFF) $(ABI_SUPPRESSIONS) \
 		           -l "$(abi_targetdir)/$<" "$<" >$@ 2>&1; \
@@ -1505,7 +1512,21 @@ endif
 
 abi-check: $(lib_LTLIBRARIES:.la=.abidiff)
 
-.PHONY: abi-check
+check-local: abi-check
+
+# Generate the ABI dumps without comparing them, and report which ones exist,
+# so that scripts/regen-abi-baselines does not have to duplicate either the
+# list of installed libraries or the mapping from target triple to baseline
+# directory.
+abi-dump: $(lib_LTLIBRARIES:.la=.abi)
+
+abi-files:
+	@printf '%s\n' $(lib_LTLIBRARIES:.la=.abi)
+
+abi-targetdir:
+	@printf '%s\n' $(abi_targetdir)
+
+.PHONY: abi-check abi-dump abi-files abi-targetdir
 
 # The -version-info flag accepts an argument of the form
 # `current[:revision[:age]]'. So, passing `-version-info 3:12:1' sets

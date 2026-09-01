@@ -1,80 +1,74 @@
-<abi-corpus version='2.4' architecture='elf-riscv' soname='libunwind.so.8'>
+<abi-corpus version='2.4' architecture='elf-sun-sparc-v9-64' soname='libunwind.so.11'>
   <elf-needed>
     <dependency name='libc.so.6'/>
-    <dependency name='ld-linux-riscv64-lp64d.so.1'/>
+    <dependency name='ld-linux.so.2'/>
   </elf-needed>
   <elf-function-symbols>
-    <elf-symbol name='_ULriscv_apply_reg_state' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_create_addr_space' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_destroy_addr_space' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_dwarf_find_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_dwarf_search_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_elf_filename' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_elf_filename_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_proc_info' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_proc_info_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_proc_info_in_range' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_proc_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_proc_name_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_get_save_loc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_init_local' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_is_plt_entry' type='func-type' binding='weak-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_resume' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_set_cache_size' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_set_caching_policy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_set_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_set_iterate_phdr_function' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_set_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_step' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_apply_reg_state' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_create_addr_space' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_destroy_addr_space' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_dwarf_find_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_dwarf_search_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_elf_filename' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_elf_filename_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_proc_info' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_proc_info_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_proc_info_in_range' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_proc_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_proc_name_by_ip' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_get_save_loc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_init_local' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_init_local2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_init_remote' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_is_plt_entry' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_is_signal_frame' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_reg_states_iterate' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_resume' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_set_cache_size' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_set_caching_policy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_set_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_set_iterate_phdr_function' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_set_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_step' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_U_dyn_cancel' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_U_dyn_info_list_addr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='_U_dyn_register' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_flush_cache' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_get_accessors' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_get_elf_image' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_get_exe_image_path' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_getcontext' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_setcontext' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_Uriscv_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_flush_cache' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_get_accessors' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_get_elf_image' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_get_exe_image_path' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_is_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_regname' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_Usparc64_strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='backtrace' type='func-type' binding='weak-binding' visibility='default-visibility' is-defined='yes'/>
     <elf-symbol name='unw_backtrace' type='func-type' binding='global-binding' visibility='default-visibility' alias='backtrace' is-defined='yes'/>
     <elf-symbol name='unw_backtrace2' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-function-symbols>
   <elf-variable-symbols>
-    <elf-symbol name='_UIriscv_debug_level' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
-    <elf-symbol name='_ULriscv_local_addr_space' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UIsparc64_debug_level' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_ULsparc64_local_addr_space' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
   </elf-variable-symbols>
   <undefined-elf-function-symbols>
     <elf-symbol name='__assert_fail' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__errno_location' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__fprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__isoc23_strtol' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__memcpy_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__snprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__stack_chk_fail' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__strcat_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__strcpy_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='__tls_get_addr' version='GLIBC_2.27' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__tls_get_addr' version='GLIBC_2.3' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='__vsnprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='abort' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='close' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='dl_iterate_phdr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='free' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='fstat' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='getcontext' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='getenv' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='getpagesize' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='getpid' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='malloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='memchr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
-    <elf-symbol name='memcmp' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='memcpy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='memmove' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='memset' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
@@ -88,6 +82,7 @@
     <elf-symbol name='pthread_sigmask' type='func-type' binding='weak-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='read' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='setbuf' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='setcontext' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='sigfillset' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='sigprocmask' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stat' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
@@ -103,13 +98,12 @@
     <elf-symbol name='write' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-function-symbols>
   <undefined-elf-variable-symbols>
-    <elf-symbol name='__stack_chk_guard' version='GLIBC_2.27' is-default-version='yes' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
     <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
   </undefined-elf-variable-symbols>
-  <abi-instr address-size='64' path='../../src/dwarf/Lexpr.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lexpr.c' language='LANG_C11'>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lfde.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lfde.c' language='LANG_C11'>
     <class-decl name='mempool' is-struct='yes' visibility='default' size-in-bits='640' hash='f32580f7b9eca881' id='type-id-1'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='lock' type-id='type-id-2' visibility='default'/>
@@ -137,7 +131,7 @@
     </class-decl>
     <pointer-type-def type-id='type-id-5' size-in-bits='64' hash='6641927d5bef0db6' id='type-id-4'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lfind_proc_info-lsb.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lfind_proc_info-lsb.c' language='LANG_C11'>
     <class-decl name='table_entry' is-struct='yes' visibility='default' size-in-bits='64' hash='dac5261ebba77b18' id='type-id-6'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='start_ip_offset' type-id='type-id-7' visibility='default'/>
@@ -146,7 +140,7 @@
         <var-decl name='fde_offset' type-id='type-id-7' visibility='default'/>
       </data-member>
     </class-decl>
-    <function-decl name='_ULriscv_dwarf_search_unwind_table' mangled-name='_ULriscv_dwarf_search_unwind_table' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_dwarf_search_unwind_table' hash='18ebe4fc9fe59233'>
+    <function-decl name='_ULsparc64_dwarf_search_unwind_table' mangled-name='_ULsparc64_dwarf_search_unwind_table' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_dwarf_search_unwind_table' hash='18ebe4fc9fe59233'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
       <parameter type-id='type-id-10' name='di'/>
@@ -167,7 +161,7 @@
       <return type-id='type-id-12'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lfind_unwind_table.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lfind_unwind_table.c' language='LANG_C11'>
     <class-decl name='elf_dyn_info' is-struct='yes' visibility='default' size-in-bits='1408' hash='115a2ca68d0d06c7' id='type-id-18'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='ei' type-id='type-id-19' visibility='default'/>
@@ -180,7 +174,7 @@
       </data-member>
     </class-decl>
     <pointer-type-def type-id='type-id-18' size-in-bits='64' hash='1a5d0093cfaf032c' id='type-id-21'/>
-    <function-decl name='_ULriscv_dwarf_find_unwind_table' mangled-name='_ULriscv_dwarf_find_unwind_table' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_dwarf_find_unwind_table' hash='0429a98622d43f06'>
+    <function-decl name='_ULsparc64_dwarf_find_unwind_table' mangled-name='_ULsparc64_dwarf_find_unwind_table' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_dwarf_find_unwind_table' hash='0429a98622d43f06'>
       <parameter type-id='type-id-21' name='edi'/>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-22' name='path'/>
@@ -190,8 +184,8 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lget_proc_info_in_range.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_proc_info_in_range' mangled-name='_ULriscv_get_proc_info_in_range' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_info_in_range' hash='649f642c38b17bce'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lget_proc_info_in_range.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_proc_info_in_range' mangled-name='_ULsparc64_get_proc_info_in_range' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_proc_info_in_range' hash='649f642c38b17bce'>
       <parameter type-id='type-id-9' name='start_ip'/>
       <parameter type-id='type-id-9' name='end_ip'/>
       <parameter type-id='type-id-9' name='eh_frame_table'/>
@@ -206,27 +200,27 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/dwarf/Lparser.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/dwarf/Lparser.c' language='LANG_C11'>
     <var-decl name='stderr' type-id='type-id-23' visibility='default' elf-symbol-id='stderr'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Ldestroy_addr_space.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_destroy_addr_space' mangled-name='_ULriscv_destroy_addr_space' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_destroy_addr_space' hash='d8863beea7ee21b2'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Ldestroy_addr_space.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_destroy_addr_space' mangled-name='_ULsparc64_destroy_addr_space' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_destroy_addr_space' hash='d8863beea7ee21b2'>
       <parameter type-id='type-id-8' name='as'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lfind_dynamic_proc_info.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lfind_dynamic_proc_info.c' language='LANG_C11'>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_accessors.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_accessors.c' language='LANG_C11'>
     <typedef-decl name='unw_accessors_t' type-id='type-id-25' size-in-bits='704' id='type-id-26'/>
     <pointer-type-def type-id='type-id-26' size-in-bits='64' hash='4056d11781822b4a' id='type-id-27'/>
-    <function-decl name='_Uriscv_get_accessors' mangled-name='_Uriscv_get_accessors' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_get_accessors' hash='b6ee49c4226212f1'>
+    <function-decl name='_Usparc64_get_accessors' mangled-name='_Usparc64_get_accessors' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_get_accessors' hash='b6ee49c4226212f1'>
       <parameter type-id='type-id-8' name='as'/>
       <return type-id='type-id-27'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_elf_filename.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_elf_filename_by_ip' mangled-name='_ULriscv_get_elf_filename_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_elf_filename_by_ip' hash='d51136ed14244e3c'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_elf_filename.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_elf_filename_by_ip' mangled-name='_ULsparc64_get_elf_filename_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_elf_filename_by_ip' hash='d51136ed14244e3c'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
       <parameter type-id='type-id-28' name='buf'/>
@@ -235,7 +229,7 @@
       <parameter type-id='type-id-13' name='arg'/>
       <return type-id='type-id-12'/>
     </function-decl>
-    <function-decl name='_ULriscv_get_elf_filename' mangled-name='_ULriscv_get_elf_filename' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_elf_filename' hash='412f161f40ab0a61'>
+    <function-decl name='_ULsparc64_get_elf_filename' mangled-name='_ULsparc64_get_elf_filename' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_elf_filename' hash='412f161f40ab0a61'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-28' name='buf'/>
       <parameter type-id='type-id-3' name='buf_len'/>
@@ -252,16 +246,16 @@
       <return type-id='type-id-12'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_fpreg.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_fpreg' mangled-name='_ULriscv_get_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_fpreg' hash='5785fdb3b0b9a50b'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_fpreg.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_fpreg' mangled-name='_ULsparc64_get_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_fpreg' hash='aea4d77a7d4dcb7d'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
       <parameter type-id='type-id-32' name='valp'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_proc_info_by_ip.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_proc_info_by_ip' mangled-name='_ULriscv_get_proc_info_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_info_by_ip' hash='26bc85b0478f1fc3'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_proc_info_by_ip.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_proc_info_by_ip' mangled-name='_ULsparc64_get_proc_info_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_proc_info_by_ip' hash='26bc85b0478f1fc3'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
       <parameter type-id='type-id-11' name='pi'/>
@@ -269,8 +263,8 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_proc_name.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_proc_name_by_ip' mangled-name='_ULriscv_get_proc_name_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_name_by_ip' hash='d51136ed14244e3c'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_proc_name.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_proc_name_by_ip' mangled-name='_ULsparc64_get_proc_name_by_ip' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_proc_name_by_ip' hash='d51136ed14244e3c'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='ip'/>
       <parameter type-id='type-id-28' name='buf'/>
@@ -279,7 +273,7 @@
       <parameter type-id='type-id-13' name='arg'/>
       <return type-id='type-id-12'/>
     </function-decl>
-    <function-decl name='_ULriscv_get_proc_name' mangled-name='_ULriscv_get_proc_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_name' hash='412f161f40ab0a61'>
+    <function-decl name='_ULsparc64_get_proc_name' mangled-name='_ULsparc64_get_proc_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_proc_name' hash='412f161f40ab0a61'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-28' name='buf'/>
       <parameter type-id='type-id-3' name='buf_len'/>
@@ -287,98 +281,114 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lget_reg.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_reg' mangled-name='_ULriscv_get_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_reg' hash='df0aa54464f40429'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lget_reg.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_reg' mangled-name='_ULsparc64_get_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_reg' hash='df0aa54464f40429'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
       <parameter type-id='type-id-29' name='valp'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lis_plt_entry.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_is_plt_entry' mangled-name='_ULriscv_is_plt_entry' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_is_plt_entry' hash='53f87b7b62f8351d'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lis_plt_entry.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_is_plt_entry' mangled-name='_ULsparc64_is_plt_entry' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_is_plt_entry' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_cache_size.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_set_cache_size' mangled-name='_ULriscv_set_cache_size' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_cache_size' hash='fcb84a63bdaf3ddd'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_cache_size.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_set_cache_size' mangled-name='_ULsparc64_set_cache_size' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_set_cache_size' hash='fcb84a63bdaf3ddd'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-3' name='size'/>
       <parameter type-id='type-id-12' name='flag'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_caching_policy.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_set_caching_policy' mangled-name='_ULriscv_set_caching_policy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_caching_policy' hash='86316ffc25a0fd79'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_caching_policy.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_set_caching_policy' mangled-name='_ULsparc64_set_caching_policy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_set_caching_policy' hash='86316ffc25a0fd79'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-33' name='policy'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_fpreg.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_set_fpreg' mangled-name='_ULriscv_set_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_fpreg' hash='8233026935fa1664'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_fpreg.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_set_fpreg' mangled-name='_ULsparc64_set_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_set_fpreg' hash='e325bad8db7489ee'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
       <parameter type-id='type-id-34' name='val'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_iterate_phdr_function.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_set_iterate_phdr_function' mangled-name='_ULriscv_set_iterate_phdr_function' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_iterate_phdr_function' hash='363eeb0dab339793'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_iterate_phdr_function.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_set_iterate_phdr_function' mangled-name='_ULsparc64_set_iterate_phdr_function' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_set_iterate_phdr_function' hash='363eeb0dab339793'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-35' name='function'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/Lset_reg.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_set_reg' mangled-name='_ULriscv_set_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_set_reg' hash='a2032be85d4c307e'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/Lset_reg.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_set_reg' mangled-name='_ULsparc64_set_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_set_reg' hash='a2032be85d4c307e'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='regnum'/>
       <parameter type-id='type-id-9' name='valp'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/backtrace.c' language='LANG_C11'>
-    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='unknown' hash='6915b710ae33e54a' id='type-id-37'>
-      <subrange length='unknown' lower-bound='0' upper-bound='0' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-39'/>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/backtrace.c' language='LANG_C11'>
+    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='2048' hash='2357d9606b371dd3' id='type-id-37'>
+      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6c35b1e999eba398' id='type-id-39'/>
     </array-type-def>
-    <class-decl name='__riscv_mc_d_ext_state' is-struct='yes' visibility='default' size-in-bits='2112' hash='de3986ae5c443818' id='type-id-40'>
+    <array-type-def dimensions='1' type-id='type-id-40' size-in-bits='1216' hash='3158b67252983b29' id='type-id-41'>
+      <subrange length='19' lower-bound='0' upper-bound='18' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='7545b01b1bd22246' id='type-id-42'/>
+    </array-type-def>
+    <class-decl name='__mc_fq' is-struct='yes' visibility='default' size-in-bits='128' hash='c59c275c54b771e4' id='type-id-43'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__f' type-id='type-id-41' visibility='default'/>
+        <var-decl name='mcfq_addr' type-id='type-id-44' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='mcfq_insn' type-id='type-id-45' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='mc_fpu_t' is-struct='yes' naming-typedef-id='type-id-46' visibility='default' size-in-bits='2432' hash='42eea7196a12b5ff' id='type-id-47'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='mcfpu_fregs' type-id='type-id-48' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='2048'>
-        <var-decl name='__fcsr' type-id='type-id-42' visibility='default'/>
+        <var-decl name='mcfpu_fsr' type-id='type-id-38' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2112'>
+        <var-decl name='mcfpu_fprs' type-id='type-id-38' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2176'>
+        <var-decl name='mcfpu_gsr' type-id='type-id-38' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2240'>
+        <var-decl name='mcfpu_fq' type-id='type-id-49' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2304'>
+        <var-decl name='mcfpu_qcnt' type-id='type-id-50' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2312'>
+        <var-decl name='mcfpu_qentsz' type-id='type-id-50' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='2320'>
+        <var-decl name='mcfpu_enab' type-id='type-id-50' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='__riscv_mc_f_ext_state' is-struct='yes' visibility='default' size-in-bits='1056' hash='40aa2b6819ef3d6d' id='type-id-43'>
+    <class-decl name='mcontext_t' is-struct='yes' naming-typedef-id='type-id-51' visibility='default' size-in-bits='3840' hash='be1bccb9d12b2719' id='type-id-52'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__f' type-id='type-id-44' visibility='default'/>
+        <var-decl name='mc_gregs' type-id='type-id-53' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='1024'>
-        <var-decl name='__fcsr' type-id='type-id-42' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='1216'>
+        <var-decl name='mc_fp' type-id='type-id-40' visibility='default'/>
       </data-member>
-    </class-decl>
-    <class-decl name='__riscv_mc_q_ext_state' is-struct='yes' visibility='default' size-in-bits='4224' hash='ed581a486b7d74d3' id='type-id-45'>
-      <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__f' type-id='type-id-46' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='1280'>
+        <var-decl name='mc_i7' type-id='type-id-40' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='4096'>
-        <var-decl name='__fcsr' type-id='type-id-42' visibility='default'/>
-      </data-member>
-      <data-member access='public' layout-offset-in-bits='4128'>
-        <var-decl name='__glibc_reserved' type-id='type-id-47' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='1408'>
+        <var-decl name='mc_fpregs' type-id='type-id-46' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='mcontext_t' is-struct='yes' visibility='default' size-in-bits='6272' hash='53ad13aefcf0fa0c' id='type-id-48'>
-      <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__gregs' type-id='type-id-49' visibility='default'/>
-      </data-member>
-      <data-member access='public' layout-offset-in-bits='2048'>
-        <var-decl name='__fpregs' type-id='type-id-50' visibility='default'/>
-      </data-member>
-    </class-decl>
-    <class-decl name='stack_t' is-struct='yes' naming-typedef-id='type-id-51' visibility='default' size-in-bits='192' hash='73faa20942530eb1' id='type-id-52'>
+    <class-decl name='stack_t' is-struct='yes' naming-typedef-id='type-id-54' visibility='default' size-in-bits='192' hash='73faa20942530eb1' id='type-id-55'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='ss_sp' type-id='type-id-13' visibility='default'/>
       </data-member>
@@ -389,60 +399,55 @@
         <var-decl name='ss_size' type-id='type-id-3' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='ucontext_t' is-struct='yes' visibility='default' size-in-bits='7680' hash='353c2a2c1167ce94' id='type-id-53'>
+    <class-decl name='ucontext_t' is-struct='yes' visibility='default' size-in-bits='5376' hash='00a635a7a2ef908e' id='type-id-56'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__uc_flags' type-id='type-id-38' visibility='default'/>
+        <var-decl name='uc_link' type-id='type-id-57' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
-        <var-decl name='uc_link' type-id='type-id-54' visibility='default'/>
+        <var-decl name='uc_flags' type-id='type-id-38' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='128'>
-        <var-decl name='uc_stack' type-id='type-id-51' visibility='default'/>
+        <var-decl name='__uc_sigmask' type-id='type-id-38' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='320'>
-        <var-decl name='uc_sigmask' type-id='type-id-55' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='uc_mcontext' type-id='type-id-51' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='1344'>
-        <var-decl name='__glibc_reserved' type-id='type-id-37' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='4096'>
+        <var-decl name='uc_stack' type-id='type-id-54' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='1408'>
-        <var-decl name='uc_mcontext' type-id='type-id-56' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='4288'>
+        <var-decl name='uc_sigmask' type-id='type-id-58' visibility='default'/>
       </data-member>
     </class-decl>
-    <typedef-decl name='__riscv_mc_gp_state' type-id='type-id-57' size-in-bits='2048' hash='ee3b3df47d26e133' id='type-id-49'/>
-    <typedef-decl name='mcontext_t' type-id='type-id-48' size-in-bits='6272' id='type-id-56'/>
-    <typedef-decl name='stack_t' type-id='type-id-52' size-in-bits='192' id='type-id-51'/>
-    <typedef-decl name='ucontext_t' type-id='type-id-53' size-in-bits='7680' id='type-id-58'/>
-    <typedef-decl name='unw_context_t' type-id='type-id-59' size-in-bits='7680' id='type-id-60'/>
-    <typedef-decl name='unw_tdep_context_t' type-id='type-id-58' size-in-bits='7680' id='type-id-59'/>
-    <union-decl name='__riscv_mc_fp_state' visibility='default' size-in-bits='4224' hash='d0756b6f58b53ada' id='type-id-50'>
+    <typedef-decl name='mc_fpu_t' type-id='type-id-47' size-in-bits='2432' id='type-id-46'/>
+    <typedef-decl name='mc_greg_t' type-id='type-id-38' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-40'/>
+    <typedef-decl name='mc_gregset_t' type-id='type-id-41' size-in-bits='1216' hash='3158b67252983b29' id='type-id-53'/>
+    <typedef-decl name='mcontext_t' type-id='type-id-52' size-in-bits='3840' id='type-id-51'/>
+    <typedef-decl name='stack_t' type-id='type-id-55' size-in-bits='192' id='type-id-54'/>
+    <typedef-decl name='ucontext_t' type-id='type-id-56' size-in-bits='5376' id='type-id-59'/>
+    <typedef-decl name='unw_context_t' type-id='type-id-60' size-in-bits='5376' id='type-id-61'/>
+    <typedef-decl name='unw_tdep_context_t' type-id='type-id-59' size-in-bits='5376' id='type-id-60'/>
+    <union-decl name='__anonymous_union__' visibility='default' size-in-bits='2048' is-anonymous='yes' hash='9cf9e9a7422abd1d' id='type-id-48'>
       <data-member access='public'>
-        <var-decl name='__f' type-id='type-id-43' visibility='default'/>
+        <var-decl name='sregs' type-id='type-id-62' visibility='default'/>
       </data-member>
       <data-member access='public'>
-        <var-decl name='__d' type-id='type-id-40' visibility='default'/>
+        <var-decl name='dregs' type-id='type-id-63' visibility='default'/>
       </data-member>
       <data-member access='public'>
-        <var-decl name='__q' type-id='type-id-45' visibility='default'/>
+        <var-decl name='qregs' type-id='type-id-37' visibility='default'/>
       </data-member>
     </union-decl>
-    <array-type-def dimensions='1' type-id='type-id-42' size-in-bits='1024' hash='1cb7cd4c00fef776' id='type-id-44'>
-      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-61'/>
+    <type-decl name='unsigned char' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-50'/>
+    <array-type-def dimensions='1' type-id='type-id-45' size-in-bits='1024' hash='1cb7cd4c00fef776' id='type-id-62'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-64'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-42' size-in-bits='96' hash='847e58e9a935d961' id='type-id-47'>
-      <subrange length='3' lower-bound='0' upper-bound='2' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='30d99d19f0f4b2ea' id='type-id-62'/>
+    <array-type-def dimensions='1' type-id='type-id-38' size-in-bits='2048' hash='ee3b3df47d26e133#2' id='type-id-63'>
+      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-64'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-38' size-in-bits='2048' hash='ee3b3df47d26e133#2' id='type-id-57'>
-      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-61'/>
-    </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-63' size-in-bits='2048' hash='7b371bfe0eb669e3#3' id='type-id-41'>
-      <subrange length='32' lower-bound='0' upper-bound='31' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='99f823ef025a9d75' id='type-id-61'/>
-    </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-63' size-in-bits='4096' hash='2b7a37249589c37b' id='type-id-46'>
-      <subrange length='64' lower-bound='0' upper-bound='63' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6066f2053fe47763' id='type-id-64'/>
-    </array-type-def>
-    <pointer-type-def type-id='type-id-53' size-in-bits='64' hash='b63259c5a6394617' id='type-id-54'/>
-    <pointer-type-def type-id='type-id-60' size-in-bits='64' hash='91e7adc3c8c27667' id='type-id-65'/>
+    <pointer-type-def type-id='type-id-43' size-in-bits='64' hash='aad38ca37a8a454d' id='type-id-49'/>
+    <pointer-type-def type-id='type-id-56' size-in-bits='64' hash='b63259c5a6394617' id='type-id-57'/>
+    <pointer-type-def type-id='type-id-61' size-in-bits='64' hash='91e7adc3c8c27667' id='type-id-65'/>
     <pointer-type-def type-id='type-id-13' size-in-bits='64' hash='473a9667a2856e32' id='type-id-66'/>
     <function-decl name='unw_backtrace' mangled-name='unw_backtrace' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='unw_backtrace' hash='03f7c1904d44eca6'>
       <parameter type-id='type-id-66' name='buffer'/>
@@ -457,7 +462,7 @@
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/dyn-cancel.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/dyn-cancel.c' language='LANG_C11'>
     <type-decl name='short int' size-in-bits='16' hash='6c2352eccdcd3eea#3' id='type-id-67'/>
     <class-decl name='unw_dyn_info' is-struct='yes' visibility='default' size-in-bits='640' hash='4f99f842c6574402' id='type-id-68'>
       <data-member access='public' layout-offset-in-bits='0'>
@@ -585,7 +590,7 @@
     <typedef-decl name='unw_dyn_region_info_t' type-id='type-id-78' size-in-bits='256' id='type-id-90'/>
     <typedef-decl name='unw_dyn_remote_table_info_t' type-id='type-id-81' size-in-bits='256' id='type-id-91'/>
     <typedef-decl name='unw_dyn_table_info_t' type-id='type-id-82' size-in-bits='256' id='type-id-92'/>
-    <union-decl name='__anonymous_union__' visibility='default' size-in-bits='256' is-anonymous='yes' hash='7691e9497ec1e26b' id='type-id-70'>
+    <union-decl name='__anonymous_union__' visibility='default' size-in-bits='256' is-anonymous='yes' hash='7691e9497ec1e26b#2' id='type-id-70'>
       <data-member access='public'>
         <var-decl name='pi' type-id='type-id-89' visibility='default'/>
       </data-member>
@@ -608,34 +613,34 @@
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/dyn-info-list.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/dyn-info-list.c' language='LANG_C11'>
     <function-decl name='_U_dyn_info_list_addr' mangled-name='_U_dyn_info_list_addr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_U_dyn_info_list_addr' hash='e0055d99adb0e173'>
       <return type-id='type-id-9'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/dyn-register.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/dyn-register.c' language='LANG_C11'>
     <function-decl name='_U_dyn_register' mangled-name='_U_dyn_register' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_U_dyn_register' hash='b813da609a6d763e'>
       <parameter type-id='type-id-10' name='di'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/flush_cache.c' language='LANG_C11'>
-    <function-decl name='_Uriscv_flush_cache' mangled-name='_Uriscv_flush_cache' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_flush_cache' hash='b57dcb5ab79da224'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/flush_cache.c' language='LANG_C11'>
+    <function-decl name='_Usparc64_flush_cache' mangled-name='_Usparc64_flush_cache' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_flush_cache' hash='b57dcb5ab79da224'>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-9' name='lo'/>
       <parameter type-id='type-id-9' name='hi'/>
       <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/init.c' language='LANG_C11'>
-    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-94'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/init.c' language='LANG_C11'>
+    <array-type-def dimensions='1' type-id='type-id-94' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-95'>
       <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-93'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='64' hash='e1c8b625c73024c4' id='type-id-95'>
-      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-96'/>
+    <array-type-def dimensions='1' type-id='type-id-94' size-in-bits='64' hash='e1c8b625c73024c4' id='type-id-96'>
+      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-97'/>
     </array-type-def>
     <type-decl name='signed char' size-in-bits='8' hash='3c595c3350588f18' id='type-id-85'/>
-    <class-decl name='_IO_FILE' is-struct='yes' visibility='default' size-in-bits='1728' hash='dedab36ee0ea6582' id='type-id-97'>
+    <class-decl name='_IO_FILE' is-struct='yes' visibility='default' size-in-bits='1728' hash='dedab36ee0ea6582' id='type-id-98'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='_flags' type-id='type-id-12' visibility='default'/>
       </data-member>
@@ -673,10 +678,10 @@
         <var-decl name='_IO_save_end' type-id='type-id-28' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='768'>
-        <var-decl name='_markers' type-id='type-id-98' visibility='default'/>
+        <var-decl name='_markers' type-id='type-id-99' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='832'>
-        <var-decl name='_chain' type-id='type-id-99' visibility='default'/>
+        <var-decl name='_chain' type-id='type-id-100' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='896'>
         <var-decl name='_fileno' type-id='type-id-12' visibility='default'/>
@@ -685,40 +690,40 @@
         <var-decl name='_flags2' type-id='type-id-12' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='952'>
-        <var-decl name='_short_backupbuf' type-id='type-id-94' visibility='default'/>
+        <var-decl name='_short_backupbuf' type-id='type-id-95' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='960'>
-        <var-decl name='_old_offset' type-id='type-id-100' visibility='default'/>
+        <var-decl name='_old_offset' type-id='type-id-101' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1024'>
-        <var-decl name='_cur_column' type-id='type-id-101' visibility='default'/>
+        <var-decl name='_cur_column' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1040'>
         <var-decl name='_vtable_offset' type-id='type-id-85' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1048'>
-        <var-decl name='_shortbuf' type-id='type-id-94' visibility='default'/>
+        <var-decl name='_shortbuf' type-id='type-id-95' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1088'>
-        <var-decl name='_lock' type-id='type-id-102' visibility='default'/>
+        <var-decl name='_lock' type-id='type-id-103' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1152'>
-        <var-decl name='_offset' type-id='type-id-103' visibility='default'/>
+        <var-decl name='_offset' type-id='type-id-104' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1216'>
-        <var-decl name='_codecvt' type-id='type-id-104' visibility='default'/>
+        <var-decl name='_codecvt' type-id='type-id-105' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1280'>
-        <var-decl name='_wide_data' type-id='type-id-105' visibility='default'/>
+        <var-decl name='_wide_data' type-id='type-id-106' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1344'>
-        <var-decl name='_freeres_list' type-id='type-id-99' visibility='default'/>
+        <var-decl name='_freeres_list' type-id='type-id-100' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1408'>
         <var-decl name='_freeres_buf' type-id='type-id-13' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1472'>
-        <var-decl name='_prevchain' type-id='type-id-106' visibility='default'/>
+        <var-decl name='_prevchain' type-id='type-id-107' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1536'>
         <var-decl name='_mode' type-id='type-id-12' visibility='default'/>
@@ -727,117 +732,117 @@
         <var-decl name='_unused3' type-id='type-id-12' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1600'>
-        <var-decl name='_total_written' type-id='type-id-107' visibility='default'/>
+        <var-decl name='_total_written' type-id='type-id-108' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='1664'>
-        <var-decl name='_unused2' type-id='type-id-95' visibility='default'/>
+        <var-decl name='_unused2' type-id='type-id-96' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='__sigset_t' is-struct='yes' naming-typedef-id='type-id-108' visibility='default' size-in-bits='1024' hash='18950dbdbe728dbc' id='type-id-109'>
+    <class-decl name='__sigset_t' is-struct='yes' naming-typedef-id='type-id-109' visibility='default' size-in-bits='1024' hash='18950dbdbe728dbc' id='type-id-110'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__val' type-id='type-id-110' visibility='default'/>
+        <var-decl name='__val' type-id='type-id-111' visibility='default'/>
       </data-member>
     </class-decl>
-    <typedef-decl name='FILE' type-id='type-id-97' size-in-bits='1728' id='type-id-111'/>
-    <typedef-decl name='_IO_lock_t' type-id='type-id-24' id='type-id-112'/>
-    <typedef-decl name='__off64_t' type-id='type-id-113' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-103'/>
-    <typedef-decl name='__off_t' type-id='type-id-113' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-100'/>
-    <typedef-decl name='__sigset_t' type-id='type-id-109' size-in-bits='1024' id='type-id-108'/>
-    <typedef-decl name='intrmask_t' type-id='type-id-55' size-in-bits='1024' id='type-id-114'/>
-    <typedef-decl name='sigset_t' type-id='type-id-108' size-in-bits='1024' id='type-id-55'/>
-    <array-type-def dimensions='1' type-id='type-id-38' size-in-bits='1024' hash='ed1e12a813ec6094' id='type-id-110'>
-      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6c35b1e999eba398' id='type-id-115'/>
+    <typedef-decl name='FILE' type-id='type-id-98' size-in-bits='1728' id='type-id-112'/>
+    <typedef-decl name='_IO_lock_t' type-id='type-id-24' id='type-id-113'/>
+    <typedef-decl name='__off64_t' type-id='type-id-114' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-104'/>
+    <typedef-decl name='__off_t' type-id='type-id-114' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-101'/>
+    <typedef-decl name='__sigset_t' type-id='type-id-110' size-in-bits='1024' id='type-id-109'/>
+    <typedef-decl name='intrmask_t' type-id='type-id-58' size-in-bits='1024' id='type-id-115'/>
+    <typedef-decl name='sigset_t' type-id='type-id-109' size-in-bits='1024' id='type-id-58'/>
+    <array-type-def dimensions='1' type-id='type-id-38' size-in-bits='1024' hash='ed1e12a813ec6094' id='type-id-111'>
+      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6c35b1e999eba398' id='type-id-39'/>
     </array-type-def>
-    <pointer-type-def type-id='type-id-111' size-in-bits='64' hash='4cdc26b379a5c62d' id='type-id-23'/>
-    <pointer-type-def type-id='type-id-97' size-in-bits='64' hash='071f36dcbe00ad00' id='type-id-99'/>
-    <pointer-type-def type-id='type-id-99' size-in-bits='64' hash='e8c018048121152c' id='type-id-106'/>
-    <pointer-type-def type-id='type-id-116' size-in-bits='64' id='type-id-104'/>
-    <pointer-type-def type-id='type-id-112' size-in-bits='64' id='type-id-102'/>
-    <pointer-type-def type-id='type-id-117' size-in-bits='64' id='type-id-98'/>
-    <pointer-type-def type-id='type-id-118' size-in-bits='64' id='type-id-105'/>
+    <pointer-type-def type-id='type-id-112' size-in-bits='64' hash='4cdc26b379a5c62d' id='type-id-23'/>
+    <pointer-type-def type-id='type-id-98' size-in-bits='64' hash='071f36dcbe00ad00' id='type-id-100'/>
+    <pointer-type-def type-id='type-id-100' size-in-bits='64' hash='e8c018048121152c' id='type-id-107'/>
+    <pointer-type-def type-id='type-id-116' size-in-bits='64' id='type-id-105'/>
+    <pointer-type-def type-id='type-id-113' size-in-bits='64' id='type-id-103'/>
+    <pointer-type-def type-id='type-id-117' size-in-bits='64' id='type-id-99'/>
+    <pointer-type-def type-id='type-id-118' size-in-bits='64' id='type-id-106'/>
     <class-decl name='_IO_codecvt' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-116'/>
     <class-decl name='_IO_marker' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-117'/>
     <class-decl name='_IO_wide_data' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-118'/>
-    <var-decl name='_UIriscv_debug_level' type-id='type-id-113' mangled-name='_UIriscv_debug_level' visibility='default' elf-symbol-id='_UIriscv_debug_level'/>
+    <var-decl name='_UIsparc64_debug_level' type-id='type-id-114' mangled-name='_UIsparc64_debug_level' visibility='default' elf-symbol-id='_UIsparc64_debug_level'/>
     <var-decl name='stdout' type-id='type-id-23' visibility='default' elf-symbol-id='stdout'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/mempool.c' language='LANG_C11'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/mempool.c' language='LANG_C11'>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/mi/strerror.c' language='LANG_C11'>
-    <function-decl name='_Uriscv_strerror' mangled-name='_Uriscv_strerror' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_strerror' hash='7cffa03161e7e042'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/strerror.c' language='LANG_C11'>
+    <function-decl name='_Usparc64_strerror' mangled-name='_Usparc64_strerror' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_strerror' hash='7cffa03161e7e042'>
       <parameter type-id='type-id-12' name='err_code'/>
       <return type-id='type-id-22'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/os-linux.c' language='LANG_C11'>
-    <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-36'/>
-    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='320' hash='e7f9696e246a3049' id='type-id-119'>
-      <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-120'/>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/os-linux.c' language='LANG_C11'>
+    <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-94'/>
+    <array-type-def dimensions='1' type-id='type-id-94' size-in-bits='848' hash='2d7b92ea6e6fee33' id='type-id-119'>
+      <subrange length='106' lower-bound='0' upper-bound='105' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='1217791b59606441' id='type-id-120'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='544' hash='7e897555446453be' id='type-id-121'>
-      <subrange length='68' lower-bound='0' upper-bound='67' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='9b6851a8e31d1d9a' id='type-id-122'/>
+    <array-type-def dimensions='1' type-id='type-id-94' size-in-bits='320' hash='e7f9696e246a3049' id='type-id-121'>
+      <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-122'/>
     </array-type-def>
-    <type-decl name='double' size-in-bits='64' hash='e9e9b320886d9aa6' id='type-id-123'/>
-    <array-type-def dimensions='1' type-id='type-id-124' size-in-bits='16384' hash='e6eb273d5e1d6a89' id='type-id-125'>
-      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-126'/>
+    <array-type-def dimensions='1' type-id='type-id-123' size-in-bits='16384' hash='e6eb273d5e1d6a89' id='type-id-124'>
+      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-125'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-127' size-in-bits='638976' hash='07fd072a6fcd73d6' id='type-id-128'>
-      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-126'/>
+    <array-type-def dimensions='1' type-id='type-id-126' size-in-bits='991232' hash='bb692f86d0810d34' id='type-id-127'>
+      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-125'/>
     </array-type-def>
-    <enum-decl name='unw_caching_policy_t' naming-typedef-id='type-id-33' size-in-bits='32' alignment-in-bits='32' hash='fdee06ebaaa71a35' id='type-id-129'>
-      <underlying-type type-id='type-id-130'/>
+    <enum-decl name='unw_caching_policy_t' naming-typedef-id='type-id-33' size-in-bits='32' alignment-in-bits='32' hash='fdee06ebaaa71a35' id='type-id-128'>
+      <underlying-type type-id='type-id-129'/>
       <enumerator name='UNW_CACHE_NONE' value='0'/>
       <enumerator name='UNW_CACHE_GLOBAL' value='1'/>
       <enumerator name='UNW_CACHE_PER_THREAD' value='2'/>
     </enum-decl>
     <type-decl name='int' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-12'/>
-    <type-decl name='long int' size-in-bits='64' hash='b119fe0931d2ee10#2' id='type-id-113'/>
-    <class-decl name='Elf64_Phdr' is-struct='yes' naming-typedef-id='type-id-131' visibility='default' size-in-bits='448' hash='4b4898b4e81729f5' id='type-id-132'>
+    <type-decl name='long double' size-in-bits='128' hash='2a9bbfe8bb0475f1' id='type-id-36'/>
+    <type-decl name='long int' size-in-bits='64' hash='b119fe0931d2ee10#2' id='type-id-114'/>
+    <class-decl name='Elf64_Phdr' is-struct='yes' naming-typedef-id='type-id-130' visibility='default' size-in-bits='448' hash='4b4898b4e81729f5' id='type-id-131'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='p_type' type-id='type-id-133' visibility='default'/>
+        <var-decl name='p_type' type-id='type-id-132' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='32'>
-        <var-decl name='p_flags' type-id='type-id-133' visibility='default'/>
+        <var-decl name='p_flags' type-id='type-id-132' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
-        <var-decl name='p_offset' type-id='type-id-134' visibility='default'/>
+        <var-decl name='p_offset' type-id='type-id-133' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='128'>
-        <var-decl name='p_vaddr' type-id='type-id-135' visibility='default'/>
+        <var-decl name='p_vaddr' type-id='type-id-134' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='192'>
-        <var-decl name='p_paddr' type-id='type-id-135' visibility='default'/>
+        <var-decl name='p_paddr' type-id='type-id-134' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='256'>
-        <var-decl name='p_filesz' type-id='type-id-136' visibility='default'/>
+        <var-decl name='p_filesz' type-id='type-id-135' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='320'>
-        <var-decl name='p_memsz' type-id='type-id-136' visibility='default'/>
+        <var-decl name='p_memsz' type-id='type-id-135' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='384'>
-        <var-decl name='p_align' type-id='type-id-136' visibility='default'/>
+        <var-decl name='p_align' type-id='type-id-135' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='__pthread_internal_list' is-struct='yes' visibility='default' size-in-bits='128' hash='5bcfb7f1ab39fa47' id='type-id-137'>
+    <class-decl name='__pthread_internal_list' is-struct='yes' visibility='default' size-in-bits='128' hash='5bcfb7f1ab39fa47' id='type-id-136'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='__prev' type-id='type-id-138' visibility='default'/>
+        <var-decl name='__prev' type-id='type-id-137' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
-        <var-decl name='__next' type-id='type-id-138' visibility='default'/>
+        <var-decl name='__next' type-id='type-id-137' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='__pthread_mutex_s' is-struct='yes' visibility='default' size-in-bits='320' hash='13003fdc09fcf2c5' id='type-id-139'>
+    <class-decl name='__pthread_mutex_s' is-struct='yes' visibility='default' size-in-bits='320' hash='13003fdc09fcf2c5' id='type-id-138'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='__lock' type-id='type-id-12' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='32'>
-        <var-decl name='__count' type-id='type-id-42' visibility='default'/>
+        <var-decl name='__count' type-id='type-id-45' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
         <var-decl name='__owner' type-id='type-id-12' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='96'>
-        <var-decl name='__nusers' type-id='type-id-42' visibility='default'/>
+        <var-decl name='__nusers' type-id='type-id-45' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='128'>
         <var-decl name='__kind' type-id='type-id-12' visibility='default'/>
@@ -846,27 +851,27 @@
         <var-decl name='__spins' type-id='type-id-12' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='192'>
-        <var-decl name='__list' type-id='type-id-140' visibility='default'/>
+        <var-decl name='__list' type-id='type-id-139' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='dl_phdr_info' is-struct='yes' visibility='default' size-in-bits='512' hash='89dbbc3038b94078' id='type-id-141'>
+    <class-decl name='dl_phdr_info' is-struct='yes' visibility='default' size-in-bits='512' hash='89dbbc3038b94078' id='type-id-140'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='dlpi_addr' type-id='type-id-135' visibility='default'/>
+        <var-decl name='dlpi_addr' type-id='type-id-134' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
         <var-decl name='dlpi_name' type-id='type-id-22' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='128'>
-        <var-decl name='dlpi_phdr' type-id='type-id-142' visibility='default'/>
+        <var-decl name='dlpi_phdr' type-id='type-id-141' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='192'>
-        <var-decl name='dlpi_phnum' type-id='type-id-143' visibility='default'/>
+        <var-decl name='dlpi_phnum' type-id='type-id-142' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='256'>
-        <var-decl name='dlpi_adds' type-id='type-id-63' visibility='default'/>
+        <var-decl name='dlpi_adds' type-id='type-id-143' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='320'>
-        <var-decl name='dlpi_subs' type-id='type-id-63' visibility='default'/>
+        <var-decl name='dlpi_subs' type-id='type-id-143' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='384'>
         <var-decl name='dlpi_tls_modid' type-id='type-id-3' visibility='default'/>
@@ -880,27 +885,27 @@
         <var-decl name='ip' type-id='type-id-9' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
-        <var-decl name='coll_chain' type-id='type-id-101' visibility='default'/>
+        <var-decl name='coll_chain' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='80'>
-        <var-decl name='hint' type-id='type-id-101' visibility='default'/>
+        <var-decl name='hint' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='96'>
-        <var-decl name='valid' type-id='type-id-101' visibility='default'/>
+        <var-decl name='valid' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='97'>
-        <var-decl name='signal_frame' type-id='type-id-101' visibility='default'/>
+        <var-decl name='signal_frame' type-id='type-id-102' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='dwarf_reg_only_state' is-struct='yes' visibility='default' size-in-bits='4928' hash='9cbf32c9224eea6e' id='type-id-145'>
+    <class-decl name='dwarf_reg_only_state' is-struct='yes' visibility='default' size-in-bits='7680' hash='8001de07e4c16b05' id='type-id-145'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='where' type-id='type-id-121' visibility='default'/>
+        <var-decl name='where' type-id='type-id-119' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='576'>
+      <data-member access='public' layout-offset-in-bits='896'>
         <var-decl name='val' type-id='type-id-146' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='dwarf_reg_state' is-struct='yes' visibility='default' size-in-bits='4992' hash='aea336ebc46ac4a9' id='type-id-147'>
+    <class-decl name='dwarf_reg_state' is-struct='yes' visibility='default' size-in-bits='7744' hash='767063ef017a6cf0' id='type-id-147'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='ret_addr_column' type-id='type-id-9' visibility='default'/>
       </data-member>
@@ -908,18 +913,18 @@
         <var-decl name='reg' type-id='type-id-148' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='dwarf_rs_cache' is-struct='yes' visibility='default' size-in-bits='660096' hash='2e228cf80a6586b9' id='type-id-149'>
+    <class-decl name='dwarf_rs_cache' is-struct='yes' visibility='default' size-in-bits='1012352' hash='40d5ab04e85ed162' id='type-id-149'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='lock' type-id='type-id-2' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='320'>
-        <var-decl name='rr_head' type-id='type-id-101' visibility='default'/>
+        <var-decl name='rr_head' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='336'>
-        <var-decl name='log_size' type-id='type-id-101' visibility='default'/>
+        <var-decl name='log_size' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='352'>
-        <var-decl name='prev_log_size' type-id='type-id-101' visibility='default'/>
+        <var-decl name='prev_log_size' type-id='type-id-102' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='384'>
         <var-decl name='hash' type-id='type-id-150' visibility='default'/>
@@ -934,10 +939,10 @@
         <var-decl name='default_hash' type-id='type-id-153' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='4736'>
-        <var-decl name='default_buckets' type-id='type-id-128' visibility='default'/>
+        <var-decl name='default_buckets' type-id='type-id-127' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='643712'>
-        <var-decl name='default_links' type-id='type-id-125' visibility='default'/>
+      <data-member access='public' layout-offset-in-bits='995968'>
+        <var-decl name='default_links' type-id='type-id-124' visibility='default'/>
       </data-member>
     </class-decl>
     <class-decl name='elf_image' is-struct='yes' visibility='default' size-in-bits='128' hash='be5ee05b3e3cdea4' id='type-id-19'>
@@ -983,21 +988,21 @@
         <var-decl name='ptrauth_insn_mask' type-id='type-id-163' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='unw_addr_space' is-struct='yes' visibility='default' size-in-bits='661184' hash='dc7f017d4624d7fc' id='type-id-164'>
+    <class-decl name='unw_addr_space' is-struct='yes' visibility='default' size-in-bits='1013504' hash='7e12c7b801a53a45' id='type-id-164'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='acc' type-id='type-id-25' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='704'>
-        <var-decl name='big_endian' type-id='type-id-12' visibility='default'/>
-      </data-member>
-      <data-member access='public' layout-offset-in-bits='736'>
-        <var-decl name='addr_size' type-id='type-id-42' visibility='default'/>
-      </data-member>
-      <data-member access='public' layout-offset-in-bits='768'>
         <var-decl name='iterate_phdr_function' type-id='type-id-35' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='832'>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='big_endian' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='800'>
         <var-decl name='caching_policy' type-id='type-id-33' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='cache_generation' type-id='type-id-72' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='896'>
         <var-decl name='dyn_generation' type-id='type-id-9' visibility='default'/>
@@ -1008,11 +1013,14 @@
       <data-member access='public' layout-offset-in-bits='1024'>
         <var-decl name='global_cache' type-id='type-id-149' visibility='default'/>
       </data-member>
-      <data-member access='public' layout-offset-in-bits='661120'>
+      <data-member access='public' layout-offset-in-bits='1013376'>
         <var-decl name='debug_frames' type-id='type-id-165' visibility='default'/>
       </data-member>
+      <data-member access='public' layout-offset-in-bits='1013440'>
+        <var-decl name='validate' type-id='type-id-12' visibility='default'/>
+      </data-member>
     </class-decl>
-    <class-decl name='unw_cursor' is-struct='yes' visibility='default' size-in-bits='262144' hash='fa2db4aa7244e987' id='type-id-166'>
+    <class-decl name='unw_cursor' is-struct='yes' visibility='default' size-in-bits='17920' hash='453525448583db65' id='type-id-166'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='opaque' type-id='type-id-167' visibility='default'/>
       </data-member>
@@ -1040,7 +1048,7 @@
         <var-decl name='next' type-id='type-id-165' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='unw_proc_info' is-struct='yes' visibility='default' size-in-bits='576' hash='e76aae1517b252c6' id='type-id-170'>
+    <class-decl name='unw_proc_info' is-struct='yes' visibility='default' size-in-bits='512' hash='ead2d059c36dd80b' id='type-id-170'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='start_ip' type-id='type-id-9' visibility='default'/>
       </data-member>
@@ -1072,148 +1080,141 @@
         <var-decl name='extra' type-id='type-id-171' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='unw_tdep_proc_info_t' is-struct='yes' naming-typedef-id='type-id-171' visibility='default' size-in-bits='8' hash='7f4f705cb6d1f43b' id='type-id-172'>
-      <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='unused' type-id='type-id-173' visibility='default'/>
-      </data-member>
-    </class-decl>
-    <typedef-decl name='Elf64_Addr' type-id='type-id-174' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-135'/>
-    <typedef-decl name='Elf64_Half' type-id='type-id-175' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-143'/>
-    <typedef-decl name='Elf64_Off' type-id='type-id-174' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-134'/>
-    <typedef-decl name='Elf64_Phdr' type-id='type-id-132' size-in-bits='448' id='type-id-131'/>
-    <typedef-decl name='Elf64_Word' type-id='type-id-72' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-133'/>
-    <typedef-decl name='Elf64_Xword' type-id='type-id-174' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-136'/>
-    <typedef-decl name='__pid_t' type-id='type-id-12' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-176'/>
-    <typedef-decl name='__pthread_list_t' type-id='type-id-137' size-in-bits='128' id='type-id-140'/>
-    <typedef-decl name='__uint16_t' type-id='type-id-101' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-177'/>
-    <typedef-decl name='__uint32_t' type-id='type-id-42' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-178'/>
-    <typedef-decl name='__uint64_t' type-id='type-id-38' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-107'/>
-    <typedef-decl name='__uint8_t' type-id='type-id-179' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-180'/>
-    <typedef-decl name='dwarf_reg_cache_entry_t' type-id='type-id-144' size-in-bits='128' id='type-id-124'/>
-    <typedef-decl name='dwarf_reg_only_state_t' type-id='type-id-145' size-in-bits='4928' id='type-id-148'/>
-    <typedef-decl name='dwarf_reg_state_t' type-id='type-id-147' size-in-bits='4992' id='type-id-127'/>
-    <typedef-decl name='pid_t' type-id='type-id-176' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-181'/>
-    <typedef-decl name='pthread_mutex_t' type-id='type-id-182' size-in-bits='320' id='type-id-2'/>
+    <class-decl name='unw_tdep_proc_info_t' is-struct='yes' naming-typedef-id='type-id-171' visibility='default' hash='0fa202668e88bc35' id='type-id-172'/>
+    <typedef-decl name='Elf64_Addr' type-id='type-id-173' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-134'/>
+    <typedef-decl name='Elf64_Half' type-id='type-id-174' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-142'/>
+    <typedef-decl name='Elf64_Off' type-id='type-id-173' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-133'/>
+    <typedef-decl name='Elf64_Phdr' type-id='type-id-131' size-in-bits='448' id='type-id-130'/>
+    <typedef-decl name='Elf64_Word' type-id='type-id-72' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-132'/>
+    <typedef-decl name='Elf64_Xword' type-id='type-id-173' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-135'/>
+    <typedef-decl name='__pid_t' type-id='type-id-12' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-175'/>
+    <typedef-decl name='__pthread_list_t' type-id='type-id-136' size-in-bits='128' id='type-id-139'/>
+    <typedef-decl name='__uint16_t' type-id='type-id-102' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-176'/>
+    <typedef-decl name='__uint32_t' type-id='type-id-45' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-177'/>
+    <typedef-decl name='__uint64_t' type-id='type-id-38' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-108'/>
+    <typedef-decl name='dwarf_reg_cache_entry_t' type-id='type-id-144' size-in-bits='128' id='type-id-123'/>
+    <typedef-decl name='dwarf_reg_only_state_t' type-id='type-id-145' size-in-bits='7680' id='type-id-148'/>
+    <typedef-decl name='dwarf_reg_state_t' type-id='type-id-147' size-in-bits='7744' id='type-id-126'/>
+    <typedef-decl name='pid_t' type-id='type-id-175' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-178'/>
+    <typedef-decl name='pthread_mutex_t' type-id='type-id-179' size-in-bits='320' id='type-id-2'/>
     <typedef-decl name='size_t' type-id='type-id-38' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-3'/>
-    <typedef-decl name='uint16_t' type-id='type-id-177' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-175'/>
-    <typedef-decl name='uint32_t' type-id='type-id-178' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-72'/>
-    <typedef-decl name='uint64_t' type-id='type-id-107' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-174'/>
-    <typedef-decl name='uint8_t' type-id='type-id-180' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-173'/>
-    <typedef-decl name='unw_addr_space_t' type-id='type-id-183' size-in-bits='64' hash='9403a12bd32903c4' id='type-id-8'/>
-    <typedef-decl name='unw_caching_policy_t' type-id='type-id-129' size-in-bits='32' alignment-in-bits='32' hash='fdee06ebaaa71a35' id='type-id-33'/>
-    <typedef-decl name='unw_cursor_t' type-id='type-id-166' size-in-bits='262144' id='type-id-184'/>
-    <typedef-decl name='unw_fpreg_t' type-id='type-id-185' size-in-bits='64' hash='e9e9b320886d9aa6' id='type-id-34'/>
-    <typedef-decl name='unw_iterate_phdr_callback_t' type-id='type-id-186' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-17'/>
-    <typedef-decl name='unw_iterate_phdr_func_t' type-id='type-id-187' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-35'/>
-    <typedef-decl name='unw_proc_info_t' type-id='type-id-170' size-in-bits='576' id='type-id-188'/>
-    <typedef-decl name='unw_regnum_t' type-id='type-id-12' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-189'/>
-    <typedef-decl name='unw_tdep_fpreg_t' type-id='type-id-123' size-in-bits='64' hash='e9e9b320886d9aa6' id='type-id-185'/>
-    <typedef-decl name='unw_tdep_proc_info_t' type-id='type-id-172' size-in-bits='8' id='type-id-171'/>
-    <typedef-decl name='unw_word_t' type-id='type-id-174' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-9'/>
-    <union-decl name='pthread_mutex_t' naming-typedef-id='type-id-2' visibility='default' size-in-bits='320' hash='8e3e5ddbcaed875f' id='type-id-182'>
+    <typedef-decl name='uint16_t' type-id='type-id-176' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-174'/>
+    <typedef-decl name='uint32_t' type-id='type-id-177' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-72'/>
+    <typedef-decl name='uint64_t' type-id='type-id-108' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-173'/>
+    <typedef-decl name='unw_addr_space_t' type-id='type-id-180' size-in-bits='64' hash='9403a12bd32903c4' id='type-id-8'/>
+    <typedef-decl name='unw_caching_policy_t' type-id='type-id-128' size-in-bits='32' alignment-in-bits='32' hash='fdee06ebaaa71a35' id='type-id-33'/>
+    <typedef-decl name='unw_cursor_t' type-id='type-id-166' size-in-bits='17920' id='type-id-181'/>
+    <typedef-decl name='unw_fpreg_t' type-id='type-id-182' size-in-bits='128' hash='2a9bbfe8bb0475f1' id='type-id-34'/>
+    <typedef-decl name='unw_iterate_phdr_callback_t' type-id='type-id-183' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-17'/>
+    <typedef-decl name='unw_iterate_phdr_func_t' type-id='type-id-184' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-35'/>
+    <typedef-decl name='unw_proc_info_t' type-id='type-id-170' size-in-bits='512' id='type-id-185'/>
+    <typedef-decl name='unw_regnum_t' type-id='type-id-12' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-186'/>
+    <typedef-decl name='unw_tdep_fpreg_t' type-id='type-id-36' size-in-bits='128' hash='2a9bbfe8bb0475f1' id='type-id-182'/>
+    <typedef-decl name='unw_tdep_proc_info_t' type-id='type-id-172' id='type-id-171'/>
+    <typedef-decl name='unw_word_t' type-id='type-id-173' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-9'/>
+    <union-decl name='pthread_mutex_t' naming-typedef-id='type-id-2' visibility='default' size-in-bits='320' hash='8e3e5ddbcaed875f' id='type-id-179'>
       <data-member access='public'>
-        <var-decl name='__data' type-id='type-id-139' visibility='default'/>
+        <var-decl name='__data' type-id='type-id-138' visibility='default'/>
       </data-member>
       <data-member access='public'>
-        <var-decl name='__size' type-id='type-id-119' visibility='default'/>
+        <var-decl name='__size' type-id='type-id-121' visibility='default'/>
       </data-member>
       <data-member access='public'>
-        <var-decl name='__align' type-id='type-id-113' visibility='default'/>
+        <var-decl name='__align' type-id='type-id-114' visibility='default'/>
       </data-member>
     </union-decl>
-    <type-decl name='unnamed-enum-underlying-type-32' size-in-bits='32' alignment-in-bits='32' is-anonymous='yes' hash='5181a58e665b3619' id='type-id-130'/>
-    <type-decl name='unsigned char' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-179'/>
-    <type-decl name='unsigned int' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-42'/>
+    <type-decl name='unnamed-enum-underlying-type-32' size-in-bits='32' alignment-in-bits='32' is-anonymous='yes' hash='5181a58e665b3619' id='type-id-129'/>
+    <type-decl name='unsigned int' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-45'/>
     <type-decl name='unsigned long int' size-in-bits='64' hash='8fdc5eea2983a729#2' id='type-id-38'/>
-    <type-decl name='unsigned long long int' size-in-bits='64' hash='ebdfc4685a1e82df#3' id='type-id-63'/>
-    <type-decl name='unsigned short int' size-in-bits='16' hash='d7723bb93a30b11d#4' id='type-id-101'/>
-    <array-type-def dimensions='1' type-id='type-id-101' size-in-bits='4096' hash='acaa0e2de060abc6' id='type-id-153'>
-      <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='5cb16198282e86c6' id='type-id-190'/>
+    <type-decl name='unsigned long long int' size-in-bits='64' hash='ebdfc4685a1e82df#3' id='type-id-143'/>
+    <type-decl name='unsigned short int' size-in-bits='16' hash='d7723bb93a30b11d#4' id='type-id-102'/>
+    <array-type-def dimensions='1' type-id='type-id-102' size-in-bits='4096' hash='acaa0e2de060abc6' id='type-id-153'>
+      <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='5cb16198282e86c6' id='type-id-187'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-9' size-in-bits='262144' hash='27ba7fb5d9066fd1' id='type-id-167'>
-      <subrange length='4096' lower-bound='0' upper-bound='4095' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='28c39550727a8b34' id='type-id-191'/>
+    <array-type-def dimensions='1' type-id='type-id-9' size-in-bits='6784' hash='41392e85d5421cd2' id='type-id-146'>
+      <subrange length='106' lower-bound='0' upper-bound='105' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='1217791b59606441' id='type-id-120'/>
     </array-type-def>
-    <array-type-def dimensions='1' type-id='type-id-9' size-in-bits='4352' hash='a4293c90b2f672e5' id='type-id-146'>
-      <subrange length='68' lower-bound='0' upper-bound='67' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='9b6851a8e31d1d9a' id='type-id-122'/>
+    <array-type-def dimensions='1' type-id='type-id-9' size-in-bits='17920' hash='221d8fd2b57664d1' id='type-id-167'>
+      <subrange length='280' lower-bound='0' upper-bound='279' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='e6ec87f03d9d4781' id='type-id-188'/>
     </array-type-def>
-    <pointer-type-def type-id='type-id-137' size-in-bits='64' hash='b83eb2deac70d470' id='type-id-138'/>
-    <pointer-type-def type-id='type-id-36' size-in-bits='64' hash='e533f42d1dd4942c' id='type-id-28'/>
-    <qualified-type-def type-id='type-id-131' const='yes' hash='51611f98abc3863c' id='type-id-192'/>
-    <pointer-type-def type-id='type-id-192' size-in-bits='64' hash='d7f46a025d7f7c6d' id='type-id-142'/>
-    <qualified-type-def type-id='type-id-36' const='yes' hash='3e50fd33f9bb78d9' id='type-id-193'/>
-    <pointer-type-def type-id='type-id-193' size-in-bits='64' hash='c44743f354f6a443' id='type-id-22'/>
-    <pointer-type-def type-id='type-id-141' size-in-bits='64' hash='5fef8e935bfe2028' id='type-id-15'/>
-    <pointer-type-def type-id='type-id-124' size-in-bits='64' hash='7fc07c14dcd12944' id='type-id-152'/>
-    <pointer-type-def type-id='type-id-127' size-in-bits='64' hash='242442d3b9ae6d24' id='type-id-151'/>
-    <pointer-type-def type-id='type-id-19' size-in-bits='64' hash='283579012ae8c7a3' id='type-id-194'/>
-    <pointer-type-def type-id='type-id-14' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-186'/>
-    <pointer-type-def type-id='type-id-195' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-160'/>
-    <pointer-type-def type-id='type-id-196' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-159'/>
-    <pointer-type-def type-id='type-id-197' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-158'/>
-    <pointer-type-def type-id='type-id-198' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-156'/>
+    <pointer-type-def type-id='type-id-136' size-in-bits='64' hash='b83eb2deac70d470' id='type-id-137'/>
+    <pointer-type-def type-id='type-id-94' size-in-bits='64' hash='e533f42d1dd4942c' id='type-id-28'/>
+    <qualified-type-def type-id='type-id-130' const='yes' hash='51611f98abc3863c' id='type-id-189'/>
+    <pointer-type-def type-id='type-id-189' size-in-bits='64' hash='d7f46a025d7f7c6d' id='type-id-141'/>
+    <qualified-type-def type-id='type-id-94' const='yes' hash='3e50fd33f9bb78d9' id='type-id-190'/>
+    <pointer-type-def type-id='type-id-190' size-in-bits='64' hash='c44743f354f6a443' id='type-id-22'/>
+    <pointer-type-def type-id='type-id-140' size-in-bits='64' hash='5fef8e935bfe2028' id='type-id-15'/>
+    <pointer-type-def type-id='type-id-123' size-in-bits='64' hash='7fc07c14dcd12944' id='type-id-152'/>
+    <pointer-type-def type-id='type-id-126' size-in-bits='64' hash='242442d3b9ae6d24' id='type-id-151'/>
+    <pointer-type-def type-id='type-id-19' size-in-bits='64' hash='283579012ae8c7a3' id='type-id-191'/>
+    <pointer-type-def type-id='type-id-14' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-183'/>
+    <pointer-type-def type-id='type-id-192' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-160'/>
+    <pointer-type-def type-id='type-id-193' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-159'/>
+    <pointer-type-def type-id='type-id-194' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-158'/>
+    <pointer-type-def type-id='type-id-195' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-156'/>
     <pointer-type-def type-id='type-id-31' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-161'/>
-    <pointer-type-def type-id='type-id-199' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-154'/>
-    <pointer-type-def type-id='type-id-200' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-157'/>
-    <pointer-type-def type-id='type-id-201' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-162'/>
-    <pointer-type-def type-id='type-id-16' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-187'/>
+    <pointer-type-def type-id='type-id-196' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-154'/>
+    <pointer-type-def type-id='type-id-197' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-157'/>
+    <pointer-type-def type-id='type-id-198' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-162'/>
+    <pointer-type-def type-id='type-id-16' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-184'/>
     <pointer-type-def type-id='type-id-6' size-in-bits='64' hash='f3084105287a5be1' id='type-id-169'/>
-    <pointer-type-def type-id='type-id-38' size-in-bits='64' hash='d9e2f19705735211' id='type-id-202'/>
-    <pointer-type-def type-id='type-id-101' size-in-bits='64' hash='62fd92ba67bc9043#2' id='type-id-150'/>
-    <pointer-type-def type-id='type-id-164' size-in-bits='64' hash='9403a12bd32903c4' id='type-id-183'/>
-    <pointer-type-def type-id='type-id-184' size-in-bits='64' hash='f4b1ce4d85aa7a90' id='type-id-30'/>
+    <pointer-type-def type-id='type-id-38' size-in-bits='64' hash='d9e2f19705735211' id='type-id-44'/>
+    <pointer-type-def type-id='type-id-102' size-in-bits='64' hash='62fd92ba67bc9043#2' id='type-id-150'/>
+    <pointer-type-def type-id='type-id-164' size-in-bits='64' hash='9403a12bd32903c4' id='type-id-180'/>
+    <pointer-type-def type-id='type-id-181' size-in-bits='64' hash='f4b1ce4d85aa7a90' id='type-id-30'/>
     <pointer-type-def type-id='type-id-168' size-in-bits='64' hash='93c0e850fa320f44' id='type-id-165'/>
-    <pointer-type-def type-id='type-id-34' size-in-bits='64' hash='bc6bb7d07a79e4e6' id='type-id-32'/>
-    <pointer-type-def type-id='type-id-188' size-in-bits='64' hash='10dba947d3eccd17' id='type-id-11'/>
-    <pointer-type-def type-id='type-id-203' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-163'/>
+    <pointer-type-def type-id='type-id-34' size-in-bits='64' hash='936c4d5581e0ad2b' id='type-id-32'/>
+    <pointer-type-def type-id='type-id-185' size-in-bits='64' hash='10dba947d3eccd17' id='type-id-11'/>
+    <pointer-type-def type-id='type-id-199' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-163'/>
     <pointer-type-def type-id='type-id-9' size-in-bits='64' hash='f1a1f9a0575b1cb2' id='type-id-29'/>
-    <pointer-type-def type-id='type-id-204' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-155'/>
-    <function-decl name='_Uriscv_get_elf_image' mangled-name='_Uriscv_get_elf_image' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_get_elf_image' hash='14fb69a518ee2ba2'>
+    <pointer-type-def type-id='type-id-200' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-155'/>
+    <function-decl name='_Usparc64_get_elf_image' mangled-name='_Usparc64_get_elf_image' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_get_elf_image' hash='14fb69a518ee2ba2'>
       <parameter type-id='type-id-8' name='as'/>
-      <parameter type-id='type-id-194' name='ei'/>
-      <parameter type-id='type-id-181' name='pid'/>
+      <parameter type-id='type-id-191' name='ei'/>
+      <parameter type-id='type-id-178' name='pid'/>
       <parameter type-id='type-id-9' name='ip'/>
-      <parameter type-id='type-id-202' name='segbase'/>
-      <parameter type-id='type-id-202' name='mapoff'/>
+      <parameter type-id='type-id-44' name='segbase'/>
+      <parameter type-id='type-id-44' name='mapoff'/>
       <parameter type-id='type-id-28' name='path'/>
       <parameter type-id='type-id-3' name='pathlen'/>
       <parameter type-id='type-id-13' name='arg'/>
       <return type-id='type-id-12'/>
     </function-decl>
-    <function-decl name='_Uriscv_get_exe_image_path' mangled-name='_Uriscv_get_exe_image_path' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_get_exe_image_path' hash='02a096d257a5e00d'>
+    <function-decl name='_Usparc64_get_exe_image_path' mangled-name='_Usparc64_get_exe_image_path' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_get_exe_image_path' hash='02a096d257a5e00d'>
       <parameter type-id='type-id-28' name='path'/>
       <return type-id='type-id-24'/>
     </function-decl>
     <type-decl name='void' id='type-id-24'/>
     <pointer-type-def type-id='type-id-24' id='type-id-13'/>
-    <function-type size-in-bits='64' hash='641d5ea074bc3beb' id='type-id-195'>
+    <function-type size-in-bits='64' hash='641d5ea074bc3beb' id='type-id-192'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-30'/>
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='e53f2e8cc9ea833a' id='type-id-196'>
+    <function-type size-in-bits='64' hash='1f9ad6e9ec386e8f' id='type-id-193'>
       <parameter type-id='type-id-8'/>
-      <parameter type-id='type-id-189'/>
+      <parameter type-id='type-id-186'/>
       <parameter type-id='type-id-32'/>
       <parameter type-id='type-id-12'/>
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='de9ef2afa3de58e1' id='type-id-197'>
+    <function-type size-in-bits='64' hash='de9ef2afa3de58e1' id='type-id-194'>
       <parameter type-id='type-id-8'/>
-      <parameter type-id='type-id-189'/>
+      <parameter type-id='type-id-186'/>
       <parameter type-id='type-id-29'/>
       <parameter type-id='type-id-12'/>
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='f99fa444964bcd86' id='type-id-198'>
+    <function-type size-in-bits='64' hash='f99fa444964bcd86' id='type-id-195'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-29'/>
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='1864dd1e0496fd23' id='type-id-199'>
+    <function-type size-in-bits='64' hash='1864dd1e0496fd23' id='type-id-196'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-9'/>
       <parameter type-id='type-id-11'/>
@@ -1221,7 +1222,7 @@
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='2d2ff6c41c486595' id='type-id-200'>
+    <function-type size-in-bits='64' hash='2d2ff6c41c486595' id='type-id-197'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-9'/>
       <parameter type-id='type-id-29'/>
@@ -1229,7 +1230,7 @@
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='e7878b18cdb5aa8a' id='type-id-201'>
+    <function-type size-in-bits='64' hash='e7878b18cdb5aa8a' id='type-id-198'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-9'/>
       <parameter type-id='type-id-29'/>
@@ -1237,127 +1238,125 @@
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-12'/>
     </function-type>
-    <function-type size-in-bits='64' hash='5f22e02f8940d868' id='type-id-203'>
+    <function-type size-in-bits='64' hash='5f22e02f8940d868' id='type-id-199'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-9'/>
     </function-type>
-    <function-type size-in-bits='64' hash='cde0cac56bacd918' id='type-id-204'>
+    <function-type size-in-bits='64' hash='cde0cac56bacd918' id='type-id-200'>
       <parameter type-id='type-id-8'/>
       <parameter type-id='type-id-11'/>
       <parameter type-id='type-id-13'/>
       <return type-id='type-id-24'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lapply_reg_state.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_apply_reg_state' mangled-name='_ULriscv_apply_reg_state' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_apply_reg_state' hash='53f87b7b62f8351d'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lapply_reg_state.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_apply_reg_state' mangled-name='_ULsparc64_apply_reg_state' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_apply_reg_state' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-13' name='reg_states_data'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lcreate_addr_space.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_create_addr_space' mangled-name='_ULriscv_create_addr_space' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_create_addr_space' hash='29e3b15bac8c112e'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lcreate_addr_space.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_create_addr_space' mangled-name='_ULsparc64_create_addr_space' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_create_addr_space' hash='29e3b15bac8c112e'>
       <parameter type-id='type-id-27' name='a'/>
       <parameter type-id='type-id-12' name='byte_order'/>
       <return type-id='type-id-8'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lget_proc_info.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_get_proc_info' mangled-name='_ULriscv_get_proc_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_proc_info' hash='0ac1c8ece24ab99e'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lget_proc_info.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_get_proc_info' mangled-name='_ULsparc64_get_proc_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_proc_info' hash='0ac1c8ece24ab99e'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-11' name='pi'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lget_save_loc.c' language='LANG_C11'>
-    <enum-decl name='unw_save_loc_type' size-in-bits='32' alignment-in-bits='32' hash='ebff08c3ccec97c8' id='type-id-205'>
-      <underlying-type type-id='type-id-130'/>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lget_save_loc.c' language='LANG_C11'>
+    <enum-decl name='unw_save_loc_type' size-in-bits='32' alignment-in-bits='32' hash='ebff08c3ccec97c8' id='type-id-201'>
+      <underlying-type type-id='type-id-129'/>
       <enumerator name='UNW_SLT_NONE' value='0'/>
       <enumerator name='UNW_SLT_MEMORY' value='1'/>
       <enumerator name='UNW_SLT_REG' value='2'/>
     </enum-decl>
-    <class-decl name='unw_save_loc' is-struct='yes' visibility='default' size-in-bits='192' hash='e9cb750f424978e6' id='type-id-206'>
+    <class-decl name='unw_save_loc' is-struct='yes' visibility='default' size-in-bits='128' hash='5d96a27350e2a281' id='type-id-202'>
       <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='type' type-id='type-id-207' visibility='default'/>
+        <var-decl name='type' type-id='type-id-203' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='64'>
-        <var-decl name='u' type-id='type-id-208' visibility='default'/>
+        <var-decl name='u' type-id='type-id-204' visibility='default'/>
       </data-member>
       <data-member access='public' layout-offset-in-bits='128'>
-        <var-decl name='extra' type-id='type-id-209' visibility='default'/>
+        <var-decl name='extra' type-id='type-id-205' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='unw_tdep_save_loc' is-struct='yes' visibility='default' size-in-bits='8' hash='a24fb281d0a4d739' id='type-id-210'>
-      <data-member access='public' layout-offset-in-bits='0'>
-        <var-decl name='unused' type-id='type-id-173' visibility='default'/>
-      </data-member>
-    </class-decl>
-    <typedef-decl name='unw_save_loc_t' type-id='type-id-206' size-in-bits='192' id='type-id-211'/>
-    <typedef-decl name='unw_save_loc_type_t' type-id='type-id-205' size-in-bits='32' alignment-in-bits='32' hash='ebff08c3ccec97c8' id='type-id-207'/>
-    <typedef-decl name='unw_tdep_save_loc_t' type-id='type-id-210' size-in-bits='8' id='type-id-209'/>
-    <union-decl name='__anonymous_union__' visibility='default' size-in-bits='64' is-anonymous='yes' hash='79854a27d78fa5ec#2' id='type-id-208'>
+    <class-decl name='unw_tdep_save_loc' is-struct='yes' visibility='default' hash='cfae8bf7a816e2d7' id='type-id-206'/>
+    <typedef-decl name='unw_save_loc_t' type-id='type-id-202' size-in-bits='128' id='type-id-207'/>
+    <typedef-decl name='unw_save_loc_type_t' type-id='type-id-201' size-in-bits='32' alignment-in-bits='32' hash='ebff08c3ccec97c8' id='type-id-203'/>
+    <typedef-decl name='unw_tdep_save_loc_t' type-id='type-id-206' id='type-id-205'/>
+    <union-decl name='__anonymous_union__' visibility='default' size-in-bits='64' is-anonymous='yes' hash='79854a27d78fa5ec#3' id='type-id-204'>
       <data-member access='public'>
         <var-decl name='addr' type-id='type-id-9' visibility='default'/>
       </data-member>
       <data-member access='public'>
-        <var-decl name='regnum' type-id='type-id-189' visibility='default'/>
+        <var-decl name='regnum' type-id='type-id-186' visibility='default'/>
       </data-member>
     </union-decl>
-    <pointer-type-def type-id='type-id-211' size-in-bits='64' hash='e3553fd905b660b9' id='type-id-212'/>
-    <function-decl name='_ULriscv_get_save_loc' mangled-name='_ULriscv_get_save_loc' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_get_save_loc' hash='b89c0f10b046d406'>
+    <pointer-type-def type-id='type-id-207' size-in-bits='64' hash='e3553fd905b660b9' id='type-id-208'/>
+    <function-decl name='_ULsparc64_get_save_loc' mangled-name='_ULsparc64_get_save_loc' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_get_save_loc' hash='b89c0f10b046d406'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-12' name='reg'/>
-      <parameter type-id='type-id-212' name='sloc'/>
+      <parameter type-id='type-id-208' name='sloc'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lglobal.c' language='LANG_C11'>
-    <array-type-def dimensions='1' type-id='type-id-213' size-in-bits='528' hash='ecc04b5be9158853' id='type-id-214'>
-      <subrange length='66' lower-bound='0' upper-bound='65' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='f16033cdc24c72d4' id='type-id-215'/>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lglobal.c' language='LANG_C11'>
+    <array-type-def dimensions='1' type-id='type-id-209' size-in-bits='832' hash='9b1b439aa60e9bdf' id='type-id-210'>
+      <subrange length='104' lower-bound='0' upper-bound='103' type-id='type-id-38' size-in-bits='64' is-anonymous='yes' hash='e25ac84f1fa3f9e3' id='type-id-211'/>
     </array-type-def>
-    <qualified-type-def type-id='type-id-173' const='yes' hash='5a6582fbecdbfc78' id='type-id-213'/>
+    <typedef-decl name='__uint8_t' type-id='type-id-50' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-212'/>
+    <typedef-decl name='uint8_t' type-id='type-id-212' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-213'/>
+    <qualified-type-def type-id='type-id-213' const='yes' hash='5a6582fbecdbfc78' id='type-id-209'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Linit.c' language='LANG_C11'>
-    <var-decl name='_ULriscv_local_addr_space' type-id='type-id-8' mangled-name='_ULriscv_local_addr_space' visibility='default' elf-symbol-id='_ULriscv_local_addr_space'/>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Linit.c' language='LANG_C11'>
+    <var-decl name='_ULsparc64_local_addr_space' type-id='type-id-8' mangled-name='_ULsparc64_local_addr_space' visibility='default' elf-symbol-id='_ULsparc64_local_addr_space'/>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Linit_local.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_init_local' mangled-name='_ULriscv_init_local' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_init_local' hash='5bf6f557768ab998'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Linit_local.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_init_local' mangled-name='_ULsparc64_init_local' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_init_local' hash='5bf6f557768ab998'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-65' name='uc'/>
       <return type-id='type-id-12'/>
     </function-decl>
-    <function-decl name='_ULriscv_init_local2' mangled-name='_ULriscv_init_local2' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_init_local2' hash='a9b00a18801c2749'>
+    <function-decl name='_ULsparc64_init_local2' mangled-name='_ULsparc64_init_local2' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_init_local2' hash='a9b00a18801c2749'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-65' name='uc'/>
       <parameter type-id='type-id-12' name='flag'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Linit_remote.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_init_remote' mangled-name='_ULriscv_init_remote' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_init_remote' hash='5e95f80d0e407377'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Linit_remote.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_init_remote' mangled-name='_ULsparc64_init_remote' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_init_remote' hash='5e95f80d0e407377'>
       <parameter type-id='type-id-30' name='cursor'/>
       <parameter type-id='type-id-8' name='as'/>
       <parameter type-id='type-id-13' name='as_arg'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lis_signal_frame.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_is_signal_frame' mangled-name='_ULriscv_is_signal_frame' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_is_signal_frame' hash='53f87b7b62f8351d'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lis_signal_frame.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_is_signal_frame' mangled-name='_ULsparc64_is_signal_frame' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_is_signal_frame' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lreg_states_iterate.c' language='LANG_C11'>
-    <typedef-decl name='unw_reg_states_callback' type-id='type-id-216' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-217'/>
-    <pointer-type-def type-id='type-id-218' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-216'/>
-    <function-decl name='_ULriscv_reg_states_iterate' mangled-name='_ULriscv_reg_states_iterate' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_reg_states_iterate' hash='343c6131f1714830'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lreg_states_iterate.c' language='LANG_C11'>
+    <typedef-decl name='unw_reg_states_callback' type-id='type-id-214' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-215'/>
+    <pointer-type-def type-id='type-id-216' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-214'/>
+    <function-decl name='_ULsparc64_reg_states_iterate' mangled-name='_ULsparc64_reg_states_iterate' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_reg_states_iterate' hash='343c6131f1714830'>
       <parameter type-id='type-id-30' name='cursor'/>
-      <parameter type-id='type-id-217' name='cb'/>
+      <parameter type-id='type-id-215' name='cb'/>
       <parameter type-id='type-id-13' name='token'/>
       <return type-id='type-id-12'/>
     </function-decl>
-    <function-type size-in-bits='64' hash='e9722a6cf1a6ddff' id='type-id-218'>
+    <function-type size-in-bits='64' hash='e9722a6cf1a6ddff' id='type-id-216'>
       <parameter type-id='type-id-13'/>
       <parameter type-id='type-id-13'/>
       <parameter type-id='type-id-3'/>
@@ -1366,38 +1365,28 @@
       <return type-id='type-id-12'/>
     </function-type>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lresume.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_resume' mangled-name='_ULriscv_resume' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_resume' hash='53f87b7b62f8351d'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lresume.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_resume' mangled-name='_ULsparc64_resume' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_resume' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/Lstep.c' language='LANG_C11'>
-    <function-decl name='_ULriscv_step' mangled-name='_ULriscv_step' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULriscv_step' hash='53f87b7b62f8351d'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/Lstep.c' language='LANG_C11'>
+    <function-decl name='_ULsparc64_step' mangled-name='_ULsparc64_step' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_ULsparc64_step' hash='53f87b7b62f8351d'>
       <parameter type-id='type-id-30' name='c'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/getcontext.S' language='LANG_Mips_Assembler'>
-    <function-decl name='_Uriscv_getcontext' mangled-name='_Uriscv_getcontext' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_getcontext' hash='7f32ffea222edbe7'>
-      <return type-id='type-id-24'/>
-    </function-decl>
-  </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/is_fpreg.c' language='LANG_C11'>
-    <function-decl name='_Uriscv_is_fpreg' mangled-name='_Uriscv_is_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_is_fpreg' hash='d628501fd2223339'>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/is_fpreg.c' language='LANG_C11'>
+    <function-decl name='_Usparc64_is_fpreg' mangled-name='_Usparc64_is_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_is_fpreg' hash='d628501fd2223339'>
       <parameter type-id='type-id-12' name='regnum'/>
       <return type-id='type-id-12'/>
     </function-decl>
   </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/regname.c' language='LANG_C11'>
-    <function-decl name='_Uriscv_regname' mangled-name='_Uriscv_regname' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_regname' hash='7cffa03161e7e042'>
-      <parameter type-id='type-id-189' name='reg'/>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/sparc64/regname.c' language='LANG_C11'>
+    <function-decl name='_Usparc64_regname' mangled-name='_Usparc64_regname' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Usparc64_regname' hash='7cffa03161e7e042'>
+      <parameter type-id='type-id-186' name='reg'/>
       <return type-id='type-id-22'/>
-    </function-decl>
-  </abi-instr>
-  <abi-instr address-size='64' path='../../src/riscv/setcontext.S' language='LANG_Mips_Assembler'>
-    <function-decl name='_Uriscv_setcontext' mangled-name='_Uriscv_setcontext' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_Uriscv_setcontext' hash='7f32ffea222edbe7'>
-      <return type-id='type-id-24'/>
     </function-decl>
   </abi-instr>
 </abi-corpus>

@@ -1,0 +1,1167 @@
+<abi-corpus version='2.4' architecture='elf-unknown-arch-value-258' soname='libunwind-coredump.so.0'>
+  <elf-needed>
+    <dependency name='libunwind-loongarch64.so.11'/>
+    <dependency name='libunwind.so.11'/>
+    <dependency name='libc.so.6'/>
+  </elf-needed>
+  <elf-function-symbols>
+    <elf-symbol name='_UCD_access_fpreg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_access_mem' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_access_reg' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_add_backing_file_at_vaddr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_create' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_destroy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_find_proc_info' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_cursig' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_dyn_info_list_addr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_elf_filename' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_mapinfo' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_num_threads' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_pid' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_proc_name' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_get_threadinfo' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_put_unwind_info' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_resume' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UCD_select_thread' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-function-symbols>
+  <elf-variable-symbols>
+    <elf-symbol name='_UCD_accessors' size='88' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+    <elf-symbol name='_UIloongarch64_debug_level' size='8' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='yes'/>
+  </elf-variable-symbols>
+  <undefined-elf-function-symbols>
+    <elf-symbol name='_Uloongarch64_dwarf_find_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='_Uloongarch64_dwarf_search_unwind_table' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='_Uloongarch64_get_elf_image' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__errno_location' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__isoc23_strtol' version='GLIBC_2.38' is-default-version='yes' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__snprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='__vsnprintf_chk' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='calloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='close' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='free' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='fstat' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='getenv' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='lseek' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='malloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='memchr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='memcmp' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='memcpy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='memmove' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='memset' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='munmap' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='open' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='read' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='realloc' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='setbuf' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strcat' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strcmp' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strcpy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strdup' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strerror' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strlen' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strncpy' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='strrchr' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='syscall' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='sysconf' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='write' type='func-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+  </undefined-elf-function-symbols>
+  <undefined-elf-variable-symbols>
+    <elf-symbol name='stderr' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+    <elf-symbol name='stdout' type='object-type' binding='global-binding' visibility='default-visibility' is-defined='no'/>
+  </undefined-elf-variable-symbols>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_access_mem.c' language='LANG_C11'>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='320' hash='e7f9696e246a3049' id='type-id-2'>
+      <subrange length='40' lower-bound='0' upper-bound='39' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='6281bd35fbce8744' id='type-id-4'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='608' hash='900c8bbedf8206ca' id='type-id-5'>
+      <subrange length='76' lower-bound='0' upper-bound='75' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='3f2858b8ffb1d633' id='type-id-6'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-7' size-in-bits='16384' hash='e6eb273d5e1d6a89' id='type-id-8'>
+      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-9'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-10' size-in-bits='712704' hash='228e6707b11b782b' id='type-id-11'>
+      <subrange length='128' lower-bound='0' upper-bound='127' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='6d1a6a21feae6dd2' id='type-id-9'/>
+    </array-type-def>
+    <enum-decl name='unw_caching_policy_t' naming-typedef-id='type-id-12' size-in-bits='32' alignment-in-bits='32' hash='fdee06ebaaa71a35' id='type-id-13'>
+      <underlying-type type-id='type-id-14'/>
+      <enumerator name='UNW_CACHE_NONE' value='0'/>
+      <enumerator name='UNW_CACHE_GLOBAL' value='1'/>
+      <enumerator name='UNW_CACHE_PER_THREAD' value='2'/>
+    </enum-decl>
+    <type-decl name='long double' size-in-bits='128' hash='2a9bbfe8bb0475f1#2' id='type-id-15'/>
+    <class-decl name='Elf64_Phdr' is-struct='yes' naming-typedef-id='type-id-16' visibility='default' size-in-bits='448' hash='4b4898b4e81729f5' id='type-id-17'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='p_type' type-id='type-id-18' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='p_flags' type-id='type-id-18' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='p_offset' type-id='type-id-19' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='p_vaddr' type-id='type-id-20' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='p_paddr' type-id='type-id-20' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='p_filesz' type-id='type-id-21' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='p_memsz' type-id='type-id-21' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='p_align' type-id='type-id-21' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__pthread_internal_list' is-struct='yes' visibility='default' size-in-bits='128' hash='5bcfb7f1ab39fa47' id='type-id-22'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__prev' type-id='type-id-23' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='__next' type-id='type-id-23' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__pthread_mutex_s' is-struct='yes' visibility='default' size-in-bits='320' hash='13003fdc09fcf2c5' id='type-id-24'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__lock' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='__count' type-id='type-id-26' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='__owner' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='__nusers' type-id='type-id-26' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='__kind' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='__spins' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='__list' type-id='type-id-27' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dl_phdr_info' is-struct='yes' visibility='default' size-in-bits='512' hash='89dbbc3038b94078' id='type-id-28'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='dlpi_addr' type-id='type-id-20' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='dlpi_name' type-id='type-id-29' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='dlpi_phdr' type-id='type-id-30' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='dlpi_phnum' type-id='type-id-31' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='dlpi_adds' type-id='type-id-32' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='dlpi_subs' type-id='type-id-32' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='dlpi_tls_modid' type-id='type-id-33' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='dlpi_tls_data' type-id='type-id-34' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_reg_cache_entry' is-struct='yes' visibility='default' size-in-bits='128' hash='c2650fe1215a5ada' id='type-id-35'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ip' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='coll_chain' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='80'>
+        <var-decl name='hint' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='valid' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='97'>
+        <var-decl name='signal_frame' type-id='type-id-37' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_reg_only_state' is-struct='yes' visibility='default' size-in-bits='5504' hash='20e779420c8ffceb' id='type-id-38'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='where' type-id='type-id-5' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='val' type-id='type-id-39' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_reg_state' is-struct='yes' visibility='default' size-in-bits='5568' hash='f7a6a7f4dfdba0a9' id='type-id-40'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ret_addr_column' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='reg' type-id='type-id-41' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='dwarf_rs_cache' is-struct='yes' visibility='default' size-in-bits='733824' hash='ca0c57d330797e8b' id='type-id-42'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='lock' type-id='type-id-43' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='rr_head' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='336'>
+        <var-decl name='log_size' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='prev_log_size' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='hash' type-id='type-id-44' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='buckets' type-id='type-id-45' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='links' type-id='type-id-46' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='default_hash' type-id='type-id-47' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='4736'>
+        <var-decl name='default_buckets' type-id='type-id-11' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='717440'>
+        <var-decl name='default_links' type-id='type-id-8' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_accessors' is-struct='yes' visibility='default' size-in-bits='704' hash='0030840758b40652' id='type-id-48'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='find_proc_info' type-id='type-id-49' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='put_unwind_info' type-id='type-id-50' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='get_dyn_info_list_addr' type-id='type-id-51' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='access_mem' type-id='type-id-52' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='access_reg' type-id='type-id-53' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='access_fpreg' type-id='type-id-54' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='resume' type-id='type-id-55' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='get_proc_name' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='get_elf_filename' type-id='type-id-56' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='get_proc_ip_range' type-id='type-id-57' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='ptrauth_insn_mask' type-id='type-id-58' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_addr_space' is-struct='yes' visibility='default' size-in-bits='734848' hash='0496de557a076c49' id='type-id-59'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='acc' type-id='type-id-48' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='iterate_phdr_function' type-id='type-id-60' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='caching_policy' type-id='type-id-12' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='dyn_generation' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='dyn_info_list_addr' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='960'>
+        <var-decl name='global_cache' type-id='type-id-42' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='734784'>
+        <var-decl name='debug_frames' type-id='type-id-61' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_cursor' is-struct='yes' visibility='default' size-in-bits='262144' hash='fa2db4aa7244e987' id='type-id-62'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='opaque' type-id='type-id-63' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_debug_frame_list' is-struct='yes' visibility='default' size-in-bits='448' hash='36f63d431162240e' id='type-id-64'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='start' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='end' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='debug_frame' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='debug_frame_size' type-id='type-id-33' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='index' type-id='type-id-66' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='index_size' type-id='type-id-33' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='next' type-id='type-id-61' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_proc_info' is-struct='yes' visibility='default' size-in-bits='576' hash='e76aae1517b252c6' id='type-id-67'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='start_ip' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='end_ip' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='lsda' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='handler' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='gp' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='flags' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='format' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='416'>
+        <var-decl name='unwind_info_size' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='unwind_info' type-id='type-id-34' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='extra' type-id='type-id-68' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_tdep_proc_info_t' is-struct='yes' naming-typedef-id='type-id-68' visibility='default' size-in-bits='8' hash='7f4f705cb6d1f43b' id='type-id-69'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='unused' type-id='type-id-70' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='Elf64_Addr' type-id='type-id-71' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-20'/>
+    <typedef-decl name='Elf64_Half' type-id='type-id-72' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-31'/>
+    <typedef-decl name='Elf64_Off' type-id='type-id-71' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-19'/>
+    <typedef-decl name='Elf64_Phdr' type-id='type-id-17' size-in-bits='448' id='type-id-16'/>
+    <typedef-decl name='Elf64_Word' type-id='type-id-73' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-18'/>
+    <typedef-decl name='Elf64_Xword' type-id='type-id-71' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-21'/>
+    <typedef-decl name='__pthread_list_t' type-id='type-id-22' size-in-bits='128' id='type-id-27'/>
+    <typedef-decl name='__uint16_t' type-id='type-id-37' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-74'/>
+    <typedef-decl name='dwarf_reg_cache_entry_t' type-id='type-id-35' size-in-bits='128' id='type-id-7'/>
+    <typedef-decl name='dwarf_reg_only_state_t' type-id='type-id-38' size-in-bits='5504' id='type-id-41'/>
+    <typedef-decl name='dwarf_reg_state_t' type-id='type-id-40' size-in-bits='5568' id='type-id-10'/>
+    <typedef-decl name='pthread_mutex_t' type-id='type-id-75' size-in-bits='320' id='type-id-43'/>
+    <typedef-decl name='uint16_t' type-id='type-id-74' size-in-bits='16' hash='d7723bb93a30b11d' id='type-id-72'/>
+    <typedef-decl name='unw_addr_space_t' type-id='type-id-76' size-in-bits='64' hash='9403a12bd32903c4' id='type-id-77'/>
+    <typedef-decl name='unw_caching_policy_t' type-id='type-id-13' size-in-bits='32' alignment-in-bits='32' hash='fdee06ebaaa71a35' id='type-id-12'/>
+    <typedef-decl name='unw_cursor_t' type-id='type-id-62' size-in-bits='262144' id='type-id-78'/>
+    <typedef-decl name='unw_fpreg_t' type-id='type-id-79' size-in-bits='128' hash='2a9bbfe8bb0475f1' id='type-id-80'/>
+    <typedef-decl name='unw_iterate_phdr_callback_t' type-id='type-id-81' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-82'/>
+    <typedef-decl name='unw_iterate_phdr_func_t' type-id='type-id-83' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-60'/>
+    <typedef-decl name='unw_proc_info_t' type-id='type-id-67' size-in-bits='576' id='type-id-84'/>
+    <typedef-decl name='unw_regnum_t' type-id='type-id-25' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-85'/>
+    <typedef-decl name='unw_tdep_fpreg_t' type-id='type-id-15' size-in-bits='128' hash='2a9bbfe8bb0475f1' id='type-id-79'/>
+    <typedef-decl name='unw_tdep_proc_info_t' type-id='type-id-69' size-in-bits='8' id='type-id-68'/>
+    <union-decl name='pthread_mutex_t' naming-typedef-id='type-id-43' visibility='default' size-in-bits='320' hash='8e3e5ddbcaed875f' id='type-id-75'>
+      <data-member access='public'>
+        <var-decl name='__data' type-id='type-id-24' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='__size' type-id='type-id-2' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='__align' type-id='type-id-86' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <type-decl name='unnamed-enum-underlying-type-32' size-in-bits='32' alignment-in-bits='32' is-anonymous='yes' hash='5181a58e665b3619' id='type-id-14'/>
+    <type-decl name='unsigned long long int' size-in-bits='64' hash='ebdfc4685a1e82df#3' id='type-id-32'/>
+    <type-decl name='unsigned short int' size-in-bits='16' hash='d7723bb93a30b11d#4' id='type-id-37'/>
+    <array-type-def dimensions='1' type-id='type-id-37' size-in-bits='4096' hash='acaa0e2de060abc6' id='type-id-47'>
+      <subrange length='256' lower-bound='0' upper-bound='255' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='5cb16198282e86c6' id='type-id-87'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='262144' hash='27ba7fb5d9066fd1' id='type-id-63'>
+      <subrange length='4096' lower-bound='0' upper-bound='4095' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='28c39550727a8b34' id='type-id-88'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-36' size-in-bits='4864' hash='4c73fe092eb3b1ba' id='type-id-39'>
+      <subrange length='76' lower-bound='0' upper-bound='75' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='3f2858b8ffb1d633' id='type-id-6'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-22' size-in-bits='64' hash='b83eb2deac70d470' id='type-id-23'/>
+    <qualified-type-def type-id='type-id-16' const='yes' hash='51611f98abc3863c' id='type-id-89'/>
+    <pointer-type-def type-id='type-id-89' size-in-bits='64' hash='d7f46a025d7f7c6d' id='type-id-30'/>
+    <pointer-type-def type-id='type-id-28' size-in-bits='64' hash='5fef8e935bfe2028' id='type-id-90'/>
+    <pointer-type-def type-id='type-id-7' size-in-bits='64' hash='7fc07c14dcd12944' id='type-id-46'/>
+    <pointer-type-def type-id='type-id-10' size-in-bits='64' hash='242442d3b9ae6d24' id='type-id-45'/>
+    <pointer-type-def type-id='type-id-91' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-81'/>
+    <pointer-type-def type-id='type-id-92' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-55'/>
+    <pointer-type-def type-id='type-id-93' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-54'/>
+    <pointer-type-def type-id='type-id-94' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-53'/>
+    <pointer-type-def type-id='type-id-95' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-51'/>
+    <pointer-type-def type-id='type-id-96' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-56'/>
+    <pointer-type-def type-id='type-id-97' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-49'/>
+    <pointer-type-def type-id='type-id-98' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-52'/>
+    <pointer-type-def type-id='type-id-99' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-57'/>
+    <pointer-type-def type-id='type-id-100' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-83'/>
+    <pointer-type-def type-id='type-id-37' size-in-bits='64' hash='62fd92ba67bc9043' id='type-id-44'/>
+    <pointer-type-def type-id='type-id-59' size-in-bits='64' hash='9403a12bd32903c4' id='type-id-76'/>
+    <pointer-type-def type-id='type-id-78' size-in-bits='64' hash='f4b1ce4d85aa7a90' id='type-id-101'/>
+    <pointer-type-def type-id='type-id-64' size-in-bits='64' hash='93c0e850fa320f44' id='type-id-61'/>
+    <pointer-type-def type-id='type-id-80' size-in-bits='64' hash='936c4d5581e0ad2b' id='type-id-102'/>
+    <pointer-type-def type-id='type-id-84' size-in-bits='64' hash='10dba947d3eccd17' id='type-id-103'/>
+    <pointer-type-def type-id='type-id-104' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-58'/>
+    <pointer-type-def type-id='type-id-105' size-in-bits='64' hash='fd7a63c0c6c822c4' id='type-id-50'/>
+    <class-decl name='table_entry' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-106'/>
+    <pointer-type-def type-id='type-id-106' size-in-bits='64' id='type-id-66'/>
+    <function-decl name='_UCD_access_mem' mangled-name='_UCD_access_mem' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_access_mem' hash='2d2ff6c41c486595'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+    <function-type size-in-bits='64' hash='093f0dafedf26cc2' id='type-id-91'>
+      <parameter type-id='type-id-90'/>
+      <parameter type-id='type-id-33'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='641d5ea074bc3beb' id='type-id-92'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-101'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='1f9ad6e9ec386e8f' id='type-id-93'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-85'/>
+      <parameter type-id='type-id-102'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='de9ef2afa3de58e1' id='type-id-94'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-85'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='f99fa444964bcd86' id='type-id-95'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='d51136ed14244e3c' id='type-id-96'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-65'/>
+      <parameter type-id='type-id-33'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='1864dd1e0496fd23' id='type-id-97'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-103'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='2d2ff6c41c486595' id='type-id-98'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='e7878b18cdb5aa8a' id='type-id-99'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='a7f99494147764a8' id='type-id-100'>
+      <parameter type-id='type-id-82'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='5f22e02f8940d868' id='type-id-104'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-36'/>
+    </function-type>
+    <function-type size-in-bits='64' hash='cde0cac56bacd918' id='type-id-105'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-103'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-108'/>
+    </function-type>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_access_reg_linux.c' language='LANG_C11'>
+    <function-decl name='_UCD_access_reg' mangled-name='_UCD_access_reg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_access_reg' hash='de9ef2afa3de58e1'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-85'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_accessors.c' language='LANG_C11'>
+    <typedef-decl name='unw_accessors_t' type-id='type-id-48' size-in-bits='704' id='type-id-109'/>
+    <var-decl name='_UCD_accessors' type-id='type-id-109' mangled-name='_UCD_accessors' visibility='default' elf-symbol-id='_UCD_accessors'/>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_add_backing_file_at_vaddr.c' language='LANG_C11'>
+    <type-decl name='char' size-in-bits='8' hash='65b2d157027b431a' id='type-id-1'/>
+    <type-decl name='double' size-in-bits='64' hash='e9e9b320886d9aa6' id='type-id-110'/>
+    <array-type-def dimensions='1' type-id='type-id-111' size-in-bits='2176' hash='6a6e3587c91f4b46' id='type-id-112'>
+      <subrange length='34' lower-bound='0' upper-bound='33' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='2c31a0df2b7239f4' id='type-id-113'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-114' size-in-bits='2880' hash='6b31c48a1a226d1c' id='type-id-115'>
+      <subrange length='45' lower-bound='0' upper-bound='44' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='79ddb840d119ebb2' id='type-id-116'/>
+    </array-type-def>
+    <type-decl name='float' size-in-bits='32' hash='d7ec3bf03d3c5690' id='type-id-117'/>
+    <type-decl name='int' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-25'/>
+    <type-decl name='long int' size-in-bits='64' hash='b119fe0931d2ee10#2' id='type-id-86'/>
+    <type-decl name='short int' size-in-bits='16' hash='6c2352eccdcd3eea#3' id='type-id-118'/>
+    <type-decl name='signed char' size-in-bits='8' hash='3c595c3350588f18' id='type-id-119'/>
+    <class-decl name='UCD_info' is-struct='yes' visibility='default' size-in-bits='2176' hash='3bd4562facc94ad6' id='type-id-120'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='big_endian' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='coredump_fd' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='coredump_filename' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='phdrs' type-id='type-id-121' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='phdrs_count' type-id='type-id-26' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='ucd_file_table' type-id='type-id-122' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='note_phdr' type-id='type-id-34' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='prstatus' type-id='type-id-123' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='fpregset' type-id='type-id-124' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='n_threads' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='threads' type-id='type-id-125' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='edi' type-id='type-id-126' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='UCD_thread_info' is-struct='yes' visibility='default' size-in-bits='6016' hash='b93de7e63aa98c95' id='type-id-127'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='prstatus' type-id='type-id-128' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='3840'>
+        <var-decl name='fpregset' type-id='type-id-129' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='coredump_phdr' is-struct='yes' visibility='default' size-in-bits='512' hash='0396a0002cab77bc' id='type-id-130'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='p_type' type-id='type-id-73' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='p_flags' type-id='type-id-73' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='p_offset' type-id='type-id-131' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='p_vaddr' type-id='type-id-131' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='p_filesz' type-id='type-id-131' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='p_memsz' type-id='type-id-131' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='p_align' type-id='type-id-131' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='p_backing_file_index' type-id='type-id-132' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='p_mapoff' type-id='type-id-131' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='elf_dyn_info' is-struct='yes' visibility='default' size-in-bits='1408' hash='115a2ca68d0d06c7' id='type-id-126'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='ei' type-id='type-id-133' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='di_cache' type-id='type-id-134' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='di_debug' type-id='type-id-134' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='elf_image' is-struct='yes' visibility='default' size-in-bits='128' hash='be5ee05b3e3cdea4' id='type-id-133'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='image' type-id='type-id-34' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='size' type-id='type-id-33' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='elf_prstatus' is-struct='yes' visibility='default' size-in-bits='3840' hash='53b678104e6819f2' id='type-id-135'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='pr_info' type-id='type-id-136' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='pr_cursig' type-id='type-id-118' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='pr_sigpend' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='pr_sighold' type-id='type-id-3' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='pr_pid' type-id='type-id-137' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='288'>
+        <var-decl name='pr_ppid' type-id='type-id-137' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='pr_pgrp' type-id='type-id-137' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='pr_sid' type-id='type-id-137' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='pr_utime' type-id='type-id-138' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='pr_stime' type-id='type-id-138' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='pr_cutime' type-id='type-id-138' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='pr_cstime' type-id='type-id-138' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='pr_reg' type-id='type-id-139' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='3776'>
+        <var-decl name='pr_fpvalid' type-id='type-id-25' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='elf_siginfo' is-struct='yes' visibility='default' size-in-bits='96' hash='af69ecf49570693d' id='type-id-136'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='si_signo' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='si_code' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='si_errno' type-id='type-id-25' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='timeval' is-struct='yes' visibility='default' size-in-bits='128' hash='bc6c194f1d75b24d' id='type-id-138'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='tv_sec' type-id='type-id-140' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='tv_usec' type-id='type-id-141' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='ucd_file_s' is-struct='yes' visibility='default' size-in-bits='256' hash='87b90540f939c9a5' id='type-id-142'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='filename' type-id='type-id-29' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='fd' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='size' type-id='type-id-143' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='image' type-id='type-id-144' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='ucd_file_table_s' is-struct='yes' visibility='default' size-in-bits='192' hash='9e0624e9789872bf' id='type-id-145'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='uft_count' type-id='type-id-33' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='uft_size' type-id='type-id-33' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='uft_files' type-id='type-id-146' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_info' is-struct='yes' visibility='default' size-in-bits='640' hash='4f99f842c6574402' id='type-id-147'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='next' type-id='type-id-148' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='prev' type-id='type-id-148' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='start_ip' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='end_ip' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='gp' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='format' type-id='type-id-149' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='352'>
+        <var-decl name='pad' type-id='type-id-149' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='u' type-id='type-id-150' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_op' is-struct='yes' visibility='default' size-in-bits='128' hash='4801617d86949c32' id='type-id-151'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='tag' type-id='type-id-152' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='8'>
+        <var-decl name='qp' type-id='type-id-152' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='16'>
+        <var-decl name='reg' type-id='type-id-153' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='32'>
+        <var-decl name='when' type-id='type-id-149' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='val' type-id='type-id-36' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_proc_info' is-struct='yes' visibility='default' size-in-bits='256' hash='d41cd87c071f8e6b' id='type-id-154'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='name_ptr' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='handler' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='flags' type-id='type-id-73' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='160'>
+        <var-decl name='pad0' type-id='type-id-149' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='regions' type-id='type-id-155' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_region_info' is-struct='yes' visibility='default' size-in-bits='256' hash='7f0b78b04a8da720' id='type-id-156'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='next' type-id='type-id-157' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='insn_count' type-id='type-id-149' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='96'>
+        <var-decl name='op_count' type-id='type-id-73' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='op' type-id='type-id-158' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_remote_table_info' is-struct='yes' visibility='default' size-in-bits='256' hash='ccf381caef65164d' id='type-id-159'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='name_ptr' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='segbase' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='table_len' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='table_data' type-id='type-id-36' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='unw_dyn_table_info' is-struct='yes' visibility='default' size-in-bits='256' hash='93966fecf78a7f95' id='type-id-160'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='name_ptr' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='segbase' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='table_len' type-id='type-id-36' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='table_data' type-id='type-id-107' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='UCD_proc_status_t' type-id='type-id-135' size-in-bits='3840' id='type-id-128'/>
+    <typedef-decl name='__int16_t' type-id='type-id-118' size-in-bits='16' hash='6c2352eccdcd3eea' id='type-id-161'/>
+    <typedef-decl name='__int32_t' type-id='type-id-25' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-162'/>
+    <typedef-decl name='__int8_t' type-id='type-id-119' size-in-bits='8' hash='3c595c3350588f18' id='type-id-163'/>
+    <typedef-decl name='__off_t' type-id='type-id-86' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-164'/>
+    <typedef-decl name='__pid_t' type-id='type-id-25' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-137'/>
+    <typedef-decl name='__suseconds_t' type-id='type-id-86' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-141'/>
+    <typedef-decl name='__time_t' type-id='type-id-86' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-140'/>
+    <typedef-decl name='__uint32_t' type-id='type-id-26' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-165'/>
+    <typedef-decl name='__uint64_t' type-id='type-id-3' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-166'/>
+    <typedef-decl name='__uint8_t' type-id='type-id-167' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-168'/>
+    <typedef-decl name='coredump_phdr_t' type-id='type-id-130' size-in-bits='512' id='type-id-169'/>
+    <typedef-decl name='elf_fpreg_t' type-id='type-id-170' size-in-bits='64' id='type-id-111'/>
+    <typedef-decl name='elf_fpregset_t' type-id='type-id-112' size-in-bits='2176' hash='6a6e3587c91f4b46' id='type-id-129'/>
+    <typedef-decl name='elf_greg_t' type-id='type-id-166' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-114'/>
+    <typedef-decl name='elf_gregset_t' type-id='type-id-115' size-in-bits='2880' hash='6b31c48a1a226d1c' id='type-id-139'/>
+    <typedef-decl name='int16_t' type-id='type-id-161' size-in-bits='16' hash='6c2352eccdcd3eea' id='type-id-153'/>
+    <typedef-decl name='int32_t' type-id='type-id-162' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-149'/>
+    <typedef-decl name='int8_t' type-id='type-id-163' size-in-bits='8' hash='3c595c3350588f18' id='type-id-152'/>
+    <typedef-decl name='off_t' type-id='type-id-164' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-143'/>
+    <typedef-decl name='size_t' type-id='type-id-3' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-33'/>
+    <typedef-decl name='ucd_file_index_t' type-id='type-id-25' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-132'/>
+    <typedef-decl name='ucd_file_t' type-id='type-id-142' size-in-bits='256' id='type-id-171'/>
+    <typedef-decl name='ucd_file_table_t' type-id='type-id-145' size-in-bits='192' id='type-id-122'/>
+    <typedef-decl name='uint32_t' type-id='type-id-165' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-73'/>
+    <typedef-decl name='uint64_t' type-id='type-id-166' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-71'/>
+    <typedef-decl name='uint8_t' type-id='type-id-168' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-70'/>
+    <typedef-decl name='unw_dyn_info_t' type-id='type-id-147' size-in-bits='640' id='type-id-134'/>
+    <typedef-decl name='unw_dyn_op_t' type-id='type-id-151' size-in-bits='128' id='type-id-172'/>
+    <typedef-decl name='unw_dyn_proc_info_t' type-id='type-id-154' size-in-bits='256' id='type-id-173'/>
+    <typedef-decl name='unw_dyn_region_info_t' type-id='type-id-156' size-in-bits='256' id='type-id-174'/>
+    <typedef-decl name='unw_dyn_remote_table_info_t' type-id='type-id-159' size-in-bits='256' id='type-id-175'/>
+    <typedef-decl name='unw_dyn_table_info_t' type-id='type-id-160' size-in-bits='256' id='type-id-176'/>
+    <typedef-decl name='unw_word_t' type-id='type-id-71' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-36'/>
+    <typedef-decl name='uoff_t' type-id='type-id-71' size-in-bits='64' hash='8fdc5eea2983a729' id='type-id-131'/>
+    <union-decl name='elf_fpreg_t' naming-typedef-id='type-id-111' visibility='default' size-in-bits='64' hash='f7ab4214775ae256' id='type-id-170'>
+      <data-member access='public'>
+        <var-decl name='d' type-id='type-id-110' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='f' type-id='type-id-117' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <union-decl name='__anonymous_union__' visibility='default' size-in-bits='256' is-anonymous='yes' hash='7691e9497ec1e26b' id='type-id-150'>
+      <data-member access='public'>
+        <var-decl name='pi' type-id='type-id-173' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='ti' type-id='type-id-176' visibility='default'/>
+      </data-member>
+      <data-member access='public'>
+        <var-decl name='rti' type-id='type-id-175' visibility='default'/>
+      </data-member>
+    </union-decl>
+    <type-decl name='unsigned char' size-in-bits='8' hash='6ebac62b3366db68' id='type-id-167'/>
+    <type-decl name='unsigned int' size-in-bits='32' hash='e66b43f97c38e87a' id='type-id-26'/>
+    <type-decl name='unsigned long int' size-in-bits='64' hash='8fdc5eea2983a729#2' id='type-id-3'/>
+    <array-type-def dimensions='1' type-id='type-id-172' size-in-bits='128' hash='e378eb03fccbf7d2' id='type-id-158'>
+      <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-177'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-120' size-in-bits='64' hash='b86b0e4aa5def308' id='type-id-178'/>
+    <pointer-type-def type-id='type-id-128' size-in-bits='64' hash='8c595ed82ea24133' id='type-id-123'/>
+    <pointer-type-def type-id='type-id-127' size-in-bits='64' hash='89e46e6a618524ba' id='type-id-125'/>
+    <pointer-type-def type-id='type-id-1' size-in-bits='64' hash='e533f42d1dd4942c' id='type-id-65'/>
+    <qualified-type-def type-id='type-id-1' const='yes' hash='3e50fd33f9bb78d9' id='type-id-179'/>
+    <pointer-type-def type-id='type-id-179' size-in-bits='64' hash='c44743f354f6a443' id='type-id-29'/>
+    <pointer-type-def type-id='type-id-169' size-in-bits='64' hash='2ddbf3faa40df35f' id='type-id-121'/>
+    <pointer-type-def type-id='type-id-129' size-in-bits='64' hash='0dc33ebad04d5c7a' id='type-id-124'/>
+    <pointer-type-def type-id='type-id-171' size-in-bits='64' hash='5b7a90421e5abe20' id='type-id-146'/>
+    <pointer-type-def type-id='type-id-70' size-in-bits='64' hash='24d8cca8965ce13e' id='type-id-144'/>
+    <pointer-type-def type-id='type-id-147' size-in-bits='64' hash='d900a55801957250' id='type-id-148'/>
+    <pointer-type-def type-id='type-id-156' size-in-bits='64' hash='e250bffde7b95bce' id='type-id-157'/>
+    <pointer-type-def type-id='type-id-174' size-in-bits='64' hash='5e992856871680a7' id='type-id-155'/>
+    <pointer-type-def type-id='type-id-36' size-in-bits='64' hash='f1a1f9a0575b1cb2' id='type-id-107'/>
+    <function-decl name='_UCD_add_backing_file_at_vaddr' mangled-name='_UCD_add_backing_file_at_vaddr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_add_backing_file_at_vaddr' hash='c9a26f4f662498e9'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <parameter type-id='type-id-3' name='vaddr'/>
+      <parameter type-id='type-id-29' name='path'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+    <type-decl name='void' id='type-id-108'/>
+    <pointer-type-def type-id='type-id-108' id='type-id-34'/>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_create.c' language='LANG_C11'>
+    <typedef-decl name='pid_t' type-id='type-id-137' size-in-bits='32' hash='09d17c08f594edc7' id='type-id-180'/>
+    <function-decl name='_UCD_create' mangled-name='_UCD_create' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_create' hash='43519b72d294604c'>
+      <parameter type-id='type-id-29' name='filename'/>
+      <return type-id='type-id-178'/>
+    </function-decl>
+    <function-decl name='_UCD_get_num_threads' mangled-name='_UCD_get_num_threads' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_num_threads' hash='6b0ac79c4d4c24f0'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+    <function-decl name='_UCD_select_thread' mangled-name='_UCD_select_thread' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_select_thread' hash='940b51697b53b7a8'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <parameter type-id='type-id-25' name='n'/>
+      <return type-id='type-id-108'/>
+    </function-decl>
+    <function-decl name='_UCD_get_pid' mangled-name='_UCD_get_pid' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_pid' hash='6b0ac79c4d4c24f0'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <return type-id='type-id-180'/>
+    </function-decl>
+    <function-decl name='_UCD_get_cursig' mangled-name='_UCD_get_cursig' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_cursig' hash='6b0ac79c4d4c24f0'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_destroy.c' language='LANG_C11'>
+    <function-decl name='_UCD_destroy' mangled-name='_UCD_destroy' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_destroy' hash='24f9a1ed696ed060'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <return type-id='type-id-108'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_find_proc_info.c' language='LANG_C11'>
+    <function-decl name='_UCD_find_proc_info' mangled-name='_UCD_find_proc_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_find_proc_info' hash='1864dd1e0496fd23'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-103'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_elf_filename.c' language='LANG_C11'>
+    <function-decl name='_UCD_get_elf_filename' mangled-name='_UCD_get_elf_filename' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_elf_filename' hash='d51136ed14244e3c'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-65'/>
+      <parameter type-id='type-id-33'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_mapinfo_linux.c' language='LANG_C11'>
+    <function-decl name='_UCD_get_mapinfo' mangled-name='_UCD_get_mapinfo' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_mapinfo' hash='afc9197e873e1f78'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <parameter type-id='type-id-121' name='phdrs'/>
+      <parameter type-id='type-id-26' name='phdr_size'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_proc_name.c' language='LANG_C11'>
+    <function-decl name='_UCD_get_proc_name' mangled-name='_UCD_get_proc_name' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_proc_name' hash='d51136ed14244e3c'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-36'/>
+      <parameter type-id='type-id-65'/>
+      <parameter type-id='type-id-33'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UCD_get_threadinfo_prstatus.c' language='LANG_C11'>
+    <function-decl name='_UCD_get_threadinfo' mangled-name='_UCD_get_threadinfo' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_threadinfo' hash='afc9197e873e1f78'>
+      <parameter type-id='type-id-178' name='ui'/>
+      <parameter type-id='type-id-121' name='phdrs'/>
+      <parameter type-id='type-id-26' name='phdr_size'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_access_fpreg.c' language='LANG_C11'>
+    <function-decl name='_UCD_access_fpreg' mangled-name='_UCD_access_fpreg' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_access_fpreg' hash='1f9ad6e9ec386e8f'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-85'/>
+      <parameter type-id='type-id-102'/>
+      <parameter type-id='type-id-25'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_get_dyn_info_list_addr.c' language='LANG_C11'>
+    <function-decl name='_UCD_get_dyn_info_list_addr' mangled-name='_UCD_get_dyn_info_list_addr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_get_dyn_info_list_addr' hash='f99fa444964bcd86'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-107'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_put_unwind_info.c' language='LANG_C11'>
+    <function-decl name='_UCD_put_unwind_info' mangled-name='_UCD_put_unwind_info' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_put_unwind_info' hash='cde0cac56bacd918'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-103'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-108'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/coredump/_UPT_resume.c' language='LANG_C11'>
+    <function-decl name='_UCD_resume' mangled-name='_UCD_resume' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_resume' hash='641d5ea074bc3beb'>
+      <parameter type-id='type-id-77'/>
+      <parameter type-id='type-id-101'/>
+      <parameter type-id='type-id-34'/>
+      <return type-id='type-id-25'/>
+    </function-decl>
+  </abi-instr>
+  <abi-instr address-size='64' path='/home/mattst88/projects/libunwind/src/mi/init.c' language='LANG_C11'>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='8' hash='f7aed1c6cc6e7b3c' id='type-id-181'>
+      <subrange length='1' lower-bound='0' upper-bound='0' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='eba0a2b392137dcb' id='type-id-177'/>
+    </array-type-def>
+    <array-type-def dimensions='1' type-id='type-id-1' size-in-bits='64' hash='e1c8b625c73024c4' id='type-id-182'>
+      <subrange length='8' lower-bound='0' upper-bound='7' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='6e87a8ff484907ad' id='type-id-183'/>
+    </array-type-def>
+    <class-decl name='_IO_FILE' is-struct='yes' visibility='default' size-in-bits='1728' hash='dedab36ee0ea6582' id='type-id-184'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='_flags' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='64'>
+        <var-decl name='_IO_read_ptr' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='128'>
+        <var-decl name='_IO_read_end' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='192'>
+        <var-decl name='_IO_read_base' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='256'>
+        <var-decl name='_IO_write_base' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='320'>
+        <var-decl name='_IO_write_ptr' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='384'>
+        <var-decl name='_IO_write_end' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='448'>
+        <var-decl name='_IO_buf_base' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='512'>
+        <var-decl name='_IO_buf_end' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='576'>
+        <var-decl name='_IO_save_base' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='640'>
+        <var-decl name='_IO_backup_base' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='704'>
+        <var-decl name='_IO_save_end' type-id='type-id-65' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='768'>
+        <var-decl name='_markers' type-id='type-id-185' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='832'>
+        <var-decl name='_chain' type-id='type-id-186' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='896'>
+        <var-decl name='_fileno' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='928'>
+        <var-decl name='_flags2' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='952'>
+        <var-decl name='_short_backupbuf' type-id='type-id-181' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='960'>
+        <var-decl name='_old_offset' type-id='type-id-164' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1024'>
+        <var-decl name='_cur_column' type-id='type-id-37' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1040'>
+        <var-decl name='_vtable_offset' type-id='type-id-119' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1048'>
+        <var-decl name='_shortbuf' type-id='type-id-181' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1088'>
+        <var-decl name='_lock' type-id='type-id-187' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1152'>
+        <var-decl name='_offset' type-id='type-id-188' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1216'>
+        <var-decl name='_codecvt' type-id='type-id-189' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1280'>
+        <var-decl name='_wide_data' type-id='type-id-190' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1344'>
+        <var-decl name='_freeres_list' type-id='type-id-186' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1408'>
+        <var-decl name='_freeres_buf' type-id='type-id-34' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1472'>
+        <var-decl name='_prevchain' type-id='type-id-191' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1536'>
+        <var-decl name='_mode' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1568'>
+        <var-decl name='_unused3' type-id='type-id-25' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1600'>
+        <var-decl name='_total_written' type-id='type-id-166' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='1664'>
+        <var-decl name='_unused2' type-id='type-id-182' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <class-decl name='__sigset_t' is-struct='yes' naming-typedef-id='type-id-192' visibility='default' size-in-bits='1024' hash='18950dbdbe728dbc' id='type-id-193'>
+      <data-member access='public' layout-offset-in-bits='0'>
+        <var-decl name='__val' type-id='type-id-194' visibility='default'/>
+      </data-member>
+    </class-decl>
+    <typedef-decl name='FILE' type-id='type-id-184' size-in-bits='1728' id='type-id-195'/>
+    <typedef-decl name='_IO_lock_t' type-id='type-id-108' id='type-id-196'/>
+    <typedef-decl name='__off64_t' type-id='type-id-86' size-in-bits='64' hash='b119fe0931d2ee10' id='type-id-188'/>
+    <typedef-decl name='__sigset_t' type-id='type-id-193' size-in-bits='1024' id='type-id-192'/>
+    <typedef-decl name='intrmask_t' type-id='type-id-197' size-in-bits='1024' id='type-id-198'/>
+    <typedef-decl name='sigset_t' type-id='type-id-192' size-in-bits='1024' id='type-id-197'/>
+    <array-type-def dimensions='1' type-id='type-id-3' size-in-bits='1024' hash='ed1e12a813ec6094' id='type-id-194'>
+      <subrange length='16' lower-bound='0' upper-bound='15' type-id='type-id-3' size-in-bits='64' is-anonymous='yes' hash='6c35b1e999eba398' id='type-id-199'/>
+    </array-type-def>
+    <pointer-type-def type-id='type-id-195' size-in-bits='64' hash='4cdc26b379a5c62d' id='type-id-200'/>
+    <pointer-type-def type-id='type-id-184' size-in-bits='64' hash='071f36dcbe00ad00' id='type-id-186'/>
+    <pointer-type-def type-id='type-id-186' size-in-bits='64' hash='e8c018048121152c' id='type-id-191'/>
+    <pointer-type-def type-id='type-id-201' size-in-bits='64' id='type-id-189'/>
+    <pointer-type-def type-id='type-id-196' size-in-bits='64' id='type-id-187'/>
+    <pointer-type-def type-id='type-id-202' size-in-bits='64' id='type-id-185'/>
+    <pointer-type-def type-id='type-id-203' size-in-bits='64' id='type-id-190'/>
+    <class-decl name='_IO_codecvt' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-201'/>
+    <class-decl name='_IO_marker' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-202'/>
+    <class-decl name='_IO_wide_data' is-struct='yes' visibility='default' is-declaration-only='yes' id='type-id-203'/>
+    <var-decl name='_UIloongarch64_debug_level' type-id='type-id-86' mangled-name='_UIloongarch64_debug_level' visibility='default' elf-symbol-id='_UIloongarch64_debug_level'/>
+    <var-decl name='stdout' type-id='type-id-200' visibility='default' elf-symbol-id='stdout'/>
+    <var-decl name='stderr' type-id='type-id-200' visibility='default' elf-symbol-id='stderr'/>
+  </abi-instr>
+</abi-corpus>
