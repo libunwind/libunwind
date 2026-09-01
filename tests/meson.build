@@ -833,11 +833,18 @@ if not unw_remote_only
     endif
 
     if build_ptrace
+        _tracee = executable(
+            'ptrace-tracee',
+            'ptrace-tracee.c',
+            include_directories: _inc,
+            dependencies: libc_deps,
+            override_options: _opts,
+        )
+
         test(
             _test_ptrace.name(),
             _test_ptrace,
-            # https://github.com/libunwind/libunwind/issues/392
-            should_fail: target_machine.cpu_family() == 'x86',
+            args: [_tracee],
             env: _env,
         )
 

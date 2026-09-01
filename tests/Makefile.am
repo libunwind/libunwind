@@ -143,11 +143,7 @@ endif
 if BUILD_PTRACE
  check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep += test-ptrace
- noinst_PROGRAMS_cdep += mapper test-ptrace-misc
-if ARCH_X86
- # https://github.com/libunwind/libunwind/issues/392
- XFAIL_TESTS += test-ptrace
-endif
+ noinst_PROGRAMS_cdep += mapper ptrace-tracee test-ptrace-misc
 endif
 
 if BUILD_SETJMP
