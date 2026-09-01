@@ -117,8 +117,10 @@ endif
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
-# only enable Ltest-mem-validate on archs without conservative checks
-if !CONSERVATIVE_CHECKS
+# x86_64 and s390x only validate memory addresses while unwinding when
+# conservative checks are enabled, so the test can only pass there in that
+# configuration.  Every other arch validates unconditionally.
+if CONSERVATIVE_CHECKS
  check_PROGRAMS_cdep += Ltest-mem-validate
 else #CONSERVATIVE_CHECKS
 if !ARCH_X86_64
