@@ -23,7 +23,6 @@ following.
 ## Supported Systems
 
 [![CI - Linux (GNU)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-gnu.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-gnu.yml)
-[![CI - Linux (musl)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-musl.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-linux-musl.yml)
 [![CI - FreeBSD](https://github.com/libunwind/libunwind/actions/workflows/CI-freebsd.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-freebsd.yml)
 [![CI - Windows](https://github.com/libunwind/libunwind/actions/workflows/CI-win.yml/badge.svg)](https://github.com/libunwind/libunwind/actions/workflows/CI-win.yml)
 
