@@ -266,6 +266,8 @@ AM_COND_IF([CONFIG_TESTS], [
                         [AC_SUBST([BACKTRACELIB],["$ac_cv_search_backtrace"])])])
   LIBS="$old_LIBS"
   AC_CONFIG_FILES([tests/Makefile])
+  dnl check-namespace.sh reads the built libraries with $NM, which libtool
+  dnl points at the nm that goes with the compiler.
   AC_CONFIG_FILES([tests/check-namespace.sh], [chmod +x tests/check-namespace.sh])
 ])
 AC_ARG_WITH([testdriver],
@@ -346,8 +348,23 @@ AC_MSG_RESULT([$target_arch])
 AC_MSG_CHECKING([for target operating system])
 AC_MSG_RESULT([$target_os])
 
-AM_CONDITIONAL([XFAIL_PTRACE_TEST], [echo $CFLAGS | grep -q '\-m32\>'])
-AM_CONDITIONAL([CROSS_BUILD], [test x$build != x$host])
+dnl A build for a different host is not necessarily one whose programs
+dnl cannot be run here: a multilib build (--host=i686-pc-linux-gnu with
+dnl CFLAGS=-m32 on an x86_64 machine, say) produces programs that run
+dnl natively, and binfmt_misc may take care of the rest.  The test suite
+dnl uses this to decide whether it can run the shell scripts that drive
+dnl the test programs directly.
+AC_CACHE_CHECK([whether programs built for $host can be run],
+  [libunwind_cv_run_host_binaries],
+  [AC_LINK_IFELSE([AC_LANG_PROGRAM([[]], [[return 0;]])],
+     [if ./conftest$EXEEXT >&AS_MESSAGE_LOG_FD 2>&1; then
+        libunwind_cv_run_host_binaries=yes
+      else
+        libunwind_cv_run_host_binaries=no
+      fi],
+     [libunwind_cv_run_host_binaries=no])])
+AM_CONDITIONAL([RUN_HOST_BINARIES],
+               [test x$libunwind_cv_run_host_binaries = xyes])
 AM_CONDITIONAL(REMOTE_ONLY, test x$target_arch != x$host_arch)
 AM_CONDITIONAL(ARCH_AARCH64, test x$target_arch = xaarch64)
 AM_CONDITIONAL(ARCH_ALPHA, test x$target_arch = xalpha)

@@ -31,8 +31,26 @@ plat=@arch@
 os=@target_os@
 num_errors=0
 
+: ${NM:=@NM@}
 : ${LIBUNWIND:=../src/.libs/libunwind.so}
 : ${LIBUNWIND_GENERIC:=../src/.libs/libunwind-${plat}.so}
+
+#
+# The libraries are read, not run, so a cross build is checked just as well
+# as a native one, provided nm understands the target's object files.  A
+# build machine's nm pointed at a foreign object reports no symbols at all,
+# which would look like every symbol going missing: skip instead.
+#
+require_nm () {
+    filename=$1
+
+    if $NM -g $filename > /dev/null 2>&1; then
+	return
+    fi
+
+    echo "  SKIP: $NM cannot read $filename"
+    exit 77
+}
 
 fetch_symtab () {
     filename=$1
@@ -45,14 +63,16 @@ fetch_symtab () {
 	echo "Checking $filename..."
     fi
 
+    require_nm $filename
+
     #
     # Unfortunately, "nm --defined" is a GNU-extension.  For portability,
     # build the list of defined symbols by hand.
     #
-    symtab=`nm -g $filename`
+    symtab=`$NM -g $filename`
+    undef=`$NM -g -u $filename`
     saved_IFS="$IFS"
     IFS=""
-    undef=`nm -g -u $filename`
     for line in $undef; do
 	symtab=`echo "$symtab" | grep -v "^${line}"\$`
     done;

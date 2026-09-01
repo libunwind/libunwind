@@ -390,6 +390,7 @@ jobs:
           cc="${gcc_prefix}-gcc-${{ matrix.config.gccver }}"
           cxx="${gcc_prefix}-g++-${{ matrix.config.gccver }}"
           ar="${gcc_prefix}-ar"
+          nm="${gcc_prefix}-nm"
           strip_tool="${gcc_prefix}-strip"
 
           ew="['$PWD/scripts/meson-qemu-exe-wrapper', '--qemu=qemu-${{ matrix.config.qemu }}', '--gcc=${cc}'"
@@ -402,6 +403,7 @@ jobs:
             printf "c = '%s'\n"   "${cc}"
             printf "cpp = '%s'\n" "${cxx}"
             printf "ar = '%s'\n"  "${ar}"
+            printf "nm = '%s'\n"  "${nm}"
             printf "strip = '%s'\n" "${strip_tool}"
             printf "exe_wrapper = %s\n" "${ew}"
             if [ -n "${{ matrix.config.meson_c_args }}" ]; then
