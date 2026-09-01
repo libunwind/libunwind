@@ -297,13 +297,16 @@ AC_ARG_ENABLE([cxx_exceptions],
 )
 AC_MSG_RESULT([$enable_cxx_exceptions])
 AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
+dnl libtool removes a plain -lc from the libraries of a shared library, which
+dnl with -nostdlib leaves the library with no DT_NEEDED entry for libc and its
+dnl libc references unversioned.  Pass -lc straight to the linker instead.
 AM_COND_IF([SUPPORT_CXX_EXCEPTIONS],
            [save_LDFLAGS="$LDFLAGS"
             LDFLAGS="${LDFLAGS} -nostdlib"
             AC_SEARCH_LIBS([_Unwind_Resume],
                            [gcc_s gcc],
                            [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
-                                  [AC_SUBST([UNW_CRT_LIBADD],  ["-lc $ac_cv_search__Unwind_Resume"])
+                                  [AC_SUBST([UNW_CRT_LIBADD],  ["-XCClinker -lc $ac_cv_search__Unwind_Resume"])
                                    AC_SUBST([UNW_CRT_LDFLAGS], ["-XCClinker -nostdlib"])])
                            ],,
                            [-lc])
