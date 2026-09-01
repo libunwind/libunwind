@@ -102,7 +102,4 @@ Coverage gaps
 - `aarch64/nto-qnx7.1.0` and `x86_64/nto-qnx7.1.0` cannot be regenerated
   without a QNX toolchain, and are stale: they still record the pre-1.10
   sonames.
-- `sparc64` has no baseline yet; CI runs `check-namespace.sh` for it instead.
-  `scripts/regen-abi-baselines --target=sparc64` will fill it in once a cross
-  toolchain is available.
 - `ia64` has no baseline; no cross toolchain is readily available.
