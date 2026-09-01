@@ -1,5 +1,12 @@
 sh = find_program('/bin/sh', 'sh', native: true)
 
+# check-namespace.sh reads the built libraries with nm rather than running
+# them, so it wants the nm that goes with the host compiler.  In a cross build
+# that is whatever the cross file names in [binaries]; with no entry there this
+# finds the build machine's nm, and the test skips itself if that nm cannot
+# read the libraries.
+nm = find_program('nm', required: false)
+
 _check_nms = configure_file(
     output: 'check-namespace.sh',
     input: 'check-namespace.sh.in',
@@ -10,6 +17,7 @@ _check_nms = configure_file(
         ),
         'arch': archnames[target_machine.cpu_family()],
         'target_os': target_machine.system(),
+        'NM': nm.found() ? nm.full_path() : 'nm',
         'CONFIG_WEAK_BACKTRACE_TRUE': get_option('weak_backtrace') ? '' : '# ',
         'enable_cxx_exceptions': support_cxx_exceptions ? 'yes' : 'no',
         'enable_debug_frame': cfg.has('CONFIG_DEBUG_FRAME') ? 'yes' : 'no',
@@ -91,21 +99,16 @@ if build_ptrace
 endif
 
 if not unw_remote_only
-    # Autotools only runs check_SCRIPTS (check-namespace.sh, run-ptrace-mapper,
-    # run-ptrace-misc) for non-cross builds; see tests/Makefile.am's TESTS
-    # assignment.
-    if not meson.is_cross_build()
-        test(
-            'check-namespace.sh',
-            sh,
-            args: [_check_nms, '-v'],
-            depends: [libunwind_lib, libunwind_generic_lib],
-            env: {
-                'LIBUNWIND': libunwind_lib.full_path(),
-                'LIBUNWIND_GENERIC': libunwind_generic_lib.full_path(),
-            },
-        )
-    endif
+    test(
+        'check-namespace.sh',
+        sh,
+        args: [_check_nms, '-v'],
+        depends: [libunwind_lib, libunwind_generic_lib],
+        env: {
+            'LIBUNWIND': libunwind_lib.full_path(),
+            'LIBUNWIND_GENERIC': libunwind_generic_lib.full_path(),
+        },
+    )
 
     _exe = executable(
         'Gtest-bt',
@@ -833,11 +836,18 @@ if not unw_remote_only
     endif
 
     if build_ptrace
+        _tracee = executable(
+            'ptrace-tracee',
+            'ptrace-tracee.c',
+            include_directories: _inc,
+            dependencies: libc_deps,
+            override_options: _opts,
+        )
+
         test(
             _test_ptrace.name(),
             _test_ptrace,
-            # https://github.com/libunwind/libunwind/issues/392
-            should_fail: target_machine.cpu_family() == 'x86',
+            args: [_tracee],
             env: _env,
         )
 
@@ -867,9 +877,9 @@ if not unw_remote_only
             override_options: _opts,
         )
 
-        # Autotools only runs check_SCRIPTS (run-ptrace-mapper, run-ptrace-misc)
-        # for non-cross builds; see tests/Makefile.am's TESTS assignment.
-        if not meson.is_cross_build()
+        # These drive test-ptrace directly, so they are only useful when
+        # programs built for the host can be run here.
+        if meson.can_run_host_binaries()
             test(
                 'run-ptrace-mapper',
                 _test_ptrace,

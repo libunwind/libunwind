@@ -187,18 +187,22 @@ main (int argc, char **argv)
 
   if (argc == 1)
     {
-#ifdef HAVE_EXECVPE
-      static char *args[] = { "self", "ls", "/", NULL };
-#else
-      static char *args[] = { "self", "/bin/ls", "/", NULL };
-#endif
-      /* automated test case */
+      /* Automated test case: trace the tracee that was built alongside
+         this program.  A program from the host system may have a
+         different word size than the library was built for (a -m32 build
+         on an x86_64 machine, say), and a process of a different word
+         size cannot be unwound.  The test suite runs with the test
+         directory as the working directory; UNW_PTRACE_TRACEE overrides
+         the path for runs from elsewhere.  */
+      static char *args[] = { "self", NULL, NULL };
+      char *tracee = getenv ("UNW_PTRACE_TRACEE");
+
+      /* args[0] stands in for argv[0]; the program to trace is picked up
+         at argv[optind], which is 1 here.  */
+      args[1] = tracee != NULL ? tracee : "./ptrace-tracee";
       argv = args;
 
-      /* Unless the args array is 'walked' the child
-         process is unable to access it and dies with a segfault */
-      fprintf(stderr, "Automated test (%s,%s,%s,%s)\n",
-              args[0],args[1],args[2],args[3]);
+      fprintf (stderr, "Automated test (%s)\n", args[1]);
     }
   else if (argc > 1)
     while (argv[optind][0] == '-')

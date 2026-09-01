@@ -143,11 +143,7 @@ endif
 if BUILD_PTRACE
  check_SCRIPTS_cdep += run-ptrace-mapper run-ptrace-misc
  check_PROGRAMS_cdep += test-ptrace
- noinst_PROGRAMS_cdep += mapper test-ptrace-misc
-if ARCH_X86
- # https://github.com/libunwind/libunwind/issues/392
- XFAIL_TESTS += test-ptrace
-endif
+ noinst_PROGRAMS_cdep += mapper ptrace-tracee test-ptrace-misc
 endif
 
 if BUILD_SETJMP
@@ -200,10 +196,15 @@ check_SCRIPTS =	$(check_SCRIPTS_common) $(check_SCRIPTS_cdep) \
 		$(check_SCRIPTS_arch)
 
 TESTS = $(check_PROGRAMS)
-if !CROSS_BUILD
- TESTS += $(check_SCRIPTS)
+# check-namespace.sh reads the built libraries with nm instead of running
+# them, so it is as useful in a cross build as in a native one.
+TESTS += $(check_SCRIPTS_common)
+if RUN_HOST_BINARIES
+ TESTS += $(check_SCRIPTS_cdep) $(check_SCRIPTS_arch)
 else
-# For cross builds, include coredump tests - they run under QEMU
+# The remaining test scripts run the test programs directly, so they are of
+# no use when those programs cannot be run here.  The coredump tests are the
+# exception: they invoke QEMU themselves.
 if BUILD_COREDUMP
 if OS_LINUX
  TESTS += run-coredump-unwind
@@ -237,13 +238,6 @@ endif
 
 if ARCH_SPARC64
 XFAIL_TESTS += $(XFAIL_TESTS_PTRACE_SINGLESTEP)
-endif
-
-# This is meant for multilib binaries, -m32.
-# ptrace gives EBADREG when testing,
-# but generally everything else works.
-if XFAIL_PTRACE_TEST
- XFAIL_TESTS += run-ptrace-mapper 
 endif
 
 noinst_PROGRAMS = $(noinst_PROGRAMS_common) $(noinst_PROGRAMS_cdep) \
