@@ -1,0 +1,56 @@
+#!/bin/sh
+#
+# Check that a separate debug file is located through a .gnu_debuglink
+# section whose file name is the same as the name of the program itself.
+#
+# In that case the first candidate libunwind tries is the stripped program,
+# and only the CRC-32 recorded in the .gnu_debuglink section tells it that the
+# candidate is not the real debug file.  See
+# https://github.com/libunwind/libunwind/issues/422
+#
+# This test only runs in a native build: it executes a program it has just
+# stripped and relinked.
+
+set -e
+
+if ! command -v objcopy >/dev/null 2>&1 || ! command -v strip >/dev/null 2>&1; then
+  echo "objcopy or strip not found, skipping debuglink test"
+  exit 77
+fi
+
+# The program to use is passed in by the build system, which knows where the
+# real (non-libtool-wrapper) executable lives.
+PROG="${1:-./test-debuglink}"
+
+# With libtool the program named in the build directory is a wrapper script
+# that sets up the library search path; use the real executable in .libs and
+# point it at the uninstalled libraries ourselves.
+PROGDIR=$(dirname "$PROG")
+if [ -f "$PROGDIR/.libs/$(basename "$PROG")" ]; then
+  PROG="$PROGDIR/.libs/$(basename "$PROG")"
+  if [ -d "$PROGDIR/../src/.libs" ]; then
+    LIBDIR=$(cd "$PROGDIR/../src/.libs" && pwd)
+    LD_LIBRARY_PATH="$LIBDIR${LD_LIBRARY_PATH:+:$LD_LIBRARY_PATH}"
+    export LD_LIBRARY_PATH
+  fi
+fi
+
+if [ ! -f "$PROG" ]; then
+  echo "$PROG not found, skipping debuglink test"
+  exit 77
+fi
+
+TEMPDIR=`mktemp -d "${TMPDIR:-/tmp}/libunwind-debuglink-XXXXXXXXXX"`
+trap 'rm -rf -- "$TEMPDIR"' EXIT
+
+mkdir "$TEMPDIR/.debug"
+cp "$PROG" "$TEMPDIR/prog"
+
+# objcopy records only the basename of the debug file, so the first candidate
+# libunwind considers is the stripped program itself and the second one is
+# .debug/prog.
+objcopy --only-keep-debug "$TEMPDIR/prog" "$TEMPDIR/.debug/prog"
+strip "$TEMPDIR/prog"
+objcopy --add-gnu-debuglink="$TEMPDIR/.debug/prog" "$TEMPDIR/prog"
+
+"$TEMPDIR/prog"

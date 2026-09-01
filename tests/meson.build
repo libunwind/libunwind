@@ -221,6 +221,25 @@ if not unw_remote_only
     )
     test(_exe.name(), _exe, env: _env)
 
+    _exe = executable(
+        'test-debuglink',
+        'test-debuglink.c',
+        link_with: libunwind_lib,
+        include_directories: _inc,
+        dependencies: [libc_deps],
+        override_options: _opts,
+    )
+    # run-debuglink strips and runs the program it is given, so it only works
+    # in a native build.
+    if not meson.is_cross_build()
+        test(
+            'run-debuglink',
+            sh,
+            args: [files('run-debuglink'), _exe],
+            env: _env,
+        )
+    endif
+
     # Only enable Ltest-mem-validate on archs without conservative checks.
     if not cfg.has('CONSERVATIVE_CHECKS') or target_machine.cpu_family() not in [
         'x86_64',
