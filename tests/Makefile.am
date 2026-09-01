@@ -44,6 +44,7 @@ AM_LDFLAGS = $(LD_FLAGS_UNW_CET)
 LOG_DRIVER = $(SHELL) $(UNW_TESTDRIVER)
 
 EXTRA_DIST =	run-ia64-test-dyn1 run-ptrace-mapper run-ptrace-misc	\
+		run-debuglink \
 		run-coredump-unwind \
 		run-coredump-unwind-mdi check-namespace.sh.in \
 		test-runner.in \
@@ -161,6 +162,11 @@ endif
 if USE_ELF64
  check_PROGRAMS_cdep += test-elf64-gnu-hash
 endif
+
+# run-debuglink needs objcopy and strip to build a separate debug file; it
+# skips itself if they are not available.
+check_SCRIPTS_cdep += run-debuglink
+noinst_PROGRAMS_cdep += test-debuglink
 
 # Doesn't need SUPPORT_CXX_EXCEPTIONS (libunwind's own _Unwind_* API): this
 # just throws/catches via the toolchain's libgcc and checks that libunwind's
@@ -330,6 +336,7 @@ Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
 Gtest_get_proc_name_SOURCES = Gtest-get_proc_name.c
 test_elf32_gnu_hash_SOURCES = test-elf32-gnu-hash.c
 test_elf64_gnu_hash_SOURCES = test-elf64-gnu-hash.c
+test_debuglink_SOURCES = test-debuglink.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
 LIBUNWIND_arch = $(top_builddir)/src/libunwind-arch-$(arch).la
@@ -351,6 +358,7 @@ LIBUNWIND_setjmp = $(top_builddir)/src/libunwind-setjmp.la	\
 
 test_async_sig_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 test_flush_cache_LDADD = $(LIBUNWIND_local)
+test_debuglink_LDADD = $(LIBUNWIND_local)
 test_iterate_phdr_reentry_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 test_iterate_phdr_cache_null_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 test_init_remote_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
