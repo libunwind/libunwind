@@ -661,6 +661,53 @@ elif target_machine.cpu_family() in ['ppc', 'ppc64']
         ]
         _libunwind_setjmp_srcs += files('ppc/longjmp.S', 'ppc/siglongjmp.S')
     endif
+elif target_machine.cpu_family() == 'or1k'
+    _libunwind_srcs_or1k_common = [
+        _libunwind_srcs_common,
+        files('or1k/is_fpreg.c', 'or1k/regname.c'),
+    ]
+    _libunwind_srcs = [
+        _libunwind_srcs_or1k_common,
+        _libunwind_srcs_local,
+        files(
+            'mi/Lis_plt_entry.c',
+            'or1k/Lapply_reg_state.c',
+            'or1k/Lcreate_addr_space.c',
+            'or1k/Lget_proc_info.c',
+            'or1k/Lget_save_loc.c',
+            'or1k/Lglobal.c',
+            'or1k/Linit.c',
+            'or1k/Linit_local.c',
+            'or1k/Linit_remote.c',
+            'or1k/Lis_signal_frame.c',
+            'or1k/Lreg_states_iterate.c',
+            'or1k/Lregs.c',
+            'or1k/Lresume.c',
+            'or1k/Lstep.c',
+            'or1k/getcontext.S',
+        ),
+    ]
+    _libunwind_generic_srcs = [
+        _libunwind_srcs_or1k_common,
+        _libunwind_srcs_generic,
+        files(
+            'mi/Gis_plt_entry.c',
+            'or1k/Gapply_reg_state.c',
+            'or1k/Gcreate_addr_space.c',
+            'or1k/Gget_proc_info.c',
+            'or1k/Gget_save_loc.c',
+            'or1k/Gglobal.c',
+            'or1k/Ginit.c',
+            'or1k/Ginit_local.c',
+            'or1k/Ginit_remote.c',
+            'or1k/Gis_signal_frame.c',
+            'or1k/Greg_states_iterate.c',
+            'or1k/Gregs.c',
+            'or1k/Gresume.c',
+            'or1k/Gstep.c',
+        ),
+    ]
+    _libunwind_setjmp_srcs += files('or1k/siglongjmp.S')
 elif target_machine.cpu_family() in ['riscv32', 'riscv64']
     _libunwind_srcs_riscv_common = [
         _libunwind_srcs_common,
@@ -993,7 +1040,7 @@ if target_machine.cpu_family() != 'ia64'  # USE_DWARF
     endif
 endif
 
-if target_machine.cpu_family() in ['arm', 'parisc', 'ppc', 'x86', 'sh4']
+if target_machine.cpu_family() in ['arm', 'or1k', 'parisc', 'ppc', 'x86', 'sh4']
     libunwind_elf_lib = static_library(
         'unwind-elf32',
         'elf32.c',

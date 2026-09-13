@@ -33,6 +33,8 @@ elif target_machine.cpu_family() == 's390x'
     _headers += files('libunwind-s390x.h')
 elif target_machine.cpu_family() == 'alpha'
     _headers += files('libunwind-alpha.h')
+elif target_machine.cpu_family() == 'or1k'
+    _headers += files('libunwind-or1k.h')
 elif target_machine.cpu_family() in ['riscv32', 'riscv64']
     _headers += files('libunwind-riscv.h')
 elif target_machine.cpu_family() == 'loongarch64'

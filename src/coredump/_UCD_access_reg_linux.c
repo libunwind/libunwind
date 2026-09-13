@@ -101,6 +101,9 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
     regnum = offsetof(struct user_regs_struct, sar) / sizeof(long);
   else
     goto badreg;
+#elif defined(UNW_TARGET_OR1K)
+  if ((unsigned) regnum > (unsigned) UNW_OR1K_PC)
+    goto badreg;
 #elif defined(UNW_TARGET_RISCV)
   if (regnum == UNW_RISCV_PC)
     regnum = 0;
