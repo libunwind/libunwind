@@ -23,6 +23,8 @@
 # include "tdep-x86/jmpbuf.h"
 #elif defined __x86_64__
 # include "tdep-x86_64/jmpbuf.h"
+#elif defined __or1k__
+# include "tdep-or1k/jmpbuf.h"
 #elif defined __riscv || defined __riscv__
 # include "tdep-riscv/jmpbuf.h"
 #elif defined __loongarch64
