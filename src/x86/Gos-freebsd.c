@@ -121,8 +121,8 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
     ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
     if (ret < 0)
     {
-            Debug (2, "returning 0\n");
-            return 0;
+            Debug (2, "returning %d\n", ret);
+            return ret;
     }
 
     for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
@@ -140,6 +140,7 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
     c->dwarf.loc[EFLAGS] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_EFLAGS_OFF, 0);
     c->dwarf.loc[TRAPNO] = DWARF_LOC (uc_addr + FREEBSD_UC_MCONTEXT_TRAPNO_OFF, 0);
     c->dwarf.loc[ST0] = DWARF_NULL_LOC;
+    c->dwarf.use_prev_instr = 0;
   } else if (c->sigcontext_format == X86_SCF_FREEBSD_SYSCALL) {
     c->dwarf.loc[EIP] = DWARF_LOC (c->dwarf.cfa, 0);
     c->dwarf.loc[ESP] = DWARF_VAL_LOC (c, c->dwarf.cfa + 4);
