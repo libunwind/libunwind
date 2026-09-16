@@ -88,12 +88,11 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
 
   siginfo_ptr_loc = DWARF_LOC (siginfo_ptr_addr, 0);
   sigcontext_ptr_loc = DWARF_LOC (sigcontext_ptr_addr, 0);
-  ret = (dwarf_get (&c->dwarf, siginfo_ptr_loc, &siginfo_ptr)
-         | dwarf_get (&c->dwarf, sigcontext_ptr_loc, &sigcontext_ptr));
-  if (ret < 0)
+  if ((ret = dwarf_get (&c->dwarf, siginfo_ptr_loc, &siginfo_ptr)) < 0
+      || (ret = dwarf_get (&c->dwarf, sigcontext_ptr_loc, &sigcontext_ptr)) < 0)
     {
-      Debug (2, "returning 0\n");
-      return 0;
+      Debug (2, "returning %d\n", ret);
+      return ret;
     }
   if (siginfo_ptr < c->dwarf.cfa
       || siginfo_ptr > c->dwarf.cfa + 256
@@ -119,8 +118,8 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
   ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
   if (ret < 0)
     {
-      Debug (2, "returning 0\n");
-      return 0;
+      Debug (2, "returning %d\n", ret);
+      return ret;
     }
 
   for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
@@ -136,8 +135,6 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.loc[EIP] = DWARF_LOC (sc_addr + LINUX_SC_EIP_OFF, 0);
   c->dwarf.loc[ESP] = DWARF_LOC (sc_addr + LINUX_SC_ESP_OFF, 0);
 
-  ret = dwarf_get (&c->dwarf, c->dwarf.loc[EIP], &c->dwarf.ip);
-  ret = dwarf_get (&c->dwarf, c->dwarf.loc[ESP], &c->dwarf.cfa);
   c->dwarf.use_prev_instr = 0;
 
   return 0;

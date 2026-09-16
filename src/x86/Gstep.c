@@ -43,7 +43,16 @@ unw_step (unw_cursor_t *cursor)
   if (unw_is_signal_frame (cursor) > 0)
     {
       ret = x86_handle_signal_frame(cursor);
-      return 1;
+      if (ret >= 0)
+        ret = dwarf_get (&c->dwarf, c->dwarf.loc[EIP], &c->dwarf.ip);
+      c->dwarf.pi_valid = 0;
+      c->validate = validate;
+      if (ret < 0)
+        {
+          Debug (2, "returning %d\n", ret);
+          return ret;
+        }
+      return (c->dwarf.ip == 0) ? 0 : 1;
     }
 
   /* Try DWARF-based unwinding... */
