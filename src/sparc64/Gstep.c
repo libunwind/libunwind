@@ -62,6 +62,10 @@ unw_step (unw_cursor_t * cursor)
   /* Validate all addresses before dereferencing. */
   c->validate = 1;
 
+  /* The signal frame path below sets this again if the frame this step
+     reaches was interrupted by a signal. */
+  c->sigcontext_format = SPARC64_SCF_NONE;
+
   /* Try DWARF-based unwinding first.  */
   ret = dwarf_step (&c->dwarf);
 

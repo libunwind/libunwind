@@ -47,6 +47,7 @@ unw_step (unw_cursor_t *cursor)
     }
 
   /* Try DWARF-based unwinding... */
+  c->sigcontext_format = X86_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
   c->validate = validate;
 

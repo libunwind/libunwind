@@ -264,6 +264,7 @@ unw_step (unw_cursor_t * cursor)
 
   /* Try DWARF-based unwinding... */
 
+  c->sigcontext_format = PPC_SCF_NONE;
   c->dwarf.as->validate = 1;
   ret = dwarf_step (&c->dwarf);
   c->dwarf.as->validate = validate;
