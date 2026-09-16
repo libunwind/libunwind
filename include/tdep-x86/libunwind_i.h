@@ -75,6 +75,8 @@ struct MAY_ALIAS cursor
       }
     sigcontext_format;
     unw_word_t sigcontext_addr;
+    unw_word_t sigcontext_sp;           /* %esp for sigreturn */
+    unw_word_t sigreturn_nr;            /* sigreturn system call number */
     int validate;
     ucontext_t *uc;
   };
