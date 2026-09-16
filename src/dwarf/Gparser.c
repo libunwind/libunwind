@@ -1048,6 +1048,10 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
 	      memcpy (rs, &sr->rs_current, sizeof(*rs));
 	    }
 	}
+      else if (ret >= 0)
+	/* Without a cache there is no entry to reuse below, but the
+	   architecture still needs to set up its signal frame state. */
+	tdep_reuse_frame (c, tdep_cache_frame (c) ? 1 : 0);
     }
 
   unsigned short index = -1;
