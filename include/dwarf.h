@@ -276,6 +276,7 @@ typedef struct dwarf_reg_cache_entry
     unsigned short hint;              /* hint for next rs to try (or -1) */
     unsigned short valid : 1;         /* optional machine-dependent signal info */
     unsigned short signal_frame : 1;  /* optional machine-dependent signal info */
+    unsigned short use_prev_instr : 1; /* use_prev_instr for the next frame */
   }
 dwarf_reg_cache_entry_t;
 
