@@ -101,7 +101,11 @@ unw_step (unw_cursor_t *cursor)
 
   /* Check if this is a signal frame. */
   if (unw_is_signal_frame (cursor) > 0)
-     return arm_handle_signal_frame (cursor);
+    {
+      ret = arm_handle_signal_frame (cursor);
+      c->validate = validate;
+      return ret;
+    }
 
   c->sigcontext_format = ARM_SCF_NONE;
 
