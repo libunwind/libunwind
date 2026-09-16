@@ -75,41 +75,34 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
   struct cursor *c = (struct cursor *) cursor;
   int i, ret;
 
-  /* c->esp points at the arguments to the handler.  Without
+  /* The CFA points at the arguments to the handler.  Without
      SA_SIGINFO, the arguments consist of a signal number
      followed by a struct sigcontext.  With SA_SIGINFO, the
      arguments consist a signal number, a siginfo *, and a
-     ucontext *. */
-  unw_word_t sc_addr;
-  unw_word_t siginfo_ptr_addr = c->dwarf.cfa + 4;
-  unw_word_t sigcontext_ptr_addr = c->dwarf.cfa + 8;
-  unw_word_t siginfo_ptr, sigcontext_ptr;
-  struct dwarf_loc esp_loc, siginfo_ptr_loc, sigcontext_ptr_loc;
+     ucontext *.  unw_is_signal_frame() matched the trampoline,
+     and only the one without SA_SIGINFO starts with pop %eax. */
+  unw_word_t sc_addr, insn, sigcontext_ptr;
+  struct dwarf_loc esp_loc;
 
-  siginfo_ptr_loc = DWARF_LOC (siginfo_ptr_addr, 0);
-  sigcontext_ptr_loc = DWARF_LOC (sigcontext_ptr_addr, 0);
-  if ((ret = dwarf_get (&c->dwarf, siginfo_ptr_loc, &siginfo_ptr)) < 0
-      || (ret = dwarf_get (&c->dwarf, sigcontext_ptr_loc, &sigcontext_ptr)) < 0)
+  if ((ret = dwarf_get (&c->dwarf, DWARF_LOC (c->dwarf.ip, 0), &insn)) < 0)
     {
       Debug (2, "returning %d\n", ret);
       return ret;
     }
-  if (siginfo_ptr < c->dwarf.cfa
-      || siginfo_ptr > c->dwarf.cfa + 256
-      || sigcontext_ptr < c->dwarf.cfa
-      || sigcontext_ptr > c->dwarf.cfa + 256)
+  if ((insn & 0xff) == 0x58)
     {
-      /* Not plausible for SA_SIGINFO signal */
       c->sigcontext_format = X86_SCF_LINUX_SIGFRAME;
       c->sigcontext_addr = sc_addr = c->dwarf.cfa + 4;
     }
   else
     {
-      /* If SA_SIGINFO were not specified, we actually read
-         various segment pointers instead.  We believe that at
-         least fs and _fsh are always zero for linux, so it is
-         not just unlikely, but impossible that we would end
-         up here. */
+      ret = dwarf_get (&c->dwarf, DWARF_LOC (c->dwarf.cfa + 8, 0),
+                       &sigcontext_ptr);
+      if (ret < 0)
+        {
+          Debug (2, "returning %d\n", ret);
+          return ret;
+        }
       c->sigcontext_format = X86_SCF_LINUX_RT_SIGFRAME;
       c->sigcontext_addr = sigcontext_ptr;
       sc_addr = sigcontext_ptr + LINUX_UC_MCONTEXT_OFF;
