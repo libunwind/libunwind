@@ -54,7 +54,8 @@ arm_handle_signal_frame (unw_cursor_t *cursor)
     c->frame_info.frame_type = UNW_ARM_FRAME_SYSCALL;
     c->frame_info.cfa_reg_offset = 0;
     c->dwarf.loc[UNW_ARM_R7] = c->dwarf.loc[UNW_ARM_R12];
-    dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &c->dwarf.ip);
+    if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R14], &c->dwarf.ip)) < 0)
+      return ret;
     c->dwarf.use_prev_instr = 1;
     return 1;
    }
@@ -87,8 +88,10 @@ arm_handle_signal_frame (unw_cursor_t *cursor)
 #undef ROFF
 
   /* Set SP/CFA and PC/IP.  */
-  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R13], &c->dwarf.cfa);
-  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R15], &c->dwarf.ip);
+  if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R13], &c->dwarf.cfa)) < 0)
+    return ret;
+  if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_ARM_R15], &c->dwarf.ip)) < 0)
+    return ret;
 
   c->dwarf.use_prev_instr = 0;
 

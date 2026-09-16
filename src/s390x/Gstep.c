@@ -80,8 +80,10 @@ s390x_handle_signal_frame (unw_cursor_t *cursor)
   /* Set SP/CFA and PC/IP.
      Normally the default CFA on s390x is r15+160. We do not add that offset
      here because dwarf_step will add the offset.  */
-  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_S390X_R15], &c->dwarf.cfa);
-  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_S390X_IP], &c->dwarf.ip);
+  if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_S390X_R15], &c->dwarf.cfa)) < 0)
+    return ret;
+  if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_S390X_IP], &c->dwarf.ip)) < 0)
+    return ret;
 
   c->dwarf.pi_valid = 0;
   c->dwarf.use_prev_instr = 0;
