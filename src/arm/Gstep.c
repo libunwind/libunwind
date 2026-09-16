@@ -103,6 +103,8 @@ unw_step (unw_cursor_t *cursor)
   if (unw_is_signal_frame (cursor) > 0)
      return arm_handle_signal_frame (cursor);
 
+  c->sigcontext_format = ARM_SCF_NONE;
+
   /* First, try extbl-based unwinding. */
   if (UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX))
     {

@@ -109,6 +109,7 @@ unw_step (unw_cursor_t *cursor)
   if (unw_is_signal_frame (cursor) > 0)
     return sh_handle_signal_frame (cursor);
 
+  c->sigcontext_format = SH_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
   if (unlikely (ret == -UNW_ESTOPUNWIND))

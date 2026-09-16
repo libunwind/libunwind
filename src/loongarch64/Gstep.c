@@ -131,6 +131,7 @@ unw_step (unw_cursor_t *cursor)
     return loongarch64_handle_signal_frame (cursor);
 
   /* Not a signal frame, try DWARF-based unwinding. */
+  c->sigcontext_format = LOONGARCH64_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
   /* Restore default memory validation state */

@@ -191,6 +191,7 @@ unw_step (unw_cursor_t *cursor)
     return hppa_handle_signal_frame (cursor);
 
   /* Try DWARF-based unwinding... */
+  c->sigcontext_format = HPPA_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
   /* Restore default memory validation state */

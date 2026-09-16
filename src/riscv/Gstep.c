@@ -101,6 +101,7 @@ unw_step (unw_cursor_t *cursor)
   c->validate = validate;
 
   /* Try DWARF-based unwinding... */
+  c->sigcontext_format = RISCV_SCF_NONE;
   ret = dwarf_step (&c->dwarf);
 
   if (unlikely (ret == -UNW_ESTOPUNWIND))
