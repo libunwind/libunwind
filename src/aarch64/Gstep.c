@@ -854,8 +854,8 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
   return get_sve_vl_signal_loc (&c->dwarf, sc_addr);
 }
 
-int
-unw_step (unw_cursor_t *cursor)
+static int
+aarch64_step (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
   int validate = c->validate;
@@ -1042,4 +1042,18 @@ unw_step (unw_cursor_t *cursor)
     }
 
   return (c->dwarf.ip == 0) ? 0 : 1;
+}
+
+int
+unw_step (unw_cursor_t *cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  int validate = c->validate;
+  int ret;
+
+  /* aarch64_step() turns on validation while it reads memory it cannot
+     trust yet, and not every return path turns it back off. */
+  ret = aarch64_step (cursor);
+  c->validate = validate;
+  return ret;
 }

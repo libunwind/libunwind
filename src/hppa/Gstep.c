@@ -188,7 +188,11 @@ unw_step (unw_cursor_t *cursor)
 
   /* Special handling the signal frame. */
   if (unw_is_signal_frame (cursor) > 0)
-    return hppa_handle_signal_frame (cursor);
+    {
+      ret = hppa_handle_signal_frame (cursor);
+      c->validate = validate;
+      return ret;
+    }
 
   /* Try DWARF-based unwinding... */
   c->sigcontext_format = HPPA_SCF_NONE;

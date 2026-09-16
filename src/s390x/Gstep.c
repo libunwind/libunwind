@@ -113,7 +113,11 @@ unw_step (unw_cursor_t *cursor)
   if (sig > 0)
     {
       c->sigcontext_format = sig;
-      return s390x_handle_signal_frame (cursor);
+      ret = s390x_handle_signal_frame (cursor);
+#if CONSERVATIVE_CHECKS
+      c->validate = val;
+#endif
+      return ret;
     }
 
   /* Try DWARF-based unwinding... */

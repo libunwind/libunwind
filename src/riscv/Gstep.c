@@ -95,7 +95,11 @@ unw_step (unw_cursor_t *cursor)
 
   /* Special handling the signal frame. */
   if (unw_is_signal_frame (cursor) > 0)
-    return riscv_handle_signal_frame (cursor);
+    {
+      ret = riscv_handle_signal_frame (cursor);
+      c->validate = validate;
+      return ret;
+    }
 
   /* Restore default memory validation state */
   c->validate = validate;
