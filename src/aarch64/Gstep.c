@@ -845,8 +845,10 @@ aarch64_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.loc[UNW_AARCH64_VG]  = DWARF_NULL_LOC;
 
   /* Set SP/CFA and PC/IP.  */
-  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &c->dwarf.cfa);
-  dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
+  if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &c->dwarf.cfa)) < 0)
+    return ret;
+  if ((ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip)) < 0)
+    return ret;
 
   c->dwarf.pi_valid = 0;
   c->dwarf.use_prev_instr = 0;
