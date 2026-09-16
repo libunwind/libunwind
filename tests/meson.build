@@ -316,6 +316,16 @@ if not unw_remote_only
     test(_exe.name(), _exe, env: _env)
 
     _exe = executable(
+        'Ltest-sig-first-insn',
+        'Ltest-sig-first-insn.c',
+        link_with: libunwind_lib,
+        include_directories: _inc,
+        dependencies: [libc_deps],
+        override_options: _opts,
+    )
+    test(_exe.name(), _exe, env: _env)
+
+    _exe = executable(
         'test-getcontext-gp',
         'test-getcontext-gp.c',
         link_with: [libunwind_generic_lib, libunwind_lib],
