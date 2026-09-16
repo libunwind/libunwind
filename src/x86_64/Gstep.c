@@ -305,8 +305,25 @@ _unw_step_fallback(struct cursor *c, unw_cursor_t  *cursor)
   if (unw_is_signal_frame (cursor) > 0)
     {
       ret = x86_64_handle_signal_frame(cursor);
-      Debug (2, "returning %d\n", ret);
-      return ret == 0 ? 1 : ret;
+      if (ret < 0)
+        {
+          Debug (2, "returning %d\n", ret);
+          return ret;
+        }
+
+      /* The handler points the register locations at the saved context;
+         the IP is the interrupted PC, not a return address. */
+      ret = dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
+      if (ret < 0)
+        {
+          Debug (2, "returning %d\n", ret);
+          return ret;
+        }
+      c->dwarf.pi_valid = 0;
+      c->dwarf.use_prev_instr = 0;
+
+      Debug (2, "returning 1\n");
+      return 1;
     }
 
   /* Try PLT entry handling */

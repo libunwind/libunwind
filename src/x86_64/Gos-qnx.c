@@ -159,10 +159,7 @@ x86_64_handle_signal_frame (unw_cursor_t *cursor)
   c->dwarf.loc[R15] = DWARF_VAL_LOC (&c->dwarf, context->uc_mcontext.cpu.r15);
   c->dwarf.loc[RIP] = DWARF_VAL_LOC (&c->dwarf, context->uc_mcontext.cpu.rip);
 
-  dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &c->dwarf.cfa);
-  dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
-
-  return 0;
+  return dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &c->dwarf.cfa);
 }
 
 
