@@ -738,6 +738,7 @@ rs_new (struct dwarf_rs_cache *cache, struct dwarf_cursor * c)
   cache->links[head].ip = c->ip;
   cache->links[head].valid = 1;
   cache->links[head].signal_frame = tdep_cache_frame(c) ? 1 : 0;
+  cache->links[head].use_prev_instr = c->use_prev_instr;
   return cache->buckets + head;
 }
 
@@ -991,7 +992,7 @@ find_reg_state (struct dwarf_cursor *c, dwarf_state_record_t *sr)
     {
       /* update hint; no locking needed: single-word writes are atomic */
       unsigned short index = (unsigned short) (rs - cache->buckets);
-      c->use_prev_instr = ! cache->links[index].signal_frame;
+      c->use_prev_instr = cache->links[index].use_prev_instr;
       memcpy (&sr->rs_current, rs, sizeof (*rs));
     }
   else

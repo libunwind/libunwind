@@ -977,7 +977,7 @@
         <var-decl name='dlpi_tls_data' type-id='type-id-2' visibility='default'/>
       </data-member>
     </class-decl>
-    <class-decl name='dwarf_reg_cache_entry' is-struct='yes' visibility='default' size-in-bits='128' hash='c2650fe1215a5ada' id='type-id-148'>
+    <class-decl name='dwarf_reg_cache_entry' is-struct='yes' visibility='default' size-in-bits='128' hash='9676908384671670' id='type-id-148'>
       <data-member access='public' layout-offset-in-bits='0'>
         <var-decl name='ip' type-id='type-id-16' visibility='default'/>
       </data-member>
@@ -992,6 +992,9 @@
       </data-member>
       <data-member access='public' layout-offset-in-bits='97'>
         <var-decl name='signal_frame' type-id='type-id-104' visibility='default'/>
+      </data-member>
+      <data-member access='public' layout-offset-in-bits='98'>
+        <var-decl name='use_prev_instr' type-id='type-id-104' visibility='default'/>
       </data-member>
     </class-decl>
     <class-decl name='dwarf_reg_only_state' is-struct='yes' visibility='default' size-in-bits='7168' hash='213c79f3d673ef39' id='type-id-149'>
