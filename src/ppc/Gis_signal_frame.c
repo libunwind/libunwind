@@ -27,10 +27,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include <libunwind_i.h>
 
-int
-unw_is_signal_frame (unw_cursor_t * cursor)
+static int
+is_signal_frame (struct cursor *c)
 {
-  struct cursor *c = (struct cursor *) cursor;
   unw_word_t i0, i1, i2, ip;
   unw_addr_space_t as;
   unw_accessors_t *a;
@@ -38,7 +37,6 @@ unw_is_signal_frame (unw_cursor_t * cursor)
   int ret;
 
   as = c->dwarf.as;
-  as->validate = 1;             /* Don't trust the ip */
   arg = c->dwarf.as_arg;
 
   /* Check if return address points at sigreturn sequence.
@@ -113,4 +111,19 @@ unw_is_signal_frame (unw_cursor_t * cursor)
     return 2;
 #endif
   return 0;
+}
+
+int
+unw_is_signal_frame (unw_cursor_t * cursor)
+{
+  struct cursor *c = (struct cursor *) cursor;
+  unw_addr_space_t as = c->dwarf.as;
+  int validate = as->validate;
+  int ret;
+
+  as->validate = 1;             /* Don't trust the ip */
+  ret = is_signal_frame (c);
+  as->validate = validate;
+
+  return ret;
 }
