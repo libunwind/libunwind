@@ -74,6 +74,9 @@ riscv_handle_signal_frame (unw_cursor_t *cursor)
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_TDEP_SP], &c->dwarf.cfa);
   dwarf_get (&c->dwarf, c->dwarf.loc[UNW_TDEP_IP], &c->dwarf.ip);
 
+  c->dwarf.pi_valid = 0;
+  c->dwarf.use_prev_instr = 0;
+
   return 1;
 }
 
