@@ -200,6 +200,10 @@ unw_step (unw_cursor_t * cursor)
       c->sigcontext_sp     = o6_val;
       c->sigcontext_pc     = c->dwarf.ip;
 
+      /* The IP is the interrupted PC, not the address of a CALL. */
+      c->dwarf.pi_valid = 0;
+      c->dwarf.use_prev_instr = 0;
+
       ret = 1;
     }
 
