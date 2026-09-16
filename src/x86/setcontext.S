@@ -28,33 +28,17 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
   Restores the machine context provided.
   Unlike the libc implementation, doesn't clobber %eax (exception object
-  pointer) or %edx (exception selector).
+  pointer) or %edx (exception selector), and leaves the signal mask alone:
+  unw_getcontext() does not save it, so ucp->uc_sigmask is not meaningful.
 */
-
-#define SIG_SETMASK		2
-#define SYS_rt_sigprocmask	175
-#define SIGSET_BYTES		8	/* _NSIG / 8 */
 
 	.global _Ux86_setcontext
 	.type _Ux86_setcontext, @function
 _Ux86_setcontext:
 	.cfi_startproc
 
-	/* EDI = ucp (argument).  It is preserved across the syscall
-	   below and is restored from the context later on.  */
-	mov	4(%esp),%edi
-
-	/* Restore the signal mask:
-	     rt_sigprocmask (SIG_SETMASK, &ucp->uc_sigmask, NULL, 8)  */
-	mov	$SIG_SETMASK,%ebx
-	lea	LINUX_UC_SIGMASK_OFF(%edi),%ecx
-	xor	%edx,%edx
-	mov	$SIGSET_BYTES,%esi
-	mov	$SYS_rt_sigprocmask,%eax
-	int	$0x80
-
 	/* EAX = ucp */
-	mov	%edi,%eax
+	mov	4(%esp),%eax
 
 	/* Restore FP state */
 	mov	(LINUX_UC_MCONTEXT_OFF+LINUX_SC_FPSTATE_OFF)(%eax),%ecx

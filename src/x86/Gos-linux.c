@@ -93,6 +93,9 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
     {
       c->sigcontext_format = X86_SCF_LINUX_SIGFRAME;
       c->sigcontext_addr = sc_addr = c->dwarf.cfa + 4;
+      /* The trampoline pops the signal number before calling sigreturn. */
+      c->sigcontext_sp = c->dwarf.cfa + 4;
+      c->sigreturn_nr = SYS_sigreturn;
     }
   else
     {
@@ -106,6 +109,8 @@ x86_handle_signal_frame (unw_cursor_t *cursor)
       c->sigcontext_format = X86_SCF_LINUX_RT_SIGFRAME;
       c->sigcontext_addr = sigcontext_ptr;
       sc_addr = sigcontext_ptr + LINUX_UC_MCONTEXT_OFF;
+      c->sigcontext_sp = c->dwarf.cfa;
+      c->sigreturn_nr = SYS_rt_sigreturn;
     }
   esp_loc = DWARF_LOC (sc_addr + LINUX_SC_ESP_OFF, 0);
   ret = dwarf_get (&c->dwarf, esp_loc, &c->dwarf.cfa);
@@ -280,6 +285,35 @@ x86_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UN
 {
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = c->uc;
+
+  if (c->sigcontext_addr)
+    {
+      /* A signal frame was stepped through on the way to this frame.
+         Resume through sigreturn, so that the signal mask and alternate
+         signal stack are restored along with the registers, as on
+         x86_64. */
+      struct sigcontext *sc = (struct sigcontext *) c->sigcontext_addr;
+      unw_word_t sp = c->sigcontext_sp;
+      unw_word_t nr = c->sigreturn_nr;
+
+      if (nr == SYS_rt_sigreturn)
+        sc = (struct sigcontext *) &((ucontext_t *) sc)->uc_mcontext;
+      sc->edi = uc->uc_mcontext.gregs[REG_EDI];
+      sc->esi = uc->uc_mcontext.gregs[REG_ESI];
+      sc->ebp = uc->uc_mcontext.gregs[REG_EBP];
+      sc->esp = uc->uc_mcontext.gregs[REG_ESP];
+      sc->ebx = uc->uc_mcontext.gregs[REG_EBX];
+      sc->edx = uc->uc_mcontext.gregs[REG_EDX];
+      sc->ecx = uc->uc_mcontext.gregs[REG_ECX];
+      sc->eax = uc->uc_mcontext.gregs[REG_EAX];
+      sc->eip = uc->uc_mcontext.gregs[REG_EIP];
+
+      Debug (8, "resuming at ip=%x via sigreturn(%p)\n", c->dwarf.ip, sc);
+      __asm__ __volatile__ ("mov %0, %%esp\n"
+                            "int $0x80\n"
+                            : : "r" (sp), "a" (nr) : "memory");
+      abort ();
+    }
 
   Debug (8, "resuming at ip=%x via setcontext()\n", c->dwarf.ip);
 #if !defined(__ANDROID__)
