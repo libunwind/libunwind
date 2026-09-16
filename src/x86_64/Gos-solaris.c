@@ -91,7 +91,6 @@ x86_64_handle_signal_frame (unw_cursor_t *cursor)
     c->dwarf.loc[R15] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_R15, 0);
     c->dwarf.loc[RIP] = DWARF_LOC (ucontext + UC_MCONTEXT_GREGS_RIP, 0);
 
-    c->dwarf.use_prev_instr = 1;
     return 0;
 }
 
