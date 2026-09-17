@@ -110,12 +110,12 @@ jobs:
           - {target: mipsn32,   host: mips64-linux-gnuabin32,   qemu: mipsn32,   gccver: 14, container: ubuntu:24.04, cc: "mips64-linux-gnuabi64-gcc-14 -mabi=n32",   cxx: "mips64-linux-gnuabi64-g++-14 -mabi=n32",   packages: "g++-14-multilib-mips64-linux-gnuabi64",   cross_lib: "/usr/mips64-linux-gnuabi64" }
           - {target: mipsel,   host: mipsel-linux-gnu,        qemu: mipsel,   gccver: 14, container: ubuntu:24.04 }
           - {target: mips,     host: mips-linux-gnu,          qemu: mips,     gccver: 14, container: ubuntu:24.04 }
-          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04, qemu_skip: &ppc64_qemu_skip "Gtest-bt:Gtest-concurrent:Gtest-resume-sig:Gtest-resume-sig-rt:Gtest-trace:Ltest-bt:Ltest-concurrent:Ltest-init-local-signal:Ltest-resume-sig:Ltest-resume-sig-rt:Ltest-sig-context:Ltest-trace:test-async-sig" }
+          - {target: ppc64,    host: powerpc64-linux-gnu,     qemu: ppc64,    gccver: 14, container: ubuntu:26.04, qemu_skip: &ppc64_qemu_skip "Gtest-bt:Gtest-concurrent:Gtest-resume-sig:Gtest-resume-sig-rt:Gtest-trace:Ltest-bt:Ltest-concurrent:Ltest-init-local-signal:Ltest-resume-sig:Ltest-resume-sig-rt:Ltest-sig-context:Ltest-sig-first-insn:Ltest-trace:test-async-sig" }
           - {target: ppc64le,  host: powerpc64le-linux-gnu,   qemu: ppc64le,  gccver: 14, container: ubuntu:26.04, dpkg_arch: ppc64el,  qemu_skip: *ppc64_qemu_skip }
           - {target: ppc,      host: powerpc-linux-gnu,       qemu: ppc,      gccver: 14, container: ubuntu:26.04 }
           - {target: riscv64,  host: riscv64-linux-gnu,       qemu: riscv64,  gccver: 14, container: ubuntu:26.04, dpkg_arch: riscv64 }
           - {target: s390x,    host: s390x-linux-gnu,         qemu: s390x,    gccver: 14, container: ubuntu:26.04, dpkg_arch: s390x }
-          - {target: sh4,      host: sh4-linux-gnu,           qemu: sh4,      gccver: 14, container: ubuntu:26.04, qemu_skip: &sh4_qemu_skip "Gtest-sig-context:Gtest-trace:Ltest-init-local-signal:Ltest-sig-context:Ltest-trace:test-async-sig" }
+          - {target: sh4,      host: sh4-linux-gnu,           qemu: sh4,      gccver: 14, container: ubuntu:26.04, qemu_skip: &sh4_qemu_skip "Gtest-sig-context:Gtest-trace:Ltest-init-local-signal:Ltest-sig-context:Ltest-sig-first-insn:Ltest-trace:test-async-sig" }
           - {target: sparc64,  host: sparc64-linux-gnu,       qemu: sparc64,  gccver: 14, container: ubuntu:26.04, qemu_skip: &sparc64_qemu_skip "Gtest-exc:Gtest-resume-sig:Gtest-resume-sig-rt:Ltest-cxx-exceptions:Ltest-exc:Ltest-resume-sig:Ltest-resume-sig-rt" }
 
     steps:
