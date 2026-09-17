@@ -34,9 +34,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define DWARF_UNW_CACHE_SIZE(log_size)   (1 << log_size)
 #define DWARF_UNW_HASH_SIZE(log_size)    (1 << (log_size + 1))
 
+/* Read a register number that names the base register of the CFA.  The
+   unwind cannot continue without it, so an unrepresentable one is fatal.  */
 static inline int
-read_regnum (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
-             unw_word_t *valp, void *arg)
+read_cfa_regnum (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
+                 unw_word_t *valp, void *arg)
 {
   int ret;
 
@@ -45,10 +47,21 @@ read_regnum (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 
   if (*valp >= DWARF_NUM_PRESERVED_REGS)
     {
-      Debug (1, "Invalid register number %u\n", (unsigned int) *valp);
+      Debug (1, "Invalid CFA register number %u\n", (unsigned int) *valp);
       return -UNW_EBADREG;
     }
   return 0;
+}
+
+/* Read a register number that names a saved register.  A target need not
+   have a slot for every register the producer describes, so the rule for
+   one we cannot represent is dropped rather than failing the whole FDE.
+   See set_savedreg().  */
+static inline int
+read_regnum (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
+             unw_word_t *valp, void *arg)
+{
+  return dwarf_read_uleb128 (as, a, addr, valp, arg);
 }
 
 static inline void
@@ -57,6 +70,36 @@ set_reg (dwarf_state_record_t *sr, unw_word_t regnum, dwarf_where_t where,
 {
   sr->rs_current.reg.where[regnum] = where;
   sr->rs_current.reg.val[regnum] = val;
+}
+
+/* Record the rule for a saved register, ignoring registers this target has
+   no slot for.  */
+static inline void
+set_savedreg (dwarf_state_record_t *sr, unw_word_t regnum, dwarf_where_t where,
+              unw_word_t val)
+{
+  if (regnum >= DWARF_NUM_PRESERVED_REGS)
+    {
+      Debug (15, "ignoring rule for unrepresentable register r%lu\n",
+             (long) regnum);
+      return;
+    }
+  set_reg (sr, regnum, where, val);
+}
+
+/* Restore the rule a saved register had at the start of the FDE, ignoring
+   registers this target has no slot for.  */
+static inline void
+restore_savedreg (dwarf_state_record_t *sr, unw_word_t regnum)
+{
+  if (regnum >= DWARF_NUM_PRESERVED_REGS)
+    {
+      Debug (15, "ignoring restore of unrepresentable register r%lu\n",
+             (long) regnum);
+      return;
+    }
+  sr->rs_current.reg.where[regnum] = sr->rs_initial.reg.where[regnum];
+  sr->rs_current.reg.val[regnum] = sr->rs_initial.reg.val[regnum];
 }
 
 static inline int
@@ -181,16 +224,9 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
 
         case DW_CFA_offset:
           regnum = operand;
-          if (regnum >= DWARF_NUM_PRESERVED_REGS)
-            {
-              Debug (1, "Invalid register number %u in DW_cfa_OFFSET\n",
-                     (unsigned int) regnum);
-              ret = -UNW_EBADREG;
-              break;
-            }
           if ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0)
             break;
-          set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
+          set_savedreg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
           Debug (15, "CFA_offset r%lu at cfa+0x%lx\n",
                  (long) regnum, (long) (val * dci->data_align));
           break;
@@ -199,7 +235,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
-          set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
+          set_savedreg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
           Debug (15, "CFA_offset_extended r%lu at cf+0x%lx\n",
                  (long) regnum, (long) (val * dci->data_align));
           break;
@@ -208,37 +244,21 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_sleb128 (as, a, addr, &val, arg)) < 0))
             break;
-          set_reg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
+          set_savedreg (sr, regnum, DWARF_WHERE_CFAREL, val * dci->data_align);
           Debug (15, "CFA_offset_extended_sf r%lu at cf+0x%lx\n",
                  (long) regnum, (long) (val * dci->data_align));
           break;
 
         case DW_CFA_restore:
           regnum = operand;
-          if (regnum >= DWARF_NUM_PRESERVED_REGS)
-            {
-              Debug (1, "Invalid register number %u in DW_CFA_restore\n",
-                     (unsigned int) regnum);
-              ret = -UNW_EINVAL;
-              break;
-            }
-          sr->rs_current.reg.where[regnum] = sr->rs_initial.reg.where[regnum];
-          sr->rs_current.reg.val[regnum] = sr->rs_initial.reg.val[regnum];
+          restore_savedreg (sr, regnum);
           Debug (15, "CFA_restore r%lu\n", (long) regnum);
           break;
 
         case DW_CFA_restore_extended:
           if ((ret = dwarf_read_uleb128 (as, a, addr, &regnum, arg)) < 0)
             break;
-          if (regnum >= DWARF_NUM_PRESERVED_REGS)
-            {
-              Debug (1, "Invalid register number %u in "
-                     "DW_CFA_restore_extended\n", (unsigned int) regnum);
-              ret = -UNW_EINVAL;
-              break;
-            }
-          sr->rs_current.reg.where[regnum] = sr->rs_initial.reg.where[regnum];
-          sr->rs_current.reg.val[regnum] = sr->rs_initial.reg.val[regnum];
+          restore_savedreg (sr, regnum);
           Debug (15, "CFA_restore_extended r%lu\n", (long) regnum);
           break;
 
@@ -256,14 +276,14 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
         case DW_CFA_undefined:
           if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
             break;
-          set_reg (sr, regnum, DWARF_WHERE_UNDEF, 0);
+          set_savedreg (sr, regnum, DWARF_WHERE_UNDEF, 0);
           Debug (15, "CFA_undefined r%lu\n", (long) regnum);
           break;
 
         case DW_CFA_same_value:
           if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
             break;
-          set_reg (sr, regnum, DWARF_WHERE_SAME, 0);
+          set_savedreg (sr, regnum, DWARF_WHERE_SAME, 0);
           Debug (15, "CFA_same_value r%lu\n", (long) regnum);
           break;
 
@@ -271,7 +291,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
-          set_reg (sr, regnum, DWARF_WHERE_REG, val);
+          set_savedreg (sr, regnum, DWARF_WHERE_REG, val);
           Debug (15, "CFA_register r%lu to r%lu\n", (long) regnum, (long) val);
           break;
 
@@ -299,7 +319,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           break;
 
         case DW_CFA_def_cfa:
-          if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
+          if (((ret = read_cfa_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
@@ -308,7 +328,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           break;
 
         case DW_CFA_def_cfa_sf:
-          if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
+          if (((ret = read_cfa_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_sleb128 (as, a, addr, &val, arg)) < 0))
             break;
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
@@ -319,7 +339,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           break;
 
         case DW_CFA_def_cfa_register:
-          if ((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
+          if ((ret = read_cfa_regnum (as, a, addr, &regnum, arg)) < 0)
             break;
           set_reg (sr, DWARF_CFA_REG_COLUMN, DWARF_WHERE_REG, regnum);
           Debug (15, "CFA_def_cfa_register r%lu\n", (long) regnum);
@@ -358,7 +378,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
             break;
 
           /* Save the address of the DW_FORM_block for later evaluation. */
-          set_reg (sr, regnum, DWARF_WHERE_EXPR, *addr);
+          set_savedreg (sr, regnum, DWARF_WHERE_EXPR, *addr);
 
           if ((ret = dwarf_read_uleb128 (as, a, addr, &len, arg)) < 0)
             break;
@@ -373,7 +393,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
             break;
 
           /* Save the address of the DW_FORM_block for later evaluation. */
-          set_reg (sr, regnum, DWARF_WHERE_VAL_EXPR, *addr);
+          set_savedreg (sr, regnum, DWARF_WHERE_VAL_EXPR, *addr);
 
           if ((ret = dwarf_read_uleb128 (as, a, addr, &len, arg)) < 0)
             break;
@@ -397,7 +417,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
-          set_reg (sr, regnum, DWARF_WHERE_CFAREL, ~(val * dci->data_align) + 1);
+          set_savedreg (sr, regnum, DWARF_WHERE_CFAREL, ~(val * dci->data_align) + 1);
           Debug (15, "CFA_GNU_negative_offset_extended cfa+0x%lx\n",
                  (long) (~(val * dci->data_align) + 1));
           break;
@@ -407,7 +427,7 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           /* This is a special CFA to handle all 16 windowed registers
              on SPARC.  */
           for (regnum = 16; regnum < 32; ++regnum)
-            set_reg (sr, regnum, DWARF_WHERE_CFAREL,
+            set_savedreg (sr, regnum, DWARF_WHERE_CFAREL,
                      (regnum - 16) * sizeof (unw_word_t));
           Debug (15, "CFA_GNU_window_save\n");
           break;
