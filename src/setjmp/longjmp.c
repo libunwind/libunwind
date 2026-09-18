@@ -90,6 +90,9 @@ _longjmp (jmp_buf env, int val)
                           (unw_word_t) (uintptr_t) &_UI_longjmp_cont))
         abort ();
 
+      /* longjmp() must not change the signal mask.  */
+      install_resume_sigmask (&c, NULL);
+
       unw_resume (&c);
 
       abort ();

@@ -120,4 +120,47 @@ resume_restores_sigmask (unw_cursor_t *c UNUSED, unw_word_t *wp  UNUSED)
 
 #endif /* !UNW_TARGET_IA64 */
 
+#if defined(UNW_TARGET_X86_64) && defined(__FreeBSD__)
+
+#include <machine/sigframe.h>
+#include <signal.h>
+#include <stddef.h>
+#include <string.h>
+
+/* unw_resume() returns through sigreturn() for every frame above a signal
+   frame, and sigreturn() installs the signal mask saved in that frame.
+   longjmp() must leave the mask alone and siglongjmp() installs the mask
+   itself, so put the mask that is to be in effect afterwards into the signal
+   frame rather than resuming with the interrupted thread's mask.  MASK is the
+   mask to install, or NULL to keep the current one.  */
+static inline void
+install_resume_sigmask (unw_cursor_t *c, sigset_t *mask)
+{
+  unw_word_t sc_addr = ((struct cursor *) c)->sigcontext_addr;
+  ucontext_t *uc;
+  sigset_t current_mask;
+
+  if (!sc_addr)
+    return;
+
+  if (!mask)
+    {
+      if (sigprocmask (SIG_BLOCK, NULL, &current_mask) < 0)
+        abort ();
+      mask = &current_mask;
+    }
+
+  uc = (ucontext_t *) (sc_addr + offsetof (struct sigframe, sf_uc));
+  memcpy (&uc->uc_sigmask, mask, sizeof (uc->uc_sigmask));
+}
+
+#else /* !(UNW_TARGET_X86_64 && __FreeBSD__) */
+
+static inline void
+install_resume_sigmask (unw_cursor_t *c UNUSED, void *mask UNUSED)
+{
+}
+
+#endif /* !(UNW_TARGET_X86_64 && __FreeBSD__) */
+
 #endif /* libunwind_setjmp_setjmp_i_h */
