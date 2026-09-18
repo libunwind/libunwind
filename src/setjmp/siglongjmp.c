@@ -133,6 +133,11 @@ siglongjmp (sigjmp_buf env, int val)
         abort ();
 #endif /* defined(__linux__) && !defined(__GLIBC__) */
 
+      /* siglongjmp() restores the saved mask itself, and leaves the mask
+         alone when sigsetjmp() did not save one.  */
+      install_resume_sigmask (&c, cont == &_UI_siglongjmp_cont
+                                  ? (sigset_t *) &wp[JB_MASK] : NULL);
+
       unw_resume (&c);
 
       abort ();
