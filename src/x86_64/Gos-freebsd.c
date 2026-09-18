@@ -33,6 +33,57 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 #include "ucontext_i.h"
 
+/* The signal trampoline in the shared page carries CFI with the signal
+   frame augmentation, so dwarf_step() walks it without ever reaching the
+   byte matching in unw_is_signal_frame().  Pick the signal frame up from
+   the augmentation as well, or unw_resume() would resume a frame above the
+   signal frame with setcontext() instead of sigreturn(), leaving the signal
+   mask saved in the frame unrestored.  */
+HIDDEN void
+tdep_fetch_frame (struct dwarf_cursor *dw, unw_word_t ip UNUSED,
+                  int need_unwind_info UNUSED)
+{
+  struct cursor *c = (struct cursor *) dw;
+
+  if (dw->pi_valid
+      && dw->pi.unwind_info
+      && ((struct dwarf_cie_info *) dw->pi.unwind_info)->signal_frame)
+    {
+      c->sigcontext_format = X86_64_SCF_FREEBSD_SIGFRAME;
+      c->sigcontext_addr = dw->cfa;
+    }
+  else
+    c->sigcontext_format = X86_64_SCF_NONE;
+
+  Debug (5, "fetch frame ip=0x%lx cfa=0x%lx format=%d\n",
+         dw->ip, dw->cfa, c->sigcontext_format);
+}
+
+HIDDEN int
+tdep_cache_frame (struct dwarf_cursor *dw)
+{
+  struct cursor *c = (struct cursor *) dw;
+
+  /* The rs cache stores this as a single bit, so return a boolean rather
+     than the format, which would be truncated to 1 and come back as the
+     wrong format in tdep_reuse_frame().  */
+  return c->sigcontext_format != X86_64_SCF_NONE;
+}
+
+HIDDEN void
+tdep_reuse_frame (struct dwarf_cursor *dw, int frame)
+{
+  struct cursor *c = (struct cursor *) dw;
+
+  c->sigcontext_format = frame ? X86_64_SCF_FREEBSD_SIGFRAME
+                               : X86_64_SCF_NONE;
+  if (c->sigcontext_format == X86_64_SCF_FREEBSD_SIGFRAME)
+    c->sigcontext_addr = dw->cfa;
+
+  Debug (5, "reuse frame ip=0x%lx cfa=0x%lx format=%d\n",
+         dw->ip, dw->cfa, c->sigcontext_format);
+}
+
 int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
