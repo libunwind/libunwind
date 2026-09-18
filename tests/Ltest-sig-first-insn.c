@@ -28,8 +28,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
    The handler then resumes the victim's caller, after adding SIGUSR2 to the
    signal mask saved in the signal frame so that a resume through sigreturn
-   can be detected. x86 and x86_64 on Linux resume every frame above a signal
-   frame that way; other architectures must not. */
+   can be detected. x86 and x86_64 resume every frame above a signal frame
+   that way; other architectures must not. */
 
 #ifdef HAVE_CONFIG_H
 # include "config.h"
@@ -213,10 +213,10 @@ handler (int sig, siginfo_t *si, void *ucontext)
                    "unw_step returned %d)\n", found_victim, ret);
 }
 
-/* On FreeBSD, unw_is_signal_frame() matches the sigreturn sequence in the
-   shared page byte for byte and does not recognize the trampoline, so
-   unw_resume() falls back to setcontext() there. */
-#if (defined(__x86_64__) || defined(__i386__)) && defined(__linux__)
+/* x86 and x86_64 resume every frame above a signal frame through sigreturn.
+   FreeBSD does so on x86_64, where the signal frame is picked up from the
+   CFI of the trampoline in the shared page, but not on x86. */
+#if defined(__x86_64__) || (defined(__i386__) && defined(__linux__))
 # define RESUME_THROUGH_TRAMPOLINE 1
 #else
 # define RESUME_THROUGH_TRAMPOLINE 0
