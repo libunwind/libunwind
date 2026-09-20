@@ -79,7 +79,7 @@ if echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >
         i=$((i + 1))
     done
     if ! test -f "$COREFILE"; then
-        echo "coredumpctl could not retrieve coredump, test skipped"
+        echo "coredumpctl could not retrieve coredump (no journal access?), test skipped"
         exit 77
     fi
 else
