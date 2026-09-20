@@ -67,6 +67,7 @@ if echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >
     BEFORE=$(date '+%Y-%m-%d %H:%M:%S')
     (
         cd $TEMPDIR
+        ulimit -c unlimited
         ./crasher backing_files
     ) 2>/dev/null
     # poll for the coredump (systemd-coredump processes asynchronously)
