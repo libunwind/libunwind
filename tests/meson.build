@@ -886,6 +886,7 @@ if not unw_remote_only
         _should_fail = target_machine.cpu_family() in [
             'mips',
             'mips64',
+            'or1k',
             'riscv',
             'arm',
             'loongarch64',

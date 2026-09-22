@@ -93,6 +93,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #elif defined(__riscv)
 # define LOAD "lw a0, 0(a0)"
 # define RET  "ret"
+#elif defined(__or1k__)
+# define LOAD "l.lwz r11, 0(r3)"
+# define RET  "l.jr r9\n l.nop"
 #endif
 
 #ifdef LOAD
