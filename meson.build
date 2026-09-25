@@ -127,6 +127,13 @@ if cc.has_function(
 )
     cfg.set('HAVE_DL_ITERATE_PHDR', 1)
 endif
+if cc.has_function(
+    '_dl_find_object',
+    args: '-D_GNU_SOURCE',
+    prefix: '#include <dlfcn.h>',
+)
+    cfg.set('HAVE__DL_FIND_OBJECT', 1)
+endif
 if cc.has_function('dl_phdr_removals_counter')
     cfg.set('HAVE_DL_PHDR_REMOVALS_COUNTER', 1)
 endif
