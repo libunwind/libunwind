@@ -45,7 +45,6 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
 {
   Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, loadoff, load_base;
-  unw_word_t max_load_addr = 0;
   unw_word_t start_ip = to_unw_word (-1);
   unw_word_t end_ip = 0;
   struct dwarf_eh_frame_hdr *hdr;
@@ -88,8 +87,6 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
           } else if ((phdr[i].p_flags & PF_X) == PF_X && ptxt == NULL) {
             ptxt = phdr + i;
           }
-          if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
-            max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
           break;
 
         case PT_GNU_EH_FRAME:
