@@ -920,9 +920,10 @@
     <pointer-type-def type-id='type-id-157' size-in-bits='64' hash='e250bffde7b95bce' id='type-id-158'/>
     <pointer-type-def type-id='type-id-176' size-in-bits='64' hash='5e992856871680a7' id='type-id-156'/>
     <pointer-type-def type-id='type-id-36' size-in-bits='64' hash='f1a1f9a0575b1cb2' id='type-id-108'/>
-    <function-decl name='_UCD_add_backing_file_at_vaddr' mangled-name='_UCD_add_backing_file_at_vaddr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_add_backing_file_at_vaddr' hash='c9a26f4f662498e9'>
+    <function-decl name='_UCD_add_backing_file_at_vaddr' mangled-name='_UCD_add_backing_file_at_vaddr' visibility='default' binding='global' size-in-bits='64' elf-symbol-id='_UCD_add_backing_file_at_vaddr' hash='d8b7620af3f2da01'>
       <parameter type-id='type-id-180' name='ui'/>
       <parameter type-id='type-id-3' name='vaddr'/>
+      <parameter type-id='type-id-3' name='mapoff'/>
       <parameter type-id='type-id-29' name='path'/>
       <return type-id='type-id-24'/>
     </function-decl>

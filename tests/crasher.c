@@ -17,7 +17,7 @@ void write_maps(char *fname)
 {
     char buf[512], path[128];
     char exec;
-    uintmax_t addr;
+    uintmax_t addr, offset;
     FILE *maps = fopen("/proc/self/maps", "r");
     FILE *out = fopen(fname, "w");
 
@@ -26,14 +26,14 @@ void write_maps(char *fname)
 
     while (fgets(buf, sizeof(buf), maps))
     {
-        if (sscanf(buf, "%jx-%*x %*c%*c%c%*c %*x %*s %*d /%126[^\n]", &addr, &exec, path+1) != 3)
+        if (sscanf(buf, "%jx-%*x %*c%*c%c%*c %jx %*s %*d /%126[^\n]", &addr, &exec, &offset, path+1) != 4)
             continue;
 
         if (exec != 'x')
             continue;
 
         path[0] = '/';
-        fprintf(out, "0x%jx:%s ", addr, path);
+        fprintf(out, "0x%jx:0x%jx:%s ", addr, offset, path);
     }
     fprintf(out, "\n");
 
@@ -74,7 +74,8 @@ write_maps(char *fname)
         kv = (struct kinfo_vmentry *)(uintptr_t)bp;
 	if (kv->kve_type == KVME_TYPE_VNODE &&
 	  (kv->kve_protection & KVME_PROT_EXEC) != 0) {
-	    fprintf(out, "0x%jx:%s ", kv->kve_start, kv->kve_path);
+	    fprintf(out, "0x%jx:0x%jx:%s ", kv->kve_start, kv->kve_offset,
+		kv->kve_path);
 	}
     }
 
