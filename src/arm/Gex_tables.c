@@ -505,7 +505,7 @@ tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 /**
- * Callback to dl_iterate_phdr to find infos about the ARM exidx segment.
+ * Callback to find infos about the ARM exidx segment.
  */
 static int
 arm_phdr_cb (struct dl_phdr_info *info, size_t size, void *data)
@@ -555,7 +555,6 @@ arm_find_proc_info2 (unw_addr_space_t as, unw_word_t ip,
                      int methods)
 {
   int ret = -1;
-  intrmask_t saved_mask;
 
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
 
@@ -565,8 +564,9 @@ arm_find_proc_info2 (unw_addr_space_t as, unw_word_t ip,
   /* DWARF .debug_frame tables have no personality/LSDA info.  If DWARF
      succeeded but yielded no handler, also probe ARM exidx to pick up the
      personality function and lsda so that C++ exception handling works.
-     This requires a second dl_iterate_phdr pass; the extra cost is paid only
-     by DWARF-unwound frames in binaries that also carry .ARM.exidx.  */
+     This requires a second lookup of the object containing ip; the extra
+     cost is paid only by DWARF-unwound frames in binaries that also carry
+     .ARM.exidx.  */
   if (ret >= 0 && pi->handler == 0
       && UNW_TRY_METHOD (UNW_ARM_METHOD_EXIDX)
       && (methods & UNW_ARM_METHOD_EXIDX))
@@ -576,10 +576,7 @@ arm_find_proc_info2 (unw_addr_space_t as, unw_word_t ip,
       cb_data.ip = ip;
       cb_data.pi = pi;
       cb_data.di.format = -1;
-      intrmask_t saved_mask2;
-      SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask2);
-      as->iterate_phdr_function (arm_phdr_cb, &cb_data);
-      SIGPROCMASK (SIG_SETMASK, &saved_mask2, NULL);
+      unwi_iterate_phdr_for_ip (as, ip, arm_phdr_cb, &cb_data);
       if (cb_data.di.format != -1)
         {
           unw_proc_info_t exidx_pi;
@@ -604,9 +601,7 @@ arm_find_proc_info2 (unw_addr_space_t as, unw_word_t ip,
       cb_data.pi = pi;
       cb_data.di.format = -1;
 
-      SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-      ret = as->iterate_phdr_function (arm_phdr_cb, &cb_data);
-      SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
+      ret = unwi_iterate_phdr_for_ip (as, ip, arm_phdr_cb, &cb_data);
 
       if (cb_data.di.format != -1)
         ret = arm_search_unwind_table (as, ip, &cb_data.di, pi,
