@@ -799,7 +799,6 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
                       unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
   struct dwarf_callback_data cb_data;
-  intrmask_t saved_mask;
   int ret;
 
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
@@ -811,9 +810,7 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.di.format = -1;
   cb_data.di_debug.format = -1;
 
-  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-  ret = as->iterate_phdr_function (dwarf_callback, &cb_data);
-  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
+  ret = unwi_iterate_phdr_for_ip (as, ip, dwarf_callback, &cb_data);
 
   if (ret > 0)
     {
