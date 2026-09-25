@@ -37,13 +37,15 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
  * inside a PT_LOAD segment in the core.
  *
  * @param[in] ui    UCD info created by _UCD_create()
- * @param[in] vaddr load address of the ELF image (from /proc/self/maps or eu-unstrip)
- * @param[in] path  filesystem path to the ELF image
+ * @param[in] vaddr  start of a mapping of the ELF image (from /proc/self/maps)
+ * @param[in] mapoff file offset of that mapping
+ * @param[in] path   filesystem path to the ELF image
  * @return UNW_ESUCCESS on success, negative error code on failure
  */
 int
 _UCD_add_backing_file_at_vaddr(struct UCD_info *ui,
                                unsigned long    vaddr,
+                               unsigned long    mapoff,
                                const char      *path)
 {
   for (unsigned p = 0; p < ui->phdrs_count; ++p)
@@ -60,6 +62,7 @@ _UCD_add_backing_file_at_vaddr(struct UCD_info *ui,
           if (idx == ucd_file_no_index)
             return -UNW_ENOMEM;
           phdr->p_backing_file_index = idx;
+          phdr->p_mapoff = mapoff;
           return UNW_ESUCCESS;
         }
     }

@@ -934,9 +934,10 @@
     <pointer-type-def type-id='type-id-160' size-in-bits='32' hash='2230e3fc2fc252bc' id='type-id-161'/>
     <pointer-type-def type-id='type-id-179' size-in-bits='32' hash='1377c2093ce9cad0' id='type-id-159'/>
     <pointer-type-def type-id='type-id-35' size-in-bits='32' hash='8bf7431b01159863' id='type-id-111'/>
-    <function-decl name='_UCD_add_backing_file_at_vaddr' mangled-name='_UCD_add_backing_file_at_vaddr' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_UCD_add_backing_file_at_vaddr' hash='ba8f35d90d19bb6b'>
+    <function-decl name='_UCD_add_backing_file_at_vaddr' mangled-name='_UCD_add_backing_file_at_vaddr' visibility='default' binding='global' size-in-bits='32' elf-symbol-id='_UCD_add_backing_file_at_vaddr' hash='44e7e9f5e5e4846a'>
       <parameter type-id='type-id-183' name='ui'/>
       <parameter type-id='type-id-140' name='vaddr'/>
+      <parameter type-id='type-id-140' name='mapoff'/>
       <parameter type-id='type-id-28' name='path'/>
       <return type-id='type-id-15'/>
     </function-decl>
