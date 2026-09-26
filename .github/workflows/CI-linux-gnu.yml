@@ -418,7 +418,7 @@ jobs:
 
           meson setup build-meson \
             --optimization=g \
-            -Dcxx_exceptions=enabled \
+            -Ddebug_logs=true -Dcxx_exceptions=enabled \
             --cross-file cross/${{ matrix.config.meson_cross }}.ini \
             --cross-file /tmp/meson-ci-binaries.ini
 
@@ -440,5 +440,6 @@ jobs:
         with:
           name: logs-${{ matrix.config.host }}-meson
           path: |
-            build-meson/meson-logs/
+            build-meson/meson-logs/meson-log.txt
+            build-meson/meson-logs/testlog.txt
           if-no-files-found: warn
