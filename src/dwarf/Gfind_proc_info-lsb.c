@@ -404,10 +404,10 @@ debug_frame_index_sort (struct unw_debug_frame_list *fdesc)
     }
 }
 
-int
-dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
-                        unw_word_t segbase, const char* obj_name,
-                        unw_word_t start, unw_word_t end)
+static int
+find_debug_frame_locked (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
+                         unw_word_t segbase, const char* obj_name,
+                         unw_word_t start, unw_word_t end)
 {
   unw_dyn_info_t *di = di_debug;
   struct unw_debug_frame_list *fdesc;
@@ -484,6 +484,24 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
          (long) di->u.ti.segbase, (long) di->u.ti.table_len,
          (long) di->gp, (long) di->u.ti.table_data);
 
+  return found;
+}
+
+/* Protects the debug_frames list and the FDE indexes of its entries.
+   Callers are not serialized by dl_iterate_phdr's lock. */
+static define_lock (debug_frame_lock);
+
+int
+dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
+                        unw_word_t segbase, const char* obj_name,
+                        unw_word_t start, unw_word_t end)
+{
+  intrmask_t saved_mask;
+
+  lock_acquire (&debug_frame_lock, saved_mask);
+  found = find_debug_frame_locked (found, di_debug, ip, segbase, obj_name,
+                                   start, end);
+  lock_release (&debug_frame_lock, saved_mask);
   return found;
 }
 
@@ -781,7 +799,6 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
                       unw_proc_info_t *pi, int need_unwind_info, void *arg)
 {
   struct dwarf_callback_data cb_data;
-  intrmask_t saved_mask;
   int ret;
 
   Debug (14, "looking for IP=0x%lx\n", (long) ip);
@@ -793,9 +810,7 @@ dwarf_find_proc_info (unw_addr_space_t as, unw_word_t ip,
   cb_data.di.format = -1;
   cb_data.di_debug.format = -1;
 
-  SIGPROCMASK (SIG_SETMASK, &unwi_full_mask, &saved_mask);
-  ret = as->iterate_phdr_function (dwarf_callback, &cb_data);
-  SIGPROCMASK (SIG_SETMASK, &saved_mask, NULL);
+  ret = unwi_iterate_phdr_for_ip (as, ip, dwarf_callback, &cb_data);
 
   if (ret > 0)
     {
