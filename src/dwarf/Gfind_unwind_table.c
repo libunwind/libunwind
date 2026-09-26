@@ -41,11 +41,11 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
                          const char          *path UNUSED,
                          unw_word_t           segbase,
                          unw_word_t           mapoff,
-                         unw_word_t           ip UNUSED)
+                         unw_word_t           ip)
 {
-  Elf_W(Phdr) *phdr, *ptxt = NULL, *peh_hdr = NULL, *pdyn = NULL;
+  Elf_W(Phdr) *phdr, *ptxt = NULL, *pexec = NULL, *peh_hdr = NULL, *pdyn = NULL;
   unw_word_t addr, eh_frame_start, fde_count, loadoff, load_base;
-  unw_word_t max_load_addr = 0;
+  unw_word_t ip_off = mapoff + (ip - segbase);
   unw_word_t start_ip = to_unw_word (-1);
   unw_word_t end_ip = 0;
   struct dwarf_eh_frame_hdr *hdr;
@@ -76,20 +76,15 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
           if (phdr[i].p_vaddr + phdr[i].p_memsz > end_ip)
             end_ip = phdr[i].p_vaddr + phdr[i].p_memsz;
 
-          /* Find the PT_LOAD segment that corresponds to the memory mapping.
-             mapoff (from /proc/PID/maps) equals the p_offset of the mapped
-             segment, so an exact p_offset == mapoff match is unambiguous.
-             Among multiple exact matches (unusual), prefer PF_X.  When no
-             segment has p_offset == mapoff (e.g. vDSO), fall back to the
-             first PF_X segment. */
-          if (phdr[i].p_offset == mapoff) {
-            if (ptxt == NULL || (phdr[i].p_flags & PF_X) == PF_X)
-              ptxt = phdr + i;
-          } else if ((phdr[i].p_flags & PF_X) == PF_X && ptxt == NULL) {
+          /* Find the segment holding the file offset of IP.  mapoff is
+             page-aligned and a linker may start several segments in the same
+             page, so p_offset == mapoff does not identify it.  Fall back to
+             the first PF_X segment.  */
+          if (ptxt == NULL && ip_off >= phdr[i].p_offset
+              && ip_off - phdr[i].p_offset < phdr[i].p_filesz)
             ptxt = phdr + i;
-          }
-          if ((uintptr_t) edi->ei.image + phdr->p_filesz > max_load_addr)
-            max_load_addr = (uintptr_t) edi->ei.image + phdr->p_filesz;
+          if (pexec == NULL && (phdr[i].p_flags & PF_X) == PF_X)
+            pexec = phdr + i;
           break;
 
         case PT_GNU_EH_FRAME:
@@ -114,6 +109,8 @@ dwarf_find_unwind_table (struct elf_dyn_info *edi,
         }
     }
 
+  if (!ptxt)
+    ptxt = pexec;
   if (!ptxt)
     return 0;
 
