@@ -434,6 +434,41 @@ jobs:
         env:
           UNW_DEBUG_LEVEL: 4
 
+      # qemu-user writes qemu_<exe>_<time>_<pid>.core in the test's working
+      # directory. Use the same library search path as
+      # scripts/meson-qemu-exe-wrapper.
+      - name: Print Core Dump Backtraces
+        if: failure()
+        run: |
+          cores=$(find build-meson -name 'qemu_*.core')
+          [ -n "$cores" ] || exit 0
+          apt-get install -y gdb-multiarch
+
+          host='${{ matrix.config.host }}'
+          cc='${{ matrix.config.meson_gcc_prefix || matrix.config.host }}-gcc-${{ matrix.config.gccver }} ${{ matrix.config.gcc_flags }}'
+          sysroot=$($cc --print-sysroot)
+          if [ -z "$sysroot" ] || [ "$sysroot" = / ]; then
+            sysroot=/usr/$($cc -dumpmachine)
+          fi
+          libpath=$(dirname "$($cc --print-file-name=libgcc_s.so.1)"):/lib/$host:/usr/lib/$host:$PWD/build-meson/src
+
+          for core in $cores; do
+            exe=${core##*/qemu_}
+            exe=$(find build-meson -type f -name "${exe%_*_*.core}" | head -n 1)
+            # The core lacks the executable's program headers, so gdb can't
+            # tell where a PIE was loaded. Relocate it by AT_ENTRY - e_entry.
+            set -- $(gdb-multiarch -batch -ex 'info auxv' -ex 'info files' "$exe" "$core" 2>/dev/null |
+                     sed -n -e 's/.*AT_ENTRY .* //p' -e 's/.*Entry point: //p')
+            echo "::group::${core##*/}"
+            gdb-multiarch -batch -iex "set sysroot $sysroot" \
+              -iex "set solib-search-path $libpath" \
+              -ex "symbol-file -o $(( ${1:-0} - ${2:-0} )) $exe" -ex sharedlibrary \
+              -ex 'thread apply all bt' "$exe" "$core" || true
+            echo "::endgroup::"
+          done
+        env:
+          DEBIAN_FRONTEND: noninteractive
+
       - name: Upload Test Logs
         if: failure()
         uses: actions/upload-artifact@v7
