@@ -491,7 +491,11 @@ dwarf_find_debug_frame (int found, unw_dyn_info_t *di_debug, unw_word_t ip,
 
 #ifndef UNW_REMOTE_ONLY
 
-static Elf_W (Addr)
+/* Only reached for an object with no .eh_frame_hdr, but the PATH_MAX buffer
+   below makes the frame ~4KiB.  Inlined into dwarf_callback() that cost is
+   paid on every dl_iterate_phdr() callback, i.e. on the common unwind path,
+   which is enough to overflow a small stack.  */
+static NOINLINE Elf_W (Addr)
 dwarf_find_eh_frame_section(struct dl_phdr_info *info)
 {
   int rc;
