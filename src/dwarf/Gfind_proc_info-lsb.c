@@ -225,28 +225,26 @@ find_binary_for_address (unw_word_t ip, char *name, size_t name_size)
   return 1;
 }
 
-/* Locate and/or try to load a debug_frame section for address ADDR.  Return
-   pointer to debug frame descriptor, or zero if not found.  */
+/* Try to load a debug_frame section for address ADDR and add it to the
+   address space's cache.  Return pointer to debug frame descriptor, or zero
+   if not found.
 
-static struct unw_debug_frame_list *
-locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
-                   unw_word_t start, unw_word_t end)
+   Only reached on a cache miss, but the PATH_MAX buffer below makes the
+   frame ~4KiB.  Inlined into locate_debug_info() (and from there into
+   dwarf_callback()) that cost is paid on every dl_iterate_phdr() callback,
+   i.e. on the common unwind path, which is enough to overflow a small
+   stack.  */
+
+static NOINLINE struct unw_debug_frame_list *
+load_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
+                 unw_word_t start, unw_word_t end)
 {
-  struct unw_debug_frame_list *w, *fdesc = 0;
+  struct unw_debug_frame_list *fdesc = 0;
   char path[PATH_MAX];
   char *name = path;
   int err;
   char *buf;
   size_t bufsize;
-
-  /* First, see if we loaded this frame already.  */
-
-  for (w = as->debug_frames; w; w = w->next)
-    {
-      Debug (4, "checking %p: %lx-%lx\n", w, (long)w->start, (long)w->end);
-      if (addr >= w->start && addr < w->end)
-        return w;
-    }
 
   /* If the object name we receive is blank, there's still a chance of locating
      the file by parsing /proc/self/maps.  */
@@ -286,6 +284,27 @@ locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
     }
 
   return fdesc;
+}
+
+/* Locate and/or try to load a debug_frame section for address ADDR.  Return
+   pointer to debug frame descriptor, or zero if not found.  */
+
+static struct unw_debug_frame_list *
+locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
+                   unw_word_t start, unw_word_t end)
+{
+  struct unw_debug_frame_list *w;
+
+  /* First, see if we loaded this frame already.  */
+
+  for (w = as->debug_frames; w; w = w->next)
+    {
+      Debug (4, "checking %p: %lx-%lx\n", w, (long)w->start, (long)w->end);
+      if (addr >= w->start && addr < w->end)
+        return w;
+    }
+
+  return load_debug_info (as, addr, dlname, start, end);
 }
 
 static size_t
