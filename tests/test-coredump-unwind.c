@@ -155,7 +155,7 @@ main(int argc UNUSED, char **argv)
     progname = argv[0];
 
   if (!argv[1])
-    error_msg_and_die("Usage: %s COREDUMP [VADDR:BINARY_FILE]...", progname);
+    error_msg_and_die("Usage: %s COREDUMP [VADDR:OFFSET:BINARY_FILE]...", progname);
 
   msg_prefix = progname;
 
@@ -180,15 +180,17 @@ main(int argc UNUSED, char **argv)
     argv++;
   }
 
-  /* Register backing files supplied as VADDR:PATH arguments.
+  /* Register backing files supplied as VADDR:OFFSET:PATH arguments.
    * Needed when the core lacks NT_FILE notes (e.g. QEMU user-mode cores). */
   while (*argv)
     {
-      char *colon = strchr(*argv, ':');
-      if (colon)
+      char *end;
+      unsigned long vaddr = strtoul(*argv, &end, 0);
+      if (*end == ':')
         {
-          unsigned long vaddr = strtoul(*argv, NULL, 0);
-          _UCD_add_backing_file_at_vaddr(ui, vaddr, colon + 1);
+          unsigned long mapoff = strtoul(end + 1, &end, 0);
+          if (*end == ':')
+            _UCD_add_backing_file_at_vaddr(ui, vaddr, mapoff, end + 1);
         }
       argv++;
     }
