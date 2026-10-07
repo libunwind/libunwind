@@ -46,6 +46,7 @@ This library supports several architecture/operating-system combinations:
 | Linux   | MIPS         | ✓      |
 | Linux   | RISC-V       | ✓      |
 | Linux   | LoongArch    | 64-bit only |
+| Linux   | OpenRISC     | ✓      |
 | HP-UX   | IA-64        | Mostly works, but known to have serious limitations |
 | FreeBSD | x86-64       | ✓      |
 | FreeBSD | x86          | ✓      |

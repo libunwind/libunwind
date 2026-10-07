@@ -18,6 +18,7 @@ such dependencies.
 |    ia64      |     p      |      r     |
 |    loongarch |     p      |            |
 |    mips      |     p      |            |
+|    or1k      |     p      |            |
 |    ppc32     |     r      |            |
 |    ppc64     |     r      |      r     |
 |    riscv     |     p      |      p     |

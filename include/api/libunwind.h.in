@@ -27,6 +27,8 @@
 # include "libunwind-x86_64.h"
 #elif defined __s390x__
 # include "libunwind-s390x.h"
+#elif defined __or1k__
+# include "libunwind-or1k.h"
 #elif defined __riscv || defined __riscv__
 # include "libunwind-riscv.h"
 #elif defined __loongarch64

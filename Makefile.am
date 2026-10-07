@@ -44,6 +44,9 @@ endif
 if ARCH_S390X
 include_HEADERS += include/api/libunwind-s390x.h
 endif
+if ARCH_OR1K
+include_HEADERS += include/api/libunwind-or1k.h
+endif
 if ARCH_RISCV
 include_HEADERS += include/api/libunwind-riscv.h
 endif
@@ -99,6 +102,8 @@ noinst_HEADERS = include/dwarf.h include/dwarf_i.h include/dwarf-eh.h	\
 	include/tdep-sh/jmpbuf.h include/tdep-sh/libunwind_i.h		\
 	include/tdep-s390x/dwarf-config.h				\
 	include/tdep-s390x/jmpbuf.h include/tdep-s390x/libunwind_i.h	\
+	include/tdep-or1k/dwarf-config.h				\
+	include/tdep-or1k/jmpbuf.h include/tdep-or1k/libunwind_i.h	\
 	include/tdep-riscv/dwarf-config.h				\
 	include/tdep-riscv/jmpbuf.h include/tdep-riscv/libunwind_i.h	\
 	include/tdep-loongarch64/dwarf-config.h				\

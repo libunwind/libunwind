@@ -86,6 +86,9 @@ endif
 if ARCH_PPC64
  lib_LTLIBRARIES += libunwind-ppc64.la
 endif
+if ARCH_OR1K
+ lib_LTLIBRARIES += libunwind-or1k.la
+endif
 if ARCH_RISCV
  lib_LTLIBRARIES += libunwind-riscv.la
 endif
@@ -968,6 +971,66 @@ libunwind_ppc64_la_LDFLAGS =                   \
 libunwind_ppc64_la_LIBADD =                    \
 	libunwind-dwarf-generic.la             \
 	libunwind-elf64.la                     \
+	$(libunwind_libadd)
+
+### target OpenRISC:
+# The list of files that go into libunwind and libunwind-or1k:
+noinst_HEADERS +=                              \
+	or1k/init.h                            \
+	or1k/offsets.h                         \
+	or1k/unwind_i.h
+libunwind_la_SOURCES_or1k_common =             \
+	$(libunwind_la_SOURCES_common)         \
+	or1k/is_fpreg.c                        \
+	or1k/regname.c
+
+if ARCH_OR1K
+# The list of files that go into libunwind:
+libunwind_local_la_SOURCES =               \
+	$(libunwind_la_SOURCES_or1k_common)    \
+	$(libunwind_la_SOURCES_local)          \
+	mi/Lis_plt_entry.c                     \
+	or1k/getcontext.S                      \
+	or1k/Lapply_reg_state.c                \
+	or1k/Lcreate_addr_space.c              \
+	or1k/Lget_proc_info.c                  \
+	or1k/Lget_save_loc.c                   \
+	or1k/Lglobal.c                         \
+	or1k/Linit.c                           \
+	or1k/Linit_local.c                     \
+	or1k/Linit_remote.c                    \
+	or1k/Lis_signal_frame.c                \
+	or1k/Lregs.c                           \
+	or1k/Lreg_states_iterate.c             \
+	or1k/Lresume.c                         \
+	or1k/Lstep.c
+libunwind_setjmp_la_SOURCES += or1k/siglongjmp.S
+endif # ARCH_OR1K
+
+# The list of files that go into libunwind-or1k:
+libunwind_or1k_la_SOURCES =                    \
+	$(libunwind_la_SOURCES_or1k_common)    \
+	$(libunwind_la_SOURCES_generic)        \
+	mi/Gis_plt_entry.c                     \
+	or1k/Gapply_reg_state.c                \
+	or1k/Gcreate_addr_space.c              \
+	or1k/Gget_proc_info.c                  \
+	or1k/Gget_save_loc.c                   \
+	or1k/Gglobal.c                         \
+	or1k/Ginit.c                           \
+	or1k/Ginit_local.c                     \
+	or1k/Ginit_remote.c                    \
+	or1k/Gis_signal_frame.c                \
+	or1k/Gregs.c                           \
+	or1k/Greg_states_iterate.c             \
+	or1k/Gresume.c                         \
+	or1k/Gstep.c
+libunwind_or1k_la_LDFLAGS =                    \
+	$(COMMON_SO_LDFLAGS)                   \
+	-version-info $(SOVERSION)
+libunwind_or1k_la_LIBADD =                     \
+	libunwind-dwarf-generic.la             \
+	libunwind-elf32.la                     \
 	$(libunwind_libadd)
 
 ### target RISC-V:

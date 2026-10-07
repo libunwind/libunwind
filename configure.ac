@@ -117,6 +117,7 @@ AC_DEFUN([SET_ARCH],[
         [sparc*],[$2=sparc64],
         [sh*],[$2=sh],
         [amd64],[$2=x86_64],
+        [or1k*],[$2=or1k],
         [riscv*],[$2=riscv],
         [loongarch64*],[$2=loongarch64],
         [$2=$1])
@@ -136,7 +137,7 @@ AC_ARG_ENABLE([coredump],
 )
 AS_IF([test "$enable_coredump" = "check"],
       [AS_CASE([$host_arch],
-               [aarch64*|alpha*|arm*|hppa*|mips*|ppc*|riscv*|s390x*|sh*|sparc64*|x86*|loongarch64], [enable_coredump=yes],
+               [aarch64*|alpha*|arm*|hppa*|mips*|or1k*|ppc*|riscv*|s390x*|sh*|sparc64*|x86*|loongarch64], [enable_coredump=yes],
                [enable_coredump=no])]
 )
 AC_MSG_RESULT([$enable_coredump])
@@ -388,6 +389,7 @@ AM_CONDITIONAL(ARCH_SPARC, test x$target_arch = xsparc)
 AM_CONDITIONAL(ARCH_SPARC64, test x$target_arch = xsparc64)
 AM_CONDITIONAL(ARCH_SH, test x$target_arch = xsh)
 AM_CONDITIONAL(ARCH_S390X, test x$target_arch = xs390x)
+AM_CONDITIONAL(ARCH_OR1K, test x$target_arch = xor1k)
 AM_CONDITIONAL(ARCH_RISCV, test x$target_arch = xriscv)
 AM_CONDITIONAL(ARCH_LOONGARCH64, test x$target_arch = xloongarch64)
 AM_CONDITIONAL(OS_LINUX, expr x$target_os : xlinux >/dev/null)
@@ -398,7 +400,7 @@ AM_CONDITIONAL(OS_SOLARIS, expr x$target_os : xsolaris >/dev/null)
 
 AC_MSG_CHECKING([for ELF helper width])
 AS_CASE([${target_arch}],
-        [arm|hppa|ppc32|x86|sh|sparc],                    [use_elf32=yes; AC_MSG_RESULT([32])],
+        [arm|hppa|or1k|ppc32|x86|sh|sparc],               [use_elf32=yes; AC_MSG_RESULT([32])],
         [aarch64|alpha|ia64|ppc64|x86_64|s390x|sparc64], [use_elf64=yes; AC_MSG_RESULT([64])],
         [mips|riscv|loongarch64],                         [use_elfxx=yes; AC_MSG_RESULT([xx])],
         [AC_MSG_ERROR([Unknown ELF target: ${target_arch}])]
