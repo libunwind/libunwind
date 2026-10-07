@@ -90,8 +90,8 @@ AC_SEARCH_LIBS([__uc_get_grs], [uca])
 AC_SEARCH_LIBS([getcontext], [ucontext])
 
 dnl Checks for library functions.
-AC_CHECK_FUNCS(dl_iterate_phdr dl_phdr_removals_counter dlmodinfo getunwind \
-		ttrace mincore pipe2 sigaltstack execvpe)
+AC_CHECK_FUNCS(dl_iterate_phdr _dl_find_object dl_phdr_removals_counter dlmodinfo \
+		getunwind ttrace mincore pipe2 sigaltstack execvpe)
 
 AC_COMPILE_IFELSE([AC_LANG_SOURCE([[
 #ifndef __powerpc64__

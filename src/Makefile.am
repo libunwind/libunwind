@@ -272,6 +272,7 @@ libunwind_la_SOURCES_generic =                 \
 	mi/Gget_proc_info_by_ip.c              \
 	mi/Gget_proc_name.c                    \
 	mi/Gget_reg.c                          \
+	mi/Giterate_phdr_for_ip.c              \
 	mi/Gput_dynamic_unwind_info.c          \
 	mi/Gset_cache_size.c                   \
 	mi/Gset_caching_policy.c               \
@@ -330,6 +331,7 @@ libunwind_la_SOURCES_local_nounwind =          \
 	mi/Lget_proc_info_by_ip.c              \
 	mi/Lget_proc_name.c                    \
 	mi/Lget_reg.c                          \
+	mi/Literate_phdr_for_ip.c              \
 	mi/Lput_dynamic_unwind_info.c          \
 	mi/Lset_cache_size.c                   \
 	mi/Lset_caching_policy.c               \
