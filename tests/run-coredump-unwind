@@ -62,7 +62,7 @@ COREFILE=$TEMPDIR/core
 
 # create core dump
 CORE_PATTERN=$(cat /proc/sys/kernel/core_pattern 2>/dev/null || echo "core")
-if echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >/dev/null 2>&1; then
+if [ -z "$QEMU_ARCH" ] && echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >/dev/null 2>&1; then
     # systemd-coredump intercepts the crash; retrieve core via coredumpctl
     BEFORE=$(date '+%Y-%m-%d %H:%M:%S')
     (
