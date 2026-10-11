@@ -141,6 +141,10 @@ sighandler (int signal)
 	printf ("ip = %lx <%s%s>\n", (long) ip, name, off);
       ++count;
 
+      /* The frames above main() depend on the C library.  */
+      if (strcmp (name, "main") == 0)
+	break;
+
       if (count > 20)
 	{
 	  panic ("Too many steps (%d)\n", count);
@@ -150,8 +154,9 @@ sighandler (int signal)
     }
   while (unw_step (&cursor) > 0);
 
-  if (count != 13)
-    panic ("FAILURE: expected 13, not %d frames below signal frame\n", count);
+  if (strcmp (name, "main") != 0 || count != 11)
+    panic ("FAILURE: expected main() at frame 11, not <%s> at frame %d\n",
+	   name, count);
 
   if (verbose)
     printf ("SUCCESS\n");
