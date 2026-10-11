@@ -128,7 +128,8 @@ _UCD_find_proc_info (unw_addr_space_t as, unw_word_t ip, unw_proc_info_t *pi,
   }
 
 #if UNW_TARGET_IA64
-  if (ui->edi.ktab.format != -1)
+  if (ui->edi.ktab.format != -1
+      && ip >= ui->edi.ktab.start_ip && ip < ui->edi.ktab.end_ip)
     {
       /* The kernel unwind table resides in local memory, so we have
          to use the local address space to search it.  Since
