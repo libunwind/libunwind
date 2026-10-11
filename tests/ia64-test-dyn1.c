@@ -36,7 +36,7 @@ make_executable (void *addr, size_t len)
 }
 
 void *
-create_func (unw_dyn_info_t *di, const char *name, long (*func) (),
+create_func (unw_dyn_info_t *di, const char *name, void *func,
 	     void *end, unw_dyn_region_info_t *region)
 {
   void *mem, *memend, *addr, *fptr;

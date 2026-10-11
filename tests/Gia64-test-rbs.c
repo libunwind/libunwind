@@ -162,7 +162,7 @@ run_check (int test)
     printf ("test%d: nfuncs=%d, unwind_count=%d\n",
 	    test, nfuncs, unwind_count);
 
-  ret = loadup (RECURSION_DEPTH, reg_values, func);
+  ret = loadup (RECURSION_DEPTH, reg_values, (int (**) ()) func);
   if (ret < 0)
     panic ("test%d: load() returned %d\n", test, ret);
   else if (ret != RECURSION_DEPTH + nfuncs - unwind_count)
