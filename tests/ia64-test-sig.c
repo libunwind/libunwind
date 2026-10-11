@@ -91,11 +91,14 @@ doit (volatile char *p)
 int
 main (int argc, char **argv)
 {
+  /* Keep the compiler from seeing the NULL dereference in doit().  */
+  volatile char *volatile null = NULL;
+
   if (argc > 1)
     verbose = 1;
 
   signal (SIGSEGV, sighandler);
-  doit (0);
+  doit (null);
   if (verbose)
     printf ("SUCCESS\n");
   return 0;
