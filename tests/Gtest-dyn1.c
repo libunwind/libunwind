@@ -96,7 +96,7 @@ template (int i, template_t self,
 {
   (*printer) (fmt, arr[11 - i][0], arr[11 - i] + 1);
   if (i > 0)
-    (*self) (i - 1, self, printer, fmt, arr);
+    (*self) (i - 1, (void (*) ()) self, printer, fmt, arr);
 }
 
 static void
@@ -214,9 +214,9 @@ main (int argc, char *argv[] UNUSED)
   funcp = get_funcp (fdesc);
 
   if (verbose)
-    (*funcp) (10, funcp, printf, "iteration %c%s\n", strarr);
+    (*funcp) (10, (void (*) ()) funcp, printf, "iteration %c%s\n", strarr);
   else
-    (*funcp) (10, funcp, dev_null, "iteration %c%s\n", strarr);
+    (*funcp) (10, (void (*) ()) funcp, dev_null, "iteration %c%s\n", strarr);
 
   _U_dyn_cancel (&di);
   return -1;
