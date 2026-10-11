@@ -33,6 +33,16 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "mempool.h"
 #include <stdatomic.h>
 
+#ifndef UNW_REMOTE_ONLY
+# if defined(HAVE_LINK_H)
+#  include <link.h>
+# elif defined(HAVE_SYS_LINK_H)
+#  include <sys/link.h>
+# else
+#  error Could not find <link.h>
+# endif
+#endif
+
 typedef struct
   {
     /* no ia64-specific fast trace */
