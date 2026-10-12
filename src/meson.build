@@ -966,6 +966,7 @@ else
 endif
 
 libunwind_dwarf_local_lib = []
+libunwind_dwarf_generic_lib = []
 if target_machine.cpu_family() != 'ia64'  # USE_DWARF
     libunwind_dwarf_common_lib = static_library(
         'unwind-dwarf-common',
