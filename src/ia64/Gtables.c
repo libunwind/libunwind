@@ -460,6 +460,8 @@ current_gp (void)
 {
 #  if defined(__GNUC__) && !defined(__INTEL_COMPILER)
       register unsigned long gp __asm__("gp");
+      /* clang binds a register variable only when it is an asm operand.  */
+      __asm__ ("" : "=r" (gp));
       return gp;
 #  elif HAVE_IA64INTRIN_H
       return __getReg (_IA64_REG_GP);
