@@ -121,6 +121,11 @@ main (int argc, char **argv UNUSED)
 
   verbose = argc > 1;
 
+#ifdef UNW_TARGET_IA64
+  /* unw_reg_states_iterate() and unw_apply_reg_state() are DWARF-only.  */
+  return 77;
+#endif
+
   if (consume_some_stack_space () > 9999)
     exit (-1);	/* can't happen, but don't let the compiler know... */
 
