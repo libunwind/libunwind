@@ -175,11 +175,20 @@ trap "st=141; $do_exit" 13
 trap "st=143; $do_exit" 15
 
 if test x"$qemu_arch" = x; then
-  # Detect the ELF to probe: if the binary is a libtool wrapper, use .libs/<name>
+  # Detect the ELF to probe: if the binary is a libtool wrapper, use
+  # .libs/<name>; if it is a real shell script, use any ELF next to it.
   detect_bin=$1
   if test -f "$detect_bin" && head -1 "$detect_bin" 2>/dev/null | grep -q '^#!'; then
     _d=$(dirname "$detect_bin"); _n=$(basename "$detect_bin")
-    test -f "$_d/.libs/$_n" && detect_bin="$_d/.libs/$_n"
+    if test -f "$_d/.libs/$_n"; then
+      detect_bin="$_d/.libs/$_n"
+    else
+      for _f in "$_d"/.libs/* "$_d"/*; do
+        case $(file "$_f" 2>/dev/null) in
+          *ELF*) detect_bin=$_f; break;;
+        esac
+      done
+    fi
   fi
   case $(file "$detect_bin" 2>/dev/null) in
     *"SPARC V9"*)   qemu_arch=sparc64;;
