@@ -29,6 +29,9 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #if defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64) || defined(UNW_TARGET_HPPA) || defined(UNW_TARGET_ALPHA)
 # include <asm/ptrace.h>
 #endif
+#if defined(UNW_TARGET_IA64)
+# include "tdep-ia64/rse.h"
+#endif
 
 int
 _UCD_access_reg (unw_addr_space_t  as UNUSED,
@@ -58,8 +61,57 @@ _UCD_access_reg (unw_addr_space_t  as UNUSED,
   if (regnum > UNW_SH_PR)
     goto badreg;
 #elif defined(UNW_TARGET_IA64)
-  if (regnum >= ARRAY_SIZE(ui->prstatus->pr_reg))
-    goto badreg;
+  {
+    /* Indices into elf_gregset_t after r0-r31; see the kernel's
+       arch/ia64/include/asm/elf.h.  */
+    enum
+      {
+        EF_NAT = 32, EF_PR, EF_BR, EF_IP = 42, EF_CFM, EF_PSR, EF_RSC,
+        EF_BSP, EF_BSPSTORE, EF_RNAT, EF_CCV, EF_UNAT, EF_FPSR, EF_PFS,
+        EF_LC, EF_EC, EF_CSD, EF_SSD
+      };
+    const elf_greg_t *r = ui->prstatus->pr_reg;
+
+    if (regnum < UNW_IA64_GR + 32)
+      *valp = r[regnum - UNW_IA64_GR];
+    else if (regnum >= UNW_IA64_NAT && regnum < UNW_IA64_NAT + 32)
+      *valp = (r[EF_NAT] >> (regnum - UNW_IA64_NAT)) & 1;
+    else if (regnum >= UNW_IA64_BR && regnum < UNW_IA64_BR + 8)
+      *valp = r[EF_BR + regnum - UNW_IA64_BR];
+    else
+      switch (regnum)
+        {
+        case UNW_IA64_AR_BSP:
+        case UNW_IA64_BSP:
+          /* The kernel's ar.bsp is the end of the backing store, which
+             it flushed to memory in full.  */
+          *valp = rse_skip_regs (r[EF_BSP], -(long) (r[EF_CFM] & 0x7f));
+          break;
+
+        case UNW_IA64_IP:
+          /* The slot number is in psr.ri.  */
+          *valp = r[EF_IP] + ((r[EF_PSR] >> 41) & 0x3);
+          break;
+
+        case UNW_IA64_AR_BSPSTORE:  *valp = r[EF_BSP];    break;
+        case UNW_IA64_SP:           *valp = r[12];        break;
+        case UNW_IA64_PR:           *valp = r[EF_PR];     break;
+        case UNW_IA64_CFM:          *valp = r[EF_CFM];    break;
+        case UNW_IA64_AR_RSC:       *valp = r[EF_RSC];    break;
+        case UNW_IA64_AR_RNAT:      *valp = r[EF_RNAT];   break;
+        case UNW_IA64_AR_CCV:       *valp = r[EF_CCV];    break;
+        case UNW_IA64_AR_UNAT:      *valp = r[EF_UNAT];   break;
+        case UNW_IA64_AR_FPSR:      *valp = r[EF_FPSR];   break;
+        case UNW_IA64_AR_PFS:       *valp = r[EF_PFS];    break;
+        case UNW_IA64_AR_LC:        *valp = r[EF_LC];     break;
+        case UNW_IA64_AR_EC:        *valp = r[EF_EC];     break;
+        case UNW_IA64_AR_CSD:       *valp = r[EF_CSD];    break;
+        case UNW_IA64_AR_SSD:       *valp = r[EF_SSD];    break;
+        default:                    goto badreg;
+        }
+    Debug(1, "reg %d: 0x%lx\n", regnum, (long) *valp);
+    return 0;
+  }
 #elif defined(UNW_TARGET_PPC32) || defined(UNW_TARGET_PPC64)
   if ((unsigned) regnum <= 31u)
     /* R0-R31: UNW_PPCxx_Rn = PT_Rn = n, identity */;
