@@ -38,7 +38,11 @@ _libunwind_setjmp_srcs = files(
 )
 
 _libunwind_srcs_local_unwind = []
-if support_cxx_exceptions
+if support_cxx_exceptions and target_machine.cpu_family() == 'arm'
+    # ARM EHABI exception handling: a single file provides all _Unwind_* symbols
+    # using the 3-argument personality calling convention required by ARM EABI.
+    _libunwind_srcs_local_unwind = files('arm/Gexcept.c')
+elif support_cxx_exceptions
     _libunwind_srcs_local_unwind = files(
         'unwind/Backtrace.c',
         'unwind/DeleteException.c',
