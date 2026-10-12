@@ -241,6 +241,7 @@ build_coredump = get_option('coredump').require(
         'aarch64',
         'alpha',
         'arm',
+        'ia64',
         # Meson calls hppa "parisc"; see src/meson.build, which gets this right.
         'parisc',
         'mips',
