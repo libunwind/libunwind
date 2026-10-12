@@ -201,7 +201,7 @@ struct ia64_global_unwind_state
   {
     pthread_mutex_t lock;               /* global data lock */
 
-    volatile char init_done;
+    atomic_bool init_done;
 
     /* Table of registers that prologues can save (and order in which
        they're saved).  */

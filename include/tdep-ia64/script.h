@@ -68,7 +68,7 @@ struct ia64_script_cache
     /* hash table that maps instruction pointer to script index: */
     unsigned short hash[IA64_UNW_HASH_SIZE];
 
-    uint32_t generation;        /* generation number */
+    _Atomic uint32_t generation; /* generation number */
 
     /* script cache: */
     struct ia64_script buckets[IA64_UNW_CACHE_SIZE];
