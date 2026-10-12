@@ -114,7 +114,8 @@ endif
 			test-iterate-phdr-cache-null			 \
 			test-mem test-reg-state Ltest-varargs		 \
 			Ltest-nomalloc Ltest-nocalloc Lrs-race \
-			Ltest-sig-first-insn test-getcontext-gp
+			Ltest-sig-first-insn test-getcontext-gp \
+			Ltest-init-local-signal
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
@@ -129,11 +130,6 @@ if !ARCH_S390X
  check_PROGRAMS_cdep += Ltest-mem-validate
 endif
 endif
-endif
-
-# unw_init_local2() is not implemented on ia64
-if !ARCH_IA64
- check_PROGRAMS_cdep += Ltest-init-local-signal
 endif
 
 # Tests that exercise unw_resume, which is only unsupported on some targets

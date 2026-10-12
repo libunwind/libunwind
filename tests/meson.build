@@ -578,22 +578,22 @@ if not unw_remote_only
             override_options: _opts,
         )
         test('run-ia64-test-dyn1', _test_ptrace, args: ['-t', _exe], env: _env)
-    else
-        _exe = executable(
-            'Ltest-init-local-signal',
-            'Ltest-init-local-signal.c',
-            'Ltest-init-local-signal-lib.c',
-            link_with: [libunwind_generic_lib, libunwind_lib],
-            include_directories: _inc,
-            dependencies: [libc_deps],
-            override_options: _opts,
-        )
-        test(
-            _exe.name(),
-            _exe,
-            env: _env,
-        )
     endif
+
+    _exe = executable(
+        'Ltest-init-local-signal',
+        'Ltest-init-local-signal.c',
+        'Ltest-init-local-signal-lib.c',
+        link_with: [libunwind_generic_lib, libunwind_lib],
+        include_directories: _inc,
+        dependencies: [libc_deps],
+        override_options: _opts,
+    )
+    test(
+        _exe.name(),
+        _exe,
+        env: _env,
+    )
 
     if target_machine.cpu_family() in ['arm', 'parisc', 'ppc', 'x86', 'sh4']
         _exe = executable(
