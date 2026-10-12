@@ -11,9 +11,9 @@ _check_nms = configure_file(
     output: 'check-namespace.sh',
     input: 'check-namespace.sh.in',
     configuration: {
-        'build_arch': archnames.get(
-            build_machine.cpu_family(),
-            build_machine.cpu_family(),
+        'host_arch': archnames.get(
+            host_machine.cpu_family(),
+            host_machine.cpu_family(),
         ),
         'arch': archnames[target_machine.cpu_family()],
         'target_os': target_machine.system(),

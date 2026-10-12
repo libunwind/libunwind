@@ -26,7 +26,7 @@ if [ "$1" = "-v" ]; then
     shift
 fi
 
-build_plat=@build_arch@
+host_plat=@host_arch@
 plat=@arch@
 os=@target_os@
 num_errors=0
@@ -210,6 +210,12 @@ check_local_unw_abi () {
 	    match _UL${plat}_dwarf_search_unwind_table
 	    match _UL${plat}_dwarf_find_unwind_table
 	    ;;
+	mips)
+	    match _U${plat}_getcontext
+	    match _U${plat}_is_fpreg
+	    match _UL${plat}_dwarf_search_unwind_table
+	    match _UL${plat}_dwarf_find_unwind_table
+	    ;;
 	hppa)
 	    match _U${plat}_getcontext
 	    match _UL${plat}_dwarf_search_unwind_table
@@ -345,7 +351,7 @@ check_generic_unw_abi () {
 	    match _U${plat}_search_unwind_table
 	    match _U${plat}_find_unwind_table
 	    match _U${plat}_find_dyn_list
-	    if [ $plat = $build_plat ]; then
+	    if [ $plat = $host_plat ]; then
 		match _U${plat}_get_elf_image
 		match _U${plat}_get_exe_image_path
 		case $os in
@@ -420,17 +426,24 @@ check_cxx_abi () {
     match _Unwind_GetBSP
     match _Unwind_GetCFA
     match _Unwind_GetDataRelBase
-    match _Unwind_GetGR
     match _Unwind_GetIP
-    match _Unwind_GetIPInfo
     match _Unwind_GetLanguageSpecificData
     match _Unwind_GetRegionStart
     match _Unwind_GetTextRelBase
     match _Unwind_RaiseException
     match _Unwind_Resume
     match _Unwind_Resume_or_Rethrow
-    match _Unwind_SetGR
     match _Unwind_SetIP
+    # The ARM EHABI has _Unwind_VRS_Get() and _Unwind_VRS_Set() in place of
+    # these, which autotools builds and Meson does not.
+    if [ $plat = arm ] && echo "$symtab" | grep -q ' _Unwind_VRS_Get$'; then
+	match _Unwind_VRS_Get
+	match _Unwind_VRS_Set
+    else
+	match _Unwind_GetGR
+	match _Unwind_GetIPInfo
+	match _Unwind_SetGR
+    fi
     match __libunwind_Unwind_Backtrace
     match __libunwind_Unwind_DeleteException
     match __libunwind_Unwind_FindEnclosingFunction
@@ -465,7 +478,7 @@ check_empty () {
     fi
 }
 
-if [ $plat = $build_plat ]; then
+if [ $plat = $host_plat ]; then
     fetch_symtab $LIBUNWIND
     filter_misc
     check_local_unw_abi
