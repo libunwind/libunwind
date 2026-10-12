@@ -193,6 +193,7 @@ if test x"$qemu_arch" = x; then
     *"s390"*)       qemu_arch=s390x;;
     *"Alpha"*)      qemu_arch=alpha;;
     *"PA-RISC"*)    qemu_arch=hppa;;
+    *"IA-64"*)      qemu_arch=ia64;;
     *"SH4"*)        qemu_arch=sh4;;
     *) usage_error "cannot auto-detect QEMU arch from '$detect_bin'; use --qemu-arch";;
   esac
