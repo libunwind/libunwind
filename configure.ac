@@ -713,7 +713,7 @@ PKG_EXTRA=pkg_extra
 PKG_MAINTAINER=pkg_maintainer
 
 
-AC_SUBST(build_arch)
+AC_SUBST(host_arch)
 AC_SUBST(target_os)
 AC_SUBST(arch)
 AC_SUBST(abi_variant_dir)
