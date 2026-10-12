@@ -34,7 +34,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define offsetof(type,field)    ((char *) &((type *) 0)->field - (char *) 0)
 
 #define OFFSET(sym, offset) \
-        asm volatile("\n->" #sym " %0" : : "i" (offset))
+        asm volatile("\n.ascii \"->" sym " %0\"" : : "i" (offset))
 
 int
 main (void)
