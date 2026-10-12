@@ -47,6 +47,15 @@ _UCD_access_fpreg (unw_addr_space_t  as UNUSED,
 
   *val = ui->fpregset->fprs[reg - UNW_S390X_F0].d;
   return 0;
+#elif defined(UNW_TARGET_IA64) && defined(HAVE_ELF_FPREGSET_T)
+  if (reg < UNW_IA64_FR || reg >= UNW_IA64_FR + 128)
+    {
+      Debug(0, "bad regnum:%d\n", reg);
+      return -UNW_EINVAL;
+    }
+
+  memcpy (val, &(*ui->fpregset)[reg - UNW_IA64_FR], sizeof (*val));
+  return 0;
 #else
   print_error (__func__);
   print_error (" not implemented for this architecture\n");
