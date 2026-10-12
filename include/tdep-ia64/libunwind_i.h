@@ -237,7 +237,7 @@ struct ia64_global_unwind_state
 /* Platforms that support UNW_INFO_FORMAT_TABLE need to define
    tdep_search_unwind_table.  */
 #define tdep_search_unwind_table        unw_search_ia64_unwind_table
-#define tdep_find_unwind_table  ia64_find_unwind_table
+#define tdep_find_unwind_table          UNW_OBJ(find_unwind_table)
 #define tdep_find_proc_info             UNW_OBJ(find_proc_info)
 #define tdep_uc_addr                    UNW_OBJ(uc_addr)
 #define tdep_get_elf_image              UNW_ARCH_OBJ(get_elf_image)
@@ -266,7 +266,7 @@ struct ia64_global_unwind_state
 
 extern void tdep_init (void);
 extern int tdep_find_unwind_table (struct elf_dyn_info *edi,
-                                   unw_addr_space_t as, char *path,
+                                   unw_addr_space_t as, const char *path,
                                    unw_word_t segbase, unw_word_t mapoff,
                                    unw_word_t ip);
 extern int tdep_find_proc_info (unw_addr_space_t as, unw_word_t ip,
