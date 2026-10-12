@@ -977,7 +977,7 @@ if not unw_remote_only
         test(
             'run-coredump-unwind',
             sh,
-            args: [files('run-coredump-unwind')],
+            args: [files('run-coredump-unwind'), _crasher, _exe],
             depends: [_crasher, _exe],
             workdir: meson.current_build_dir(),
         )
@@ -985,7 +985,7 @@ if not unw_remote_only
             test(
                 'run-coredump-unwind-mdi',
                 sh,
-                args: [files('run-coredump-unwind-mdi')],
+                args: [files('run-coredump-unwind-mdi'), _crasher, _exe],
                 depends: [_crasher, _exe],
                 workdir: meson.current_build_dir(),
             )

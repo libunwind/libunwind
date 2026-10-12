@@ -53,16 +53,33 @@ TESTDIR=`pwd`
 TEMPDIR=`mktemp --tmpdir -d libunwind-test-XXXXXXXXXX`
 trap "rm -r -- $TEMPDIR" EXIT
 
-cp crasher $TEMPDIR/crasher
 if [ "$1" = "-minidebuginfo" ]; then
+  minidebuginfo=1
+  shift
+fi
+
+CRASHER=${1:-crasher}
+UNWINDER=${2:-test-coredump-unwind}
+# Meson passes a bare file name, which must not be looked up in $PATH.
+case $UNWINDER in
+    */*) ;;
+    *) UNWINDER=./$UNWINDER ;;
+esac
+
+cp "$CRASHER" $TEMPDIR/crasher
+if [ -n "$minidebuginfo" ]; then
   add_minidebug $TEMPDIR/crasher
 fi
 
 COREFILE=$TEMPDIR/core
 
+# Set in a cross build, by scripts/qemu-test-driver and "meson test".  qemu
+# writes the guest's core itself, whatever core_pattern says.
+QEMU=$QEMU_ARCH$MESON_EXE_WRAPPER
+
 # create core dump
 CORE_PATTERN=$(cat /proc/sys/kernel/core_pattern 2>/dev/null || echo "core")
-if echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >/dev/null 2>&1; then
+if [ -z "$QEMU" ] && echo "$CORE_PATTERN" | grep -q "systemd-coredump" && command -v coredumpctl >/dev/null 2>&1; then
     # systemd-coredump intercepts the crash; retrieve core via coredumpctl
     BEFORE=$(date '+%Y-%m-%d %H:%M:%S')
     (
@@ -89,6 +106,8 @@ else
         if [ -n "$QEMU_ARCH" ]; then
             # QEMU_LD_PREFIX and QEMU_SET_ENV are inherited from the environment
             qemu-$QEMU_ARCH ./crasher backing_files
+        elif [ -n "$MESON_EXE_WRAPPER" ]; then
+            $MESON_EXE_WRAPPER ./crasher backing_files
         else
             ./crasher backing_files
         fi
@@ -114,11 +133,11 @@ else
     #
     # Try readelf first; fall back to od (always available) in case readelf
     # is not installed (e.g. CI containers that only have cross-binutils).
-    if [ -n "$QEMU_ARCH" ]; then
+    if [ -n "$QEMU" ]; then
         core_machine=$(readelf -h "$COREFILE" 2>/dev/null | grep 'Machine:')
         case "$core_machine" in
             *X86-64*|*80386*)
-                echo "qemu-$QEMU_ARCH crashed writing guest core (got host x86 core); test skipped"
+                echo "qemu crashed writing guest core (got host x86 core); test skipped"
                 exit 77
                 ;;
             '')
@@ -132,7 +151,7 @@ else
                     e_mach=$(od -An -j18 -N2 -tu2 "$COREFILE" 2>/dev/null | tr -d ' ')
                     case "$e_mach" in
                         62|3)
-                            echo "qemu-$QEMU_ARCH crashed writing guest core (got host x86 core); test skipped"
+                            echo "qemu crashed writing guest core (got host x86 core); test skipped"
                             exit 77
                             ;;
                     esac
@@ -151,6 +170,8 @@ if [ -n "$QEMU_ARCH" ]; then
     lib_path=$(cd "$TESTDIR/../src" && pwd)/.libs
     QEMU_SET_ENV="LD_LIBRARY_PATH=$lib_path${QEMU_SET_ENV:+,$QEMU_SET_ENV}" \
     qemu-$QEMU_ARCH .libs/test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+elif [ -n "$MESON_EXE_WRAPPER" ]; then
+    $MESON_EXE_WRAPPER $UNWINDER $COREFILE -testcase `cat $TEMPDIR/backing_files`
 else
-    ./test-coredump-unwind $COREFILE -testcase `cat $TEMPDIR/backing_files`
+    $UNWINDER $COREFILE -testcase `cat $TEMPDIR/backing_files`
 fi
