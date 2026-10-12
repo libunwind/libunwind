@@ -389,10 +389,23 @@ elif target_machine.cpu_family() == 'parisc'
     _libunwind_setjmp_srcs += files('hppa/siglongjmp.S')
 elif target_machine.cpu_family() == 'ia64'
     _mk_cursor = find_program(files('ia64/mk_cursor_i'))
+    _mk_cursor_cc = [
+        cc.cmd_array(),
+        get_option('c_args'),
+        '-DHAVE_CONFIG_H',
+        '-D_GNU_SOURCE',
+        '-I' + meson.project_source_root() / 'include',
+        '-I' + meson.project_build_root() / 'include',
+        '-I' + meson.project_source_root() / 'include/tdep-ia64',
+        '-I' + meson.project_source_root() / 'include/api',
+        '-I' + meson.project_build_root() / 'include/api',
+        '-I' + meson.project_source_root() / 'src',
+        '-S',
+    ]
     _gcursor_i = custom_target(
         input: 'ia64/mk_Gcursor_i.c',
         output: 'mk_Gcursor_i.s',
-        command: [cc, '-S', '@INPUT@', '-o', '@OUTPUT@'],
+        command: [_mk_cursor_cc, '@INPUT@', '-o', '@OUTPUT@'],
     )
     _gcursor_i = custom_target(
         input: _gcursor_i,
@@ -403,7 +416,7 @@ elif target_machine.cpu_family() == 'ia64'
     _lcursor_i = custom_target(
         input: 'ia64/mk_Lcursor_i.c',
         output: 'mk_Lcursor_i.s',
-        command: [cc, '-S', '@INPUT@', '-o', '@OUTPUT@'],
+        command: [_mk_cursor_cc, '@INPUT@', '-o', '@OUTPUT@'],
     )
     _lcursor_i = custom_target(
         input: _lcursor_i,
