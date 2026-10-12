@@ -161,6 +161,10 @@ struct MAY_ALIAS cursor
     uint16_t last_abi_marker;   /* last abi_marker encountered so far */
     uint8_t eh_valid_mask;
 
+    /* These belong with rbs_area below, but fit into padding here.  */
+    uint8_t rbs_curr;           /* index of curr. rbs-area (contains c->bsp) */
+    uint8_t rbs_left_edge;      /* index of inner-most valid rbs-area */
+
     unsigned int pi_valid :1;           /* is proc_info valid? */
     unsigned int pi_is_dynamic :1; /* proc_info found via dynamic proc info? */
     unw_proc_info_t pi;         /* info about current procedure */
@@ -181,8 +185,6 @@ struct MAY_ALIAS cursor
        register may not have gotten spilled until much later, when a
        possibly different rbs-area might have been in effect
        already.  */
-    uint8_t rbs_curr;           /* index of curr. rbs-area (contains c->bsp) */
-    uint8_t rbs_left_edge;      /* index of inner-most valid rbs-area */
     struct rbs_area
       {
         unw_word_t end;
@@ -191,6 +193,9 @@ struct MAY_ALIAS cursor
       }
     rbs_area[96 + 2];   /* 96 stacked regs + 1 extra stack on each side... */
 };
+
+_Static_assert (sizeof (struct cursor) <= sizeof (unw_cursor_t),
+                "struct cursor does not fit in unw_cursor_t");
 
 struct ia64_global_unwind_state
   {
