@@ -517,7 +517,7 @@ if not unw_remote_only
         _exe = executable(
             'Lia64-test-readonly',
             'Lia64-test-readonly.c',
-            'ia64-test-reaeonly-asm.S',
+            'ia64-test-readonly-asm.S',
             link_with: libunwind_lib,
             include_directories: _inc,
             dependencies: [libc_deps],
