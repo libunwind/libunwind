@@ -26,36 +26,37 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "_UCD_internal.h"
 
 #if UNW_TARGET_IA64 && defined(__linux__)
-# include "elf64.h"
-# include "os-linux.h"
-# include "../ptrace/_UPT_internal.h"
 
 static inline int
 get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
                int *countp)
 {
-  unsigned long lo, hi, off;
-  struct UPT_info *ui = arg;
-  struct map_iterator mi;
-  char path[PATH_MAX];
+  struct UCD_info *ui = arg;
   unw_word_t res;
   int count = 0;
+  unsigned i;
 
-  maps_init (&mi, ui->pid);
-  while (maps_next (&mi, &lo, &hi, &off, NULL))
+  for (i = 0; i < ui->phdrs_count; ++i)
     {
-      if (off)
+      coredump_phdr_t *phdr = &ui->phdrs[i];
+      ucd_file_t *file;
+
+      if (phdr->p_mapoff
+          || !(file = ucd_file_table_at (&ui->ucd_file_table,
+                                         phdr->p_backing_file_index)))
         continue;
 
-      invalidate_edi(&ui->edi);
+      /* The image belongs to the file table; see _UCD_find_proc_info().  */
+      ui->edi.ei.image = NULL;
+      invalidate_edi (&ui->edi);
 
-      if (elf_map_image (&ui->edi.ei, path) < 0)
-        /* ignore unmappable stuff like "/SYSV00001b58 (deleted)" */
+      if (!_UCD_get_elf_image (ui, phdr->p_vaddr))
         continue;
 
-      Debug (16, "checking object %s\n", path);
+      Debug (16, "checking object %s\n", file->filename);
 
-      if (tdep_find_unwind_table (&ui->edi, as, path, lo, off, 0) > 0)
+      if (tdep_find_unwind_table (&ui->edi, as, file->filename,
+                                  phdr->p_vaddr, 0, 0) > 0)
         {
           res = _Uia64_find_dyn_list (as, &ui->edi.di_cache, arg);
           if (res && count++ == 0)
@@ -65,7 +66,8 @@ get_list_addr (unw_addr_space_t as, unw_word_t *dil_addr, void *arg,
             }
         }
     }
-  maps_close (&mi);
+  ui->edi.ei.image = NULL;
+  invalidate_edi (&ui->edi);
   *countp = count;
   return 0;
 }
