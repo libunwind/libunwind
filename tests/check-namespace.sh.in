@@ -216,6 +216,7 @@ check_local_unw_abi () {
 	ia64)
 	    match _U${plat}_getcontext
 	    match _UL${plat}_search_unwind_table
+	    match _UL${plat}_find_unwind_table
 	    ;;
 	x86)
 	    match _U${plat}_getcontext
@@ -336,6 +337,7 @@ check_generic_unw_abi () {
 	    ;;
 	ia64)
 	    match _U${plat}_search_unwind_table
+	    match _U${plat}_find_unwind_table
 	    match _U${plat}_find_dyn_list
 	    if [ $plat = $build_plat ]; then
 		match _U${plat}_get_elf_image

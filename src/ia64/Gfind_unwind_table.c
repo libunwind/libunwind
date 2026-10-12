@@ -92,9 +92,9 @@ find_gp (struct elf_dyn_info *edi, Elf64_Phdr *pdyn, Elf64_Addr load_base)
 }
 
 int
-ia64_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
-                         char *path, unw_word_t segbase, unw_word_t mapoff,
-                         unw_word_t ip)
+tdep_find_unwind_table (struct elf_dyn_info *edi, unw_addr_space_t as,
+                        const char *path, unw_word_t segbase, unw_word_t mapoff,
+                        unw_word_t ip)
 {
   Elf64_Phdr *phdr, *ptxt = NULL, *punw = NULL, *pdyn = NULL;
   Elf64_Ehdr *ehdr;
