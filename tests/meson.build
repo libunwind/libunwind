@@ -538,7 +538,7 @@ if not unw_remote_only
         _exe = executable(
             'ia64-test-sig',
             'ia64-test-sig.c',
-            link_with: libunwind_generic_lib,
+            link_with: [libunwind_generic_lib, libunwind_lib],
             include_directories: _inc,
             dependencies: [libc_deps],
             override_options: _opts,
@@ -572,7 +572,7 @@ if not unw_remote_only
             'ia64-test-dyn1.c',
             'ia64-dyn-asm.S',
             'flush-cache.S',
-            link_with: libunwind_generic_lib,
+            link_with: [libunwind_generic_lib, libunwind_lib],
             include_directories: _inc,
             dependencies: libc_deps,
             override_options: _opts,
