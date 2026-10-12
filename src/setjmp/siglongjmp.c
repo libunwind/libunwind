@@ -39,7 +39,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # endif
 #endif
 
-#if defined(__GLIBC__)
+/* ia64 has its own {sig,}setjmp, which doesn't obfuscate the jmp_buf.  */
+#if defined(__GLIBC__) && !defined(__ia64__)
 #if __GLIBC_PREREQ(2, 4)
 
 /* Starting with glibc-2.4, {sig,}setjmp in GLIBC obfuscates the
