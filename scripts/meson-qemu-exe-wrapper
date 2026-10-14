@@ -96,8 +96,43 @@ qemu_call=("$qemu_cmd")
 [ -n "$qemu_sysroot" ] && qemu_call+=(-L "$qemu_sysroot")
 [ -n "$qemu_ldpath"  ] && qemu_call+=(-E "LD_LIBRARY_PATH=$qemu_ldpath")
 
-"${qemu_call[@]}" "$@"
+# Print a backtrace from the core qemu wrote for the binary, if gdb-multiarch
+# is installed.
+print_backtrace() {
+    local exe=$1 core=$2 libpath multiarch at_entry e_entry
+    command -v gdb-multiarch >/dev/null || return
+
+    libpath=${qemu_ldpath}:${LD_LIBRARY_PATH:-}
+    if [ -n "$gcc_cmd" ]; then
+        # Foreign-architecture packages are installed in the host's
+        # multiarch directories, which qemu falls back to.
+        # shellcheck disable=SC2086
+        multiarch=$("$gcc_cmd" $gcc_flags --print-multiarch 2>/dev/null)
+        [ -n "$multiarch" ] && libpath=$libpath:/lib/$multiarch:/usr/lib/$multiarch
+    fi
+
+    # qemu doesn't dump the executable's program headers, so gdb can't tell
+    # where a PIE was loaded. Relocate it by AT_ENTRY - e_entry, rounded down
+    # to a page since gdb strips the Thumb bit from e_entry.
+    read -r at_entry e_entry < <(
+        gdb-multiarch -batch -ex 'info auxv' -ex 'info files' "$exe" "$core" 2>/dev/null |
+        sed -n -e 's/.*AT_ENTRY .* //p' -e 's/.*Entry point: //p' | tr '\n' ' ')
+    [ -n "$e_entry" ] || at_entry=0 e_entry=0
+
+    gdb-multiarch -batch -iex "set sysroot ${qemu_sysroot:-/}" \
+        -iex "set solib-search-path $libpath" \
+        -ex "symbol-file -o $(( (at_entry - e_entry) & ~0xfff )) $exe" -ex sharedlibrary \
+        -ex 'thread apply all bt' "$exe" "$core" >&2
+}
+
+# Run qemu in the background to learn its PID, which names the core it writes
+# in the working directory.
+"${qemu_call[@]}" "$@" <&0 &
+qemu_pid=$!
+wait $qemu_pid
 estatus=$?
+cores=(qemu_"$(basename "$1")"_*_"$qemu_pid".core)
+[ -f "${cores[0]}" ] || cores=()
 
 if [ $estatus -ne 0 ] && [ -n "$xfail_list" ]; then
     test_basename=$(basename "$1")
@@ -111,9 +146,12 @@ if [ $estatus -ne 0 ] && [ -n "$xfail_list" ]; then
                            | head -1)
                 version_lt "$qemu_ver" "$xfail_before_ver" || break
             fi
+            rm -f "${cores[@]}"
             exit 77
         fi
     done
 fi
+
+[ ${#cores[@]} -gt 0 ] && print_backtrace "$1" "${cores[0]}"
 
 exit $estatus
