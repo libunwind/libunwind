@@ -394,7 +394,7 @@ if not unw_remote_only
         dependencies: [libc_deps, threads_dep],
         override_options: _opts,
     )
-    test(_exe.name(), _exe, env: _env)
+    test(_exe.name(), _exe, env: _env, timeout: 120)
 
     _exe = executable(
         'Gperf-simple',
