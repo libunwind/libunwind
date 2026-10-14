@@ -373,7 +373,7 @@ jobs:
           fi
           apt-get install -y meson ninja-build abigail-tools \
                              ${{ matrix.config.packages || format('g++-{0}-{1}', matrix.config.gccver, matrix.config.host) }} \
-                             qemu-user \
+                             qemu-user gdb-multiarch \
                              ${DPKG_ARCH:+liblzma-dev:$DPKG_ARCH} \
                              ${DPKG_ARCH:+zlib1g-dev:$DPKG_ARCH}
         env:
@@ -430,7 +430,7 @@ jobs:
           set -x
           bash -c 'echo core.%p.%p > /proc/sys/kernel/core_pattern'
           ulimit -c unlimited
-          meson test -C build-meson -j$(nproc) --timeout-multiplier 2
+          meson test -C build-meson -j$(nproc) --timeout-multiplier 2 --print-errorlogs
         env:
           UNW_DEBUG_LEVEL: 4
 
