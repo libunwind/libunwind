@@ -57,6 +57,8 @@ the following rules should be followed in declaring these structures:
  (4) Don't declare members with enumeration types.  Declare them as
      int32_t instead.  */
 
+#include <stddef.h>
+
 typedef enum
   {
     UNW_DYN_STOP = 0,           /* end-of-unwind-info marker */
@@ -165,8 +167,8 @@ unw_dyn_info_list_t;
 /* Return the size (in bytes) of an unw_dyn_region_info_t structure that can
    hold OP_COUNT ops.  */
 #define _U_dyn_region_info_size(op_count)                               \
-        ((char *) (((unw_dyn_region_info_t *) NULL)->op + (op_count))   \
-         - (char *) NULL)
+        (offsetof (unw_dyn_region_info_t, op)                           \
+         + (op_count) * sizeof (unw_dyn_op_t))
 
 /* Register the unwind info for a single procedure.
    This routine is NOT signal-safe.  */
