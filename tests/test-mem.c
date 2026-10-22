@@ -46,7 +46,8 @@ do_backtrace (void)
   unw_cursor_t cursor;
   unw_word_t ip, sp;
   unw_context_t uc;
-  int ret, num_frames = 0;
+  int ret;
+  volatile int num_frames = 0;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)

@@ -161,7 +161,7 @@ do_backtrace (void)
 {
   unw_word_t ip;
   int ret = -UNW_ENOINFO;
-  size_t unw_step_depth = 0;
+  volatile size_t unw_step_depth = 0;
   size_t backtrace_depth = 0;
   size_t unw_backtrace_depth = 0;
 

@@ -80,7 +80,7 @@ do_backtrace (int may_print, int get_proc_name)
   unw_word_t ip, sp, off;
   unw_context_t uc;
   int ret;
-  int depth = 0;
+  volatile int depth = 0;
 
   if (recurcount > 0)
     return;

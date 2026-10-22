@@ -55,7 +55,8 @@ handler (int sig UNUSED, siginfo_t *siginfo UNUSED, void *context UNUSED)
   unw_word_t ip;
   unw_context_t uc;
   unw_cursor_t c;
-  int ret, num_frames = 0;
+  int ret;
+  volatile int num_frames = 0;
 
   unw_getcontext (&uc);
   unw_init_local (&c, &uc);
