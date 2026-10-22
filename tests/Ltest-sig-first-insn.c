@@ -163,8 +163,8 @@ handler (int sig, siginfo_t *si, void *ucontext)
   unw_cursor_t c;
   unw_word_t ip, off;
   char name[128];
-  int found_victim = 0;
-  int depth = 0;
+  volatile int found_victim = 0;
+  volatile int depth = 0;
   int ret;
 
   (void) sig;

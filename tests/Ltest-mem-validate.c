@@ -60,7 +60,7 @@ void do_backtrace (void)
   unw_word_t ip, sp;
   unw_context_t uc;
   int ret;
-  int steps = 0;
+  volatile int steps = 0;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)

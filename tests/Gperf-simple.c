@@ -59,7 +59,8 @@ measure_unwind (int maxlevel, double *step)
   double stop, start;
   unw_cursor_t cursor;
   unw_context_t uc;
-  int ret, level = 0;
+  int ret;
+  volatile int level = 0;
 
   unw_getcontext (&uc);
   if (unw_init_local (&cursor, &uc) < 0)
@@ -149,7 +150,8 @@ measure_init (void)
 {
 # define N	100
 # define M	10	/* must be at least 2 to get steady-state */
-  double stop, start, get_cold, get_warm, init_cold, init_warm, delta;
+  double stop, get_cold, get_warm, init_warm, delta;
+  volatile double start, init_cold;
   struct
     {
       unw_cursor_t c;
@@ -162,7 +164,7 @@ measure_init (void)
       char padding[1024];	/* should be > 2 * max. cacheline size */
     }
   uc[N];
-  int i, j;
+  volatile int i, j;
 
   /* Run each test M times and take the minimum to filter out noise
      such dynamic linker resolving overhead, context-switches,

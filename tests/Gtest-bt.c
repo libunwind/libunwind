@@ -72,7 +72,7 @@ do_backtrace (void)
 {
   unw_word_t ip, sp, off;
   unw_proc_info_t pi;
-  unsigned int num_frames = 0;
+  volatile unsigned int num_frames = 0;
   int ret;
 
   if (verbose)
