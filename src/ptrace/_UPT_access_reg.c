@@ -100,18 +100,13 @@ _UPT_access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
 
 use_peekuser:
   {
-    /* _UPT_reg_offset uses gregset layout where PC is at index 31.
-       PTRACE_PEEKUSER uses a different layout where PC is at index 32.
-       GPR offsets 0-30 are the same in both layouts. */
-    long offset = _UPT_reg_offset[reg];
-    if (reg == UNW_ALPHA_PC)
-      offset = 0x100;  /* ptrace index 32 */
-
+    /* PTRACE_PEEKUSER takes a register index, not a byte offset, and
+       the kernel's indices match the UNW_ALPHA_* numbers. */
     errno = 0;
     if (write)
-      ptrace (PTRACE_POKEUSER, pid, offset, *val);
+      ptrace (PTRACE_POKEUSER, pid, reg, *val);
     else
-      *val = ptrace (PTRACE_PEEKUSER, pid, offset, 0);
+      *val = ptrace (PTRACE_PEEKUSER, pid, reg, 0);
     if (errno)
       goto badreg;
     return 0;
