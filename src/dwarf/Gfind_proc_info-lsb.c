@@ -874,6 +874,8 @@ remote_read_entry (unw_addr_space_t as, unw_accessors_t *a, unw_word_t *addr,
 
   int32_t val32;
   int ret = dwarf_reads32 (as, a, addr, &val32, arg);
+  if (ret < 0)
+    return ret;
   *val = val32;
   return ret;
 }
