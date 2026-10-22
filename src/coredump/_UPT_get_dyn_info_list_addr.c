@@ -85,7 +85,6 @@ get_list_addr (unw_addr_space_t  as UNUSED,
                void             *arg UNUSED,
                int              *countp)
 {
-# warning Implement get_list_addr(), please.
   *countp = 0;
   return 0;
 }
