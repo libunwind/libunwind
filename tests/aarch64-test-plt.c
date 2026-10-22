@@ -27,8 +27,8 @@
 #include "dwarf.h"
 #include "libunwind_i.h"
 
-int unw_is_signal_frame (unw_cursor_t *cursor) { return 0; }
-int dwarf_step (struct dwarf_cursor *c) { return 0; }
+int unw_is_signal_frame (unw_cursor_t *cursor UNUSED) { return 0; }
+int dwarf_step (struct dwarf_cursor *c UNUSED) { return 0; }
 
 enum
 {
@@ -44,7 +44,7 @@ enum
 
 /* Mock access_mem implementation */
 static int
-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val, int write,
             void *arg)
 {
   if (write != 0)

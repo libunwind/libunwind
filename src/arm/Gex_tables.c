@@ -508,7 +508,7 @@ tdep_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
  * Callback to find infos about the ARM exidx segment.
  */
 static int
-arm_phdr_cb (struct dl_phdr_info *info, size_t size, void *data)
+arm_phdr_cb (struct dl_phdr_info *info, size_t size UNUSED, void *data)
 {
   struct arm_cb_data *cb_data = data;
   const Elf_W(Phdr) *p_text = NULL;
@@ -622,7 +622,7 @@ arm_find_proc_info (unw_addr_space_t as, unw_word_t ip,
 }
 
 HIDDEN void
-arm_put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
+arm_put_unwind_info (unw_addr_space_t as UNUSED, unw_proc_info_t *proc_info UNUSED, void *arg UNUSED)
 {
   /* it's a no-op */
 }

@@ -43,6 +43,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <string.h>
 #include <unistd.h>
 
+#include "compiler.h"
 #include "unw_test.h"
 
 #define PAD_NAME    "unw_test_sig_pad"
@@ -251,7 +252,7 @@ run (const char *what)
 }
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv UNUSED)
 {
   struct sigaction sa;
 

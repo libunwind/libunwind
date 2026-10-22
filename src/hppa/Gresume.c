@@ -51,7 +51,7 @@ my_rt_sigreturn (void *new_sp, int in_syscall)
 #endif /* __linux__ */
 
 HIDDEN inline int
-hppa_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+hppa_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UNUSED)
 {
 #if defined(__linux__)
   struct cursor *c = (struct cursor *) cursor;

@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind_i.h>
 
 int
-unw_get_save_loc (unw_cursor_t *cursor, int reg, unw_save_loc_t *sloc)
+unw_get_save_loc (unw_cursor_t *cursor UNUSED, int reg UNUSED, unw_save_loc_t *sloc UNUSED)
 {
   /* XXX: empty stub.  */
   return 0;

@@ -27,8 +27,8 @@
 #include "libunwind_i.h"
 
 #undef unw_get_accessors_int
-unw_accessors_t *unw_get_accessors_int (unw_addr_space_t unused) { return NULL; }
-int dwarf_step (struct dwarf_cursor* unused) { return 0; }
+unw_accessors_t *unw_get_accessors_int (unw_addr_space_t unused UNUSED) { return NULL; }
+int dwarf_step (struct dwarf_cursor* unused UNUSED) { return 0; }
 
 /* Bounds for the mock memory buffer.  Set by each test before invoking
    unw_is_plt_entry().  */
@@ -37,8 +37,8 @@ static const void *mock_mem_end;
 
 /* Mock access_mem implementation */
 static int
-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
-            void *arg)
+access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val, int write,
+            void *arg UNUSED)
 {
   if (write != 0)
     return -1;

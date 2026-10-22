@@ -106,7 +106,7 @@ test_function_name_shorter_than_buffer ()
 
 
 int
-main (int argc, char **argv)
+main (int argc, char **argv UNUSED)
 {
   is_verbose_mode = (argc > 1);
 

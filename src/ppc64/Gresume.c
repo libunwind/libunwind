@@ -33,7 +33,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef UNW_REMOTE_ONLY
 
 HIDDEN inline int
-ppc64_local_resume (unw_addr_space_t as, unw_cursor_t *cursor, void *arg)
+ppc64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UNUSED)
 {
   struct cursor *c = (struct cursor *) cursor;
   ucontext_t *uc = (ucontext_t *)c->dwarf.as_arg;

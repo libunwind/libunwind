@@ -74,14 +74,14 @@ tdep_uc_addr (ucontext_t *uc, int reg)
 # endif	/* UNW_LOCAL_ONLY */
 
 static void
-put_unwind_info (unw_addr_space_t as, unw_proc_info_t *proc_info, void *arg)
+put_unwind_info (unw_addr_space_t as UNUSED, unw_proc_info_t *proc_info UNUSED, void *arg UNUSED)
 {
   /* it's a no-op */
 }
 
 static int
-get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
-			void *arg)
+get_dyn_info_list_addr (unw_addr_space_t as UNUSED, unw_word_t *dyn_info_list_addr,
+			void *arg UNUSED)
 {
 #ifndef UNW_LOCAL_ONLY
 # pragma weak _U_dyn_info_list_addr
@@ -94,7 +94,7 @@ get_dyn_info_list_addr (unw_addr_space_t as, unw_word_t *dyn_info_list_addr,
 }
 
 static int
-access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
+access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val, int write,
 	    void *arg)
 {
   if (unlikely (write))
@@ -118,7 +118,7 @@ access_mem (unw_addr_space_t as, unw_word_t addr, unw_word_t *val, int write,
 }
 
 static int
-access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
+access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
 	    int write, void *arg)
 {
   unw_word_t *addr;
@@ -149,7 +149,7 @@ badreg:
 }
 
 static int
-access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
+access_fpreg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_fpreg_t *val,
 	      int write, void *arg)
 {
   ucontext_t *uc = ((struct cursor *) arg)->uc;
