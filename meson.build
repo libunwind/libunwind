@@ -158,6 +158,13 @@ endif
 if cc.has_function('execvpe', prefix: '#include <unistd.h>')
     cfg.set('HAVE_EXECVPE', 1)
 endif
+if cc.has_function(
+    'process_vm_readv',
+    args: '-D_GNU_SOURCE',
+    prefix: '#include <sys/uio.h>',
+)
+    cfg.set('HAVE_PROCESS_VM_READV', 1)
+endif
 
 # Compiler checks
 if cc.compiles(

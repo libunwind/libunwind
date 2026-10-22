@@ -26,6 +26,10 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
+#ifdef HAVE_PROCESS_VM_READV
+#include <sys/uio.h>
+#endif
+
 #if HAVE_DECL_PTRACE_POKEDATA || defined(HAVE_TTRACE)
 int
 _UPT_access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val,
@@ -39,6 +43,24 @@ _UPT_access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val,
         return -UNW_EINVAL;
 
   pid_t pid = ui->pid;
+
+#ifdef HAVE_PROCESS_VM_READV
+  /* process_vm_readv() reports errors apart from the data; Alpha kernels
+     7.1 to 7.3 report PTRACE_PEEKDATA words with bit 63 set as errors.
+     Fall back to PTRACE_PEEKDATA, which can also read unreadable pages
+     such as execute-only text.  */
+  if (!write)
+    {
+      struct iovec local = { val, sizeof (*val) };
+      struct iovec remote = { (void *) (uintptr_t) addr, sizeof (*val) };
+
+      if (process_vm_readv (pid, &local, 1, &remote, 1, 0) == sizeof (*val))
+        {
+          Debug (16, "mem[%lx] -> %lx\n", (long) addr, (long) *val);
+          return 0;
+        }
+    }
+#endif
 
   // Some 32-bit archs have to define a 64-bit unw_word_t.
   // Callers of this function therefore expect a 64-bit
