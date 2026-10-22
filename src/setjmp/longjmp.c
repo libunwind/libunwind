@@ -50,8 +50,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    so we simply defer to glibc longjmp here.  */
 #define _longjmp __nonworking__longjmp
 #define longjmp __nonworking_longjmp
-static void _longjmp (jmp_buf env, int val);
-static void longjmp (jmp_buf env, int val);
+static void _longjmp (jmp_buf env, int val) UNUSED;
+static void longjmp (jmp_buf env, int val) UNUSED;
 #endif
 #endif /* __GLIBC__ */
 
