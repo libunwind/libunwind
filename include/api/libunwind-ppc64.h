@@ -280,7 +280,7 @@ typedef ucontext_t unw_tdep_context_t;
      0;                                                                      \
    })
 #else
-#define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+#define unw_tdep_getcontext(uc)         getcontext (uc)
 #endif
 
 #include "libunwind-dynamic.h"

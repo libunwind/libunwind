@@ -95,7 +95,7 @@ sh_regnum_t;
 
 typedef ucontext_t unw_tdep_context_t;
 
-#define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+#define unw_tdep_getcontext(uc)         getcontext (uc)
 
 typedef struct unw_tdep_save_loc
   {
