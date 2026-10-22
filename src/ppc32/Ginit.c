@@ -62,8 +62,7 @@ uc_addr (ucontext_t *uc, int reg)
 #endif
 
   else
-  if ( ((unsigned) (reg - UNW_PPC32_F0) < 32) &&
-       ((unsigned) (reg - UNW_PPC32_F0) >= 0) )
+  if ((unsigned) (reg - UNW_PPC32_F0) < 32)
 #if defined(__linux__)
     addr = &_UCONTEXT_UC_REGS(uc)->fpregs.fpregs[reg - UNW_PPC32_F0];
  #elif defined(__FreeBSD__)
@@ -163,8 +162,7 @@ access_reg (unw_addr_space_t as, unw_regnum_t reg, unw_word_t *val,
   unw_word_t *addr;
   ucontext_t *uc = arg;
 
-  if ( ((unsigned int) (reg - UNW_PPC32_F0) < 32) &&
-       ((unsigned int) (reg - UNW_PPC32_F0) >= 0))
+  if ((unsigned) (reg - UNW_PPC32_F0) < 32)
     goto badreg;
 
   addr = uc_addr (uc, reg);
@@ -195,7 +193,7 @@ access_fpreg (unw_addr_space_t as, unw_regnum_t reg, unw_fpreg_t *val,
   ucontext_t *uc = arg;
   unw_fpreg_t *addr;
 
-  if ((unsigned) (reg - UNW_PPC32_F0) < 0)
+  if ((unsigned) (reg - UNW_PPC32_F0) >= 32)
     goto badreg;
 
   addr = uc_addr (uc, reg);
