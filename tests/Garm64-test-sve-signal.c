@@ -31,6 +31,7 @@
  * IN THE SOFTWARE.
  */
 
+#include "compiler.h"
 #include "unw_test.h"
 
 #include <stdio.h>
@@ -117,7 +118,7 @@ bool    verbose = false;
 int64_t z[100];
 
 static void
-signal_handler (int signum)
+signal_handler (int signum UNUSED)
 {
   unw_cursor_t  cursor;
   unw_context_t context;
@@ -232,7 +233,7 @@ run_test (void)
 }
 
 int
-main (int argc, char *argv[])
+main (int argc, char *argv[] UNUSED)
 {
   verbose = (argc > 1);
   if (!sve_is_enabled ())

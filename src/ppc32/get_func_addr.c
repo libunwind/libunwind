@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind_i.h"
 
 int
-tdep_get_func_addr (unw_addr_space_t as, unw_word_t symbol_val_addr,
+tdep_get_func_addr (unw_addr_space_t as UNUSED, unw_word_t symbol_val_addr,
                     unw_word_t *real_func_addr, void *arg UNUSED)
 {
   *real_func_addr = symbol_val_addr;

@@ -28,7 +28,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    on MIPS.  */
 
 int
-unw_is_fpreg (int regnum)
+unw_is_fpreg (int regnum UNUSED)
 {
   /* FIXME: Support FP.  */
   return 0;

@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind-internal.h"
 
 unsigned long
-_Unwind_GetTextRelBase (struct _Unwind_Context *context)
+_Unwind_GetTextRelBase (struct _Unwind_Context *context UNUSED)
 {
   return 0;
 }

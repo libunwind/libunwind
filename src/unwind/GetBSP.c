@@ -26,7 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "unwind-internal.h"
 
 unsigned long
-_Unwind_GetBSP (struct _Unwind_Context *context)
+_Unwind_GetBSP (struct _Unwind_Context *context UNUSED)
 {
 #ifdef UNW_TARGET_IA64
   unw_word_t val;
