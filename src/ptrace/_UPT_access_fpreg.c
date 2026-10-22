@@ -26,7 +26,64 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "_UPT_internal.h"
 
-#if HAVE_DECL_PTRACE_POKEUSER || defined(HAVE_TTRACE)
+#if defined(UNW_TARGET_ALPHA) && defined(__linux__)
+#include <sys/uio.h>
+
+int
+_UPT_access_fpreg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_fpreg_t *val,
+                   int write, void *arg)
+{
+  struct UPT_info *ui = arg;
+  pid_t pid = ui->pid;
+  static int getregset_supported = -1;
+  unw_word_t fpregs[32], *wp = (unw_word_t *) val;
+  struct iovec loc = { fpregs, sizeof (fpregs) };
+
+  if (reg < UNW_ALPHA_F0 || reg > UNW_ALPHA_F31)
+    return -UNW_EBADREG;
+
+  /* $f31 is hardwired to zero.  The kernel's index 63 is the FPCR.  */
+  if (reg == UNW_ALPHA_F31)
+    {
+      if (!write)
+        *wp = 0;
+      return 0;
+    }
+
+  /* Prefer PTRACE_GETREGSET (Linux 7.3 and later): PTRACE_PEEKUSER on
+     7.1 to 7.3 reports values with bit 63 set as errors.  */
+  if (getregset_supported != 0)
+    {
+      if (ptrace (PTRACE_GETREGSET, pid, NT_PRFPREG, &loc) == 0
+          && loc.iov_len == sizeof (fpregs))
+        {
+          getregset_supported = 1;
+          if (!write)
+            {
+              *wp = fpregs[reg - UNW_ALPHA_F0];
+              return 0;
+            }
+          fpregs[reg - UNW_ALPHA_F0] = *wp;
+          if (ptrace (PTRACE_SETREGSET, pid, NT_PRFPREG, &loc) == -1)
+            return -UNW_EBADREG;
+          return 0;
+        }
+      if (getregset_supported > 0)
+        return -UNW_EBADREG;
+      getregset_supported = 0;
+    }
+
+  /* PTRACE_PEEKUSER takes a register index, which matches reg.  */
+  errno = 0;
+  if (write)
+    ptrace (PTRACE_POKEUSER, pid, reg, *wp);
+  else
+    *wp = ptrace (PTRACE_PEEKUSER, pid, reg, 0);
+  if (errno)
+    return -UNW_EBADREG;
+  return 0;
+}
+#elif HAVE_DECL_PTRACE_POKEUSER || defined(HAVE_TTRACE)
 int
 _UPT_access_fpreg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_fpreg_t *val,
                    int write, void *arg)
