@@ -88,6 +88,21 @@ After building the library, you can run a set of regression tests with:
 
 With Autotools, use `make check` instead.
 
+### Cross builds under QEMU
+
+The files in `cross/` run the tests under qemu-user through
+`scripts/meson-qemu-exe-wrapper`, which finds the sysroot and the GCC
+runtime libraries by querying the cross compiler:
+
+    $ export PATH=$PWD/scripts:$PATH
+    $ meson setup build-ppc --cross-file cross/powerpc-unknown-linux-gnu.ini
+    $ meson test -C build-ppc
+
+If your toolchain uses a different triple, override `[binaries]` in a
+second `--cross-file`. Some tests fail under QEMU on some targets; CI skips
+them with `qemu_skip` and `qemu_xfail` in
+`.github/workflows/CI-linux-gnu.yml`.
+
 ## Performance Testing
 
 This distribution includes a few simple performance tests which give
