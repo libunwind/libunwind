@@ -1222,7 +1222,6 @@ libunwind_sh_la_LIBADD =                       \
 
 noinst_HEADERS +=                              \
         sparc64/init.h                           \
-        sparc64/ucontext_i.h                    \
         sparc64/unwind_i.h
 libunwind_la_SOURCES_sparc64_common =            \
         $(libunwind_la_SOURCES_common)         \
