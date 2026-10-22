@@ -1,6 +1,6 @@
-project(libunwind)
-
 cmake_minimum_required(VERSION 3.16.1)
+
+project(libunwind)
 
 set(CMAKE_C_STANDARD 11)
 
