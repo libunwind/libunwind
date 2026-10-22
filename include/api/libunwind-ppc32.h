@@ -210,23 +210,27 @@ typedef ucontext_t unw_tdep_context_t __attribute__((aligned(16)));
    getcontext saves the caller's return address as the instruction pointer.
    The saved LR (gregs[36]) is the caller's return address, so overwrite
    NIP (gregs[32]) with it to put the cursor in the caller's frame.  */
-#define unw_tdep_getcontext(uc)                                        \
-  (getcontext (uc),                                                    \
-   (uc)->uc_mcontext.uc_regs->gregs[32]                                \
-     = (uc)->uc_mcontext.uc_regs->gregs[36],                           \
-   0)
+#define unw_tdep_getcontext(uc) __extension__                          \
+  ({                                                                   \
+     getcontext (uc);                                                  \
+     (uc)->uc_mcontext.uc_regs->gregs[32]                              \
+       = (uc)->uc_mcontext.uc_regs->gregs[36];                         \
+     0;                                                                \
+   })
 #elif defined(__linux__)
 /* Every Linux getcontext() on ppc32 ends up in the kernel's swapcontext
    syscall (glibc's own implementation and libucontext's alike), so the
    saved NIP is the address after the `sc` instruction, and the same
    fix-up is needed.  Only the layout differs: outside glibc the mcontext
    pointer is a direct member, ucontext_t::uc_regs.  */
-#define unw_tdep_getcontext(uc)                                        \
-  (getcontext (uc),                                                    \
-   (uc)->uc_regs->gregs[32] = (uc)->uc_regs->gregs[36],                \
-   0)
+#define unw_tdep_getcontext(uc) __extension__                          \
+  ({                                                                   \
+     getcontext (uc);                                                  \
+     (uc)->uc_regs->gregs[32] = (uc)->uc_regs->gregs[36];              \
+     0;                                                                \
+   })
 #else
-#define unw_tdep_getcontext(uc)         (getcontext (uc), 0)
+#define unw_tdep_getcontext(uc)         getcontext (uc)
 #endif
 
 #include "libunwind-dynamic.h"
