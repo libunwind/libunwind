@@ -25,6 +25,7 @@ test_dir="$(dirname $0)"
 
 : ${LIBUNWIND:=@LIBDIR@/libunwind.so}
 : ${LIBUNWIND_GENERIC:=@LIBDIR@/libunwind-@ARCH@.so}
+export LIBUNWIND LIBUNWIND_GENERIC
 
 count=0
 printf "TAP version 14\n"
