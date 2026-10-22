@@ -68,15 +68,18 @@ _UPT_access_reg (unw_addr_space_t as UNUSED, unw_regnum_t reg, unw_word_t *val,
   r = (char *)&regs + _UPT_reg_offset[reg];
 
 #ifdef UNW_TARGET_ALPHA
-  /* Alpha kernels before 7.1 do not support PTRACE_GETREGSET.
-     Try it once and fall back to PTRACE_PEEKUSER on older kernels. */
+  /* Alpha kernels before 7.1 do not support PTRACE_GETREGSET, and 7.1
+     and 7.2 return struct pt_regs, which is shorter than elf_gregset_t
+     and laid out differently.  Try it once and fall back to
+     PTRACE_PEEKUSER on those kernels. */
   {
     static int getregset_supported = -1;
 
     if (getregset_supported == 0)
       goto use_peekuser;
 
-    if (ptrace (PTRACE_GETREGSET, pid, NT_PRSTATUS, &loc) == -1)
+    if (ptrace (PTRACE_GETREGSET, pid, NT_PRSTATUS, &loc) == -1
+        || loc.iov_len != sizeof (regs))
       {
         if (getregset_supported < 0)
           {
