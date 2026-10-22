@@ -16,7 +16,7 @@ Usage: meson-qemu-exe-wrapper --qemu=CMD [--gcc=COMPILER]
 
 --gcc       Cross compiler; used to auto-detect --sysroot (via
             --print-sysroot, falling back to /usr/<target> from -dumpmachine)
-            and --ldpath (via --print-file-name=libgcc_s.so.1)
+            and --ldpath (via --print-file-name=libgcc_s.so.1 or libgcc_s.so)
             when those options are not given explicitly.
 --gcc-flags Extra flags passed to --gcc when querying it (e.g. -mabi=n32).
 --xfail-before-version
@@ -86,9 +86,12 @@ if [ -n "$gcc_cmd" ]; then
         fi
     fi
     if [ -z "$qemu_ldpath" ]; then
-        libgcc=$("$gcc_cmd" $gcc_flags --print-file-name=libgcc_s.so.1 2>/dev/null)
-        # --print-file-name returns the input unchanged when the file is not found
-        [ "$libgcc" != "libgcc_s.so.1" ] && qemu_ldpath=$(dirname "$libgcc")
+        # --print-file-name returns the input unchanged when the file is not
+        # found.  libgcc_s.so covers targets with another soname (hppa: .so.4).
+        for lib in libgcc_s.so.1 libgcc_s.so; do
+            libgcc=$("$gcc_cmd" $gcc_flags --print-file-name=$lib 2>/dev/null)
+            [ "$libgcc" != "$lib" ] && { qemu_ldpath=$(dirname "$libgcc"); break; }
+        done
     fi
 fi
 
