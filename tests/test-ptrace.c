@@ -94,7 +94,12 @@ do_backtrace (void)
 	panic ("unw_get_reg/unw_get_proc_name() failed: ret=%d\n", ret);
 
       if (n == 0)
-	start_ip = ip;
+	{
+	  /* Registers that read as zero would end the unwind cleanly.  */
+	  if (ip == 0)
+	    panic ("FAILURE: initial ip is 0\n");
+	  start_ip = ip;
+	}
 
       buf[0] = '\0';
       if (print_names)
