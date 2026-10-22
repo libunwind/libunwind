@@ -79,9 +79,9 @@ _UPT_access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val,
       if (write)
         {
 #if __BYTE_ORDER == __LITTLE_ENDIAN
-          tmp_val = i == 0 ? *val : *val >> 32;
+          tmp_val = i == 0 ? *val : (uint64_t) *val >> 32;
 #else
-          tmp_val = i == 0 && end == 2 ? *val >> 32 : *val;
+          tmp_val = i == 0 && end == 2 ? (uint64_t) *val >> 32 : *val;
 #endif
 
           Debug (16, "mem[%lx] <- %lx\n", (long) tmp_addr, (long) tmp_val);
@@ -106,7 +106,7 @@ _UPT_access_mem (unw_addr_space_t as UNUSED, unw_word_t addr, unw_word_t *val,
 #if __BYTE_ORDER == __LITTLE_ENDIAN
           *val |= tmp_val << (i * 32);
 #else
-          *val |= i == 0 && end == 2 ? tmp_val << 32 : tmp_val;
+          *val |= i == 0 && end == 2 ? (uint64_t) tmp_val << 32 : tmp_val;
 #endif
 
           if (errno)
