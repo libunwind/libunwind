@@ -59,6 +59,7 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
     case UNW_AARCH64_X30:
       if (write)
         c->dwarf.ip = *valp;            /* update the IP cache */
+      FALLTHROUGH;
     case UNW_AARCH64_X4:
     case UNW_AARCH64_X5:
     case UNW_AARCH64_X6:

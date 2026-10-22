@@ -478,6 +478,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
     case UNW_ARM_FRAME_GUESSED:
       /* Fall thru to standard processing after forcing validation. */
       c->validate = 1;
+      FALLTHROUGH;
 
     case UNW_ARM_FRAME_STANDARD:
       /* Advance standard traceable frame. */
