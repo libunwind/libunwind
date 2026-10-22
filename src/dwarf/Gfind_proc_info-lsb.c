@@ -938,7 +938,8 @@ dwarf_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
                            int need_unwind_info, void *arg)
 {
   unw_word_t ip_base = 0, segbase = 0, last_ip, fde_addr;
-  unw_word_t found_start_ip_offset = 0, found_fde_offset = 0;
+  unw_word_t found_start_ip_offset UNUSED = 0;
+  unw_word_t found_fde_offset = 0;
   int found_entry = 0;
   unw_accessors_t *a;
   int ret;
