@@ -403,7 +403,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   struct cursor *c = (struct cursor *) cursor;
   struct dwarf_cursor *d = &c->dwarf;
   unw_trace_cache_t *cache;
-  unw_word_t sp, pc, cfa, r7, lr;
+  unw_word_t sp, pc, cfa, r7, lr = 0;
   int maxdepth = 0;
   int depth = 0;
   int ret;
@@ -441,7 +441,7 @@ tdep_trace (unw_cursor_t *cursor, void **buffer, int *size)
   {
     pc -= d->use_prev_instr;
     Debug (2, "depth %d cfa 0x%x pc 0x%x sp 0x%x r7 0x%x lr 0x%lx\n",
-           depth, cfa, pc, sp, r7);
+           depth, cfa, pc, sp, r7, lr);
 
     /* See if we have this address cached.  If not, evaluate enough of
        the dwarf unwind information to fill the cache line data, or to
