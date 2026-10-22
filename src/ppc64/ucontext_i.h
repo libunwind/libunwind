@@ -26,6 +26,7 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #ifndef ucontext_i_h
 #define ucontext_i_h
 
+#include "compiler.h"
 #include <ucontext.h>
 
 #if defined(__linux__)
@@ -58,8 +59,8 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 /* These are dummy structures used only for obtaining the offsets of the
    various structure members. */
-static ucontext_t dmy_ctxt;
-static vrregset_t dmy_vrregset;
+static ucontext_t dmy_ctxt UNUSED;
+static vrregset_t dmy_vrregset UNUSED;
 
 #elif defined(__FreeBSD__)
 /* See /usr/src/sys/powerpc/include/ucontext.h.
@@ -87,7 +88,7 @@ static vrregset_t dmy_vrregset;
 
 /* These are dummy structures used only for obtaining the offsets of the
    various structure members. */
-static struct __mcontext dmy_ctxt;
+static struct __mcontext dmy_ctxt UNUSED;
 
 #else
 #error "Not implemented!"
