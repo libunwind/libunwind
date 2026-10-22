@@ -56,7 +56,8 @@ fetch_symtab () {
     filename=$1
 
     if [ ! -r $filename ]; then
-	return
+	echo "  ERROR: Cannot read $filename; set LIBUNWIND or LIBUNWIND_GENERIC"
+	exit 1
     fi
 
     if $verbose; then
