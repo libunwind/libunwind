@@ -190,20 +190,31 @@ if test x"$qemu_arch" = x; then
       done
     fi
   fi
-  case $(file "$detect_bin" 2>/dev/null) in
-    *"SPARC V9"*)   qemu_arch=sparc64;;
-    *"SPARC"*)      qemu_arch=sparc;;
-    *"AArch64"*)    qemu_arch=aarch64;;
-    *"ARM"*)        qemu_arch=arm;;
-    *"MIPS"*)       qemu_arch=mips;;
-    *"PowerPC 64"*) qemu_arch=ppc64;;
-    *"PowerPC"*)    qemu_arch=ppc;;
-    *"RISC-V"*)     qemu_arch=riscv64;;
-    *"s390"*)       qemu_arch=s390x;;
-    *"Alpha"*)      qemu_arch=alpha;;
-    *"PA-RISC"*)    qemu_arch=hppa;;
-    *"IA-64"*)      qemu_arch=ia64;;
-    *"SH4"*)        qemu_arch=sh4;;
+  # Match on file(1)'s description, e.g.
+  # "ELF 64-bit LSB pie executable, 64-bit PowerPC or cisco 7500, ...".
+  case $(file -b "$detect_bin" 2>/dev/null) in
+    *"SPARC V9"*)                 qemu_arch=sparc64;;
+    *"SPARC"*)                    qemu_arch=sparc;;
+    *"aarch64"*)                  qemu_arch=aarch64;;
+    *"ARM"*)                      qemu_arch=arm;;
+    *"32-bit LSB"*"MIPS, N32"*)   qemu_arch=mipsn32el;;
+    *"32-bit MSB"*"MIPS, N32"*)   qemu_arch=mipsn32;;
+    *"64-bit LSB"*"MIPS"*)        qemu_arch=mips64el;;
+    *"64-bit MSB"*"MIPS"*)        qemu_arch=mips64;;
+    *"LSB"*"MIPS"*)               qemu_arch=mipsel;;
+    *"MIPS"*)                     qemu_arch=mips;;
+    *"LSB"*"64-bit PowerPC"*)     qemu_arch=ppc64le;;
+    *"64-bit PowerPC"*)           qemu_arch=ppc64;;
+    *"PowerPC"*)                  qemu_arch=ppc;;
+    *"64-bit"*"RISC-V"*)          qemu_arch=riscv64;;
+    *"RISC-V"*)                   qemu_arch=riscv32;;
+    *"S/390"*)                    qemu_arch=s390x;;
+    *"LoongArch"*)                qemu_arch=loongarch64;;
+    *"Alpha"*)                    qemu_arch=alpha;;
+    *"PA-RISC"*)                  qemu_arch=hppa;;
+    *"IA-64"*)                    qemu_arch=ia64;;
+    *"MSB"*"Renesas SH"*)         qemu_arch=sh4eb;;
+    *"Renesas SH"*)               qemu_arch=sh4;;
     *) usage_error "cannot auto-detect QEMU arch from '$detect_bin'; use --qemu-arch";;
   esac
 fi
