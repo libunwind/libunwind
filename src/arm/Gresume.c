@@ -29,6 +29,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
+/* Thumb-1 ldmia can only load the low registers, so build the resume
+   code in ARM mode.  */
+#if defined(__thumb__) && !defined(__thumb2__)
+__attribute__((target("arm")))
+#endif
 HIDDEN inline int
 arm_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UNUSED)
 {
