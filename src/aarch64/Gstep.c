@@ -532,6 +532,83 @@ track_frame_record (uint32_t insn, unw_word_t insn_addr,
     }
 }
 
+/* Accumulate the stack allocated by a straight-line prologue, up to the
+   point where FP is set up, so the CFA can be computed from the FP (or SP)
+   instead of being guessed.  Recognizes the instructions compilers use to
+   allocate a frame:
+
+      sub  sp, sp, #imm{, lsl #12}
+      stp  Xt1, Xt2, [sp, #-imm]!
+      stp  Dt1, Dt2, [sp, #-imm]!
+      str  Xt, [sp, #-imm]!
+      str  Dt, [sp, #-imm]!
+
+   Any other change of SP, or a branch, makes the frame size unknown.  */
+static void
+track_frame_size (uint32_t insn, int32_t *size, int *known)
+{
+  if (!*known)
+    return;
+
+  if ((insn & 0x7c000000) == 0x14000000         /* B, BL */
+      || (insn & 0xff000000) == 0x54000000      /* B.cond, BC.cond */
+      || (insn & 0x7e000000) == 0x34000000      /* CBZ, CBNZ */
+      || (insn & 0x7e000000) == 0x36000000      /* TBZ, TBNZ */
+      || (insn & 0xfe9fc000) == 0xd61f0000      /* BR, BLR, RET (+PAC) */
+      || (insn & 0xfe9f8000) == 0xd69f0000)     /* ERET, DRPS */
+    {
+      *known = 0;
+      return;
+    }
+
+  /* SUB SP, SP, #imm{, LSL #12} */
+  if ((insn & 0xff8003ff) == 0xd10003ff)
+    {
+      int32_t imm = (insn >> 10) & 0xfff;
+      if (insn & 0x00400000)
+        imm <<= 12;
+      *size += imm;
+      return;
+    }
+
+  /* STP Xt1, Xt2, [SP, #-imm]! (opc 0b10) or Dt1, Dt2 (opc 0b01, V=1) */
+  if ((insn & 0xffc003e0) == 0xa98003e0 || (insn & 0xffc003e0) == 0x6d8003e0)
+    {
+      int32_t imm = (insn >> 15) & 0x7f;
+      if (imm & 0x40)
+        imm |= ~0x7f;
+      if (imm < 0)
+        *size += -imm * 8;
+      else
+        *known = 0;
+      return;
+    }
+
+  /* STR Xt, [SP, #-imm]! or STR Dt, [SP, #-imm]! */
+  if ((insn & 0xffe00fe0) == 0xf8000fe0 || (insn & 0xffe00fe0) == 0xfc000fe0)
+    {
+      int32_t imm = (insn >> 12) & 0x1ff;
+      if (imm & 0x100)
+        imm |= ~0x1ff;
+      if (imm < 0)
+        *size += -imm;
+      else
+        *known = 0;
+      return;
+    }
+
+  /* Anything else writing SP: ADD/SUB (immediate or extended register,
+     not setting flags, as Rd == 31 means XZR for ADDS/SUBS), MOV SP, Xn
+     (an alias of ADD), and pre-/post-indexed loads and stores (single or
+     pair) with SP as base register.  */
+  if (((insn & 0x3f000000) == 0x11000000 && (insn & 0x1f) == 0x1f)
+      || ((insn & 0x3fe00000) == 0x0b200000 && (insn & 0x1f) == 0x1f)
+      || ((insn & 0x3b200400) == 0x38000400 && ((insn >> 5) & 0x1f) == 0x1f)
+      || ((insn & 0x3a000000) == 0x28000000 && (insn & 0x00800000)
+          && ((insn >> 5) & 0x1f) == 0x1f))
+    *known = 0;
+}
+
 /* Scan instructions from the start of the current procedure up to the current
    IP tracking the frame record and SP adjustment. */
 frame_state_t
@@ -545,6 +622,10 @@ get_frame_state (unw_cursor_t *cursor)
   frame_state_t fs;
   fs.loc = NONE;
   fs.offset = 0;
+  fs.cfa_known = 0;
+  fs.cfa_offset = 0;
+  int32_t frame_size = 0;
+  int frame_size_known = 1;
 
   /* PLT entries do not create frame records */
   if (_is_plt_entry (&c->dwarf))
@@ -581,16 +662,40 @@ get_frame_state (unw_cursor_t *cursor)
           /* Frame-record tracking.  Detects the STP/MOV/LDP sequence that
              creates and destroys a frame record, tracking fs.loc through
              NONE -> AT_SP_OFFSET -> AT_FP -> (back to NONE).  */
+          frame_record_location_t prev_loc = fs.loc;
+          if (fs.loc != AT_FP)
+            track_frame_size (insn, &frame_size, &frame_size_known);
           track_frame_record (insn, ip + j * 4, &fs.loc, &fs.offset);
+
+          if (fs.loc == AT_FP && prev_loc == AT_SP_OFFSET)
+            {
+              /* ADD x29, sp, #imm{, LSL #12}: FP = SP + imm, and the
+                 caller's SP is SP + frame_size.  */
+              int32_t imm = (insn >> 10) & 0xfff;
+              if (insn & 0x00400000)
+                imm <<= 12;
+              fs.cfa_known = frame_size_known;
+              fs.cfa_offset = frame_size - imm;
+            }
+          else if (fs.loc != prev_loc)
+            fs.cfa_known = 0;
         }
+    }
+
+  if (fs.loc == AT_SP_OFFSET && frame_size_known)
+    {
+      fs.cfa_known = 1;
+      fs.cfa_offset = frame_size;
     }
 
   /* Use the SP offset if no frame record was found. */
   if (fs.loc == NONE)
     fs.offset = sp_offset;
 
-  Debug (3, "[start_ip = 0x%lx, ip=0x%lx) => loc = %d, offset = %d\n",
-            start_ip, c->dwarf.ip, fs.loc, fs.offset);
+  Debug (3, "[start_ip = 0x%lx, ip=0x%lx) => loc = %d, offset = %d, cfa %s%+d\n",
+            start_ip, c->dwarf.ip, fs.loc, fs.offset,
+            fs.cfa_known ? (fs.loc == AT_FP ? "fp" : "sp") : "unknown ",
+            fs.cfa_offset);
 
   return fs;
 }
@@ -952,6 +1057,8 @@ aarch64_step (unw_cursor_t *cursor)
          8 into the frame record.  */
       if (fs.loc != NONE)
         {
+          unw_word_t sp = 0;
+
           if (fs.loc == AT_FP)
             {
               /* X29 points to frame record.  */
@@ -980,7 +1087,6 @@ aarch64_step (unw_cursor_t *cursor)
           else
             {
               /* Frame record stored but not pointed to by X29, use SP.  */
-              unw_word_t sp;
               ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_SP], &sp);
               if (ret < 0)
                 return ret;
@@ -998,9 +1104,27 @@ aarch64_step (unw_cursor_t *cursor)
           c->dwarf.loc[UNW_AARCH64_PC] = c->dwarf.loc[UNW_AARCH64_X30];
 
           /* Set SP/CFA and PC/IP.  */
-          ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.cfa);
-          if (ret < 0)
-            return ret;
+          if (fs.cfa_known)
+            {
+              /* The prologue was followed: the caller's SP is known
+                 exactly, relative to the frame record.  */
+              unw_word_t base = (fs.loc == AT_FP) ? fp : sp;
+              unw_word_t record = (fs.loc == AT_FP) ? fp : sp + fs.offset;
+              c->dwarf.cfa = base + fs.cfa_offset;
+
+              c->frame_info.cfa_reg_sp = (fs.loc == AT_FP) ? 0 : 1;
+              c->frame_info.cfa_reg_offset = fs.cfa_offset;
+              c->frame_info.fp_cfa_offset = (int) (record - c->dwarf.cfa);
+              c->frame_info.lr_cfa_offset = (int) (record + 8 - c->dwarf.cfa);
+              c->frame_info.sp_cfa_offset = -1;
+            }
+          else
+            {
+              /* Approximate the caller's SP by its FP.  */
+              ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.cfa);
+              if (ret < 0)
+                return ret;
+            }
           ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
           if (ret == 0)
             {
