@@ -38,6 +38,38 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    __kernel_sigtramp_rt64.  */
 #define __SIGNAL_FRAMESIZE 128
 
+/* Find the ucontext of the signal frame whose trampoline the cursor is
+   at.  The kernel places it __SIGNAL_FRAMESIZE bytes above the stack
+   pointer it gives the handler, i.e. above the CFA of the trampoline
+   frame.  qemu-user leaves another 16 bytes in between.  Both set
+   sigcontext.regs to point at the gp_regs that follow it, so look for
+   that at either offset, and assume the kernel's layout if neither
+   matches.  */
+static unw_word_t
+signal_frame_ucontext (struct cursor *c)
+{
+#if defined(__linux__)
+  static const unw_word_t offsets[] = { __SIGNAL_FRAMESIZE,
+                                        __SIGNAL_FRAMESIZE + 16 };
+  unsigned int i;
+
+  for (i = 0; i < sizeof (offsets) / sizeof (offsets[0]); ++i)
+    {
+      unw_word_t uc = c->dwarf.cfa + offsets[i];
+      unw_word_t regs;
+
+      if (dwarf_get (&c->dwarf, DWARF_LOC (uc + UC_MCONTEXT_REGS_PTR, 0),
+                     &regs) >= 0
+          && regs == uc + UC_MCONTEXT_GREGS_R0)
+        {
+          Debug (3, "ucontext at CFA%+ld\n", (long) offsets[i]);
+          return uc;
+        }
+    }
+#endif
+  return c->dwarf.cfa + __SIGNAL_FRAMESIZE;
+}
+
 /* This definition comes from the document "64-bit PowerPC ELF Application
    Binary Interface Supplement 1.9", section 3.2.2.
    http://www.linux-foundation.org/spec/ELF/ppc64/PPC-elf64abi-1.9.html#STACK */
@@ -384,7 +416,7 @@ signal_frame:
          following code will likely cause a seg fault or other crash
          condition.  */
 
-      unw_word_t ucontext = c->dwarf.cfa + __SIGNAL_FRAMESIZE;
+      unw_word_t ucontext = signal_frame_ucontext (c);
 
           Debug (1, "signal frame, skip over trampoline\n");
 
