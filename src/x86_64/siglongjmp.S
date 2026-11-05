@@ -33,7 +33,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.type _UI_siglongjmp_cont, @function
 _UI_siglongjmp_cont:
 	_CET_ENDBR
-#if defined(__linux__) || defined(__QNX__)
+#if defined(__linux__) && !defined(__GLIBC__)
+	/* musl, see siglongjmp.c: %rax is the return address, %rdx the
+	   return value and %rcx the value for %rbx.  */
+	pushq	%rax
+	movq	%rcx, %rbx
+	movq	%rdx, %rax
+	retq
+#elif defined(__linux__) || defined(__QNX__)
 	retq
 #elif defined(__FreeBSD__)
 	pushq	%rax		/* return address */

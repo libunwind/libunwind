@@ -1,8 +1,15 @@
         .globl _UI_siglongjmp_cont
         .globl _UI_longjmp_cont
 
-        /* Restoring the signal mask is not implemented yet.  */
 _UI_siglongjmp_cont:
+#if defined(__linux__) && !defined(__GLIBC__)
+        /* musl, see siglongjmp.c: a0 - return address, a1 - return value,
+           a2 - value for s0 */
+        mv      ra, a0
+        mv      s0, a2
+        mv      a0, a1
+#endif
+        /* Restoring the signal mask is not implemented otherwise.  */
         ret
 
         /* a0 - return address, a1 - return value */

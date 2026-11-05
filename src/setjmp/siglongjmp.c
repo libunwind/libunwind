@@ -91,13 +91,25 @@ siglongjmp (sigjmp_buf env, int val)
       /* default to resuming without restoring signal-mask */
       cont = &_UI_longjmp_cont;
 
-#if defined(__aarch64__) && defined(__linux__) && !defined(__GLIBC__)
-      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[22]) < 0
+#if defined(JB_MUSL_SIGSETJMP)
+      /* musl's sigsetjmp() tail-calls setjmp() when SAVEMASK is zero, so
+         wp[JB_RP] is its caller.  Otherwise it calls setjmp() with the
+         jmp_buf pointer in a callee-saved register, so wp[JB_RP] returns
+         into sigsetjmp(), which then restores the signal mask itself and
+         returns to its caller.  setjmp() stored that register in wp[0].
+         _UI_siglongjmp_cont restores it from the third EH argument: the
+         register's save slot is not necessarily known after unwinding
+         through code without unwind info.  Without a saved mask, wp[0]
+         is the caller's value of that register at setjmp() time, which
+         is what longjmp() restores too.  Either way the signal mask is
+         left to sigsetjmp().  */
+      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[JB_RP]) < 0
           || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
-          || unw_set_reg (&c, UNW_REG_EH + 19, wp[24]) < 0
-          || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) (uintptr_t) cont))
+          || unw_set_reg (&c, UNW_REG_EH + 2, wp[0]) < 0
+          || unw_set_reg (&c, UNW_REG_IP,
+                          (unw_word_t) (uintptr_t) &_UI_siglongjmp_cont))
         abort ();
-#else /* !defined(__linux__) || defined(__GLIBC__) */
+#else /* !defined(JB_MUSL_SIGSETJMP) */
       /* Order of evaluation is important here: if unw_resume()
          restores signal mask, we must set it up appropriately, even
          if wp[JB_MASK_SAVED] is FALSE.  */
@@ -132,7 +144,7 @@ siglongjmp (sigjmp_buf env, int val)
           || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
           || unw_set_reg (&c, UNW_REG_IP, (unw_word_t) (uintptr_t) cont))
         abort ();
-#endif /* defined(__linux__) && !defined(__GLIBC__) */
+#endif /* !defined(JB_MUSL_SIGSETJMP) */
 
       /* siglongjmp() restores the saved mask itself, and leaves the mask
          alone when sigsetjmp() did not save one.  */

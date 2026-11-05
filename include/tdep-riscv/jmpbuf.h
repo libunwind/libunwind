@@ -43,6 +43,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 # define JB_MASK        39      /* __ss */
 #endif
 
+/* musl's sigsetjmp() keeps the jmp_buf pointer in a callee-saved register
+   while it calls setjmp(), and setjmp() stores that register in slot 0;
+   siglongjmp() has _UI_siglongjmp_cont restore it.  */
+#define JB_MUSL_SIGSETJMP       1
+
 #else
 /* https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/riscv/setjmp.S;h=0b92016b311b11aa9eeb62b38c670a262f1924c9;hb=HEAD */
 #define JB_SP           13
