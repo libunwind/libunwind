@@ -28,6 +28,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+/* The registers that pass the arguments of _UI_longjmp_cont and
+   _UI_siglongjmp_cont: the target address, the return value and, for
+   musl's sigsetjmp(), a register value.  */
+#ifndef JB_CONT_ARG
+# define JB_CONT_ARG(n) (UNW_REG_EH + (n))
+#endif
+
 #if UNW_TARGET_IA64
 # include "tdep-ia64/rse.h"
 
