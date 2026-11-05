@@ -85,7 +85,7 @@ static int _path_ends_with(const char* path, size_t path_len, const char* match,
  * Any file names that end in the string "(deleted)" are ignored.
  */
 static int
-_handle_nt_file_note (uint8_t *desc, void *arg)
+_handle_nt_file_note (uint8_t *desc, uint32_t desc_size, void *arg)
 {
   struct UCD_info *ui = (struct UCD_info *)arg;
 
@@ -93,9 +93,18 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
    * PT_NOTE segment), so use memcpy to read the header and each entry to
    * avoid SIGBUS on strict-alignment architectures such as SPARC64. */
   core_nt_file_hdr_t hdr;
+  if (desc_size < sizeof (hdr))
+    return UNW_ESUCCESS;
   memcpy (&hdr, desc, sizeof (hdr));
 
+  /* count and the file names that follow the entry array all come from the
+   * core file.  Reject a count whose fixed-size entry array would already run
+   * past the note, and bound every file-name scan to the note so a missing
+   * terminator can't read off the end of the segment. */
+  uint8_t *desc_end = desc + desc_size;
   uint8_t *entries_base = desc + mapinfo_offset;
+  if (hdr.count > (size_t) (desc_end - entries_base) / sizeof (core_nt_file_entry_t))
+    return UNW_ESUCCESS;
   char *strings = (char *) (entries_base + sizeof (core_nt_file_entry_t) * hdr.count);
 
   for (unsigned long i = 0; i < hdr.count; ++i)
@@ -103,7 +112,10 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
       core_nt_file_entry_t entry;
       memcpy (&entry, entries_base + i * sizeof (core_nt_file_entry_t), sizeof (entry));
 
-      size_t len = strlen (strings);
+      uint8_t *nul = memchr (strings, '\0', (size_t) (desc_end - (uint8_t *) strings));
+      if (nul == NULL)
+        break;
+      size_t len = (size_t) ((char *) nul - strings);
 
       for (unsigned p = 0; p < ui->phdrs_count; ++p)
         {
@@ -151,7 +163,7 @@ _handle_nt_file_note (uint8_t *desc, void *arg)
  */
 static int
 _handle_pt_note_segment (uint32_t  n_namesz UNUSED,
-                         uint32_t  n_descsz UNUSED,
+                         uint32_t  n_descsz,
                          uint32_t  n_type,
                          char     *name,
                          uint8_t  *desc,
@@ -160,7 +172,7 @@ _handle_pt_note_segment (uint32_t  n_namesz UNUSED,
 #ifdef NT_FILE
   if (n_type == NT_FILE && strcmp (name, "CORE") == 0)
     {
-      return _handle_nt_file_note (desc, arg);
+      return _handle_nt_file_note (desc, n_descsz, arg);
     }
 #endif
   return UNW_ESUCCESS;

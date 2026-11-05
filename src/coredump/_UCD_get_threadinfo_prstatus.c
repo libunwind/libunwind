@@ -83,17 +83,34 @@ _save_thread_notes(uint32_t  n_namesz UNUSED,
 #if defined(HAVE_PROCFS_STATUS)
   if (0 == strcmp(name, QNX_NOTE_NAME))
     {
+      /* n_descsz is attacker-controlled, so cap each copy at the destination
+         size, and don't touch threads[n_threads-1] for a register note that
+         arrives before any QNT_CORE_STATUS note (n_threads still zero). */
       switch (n_type)
 	    {
         case QNT_CORE_STATUS:
-          ++ui->n_threads;
-          memcpy(&ui->threads[ui->n_threads-1].prstatus.thread, desc, (size_t)n_descsz);
+          {
+            UCD_proc_status_t *dst = &ui->threads[ui->n_threads].prstatus;
+            size_t copy_sz = n_descsz < sizeof(dst->thread) ? n_descsz : sizeof(dst->thread);
+            memcpy(&dst->thread, desc, copy_sz);
+            ++ui->n_threads;
+          }
           break;
         case QNT_CORE_GREG:
-          memcpy(&ui->threads[ui->n_threads-1].prstatus.greg, desc, (size_t)n_descsz);
+          if (ui->n_threads > 0)
+            {
+              UCD_proc_status_t *dst = &ui->threads[ui->n_threads-1].prstatus;
+              size_t copy_sz = n_descsz < sizeof(dst->greg) ? n_descsz : sizeof(dst->greg);
+              memcpy(&dst->greg, desc, copy_sz);
+            }
           break;
         case QNT_CORE_FPREG:
-          memcpy(&ui->threads[ui->n_threads-1].prstatus.fpreg, desc, (size_t)n_descsz);
+          if (ui->n_threads > 0)
+            {
+              UCD_proc_status_t *dst = &ui->threads[ui->n_threads-1].prstatus;
+              size_t copy_sz = n_descsz < sizeof(dst->fpreg) ? n_descsz : sizeof(dst->fpreg);
+              memcpy(&dst->fpreg, desc, copy_sz);
+            }
           break;
         default:
           break;
@@ -133,9 +150,10 @@ _save_thread_notes(uint32_t  n_namesz UNUSED,
     }
 #endif
 #ifdef HAVE_ELF_FPREGSET_T
-  if (n_type == NT_FPREGSET)
+  if (n_type == NT_FPREGSET && ui->n_threads > 0)
     {
-      memcpy(&ui->threads[ui->n_threads-1].fpregset, desc, sizeof(elf_fpregset_t));
+      size_t copy_sz = n_descsz < sizeof(elf_fpregset_t) ? n_descsz : sizeof(elf_fpregset_t);
+      memcpy(&ui->threads[ui->n_threads-1].fpregset, desc, copy_sz);
     }
 #endif
   return UNW_ESUCCESS;

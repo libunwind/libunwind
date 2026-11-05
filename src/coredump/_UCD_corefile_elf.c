@@ -98,7 +98,8 @@ _UCD_elf_visit_notes(uint8_t *segment, size_t segment_size, note_visitor_t visit
 {
   int ret = UNW_ESUCCESS;
   size_t parsed_size = 0;
-  while (parsed_size < segment_size)
+  const size_t header_size = sizeof(Elf64_Nhdr);
+  while (parsed_size + header_size <= segment_size)
   {
     /*
      * Note that Elf32_Nhdr and Elf64_Nhdr are identical, so it doesn't matter which
@@ -106,10 +107,14 @@ _UCD_elf_visit_notes(uint8_t *segment, size_t segment_size, note_visitor_t visit
      * bigger is better.
      */
     Elf64_Nhdr *note = (Elf64_Nhdr *)(segment + parsed_size);
-    unsigned header_size = sizeof(Elf64_Nhdr);
-    unsigned name_size = UNW_ALIGN(note->n_namesz, 4);
-    unsigned desc_size = UNW_ALIGN(note->n_descsz, 4);
-    unsigned note_size = header_size + name_size + desc_size;
+    /* n_namesz and n_descsz come straight from the core file.  Compute the
+     * aligned sizes as size_t so they can't wrap, and make sure the name and
+     * desc both fall within the segment before handing them to the callback. */
+    size_t name_size = UNW_ALIGN(note->n_namesz, 4);
+    size_t desc_size = UNW_ALIGN(note->n_descsz, 4);
+    size_t avail = segment_size - parsed_size - header_size;
+    if (name_size > avail || desc_size > avail - name_size)
+      break;
     char *name = (char *)(note) + header_size;
     uint8_t *desc = (uint8_t *)(note) + header_size + name_size;
 
@@ -119,7 +124,7 @@ _UCD_elf_visit_notes(uint8_t *segment, size_t segment_size, note_visitor_t visit
       break;
     }
 
-    parsed_size += note_size;
+    parsed_size += header_size + name_size + desc_size;
   }
   return ret;
 }
