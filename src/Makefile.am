@@ -950,7 +950,8 @@ libunwind_local_la_SOURCES =               \
 	ppc64/Lregs.c                          \
 	ppc64/Lreg_states_iterate.c            \
 	ppc64/Lresume.c                        \
-	ppc64/Lstep.c
+	ppc64/Lstep.c                          \
+	ppc64/setcontext.S
 libunwind_setjmp_la_SOURCES +=                 \
 	ppc/longjmp.S                          \
 	ppc/siglongjmp.S
@@ -969,6 +970,10 @@ libunwind_ppc64_la_SOURCES =                   \
 	ppc64/Greg_states_iterate.c            \
 	ppc64/Gresume.c                        \
 	ppc64/Gstep.c
+if !REMOTE_ONLY
+# setcontext() is internal to each library that resumes local cursors.
+libunwind_ppc64_la_SOURCES += ppc64/setcontext.S
+endif
 libunwind_ppc64_la_LDFLAGS =                   \
 	$(COMMON_SO_LDFLAGS)                   \
 	-version-info $(SOVERSION)
