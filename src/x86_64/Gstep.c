@@ -371,9 +371,10 @@ _unw_step_fallback(struct cursor *c, unw_cursor_t  *cursor)
         }
     }
 
-  /* Check for end of call chain */
-  Debug (2, ".. checking NULL %%rip and %%rbp indicating end of call stack ..\n");
-  if (ret >= 0 && c->dwarf.ip == 0 && DWARF_IS_NULL_LOC (c->dwarf.loc[RBP]))
+  /* Check for end of call chain: a zero return address marks the
+     outermost frame, as in dwarf_step(), whatever %rbp was found to be.  */
+  Debug (2, ".. checking NULL %%rip indicating end of call stack ..\n");
+  if (c->dwarf.ip == 0)
     {
       for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
         c->dwarf.loc[i] = DWARF_NULL_LOC;
