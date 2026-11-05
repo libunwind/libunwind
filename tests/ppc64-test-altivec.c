@@ -74,6 +74,8 @@ vec_stack (int count)
   unw_context_t uc;
   int ret;
   int verbose = 1;
+  /* Whether a frame without unwind info has been stepped through.  */
+  int past_no_unwind_info = 0;
 
   /* if (count == 0) return vec_init(); */
 
@@ -98,11 +100,17 @@ vec_stack (int count)
 		  panic ("FAILURE: unw_get_reg returned %d for UNW_REG_SP\n",
 			 ret);
 		}
+	      int vr_known = 1;
 	      if ((ret = unw_get_fpreg (&cursor, UNW_PPC64_V30, (unw_fpreg_t *)&vr)) < 0)
 		{
-		  panic
-		    ("FAILURE: unw_get_vreg returned %d for UNW_PPC64_V30\n",
-		     ret);
+		  /* Frames beyond code without unwind info (e.g. a C
+		     library built without unwind tables) may have no known
+		     register locations.  Not a test failure there.  */
+		  if (ret != -UNW_EBADREG || !past_no_unwind_info)
+		    panic
+		      ("FAILURE: unw_get_vreg returned %d for UNW_PPC64_V30\n",
+		       ret);
+		  vr_known = 0;
 		}
 
 
@@ -115,11 +123,14 @@ vec_stack (int count)
                   vec_half1 = (unsigned int *)&vr;
                   vec_half2 = vec_half1 + 1;
 		  printf ("ip = %016lx, sp=%016lx\n", (long) ip, (long) sp);
-		  printf ("vr30 = %08x %08x %08x %08x\n",
-			  (unsigned int) (*vec_half1 >> 16),
-			  (unsigned int) (*vec_half1 & 0xffffffff),
-			  (unsigned int) (*vec_half2 >> 16),
-			  (unsigned int) (*vec_half2 & 0xffffffff));
+		  if (vr_known)
+		    printf ("vr30 = %08x %08x %08x %08x\n",
+			    (unsigned int) (*vec_half1 >> 16),
+			    (unsigned int) (*vec_half1 & 0xffffffff),
+			    (unsigned int) (*vec_half2 >> 16),
+			    (unsigned int) (*vec_half2 & 0xffffffff));
+		  else
+		    printf ("vr30 = <unknown>\n");
 		  ret =
 		    unw_get_proc_name (&cursor, proc_name_buffer,
 				       sizeof (proc_name_buffer), &offset);
@@ -140,6 +151,10 @@ vec_stack (int count)
 		    }
 		  printf ("unw_regname(UNW_PPC_V30) = %s\n\n", regname);
 		}
+
+	      unw_proc_info_t pi;
+	      if (unw_get_proc_info (&cursor, &pi) < 0)
+		past_no_unwind_info = 1;
 
 	      ret = unw_step (&cursor);
 	      if (ret < 0)
