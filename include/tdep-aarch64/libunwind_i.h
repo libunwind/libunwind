@@ -354,6 +354,9 @@ typedef struct frame_state
        (loc == AT_SP_OFFSET).  */
     int cfa_known;
     int32_t cfa_offset;
+    /* Whether the start of the function was found, so that the fields
+       above describe its code up to the IP.  */
+    int start_known;
   } frame_state_t;
 
 #define get_frame_state UNW_OBJ(get_frame_state)
