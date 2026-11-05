@@ -926,6 +926,7 @@ libunwind_ppc32_la_LIBADD =                    \
 
 # The list of files that go both into libunwind and libunwind-ppc64:
 noinst_HEADERS +=                              \
+	ppc64/context_i.h                      \
 	ppc64/init.h                           \
 	ppc64/unwind_i.h                       \
 	ppc64/ucontext_i.h
@@ -941,6 +942,7 @@ libunwind_local_la_SOURCES =               \
 	$(libunwind_la_SOURCES_ppc64_common)   \
 	$(libunwind_la_SOURCES_local)          \
 	$(libunwind_la_SOURCES_ppc)            \
+	ppc64/getcontext.S                     \
 	ppc64/Lapply_reg_state.c               \
 	ppc64/Lcreate_addr_space.c             \
 	ppc64/Lglobal.c                        \

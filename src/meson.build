@@ -653,6 +653,7 @@ elif target_machine.cpu_family() in ['ppc', 'ppc64']
             _libunwind_srcs_local,
             _libunwind_srcs_ppc,
             files(
+                'ppc64/getcontext.S',
                 'ppc64/Lapply_reg_state.c',
                 'ppc64/Lcreate_addr_space.c',
                 'ppc64/Lglobal.c',

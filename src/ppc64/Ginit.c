@@ -31,6 +31,32 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include "ucontext_i.h"
 #include "unwind_i.h"
 
+#if defined(__linux__) && !defined(__GLIBC__)
+#include <stddef.h>
+#include "context_i.h"
+
+/* unw_getcontext() and the setcontext() used by unw_resume() are
+   getcontext.S and setcontext.S here.  The former has the kernel fill
+   in the context, so the C library's ucontext_t must be the kernel's,
+   and both access it through the offsets in context_i.h.  */
+_Static_assert (sizeof (ucontext_t) == PPC64_UC_SIZE,
+                "ucontext_t differs from the kernel's struct ucontext");
+_Static_assert (offsetof (ucontext_t, uc_sigmask) == PPC64_UC_SIGMASK
+                && offsetof (ucontext_t, uc_mcontext.gp_regs) == PPC64_UC_GREGS
+                && offsetof (ucontext_t, uc_mcontext.fp_regs) == PPC64_UC_FPREGS
+                && offsetof (ucontext_t, uc_mcontext.v_regs) == PPC64_UC_VREGS,
+                "unexpected ucontext_t layout");
+_Static_assert (PPC64_UC_NIP == PPC64_UC_GREG (NIP_IDX)
+                && PPC64_UC_MSR == PPC64_UC_GREG (MSR_IDX)
+                && PPC64_UC_CTR == PPC64_UC_GREG (CTR_IDX)
+                && PPC64_UC_LINK == PPC64_UC_GREG (LINK_IDX)
+                && PPC64_UC_XER == PPC64_UC_GREG (XER_IDX)
+                && PPC64_UC_CCR == PPC64_UC_GREG (CCR_IDX),
+                "unexpected gp_regs indices");
+_Static_assert (sizeof (((vrregset_t *) 0)->vrregs) == PPC64_VREGS_VSCR,
+                "unexpected vrregset_t layout");
+#endif
+
 #ifdef UNW_REMOTE_ONLY
 
 /* unw_local_addr_space is a NULL pointer in this case.  */
