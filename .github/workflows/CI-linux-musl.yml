@@ -1,0 +1,165 @@
+name: CI - Linux - MUSL
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    paths:
+      - '**'
+      - '!README.md'
+      - '!doc/**'
+      - '!.**'
+      - '.github/workflows/CI-linux-musl.yml'
+  push:
+    branches:
+      - v[0-9].*
+      - master
+
+jobs:
+  build-musl-native:
+    # setup-alpine runs its script with sudo -E, which the sudo of the
+    # ubuntu-26.04 images ignores, so the script gets none of its inputs:
+    # https://github.com/jirutka/setup-alpine/pull/35
+    runs-on: ubuntu-24.04
+    # Anything more than about 15 minutes natively, or 30 minutes under
+    # qemu-user, is likely a testsuite hang.
+    timeout-minutes: ${{ matrix.arch == 'x86_64' && 15 || 30 }}
+    name: ${{ matrix.arch }}-linux-musl (${{ matrix.arch == 'x86_64' && 'native' || 'qemu' }})
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, ppc64le, riscv64, x86_64]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Alpine Linux
+        uses: jirutka/setup-alpine@ae3b3ddba35054804fc4a3507b519fa7e8152050 # v1.4.1
+        with:
+          branch: v3.24
+          # Create the root with the apk-tools major version that v3.24
+          # ships. On ppc64le, its apk cannot read the scripts.tar that the
+          # action's default apk-tools 2.14 writes.
+          apk-tools-url: https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v3.0.9/x86_64/apk.static#!sha256!ff1a069e58a603556d68bc8f1f8ba006a7319e72e5d6bc7191bfef834edd9966
+          arch: ${{ matrix.arch }}
+          packages: >
+            autoconf
+            automake
+            build-base
+            g++
+            libtool
+            libucontext-dev
+            linux-headers
+            xz-dev
+          shell-name: alpine.sh
+
+      - name: Configure
+        run: |
+          set -x
+          gcc --version
+          autoreconf -i
+          ./configure --enable-debug --enable-coredump --enable-cxx-exceptions
+        env:
+          CFLAGS: -g -O0 -Wall -Wextra
+          CXXFLAGS: -g -O0
+          LDFLAGS: -g -O0
+        shell: alpine.sh {0}
+
+      - name: Build
+        run: |
+          make -j$(nproc)
+        shell: alpine.sh {0}
+
+      - name: Test
+        if: ${{ success() }}
+        # At -O0, GCC 15 describes where the SVE functions of
+        # [GL]arm64-test-sve-signal save x29 and x30 relative to the stack
+        # pointer before they allocate their SVE save area, so neither
+        # libunwind nor libgcc can step out of them.
+        run: |
+          if [ "${{ matrix.arch }}" = aarch64 ]; then
+            make check -j$(nproc) XFAIL_TESTS="Garm64-test-sve-signal Larm64-test-sve-signal"
+          else
+            make check -j$(nproc)
+          fi
+        env:
+          UNW_DEBUG_LEVEL: 5
+        shell: alpine.sh {0}
+
+      - name: Upload Test Logs
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.arch }}-linux-musl
+          path: |
+            **/test-suite.log
+            **/config.log
+          if-no-files-found: warn
+
+
+  build-musl-meson:
+    runs-on: ubuntu-24.04   # See build-musl-native.
+    timeout-minutes: ${{ matrix.arch == 'x86_64' && 15 || 30 }}
+    name: ${{ matrix.arch }}-linux-musl (${{ matrix.arch == 'x86_64' && 'native' || 'qemu' }}, meson)
+
+    strategy:
+      fail-fast: false
+      matrix:
+        arch: [aarch64, ppc64le, riscv64, x86_64]
+
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Set up Alpine Linux
+        uses: jirutka/setup-alpine@ae3b3ddba35054804fc4a3507b519fa7e8152050 # v1.4.1
+        with:
+          branch: v3.24
+          # See build-musl-native.
+          apk-tools-url: https://gitlab.alpinelinux.org/api/v4/projects/5/packages/generic/v3.0.9/x86_64/apk.static#!sha256!ff1a069e58a603556d68bc8f1f8ba006a7319e72e5d6bc7191bfef834edd9966
+          arch: ${{ matrix.arch }}
+          packages: >
+            build-base
+            g++
+            libucontext-dev
+            linux-headers
+            meson
+            xz-dev
+            zlib-dev
+          shell-name: alpine.sh
+
+      - name: Setup
+        run: >-
+          meson setup
+          --optimization=0
+          -Ddebug_logs=true -Dminidebuginfo=enabled -Dzlibdebuginfo=enabled -Dcxx_exceptions=enabled
+          --warnlevel 2 --fatal-meson-warnings
+          builddir
+        shell: alpine.sh {0}
+
+      - name: Show Logs
+        if: ${{ failure() }}
+        run: cat builddir/meson-logs/meson-log.txt
+
+      - name: Build
+        run: meson compile -C builddir
+        shell: alpine.sh {0}
+
+      - name: Test
+        # Lrs-race can take longer than its 120 seconds under qemu-user,
+        # where every step through musl falls back to the debuglink.  Leave
+        # out [GL]arm64-test-sve-signal, see build-musl-native.
+        run: |
+          tests=$(meson test -C builddir --list 2>/dev/null | grep -v 'arm64-test-sve-signal$')
+          meson test -C builddir --print-errorlogs \
+            --timeout-multiplier ${{ matrix.arch == 'x86_64' && 1 || 4 }} $tests
+        shell: alpine.sh {0}
+
+      - name: Upload Test Logs
+        if: failure()
+        uses: actions/upload-artifact@v7
+        with:
+          name: logs-${{ matrix.arch }}-linux-musl-meson
+          path: builddir/meson-logs/
+          if-no-files-found: warn
