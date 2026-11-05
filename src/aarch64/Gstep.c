@@ -624,21 +624,30 @@ get_frame_state (unw_cursor_t *cursor)
   fs.offset = 0;
   fs.cfa_known = 0;
   fs.cfa_offset = 0;
+  fs.start_known = 0;
   int32_t frame_size = 0;
   int frame_size_known = 1;
 
   /* PLT entries do not create frame records */
   if (_is_plt_entry (&c->dwarf))
-    return fs;
+    {
+      fs.start_known = 1;
+      return fs;
+    }
 
   /* Use get_proc_name to find start_ip of procedure.
      For vDSO functions (the primary consumer of this fallback),
-     .dynsym is always available even though .eh_frame is discarded. */
+     .dynsym is always available even though .eh_frame is discarded.
+     For a return address, look up the call rather than what follows it,
+     which may be another function after a call to a noreturn one.  */
   char name[128];
-  if (((*a->get_proc_name) (c->dwarf.as, c->dwarf.ip, name, sizeof(name), &offp, c->dwarf.as_arg)) != 0)
+  unw_word_t lookup_ip = c->dwarf.ip - c->dwarf.use_prev_instr;
+  if (a->get_proc_name == NULL
+      || (*a->get_proc_name) (c->dwarf.as, lookup_ip, name, sizeof(name), &offp, c->dwarf.as_arg) != 0)
     return fs;
 
-  start_ip = c->dwarf.ip - offp;
+  start_ip = lookup_ip - offp;
+  fs.start_known = 1;
 
   /* Check for frame record instructions since the start of the procedure (start_ip).
    * access_mem reads WSIZE bytes, so two instructions are checked in each iteration
@@ -1053,6 +1062,17 @@ aarch64_step (unw_cursor_t *cursor)
 
       frame_state_t fs = get_frame_state(cursor);
 
+      /* Without the start of the function, e.g. in a stripped library,
+         it is not known whether it has created a frame record.  A frame
+         that is suspended at a call, rather than interrupted by a signal,
+         is past its prologue, and the call has overwritten LR, so LR is
+         of no use: rely on the frame record at FP.  */
+      if (fs.loc == NONE && !fs.start_known && c->dwarf.use_prev_instr)
+        {
+          Debug (2, "start of function unknown, assuming frame record at FP\n");
+          fs.loc = AT_FP;
+        }
+
       /* Prefer using frame record. The LR value is stored at an offset of
          8 into the frame record.  */
       if (fs.loc != NONE)
@@ -1120,10 +1140,13 @@ aarch64_step (unw_cursor_t *cursor)
             }
           else
             {
-              /* Approximate the caller's SP by its FP.  */
+              /* Approximate the caller's SP by its FP.  unw_backtrace()
+                 cannot replay that from frame_info, so let it fall back
+                 to unw_step() for this frame.  */
               ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_X29], &c->dwarf.cfa);
               if (ret < 0)
                 return ret;
+              c->frame_info.frame_type = UNW_AARCH64_FRAME_OTHER;
             }
           ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
           if (ret == 0)
@@ -1131,6 +1154,8 @@ aarch64_step (unw_cursor_t *cursor)
               /* A zero return address in the frame record marks the
                  outermost frame, as for the DWARF and LR paths.  */
               ret = (c->dwarf.ip == 0) ? 0 : 1;
+              /* The IP is a return address now.  */
+              c->dwarf.use_prev_instr = 1;
             }
           Debug (2, "fallback, CFA = 0x%016lx, IP = 0x%016lx returning %d\n",
             c->dwarf.cfa, c->dwarf.ip, ret);
@@ -1163,6 +1188,8 @@ aarch64_step (unw_cursor_t *cursor)
             }
           Debug (2, "link register (x30) = 0x%016lx, CFA = 0x%016lx\n",
                  c->dwarf.ip, c->dwarf.cfa);
+          /* The IP is a return address now.  */
+          c->dwarf.use_prev_instr = 1;
           ret = 1;
         }
       else
