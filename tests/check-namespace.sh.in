@@ -246,6 +246,15 @@ check_local_unw_abi () {
 	    match _U${plat}_setcontext
 	    ;;
 	ppc*)
+	    if [ ${plat} = ppc64 ]; then
+		case "${os}" in
+		    linux-gnu*)
+		    ;;
+		    linux*)
+			match _U${plat}_getcontext
+		    ;;
+		esac
+	    fi
 	    match _U${plat}_get_func_addr
 	    match _U${plat}_is_fpreg
 	    match _UL${plat}_dwarf_search_unwind_table
