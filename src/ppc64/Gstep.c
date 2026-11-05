@@ -55,6 +55,114 @@ read_insn (struct cursor *c, unw_word_t addr, uint32_t *insn)
   return 0;
 }
 
+/* Whether ADDR follows a call, as a return address does.  */
+static int
+follows_call (struct cursor *c, unw_word_t addr)
+{
+  uint32_t insn;
+
+  if ((addr & 3) != 0 || read_insn (c, addr - 4, &insn) < 0)
+    return 0;
+  return (insn & 0xfc000003) == 0x48000001        /* bl */
+         || insn == 0x4e800421                    /* bctrl */
+         || insn == 0x4e800021                    /* blrl */
+         || insn == 0x4e800461;                   /* bctarl */
+}
+
+static int
+is_stdu_r1 (uint32_t insn)
+{
+  return (insn & 0xffff0003) == 0xf8210001        /* stdu r1, -N(r1) */
+         || (insn & 0xffff07ff) == 0x7c21016a;    /* stdux r1, r1, rN */
+}
+
+/* Whether the function that a signal interrupted, and that has no unwind
+   info, had not set up a stack frame of its own at that point: a leaf,
+   such as musl's syscall wrappers, or the start of a prologue.  Then its
+   caller continues at LR with the same r1, and the back chain at r1
+   belongs to the caller already.
+
+   Only the frame interrupted by a signal can be in that state; any other
+   frame is suspended at a call, after its prologue.  LR must then be a
+   return address into another function.
+
+   If the start of the function is known, the function has no frame if
+   there is no stdu/stdux of r1 between its start and the IP, and LR must
+   not point into it.  That start is not always known: hidden functions
+   are not in .dynsym, and .symtab is often stripped.  Then look backwards
+   from the IP for the stdu, for up to 64 instructions.  Reaching a blr
+   first means that the start of the function has probably been passed,
+   unless the blr was an early return.  LR must not point between the blr
+   and the IP then, which it would after a call made since that return.
+   This misses a frame whose function ends in a tail call (b or bctr)
+   instead of a blr, or is longer than that.
+
+   Either way, a stdu/stdux is taken to have run if it is laid out before
+   the IP.  With shrink-wrapping it may be on a path that was not taken,
+   e.g. a slow path placed before a frameless fast path.  The function is
+   then taken to have a frame, and the back chain skips its caller, as it
+   did before these checks.  */
+static int
+interrupted_without_frame (struct cursor *c)
+{
+  unw_accessors_t *a = unw_get_accessors_int (c->dwarf.as);
+  int validate = c->dwarf.as->validate;
+  unw_word_t ip = c->dwarf.ip, lr, start, offp, addr;
+  char name[128];
+  int i, ret = 0;
+
+  if (c->dwarf.use_prev_instr)
+    return 0;
+
+  c->dwarf.as->validate = 1;
+
+  if (dwarf_get (&c->dwarf, c->dwarf.loc[UNW_PPC64_LR], &lr) < 0
+      || !follows_call (c, lr))
+    goto out;
+
+  if (a->get_proc_name != NULL
+      && (*a->get_proc_name) (c->dwarf.as, ip, name, sizeof (name), &offp,
+                              c->dwarf.as_arg) == 0
+      && offp <= 0x10000)
+    {
+      start = ip - offp;
+      if (start < lr && lr <= ip)
+        goto out;
+      if ((*a->get_proc_name) (c->dwarf.as, lr - 4, name, sizeof (name),
+                               &offp, c->dwarf.as_arg) == 0
+          && lr - 4 - offp == start)
+        goto out;
+      for (addr = start; addr < ip; addr += 4)
+        {
+          uint32_t insn;
+
+          if (read_insn (c, addr, &insn) < 0 || is_stdu_r1 (insn))
+            goto out;
+        }
+      ret = 1;
+      goto out;
+    }
+
+  for (i = 1; i <= 64; ++i)
+    {
+      uint32_t insn;
+
+      if (read_insn (c, ip - 4 * i, &insn) < 0 || is_stdu_r1 (insn))
+        break;
+      if (insn == 0x4e800020)                     /* blr */
+        {
+          ret = !(ip - 4 * i < lr && lr <= ip);
+          break;
+        }
+    }
+
+out:
+  c->dwarf.as->validate = validate;
+  Debug (3, "ip=0x%lx %s a stack frame\n", (long) ip,
+         ret ? "without" : "probably with");
+  return ret;
+}
+
 /* Whether INSN saves registers in a way that find_saved_regs() does not
    follow: CR or VRSAVE moved to a GPR to be stored, vector stores, stores
    relative to r11 or r12, as for large frames, and r11 or r12 set from
@@ -454,9 +562,9 @@ unw_step (unw_cursor_t * cursor)
   if (unlikely (ret < 0))
     {
       /* DWARF failed. */
-      if (_is_plt_entry (&c->dwarf))
+      if (_is_plt_entry (&c->dwarf) || interrupted_without_frame (c))
             {
-              Debug (2, "found plt entry\n");
+              Debug (2, "found plt entry or frameless function\n");
 
               /*
                 Fallback mode that uses the link register. This is important
@@ -480,6 +588,8 @@ unw_step (unw_cursor_t * cursor)
                       return ret;
                     }
                   Debug (2, "link register = 0x%016lx\n", c->dwarf.ip);
+                  /* The IP is a return address now.  */
+                  c->dwarf.use_prev_instr = 1;
                   ret = 1;
                 }
               else
