@@ -42,17 +42,17 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
       *valp = 0;
       return 0;
     case UNW_TDEP_IP:
+      /* The IP is kept in c->dwarf.ip, which is what unw_get_reg() returns
+         and what riscv_local_resume() installs.  There is no need for a
+         save location, which is not known after a DWARF step anyway.  */
       if (write)
         {
           Debug (16, "pc is now 0x%lx\n", *valp);
           c->dwarf.ip = *valp;
         }
-
-      /* We store PC in place of the hard-wired X0 */
-      loc = c->dwarf.loc[0];
-
-      /* FIXME: Is IP valid? */
-      break;
+      else
+        *valp = c->dwarf.ip;
+      return 0;
     case UNW_TDEP_SP:
       if (write)
         return -UNW_EREADONLYREG;
