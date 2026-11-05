@@ -28,6 +28,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 	.type _UI_longjmp_cont, @function
 _UI_longjmp_cont:
+#if defined(__powerpc64__) && defined(__linux__)
+	/* r3 - return address, r4 - return value; see JB_CONT_ARG.  */
+	mtlr	3
+	mr	3, 4
+	blr
+#endif
 	.size _UI_longjmp_cont, .-_UI_longjmp_cont
 
 #ifdef __linux__
