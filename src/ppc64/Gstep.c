@@ -38,6 +38,146 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    __kernel_sigtramp_rt64.  */
 #define __SIGNAL_FRAMESIZE 128
 
+/* Read the instruction at ADDR.  */
+static int
+read_insn (struct cursor *c, unw_word_t addr, uint32_t *insn)
+{
+  unw_accessors_t *a = unw_get_accessors_int (c->dwarf.as);
+  unw_word_t base = addr & ~(unw_word_t) 7, w;
+  int ret;
+
+  if ((ret = (*a->access_mem) (c->dwarf.as, base, &w, 0, c->dwarf.as_arg)) < 0)
+    return ret;
+  if (tdep_big_endian (c->dwarf.as))
+    *insn = (addr == base) ? w >> 32 : w & 0xffffffff;
+  else
+    *insn = (addr == base) ? w & 0xffffffff : w >> 32;
+  return 0;
+}
+
+/* Whether INSN saves registers in a way that find_saved_regs() does not
+   follow: CR or VRSAVE moved to a GPR to be stored, vector stores, stores
+   relative to r11 or r12, as for large frames, and r11 or r12 set from
+   r1 for that.  */
+static int
+is_unknown_save (uint32_t insn)
+{
+  uint32_t op = insn >> 26, rt = (insn >> 21) & 0x1f, ra = (insn >> 16) & 0x1f;
+  uint32_t xo = (insn >> 1) & 0x3ff;
+
+  if (op == 31)
+    return xo == 19                                   /* mfcr, mfocrf */
+           || (xo == 339 && ((insn >> 11) & 0x3ff) == 8) /* mfvrsave */
+           || xo == 199 || xo == 231 || xo == 487     /* stvewx, stvx, stvxl */
+           || xo == 396 || xo == 908 || xo == 940     /* stxvx, stxvw4x, stxvh8x */
+           || xo == 972 || xo == 1004                 /* stxvd2x, stxvb16x */
+           || (xo == 444 && ra != rt && (ra == 11 || ra == 12)
+               && rt == 1 && ((insn >> 11) & 0x1f) == 1); /* mr r11/r12, r1 */
+  if (op == 61)                                       /* stxv, stxsd, ... */
+    return 1;
+  if (op == 14 && ra == 1 && (rt == 11 || rt == 12))  /* addi r11/r12, r1, d */
+    return 1;
+  if ((op == 36 || op == 37 || op == 44 || op == 45 || op == 52 || op == 53
+       || op == 54 || op == 55 || op == 62)           /* D/DS-form stores */
+      && (ra == 11 || ra == 12))
+    return 1;
+  return 0;
+}
+
+/* For a function without unwind info that has set up a stack frame, find
+   where its prologue saved the non-volatile GPRs and FPRs.  IP is in the
+   function, LOOKUP_IP the address to look its start up by, SP its stack
+   pointer and CFA its caller's.  The prologue stores the registers
+   relative to r1, before or after the stdu that creates the frame; the
+   first branch after the stdu ends it.
+
+   Returns 1 if the prologue could be followed up to its end or the IP,
+   and the locations of the registers that it saved have been set; the
+   other registers still hold the caller's values then.  Returns 0 if the
+   start of the function is not known, or the prologue may have saved
+   registers in a way that is not followed: out of line, as GCC does with
+   _savegpr0_N at -Os, which shows as a branch before the stdu, or as
+   is_unknown_save() describes.  */
+static int
+find_saved_regs (struct cursor *c, unw_word_t ip, unw_word_t lookup_ip,
+                 unw_word_t sp, unw_word_t cfa)
+{
+  unw_accessors_t *a = unw_get_accessors_int (c->dwarf.as);
+  int validate = c->dwarf.as->validate;
+  unw_word_t start, offp, addr;
+  int framed = 0, ret = 0;
+  char name[128];
+
+  if (a->get_proc_name == NULL
+      || (*a->get_proc_name) (c->dwarf.as, lookup_ip, name, sizeof (name),
+                              &offp, c->dwarf.as_arg) != 0
+      || offp > 0x10000)
+    return 0;
+  start = lookup_ip - offp;
+
+  c->dwarf.as->validate = 1;
+  for (addr = start; addr < start + 4 * 64; addr += 4)
+    {
+      uint32_t insn, s, op;
+      int32_t d;
+
+      if (addr >= ip)
+        {
+          ret = 1;
+          break;
+        }
+      if (read_insn (c, addr, &insn) < 0)
+        break;
+      s = (insn >> 21) & 0x1f;
+      op = insn >> 26;
+
+      if ((insn & 0xffff0003) == 0xf8210001          /* stdu r1, d(r1) */
+          || (insn & 0xffff07ff) == 0x7c21016a)      /* stdux r1, r1, rN */
+        framed = 1;
+      else if ((insn & 0xfc1f0003) == 0xf8010000)     /* std rS, d(r1) */
+        {
+          d = (int16_t) (insn & 0xfffc);
+          if (s >= 14)
+            c->dwarf.loc[UNW_PPC64_R0 + s] =
+              DWARF_LOC ((framed ? sp : cfa) + d, 0);
+        }
+      else if ((insn & 0xfc1f0000) == 0xd8010000)     /* stfd fS, d(r1) */
+        {
+          d = (int16_t) (insn & 0xffff);
+          if (s >= 14)
+            c->dwarf.loc[UNW_PPC64_F0 + s] =
+              DWARF_LOC ((framed ? sp : cfa) + d, 0);
+        }
+      else if (op == 16 || op == 18
+               || (op == 19 && (((insn >> 1) & 0x3ff) == 16      /* bclr */
+                                || ((insn >> 1) & 0x3ff) == 528  /* bcctr */
+                                || ((insn >> 1) & 0x3ff) == 560))) /* bctar */
+        {
+          ret = framed;
+          break;
+        }
+      else if (is_unknown_save (insn))
+        break;
+    }
+  c->dwarf.as->validate = validate;
+
+  Debug (3, "prologue at 0x%lx %s\n", (long) start,
+         ret ? "followed" : "not understood");
+  return ret;
+}
+
+/* Whether REG is preserved across calls by the ELF ABI (r13, the thread
+   pointer, never changes).  */
+static int
+is_nonvolatile (unw_regnum_t reg)
+{
+  return (reg >= UNW_PPC64_R13 && reg <= UNW_PPC64_R31)
+         || (reg >= UNW_PPC64_F14 && reg <= UNW_PPC64_F31)
+         || (reg >= UNW_PPC64_V20 && reg <= UNW_PPC64_V31)
+         || (reg >= UNW_PPC64_CR2 && reg <= UNW_PPC64_CR4)
+         || reg == UNW_PPC64_VRSAVE;
+}
+
 /* Find the ucontext of the signal frame whose trampoline the cursor is
    at.  The kernel places it __SIGNAL_FRAMESIZE bytes above the stack
    pointer it gives the handler, i.e. above the CFA of the trampoline
@@ -301,7 +441,11 @@ unw_step (unw_cursor_t * cursor)
   ret = dwarf_step (&c->dwarf);
   c->dwarf.as->validate = validate;
 
-  if (ret < 0 && ret != -UNW_ENOINFO)
+  /* -UNW_EBADREG means that a register that the CFI needs is unknown,
+     e.g. the caller's r31 after a back-chain step, below; dwarf_step()
+     then has not changed the cursor, so fall back to the back chain,
+     which needs no registers.  */
+  if (ret < 0 && ret != -UNW_ENOINFO && ret != -UNW_EBADREG)
     {
       Debug (2, "returning %d\n", ret);
       return ret;
@@ -371,6 +515,9 @@ unw_step (unw_cursor_t * cursor)
               back_chain_offset = ((void *) &dummy.back_chain - (void *) &dummy);
               lr_save_offset = ((void *) &dummy.lr_save - (void *) &dummy);
 
+              unw_word_t frame_ip = c->dwarf.ip, frame_sp = c->dwarf.cfa;
+              unw_word_t lookup_ip = frame_ip - c->dwarf.use_prev_instr;
+
               back_chain_loc = DWARF_LOC (c->dwarf.cfa + back_chain_offset, 0);
 
               if ((ret =
@@ -396,9 +543,24 @@ unw_step (unw_cursor_t * cursor)
                   return ret;
                 }
               ret = 1;
-              /* Mark all registers unsaved */
+              /* The IP is a return address now.  */
+              c->dwarf.use_prev_instr = 1;
+
+              /* Describe the caller's registers as DWARF would: the
+                 volatile registers, LR, CTR and XER are unknown, and the
+                 non-volatile ones are where the prologue saved them, or
+                 unchanged if it did not.  If the prologue cannot be
+                 followed, which registers it saved and where is not
+                 known either: then only r13, the thread pointer, keeps
+                 its location.  The caller's r1 is the new CFA.  */
               for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
-                c->dwarf.loc[i] = DWARF_NULL_LOC;
+                if (!is_nonvolatile (i))
+                  c->dwarf.loc[i] = DWARF_NULL_LOC;
+              if (!find_saved_regs (c, frame_ip, lookup_ip, frame_sp,
+                                    c->dwarf.cfa))
+                for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+                  if (i != UNW_PPC64_R13)
+                    c->dwarf.loc[i] = DWARF_NULL_LOC;
             }
     }
 
