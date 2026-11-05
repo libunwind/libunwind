@@ -1004,7 +1004,9 @@ aarch64_step (unw_cursor_t *cursor)
           ret = dwarf_get (&c->dwarf, c->dwarf.loc[UNW_AARCH64_PC], &c->dwarf.ip);
           if (ret == 0)
             {
-              ret = 1;
+              /* A zero return address in the frame record marks the
+                 outermost frame, as for the DWARF and LR paths.  */
+              ret = (c->dwarf.ip == 0) ? 0 : 1;
             }
           Debug (2, "fallback, CFA = 0x%016lx, IP = 0x%016lx returning %d\n",
             c->dwarf.cfa, c->dwarf.ip, ret);
