@@ -33,6 +33,28 @@ tdep_access_reg (struct cursor *c, unw_regnum_t reg, unw_word_t *valp,
 {
   struct dwarf_loc loc;
 
+  /* Keep values written to r3-r6 in the cursor, as other ports do for
+     their exception-handling arguments: libunwind's longjmp() and
+     siglongjmp() pass the arguments of their continuations there, and
+     after the back-chain fallback in unw_step() the save locations of
+     the registers are unknown.  */
+  if ((unsigned) (reg - UNW_PPC64_R3) < UNW_TDEP_NUM_EH_REGS)
+    {
+      unsigned int mask = 1 << (reg - UNW_PPC64_R3);
+
+      if (write)
+        {
+          c->dwarf.eh_args[reg - UNW_PPC64_R3] = *valp;
+          c->dwarf.eh_valid_mask |= mask;
+          return 0;
+        }
+      if (c->dwarf.eh_valid_mask & mask)
+        {
+          *valp = c->dwarf.eh_args[reg - UNW_PPC64_R3];
+          return 0;
+        }
+    }
+
   switch (reg)
     {
     case UNW_PPC64_R0:
