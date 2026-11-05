@@ -127,7 +127,8 @@ resume_restores_sigmask (unw_cursor_t *c UNUSED, unw_word_t *wp  UNUSED)
 
 #endif /* !UNW_TARGET_IA64 */
 
-#if defined(UNW_TARGET_X86_64) && (defined(__FreeBSD__) || defined(__linux__))
+#if (defined(UNW_TARGET_X86_64) && (defined(__FreeBSD__) || defined(__linux__))) \
+    || (defined(UNW_TARGET_PPC64) && defined(__linux__))
 
 #ifdef __FreeBSD__
 #include <machine/sigframe.h>
@@ -171,13 +172,15 @@ install_resume_sigmask (unw_cursor_t *c, sigset_t *mask)
 #endif
 }
 
-#else /* !(UNW_TARGET_X86_64 && (__FreeBSD__ || __linux__)) */
+#else /* !(UNW_TARGET_X86_64 && (__FreeBSD__ || __linux__)
+          || UNW_TARGET_PPC64 && __linux__) */
 
 static inline void
 install_resume_sigmask (unw_cursor_t *c UNUSED, void *mask UNUSED)
 {
 }
 
-#endif /* !(UNW_TARGET_X86_64 && (__FreeBSD__ || __linux__)) */
+#endif /* !(UNW_TARGET_X86_64 && (__FreeBSD__ || __linux__)
+          || UNW_TARGET_PPC64 && __linux__) */
 
 #endif /* libunwind_setjmp_setjmp_i_h */
