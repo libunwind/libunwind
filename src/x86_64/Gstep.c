@@ -266,6 +266,349 @@ _try_rbp_frame_walk(struct cursor *c)
 }
 
 /**
+ * @brief Read the byte at @p addr.
+ */
+static int
+_read_byte (struct cursor *c, unw_word_t addr, uint8_t *byte)
+{
+  unw_word_t w;
+  int ret = dwarf_get (&c->dwarf, DWARF_MEM_LOC (c->dwarf, addr & ~(unw_word_t) 7), &w);
+  if (ret < 0)
+    return ret;
+  *byte = (uint8_t) (w >> (8 * (addr & 7)));
+  return 0;
+}
+
+/**
+ * @brief Whether @p ip is a plausible return address, i.e. follows a call.
+ *
+ * Checks for the encodings compilers use for calls, each ending at @p ip:
+ *
+ *   e8 rel32                  call rel32                     (5 bytes)
+ *   ff /2, mod 11             call *%reg                     (2 bytes)
+ *   ff /2, mod 00             call *(%reg)                   (2 bytes)
+ *   ff /2, mod 01 + disp8     call *d8(%reg)                 (3 bytes)
+ *   ff 15 + disp32            call *d32(%rip)                (6 bytes)
+ *   ff /2, mod 10 + disp32    call *d32(%reg)                (6 bytes)
+ *
+ * The forms with a SIB byte are not recognized.  A REX prefix does not
+ * matter, as only the bytes from the opcode on are checked.
+ */
+static int
+_follows_call (struct cursor *c, unw_word_t ip)
+{
+  uint8_t b[7];    /* b[i] is the byte at ip - 7 + i */
+  int i;
+
+  for (i = 0; i < 7; ++i)
+    if (_read_byte (c, ip - 7 + i, &b[i]) < 0)
+      return 0;
+
+#define MODRM_CALL(m, mod) (((m) & 0xf8) == (((mod) << 6) | 0x10))
+  if (b[2] == 0xe8)
+    return 1;
+  if (b[5] == 0xff && MODRM_CALL (b[6], 3))
+    return 1;
+  if (b[5] == 0xff && MODRM_CALL (b[6], 0)
+      && (b[6] & 7) != 4 && (b[6] & 7) != 5)
+    return 1;
+  if (b[4] == 0xff && MODRM_CALL (b[5], 1) && (b[5] & 7) != 4)
+    return 1;
+  if (b[1] == 0xff && b[2] == 0x15)
+    return 1;
+  if (b[1] == 0xff && MODRM_CALL (b[2], 2) && (b[2] & 7) != 4)
+    return 1;
+#undef MODRM_CALL
+  return 0;
+}
+
+/* No save slot is known for a register.  */
+#define NO_SLOT ((unw_word_t) -1)
+
+/* The DWARF register number of each register encoded in the low three
+   bits of a push or pop opcode, extended by REX.B.  */
+static const uint8_t _hw_to_dwarf[16] =
+  {
+    RAX, RCX, RDX, RBX, RSP, RBP, RSI, RDI,
+    R8, R8 + 1, R8 + 2, R8 + 3, R12, R12 + 1, R12 + 2, R15
+  };
+
+/**
+ * @brief Find how much stack an epilogue at the IP still has to release.
+ * @param[in]  c        Pointer to the unwind cursor
+ * @param[out] frame    The offset of the return address from %rsp
+ * @param[out] slot     For each register, by its encoding, the offset from
+ *                      %rsp that a pop still ahead of the IP restores it
+ *                      from, or NO_SLOT
+ *
+ * Decodes the straight-line sequence
+ *
+ *     add $imm,%rsp       (optional)
+ *     pop %reg            (any number)
+ *     ret
+ *
+ * starting at the IP.  Then the return address is at %rsp plus the
+ * immediate and 8 bytes for each pop, however the function got there,
+ * and each pop restores its register from the slot after the ones
+ * before it.
+ *
+ * @returns 1 if the IP is at such a sequence
+ * @returns 0 if the IP is at another instruction
+ * @returns -1 if the IP is at an epilogue that cannot be followed, such
+ *          as leave, or a pop that is not followed by ret
+ */
+static int
+_scan_epilogue (struct cursor *c, unw_word_t *frame, unw_word_t slot[16])
+{
+  unw_word_t addr = c->dwarf.ip;
+  uint8_t b0, b1, b2, b3;
+  int i;
+
+  *frame = 0;
+  for (i = 0; i < 16; ++i)
+    slot[i] = NO_SLOT;
+  for (i = 0; i < 64; ++i)
+    {
+      if (_read_byte (c, addr, &b0) < 0)
+        return i ? -1 : 0;
+      if (b0 == 0xc3)                                     /* ret */
+        return 1;
+      if (b0 == 0x5c)                                     /* pop %rsp */
+        return i ? -1 : 0;
+      if (b0 >= 0x58 && b0 <= 0x5f)                       /* pop %reg */
+        {
+          if (slot[b0 - 0x58] == NO_SLOT)
+            slot[b0 - 0x58] = *frame;
+          *frame += 8;
+          addr += 1;
+          continue;
+        }
+      if (b0 == 0xc9)                                     /* leave */
+        return -1;
+      if (_read_byte (c, addr + 1, &b1) < 0)
+        return i ? -1 : 0;
+      if (b0 == 0xf3 && b1 == 0xc3)                       /* rep ret */
+        return 1;
+      if (b0 == 0x41 && b1 >= 0x58 && b1 <= 0x5f)         /* pop %r8-%r15 */
+        {
+          if (slot[b1 - 0x58 + 8] == NO_SLOT)
+            slot[b1 - 0x58 + 8] = *frame;
+          *frame += 8;
+          addr += 2;
+          continue;
+        }
+      if (i == 0 && b0 == 0x48
+          && _read_byte (c, addr + 2, &b2) == 0 && b2 == 0xc4
+          && _read_byte (c, addr + 3, &b3) == 0)
+        {
+          if (b1 == 0x83 && !(b3 & 0x80))                 /* add $imm8,%rsp */
+            {
+              *frame = b3;
+              addr += 4;
+              continue;
+            }
+          if (b1 == 0x81)                                 /* add $imm32,%rsp */
+            {
+              uint32_t imm = b3;
+              int j;
+              for (j = 1; j < 4; ++j)
+                {
+                  uint8_t b;
+                  if (_read_byte (c, addr + 3 + j, &b) < 0)
+                    return -1;
+                  imm |= (uint32_t) b << (8 * j);
+                }
+              if (imm & 0x80000000)
+                return -1;
+              *frame = imm;
+              addr += 7;
+              continue;
+            }
+        }
+      return i ? -1 : 0;
+    }
+  return -1;
+}
+
+/**
+ * @brief Step out of a function without unwind info that a signal
+ *        interrupted, by following its prologue or its epilogue.
+ * @param[in]  c        Pointer to the unwind cursor
+ *
+ * C libraries built without unwind tables, such as musl, leave nothing to
+ * unwind their functions with, and are often built without frame
+ * pointers, so the %rbp walk does not work either.  For example:
+ *
+ *     <kill>:
+ *     sub    $0x8,%rsp
+ *     movslq %edi,%rdi
+ *     movslq %esi,%rsi
+ *     mov    $0x3e,%eax
+ *     syscall
+ *
+ * If the IP is at an epilogue, follow it to the ret.  Otherwise, when the
+ * start of the function is known, follow its prologue from there:
+ * endbr64, pushes and sub $imm,%rsp, up to the first other instruction,
+ * assuming that the stack pointer does not change after that before the
+ * IP.  The return address is then at %rsp plus the space allocated;
+ * accept it only if it follows a call.  The callee-saved registers that
+ * the prologue pushed, or that the epilogue has yet to pop, are then
+ * restored from their slots; the others are assumed to still hold the
+ * caller's values.  If the prologue sets up %rbp as
+ * a frame pointer, leave the frame to the %rbp walk, which also copes
+ * with alloca() and stack realignment.
+ *
+ * Only the frame that a signal interrupted can have its IP within the
+ * prologue or the epilogue; other frames without unwind info are left
+ * to the other heuristics.  So are frames that cannot be followed, such
+ * as frames with an epilogue that ends in a tail call.
+ *
+ * @returns UNW_ESUCCESS on success
+ * @returns otherwise on failure
+ */
+static int
+_try_prologue_frame (struct cursor *c)
+{
+  unw_accessors_t *a = unw_get_accessors_int (c->dwarf.as);
+  unw_word_t start, offp, addr, rsp, new_ip;
+  unw_word_t frame = 0, slot[16];
+  char name[128];
+  int ret, i;
+
+  if (c->dwarf.use_prev_instr)
+    return -UNW_ENOINFO;
+
+  ret = _scan_epilogue (c, &frame, slot);
+  if (ret < 0)
+    return -UNW_ENOINFO;
+  if (ret > 0)
+    {
+      Debug (2, "in an epilogue, %lu bytes left to release\n", (long) frame);
+      goto found;
+    }
+
+  if (a->get_proc_name == NULL
+      || (*a->get_proc_name) (c->dwarf.as, c->dwarf.ip, name, sizeof (name),
+                              &offp, c->dwarf.as_arg) != 0
+      || offp > 0x10000)
+    return -UNW_ENOINFO;
+  start = c->dwarf.ip - offp;
+
+  for (i = 0; i < 16; ++i)
+    slot[i] = NO_SLOT;
+
+  for (addr = start; addr < c->dwarf.ip; )
+    {
+      uint8_t b0, b1, b2, b3;
+
+      if (_read_byte (c, addr, &b0) < 0)
+        return -UNW_EBADFRAME;
+      if (b0 >= 0x50 && b0 <= 0x57)                       /* push %reg */
+        {
+          frame += 8;
+          if (slot[b0 - 0x50] == NO_SLOT)
+            slot[b0 - 0x50] = frame;
+          addr += 1;
+          continue;
+        }
+      if (_read_byte (c, addr + 1, &b1) < 0
+          || _read_byte (c, addr + 2, &b2) < 0
+          || _read_byte (c, addr + 3, &b3) < 0)
+        return -UNW_EBADFRAME;
+      if (b0 == 0x41 && b1 >= 0x50 && b1 <= 0x57)         /* push %r8-%r15 */
+        {
+          frame += 8;
+          if (slot[b1 - 0x50 + 8] == NO_SLOT)
+            slot[b1 - 0x50 + 8] = frame;
+          addr += 2;
+        }
+      else if (b0 == 0xf3 && b1 == 0x0f && b2 == 0x1e && b3 == 0xfa)
+        addr += 4;                                        /* endbr64 */
+      else if (b0 == 0x48 && b1 == 0x89 && b2 == 0xe5)    /* mov %rsp,%rbp */
+        {
+          Debug (2, "%%rbp is the frame pointer\n");
+          return -UNW_ENOINFO;
+        }
+      else if (b0 == 0x48 && b1 == 0x83 && b2 == 0xec)    /* sub $imm8,%rsp */
+        {
+          if (b3 & 0x80)
+            return -UNW_ENOINFO;
+          frame += b3;
+          addr += 4;
+        }
+      else if (b0 == 0x48 && b1 == 0x81 && b2 == 0xec)    /* sub $imm32,%rsp */
+        {
+          uint32_t imm = 0;
+          int j;
+          for (j = 0; j < 4; ++j)
+            {
+              uint8_t b;
+              if (_read_byte (c, addr + 3 + j, &b) < 0)
+                return -UNW_EBADFRAME;
+              imm |= (uint32_t) b << (8 * j);
+            }
+          if (imm & 0x80000000)
+            return -UNW_ENOINFO;
+          frame += imm;
+          addr += 7;
+        }
+      else
+        break;
+    }
+
+  /* A push went to the return address's slot minus the stack allocated
+     up to and including it.  */
+  for (i = 0; i < 16; ++i)
+    if (slot[i] != NO_SLOT)
+      slot[i] = frame - slot[i];
+
+found:
+  ret = dwarf_get (&c->dwarf, c->dwarf.loc[RSP], &rsp);
+  if (ret < 0)
+    return ret;
+  ret = dwarf_get (&c->dwarf, DWARF_MEM_LOC (c->dwarf, rsp + frame), &new_ip);
+  if (ret < 0)
+    return ret;
+  if (!_follows_call (c, new_ip))
+    {
+      Debug (2, "%#lx at %%rsp+%lu does not follow a call\n",
+             (long) new_ip, (long) frame);
+      return -UNW_ENOINFO;
+    }
+
+  Debug (2, "frame of %lu bytes, return address %#lx\n",
+         (long) frame, (long) new_ip);
+
+  c->frame_info.cfa_reg_offset = frame + 8;
+  c->frame_info.cfa_reg_rsp = 1;
+  c->frame_info.rbp_cfa_offset = -1;
+  c->frame_info.rsp_cfa_offset = -1;
+  c->frame_info.frame_type = UNW_X86_64_FRAME_OTHER;
+
+  /* Restore the callee-saved registers that were pushed, or have yet to
+     be popped, from their slots.  Like the other heuristics, assume that
+     the others still hold the caller's values.  */
+  for (i = 0; i < 16; ++i)
+    {
+      int reg = _hw_to_dwarf[i];
+
+      if (slot[i] != NO_SLOT
+          && (reg == RBX || reg == RBP || (reg >= R12 && reg <= R15)))
+        {
+          Debug (3, "register %d saved at %%rsp+%lu\n", reg, (long) slot[i]);
+          c->dwarf.loc[reg] = DWARF_MEM_LOC (c->dwarf, rsp + slot[i]);
+        }
+    }
+  c->dwarf.loc[RIP] = DWARF_MEM_LOC (c->dwarf, rsp + frame);
+  c->dwarf.loc[RSP] = DWARF_VAL_LOC (c->dwarf, rsp + frame + 8);
+  c->dwarf.cfa = rsp + frame + 8;
+  c->dwarf.ip = new_ip;
+  c->dwarf.use_prev_instr = 1;
+
+  return UNW_ESUCCESS;
+}
+
+/**
  * @brief Fallback unwinding strategies when DWARF debug info is unavailable.
  * @param[in] c       Pointer to the unwind cursor
  * @param[in] cursor  Original unwind cursor for signal frame detection
@@ -348,6 +691,15 @@ _unw_step_fallback(struct cursor *c, unw_cursor_t  *cursor)
       dwarf_get (&c->dwarf, c->dwarf.loc[RIP], &c->dwarf.ip);
 
       Debug (2, "returning %d\n", 1);
+      return 1;
+    }
+
+  /* Try following the prologue or epilogue of a function interrupted by
+     a signal */
+  Debug (2, ".. checking for a prologue or epilogue ..\n");
+  if (_try_prologue_frame (c) == UNW_ESUCCESS)
+    {
+      Debug (2, "returning 1\n");
       return 1;
     }
 
