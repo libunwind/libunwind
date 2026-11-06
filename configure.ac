@@ -308,13 +308,33 @@ AM_CONDITIONAL([SUPPORT_CXX_EXCEPTIONS], [test x$enable_cxx_exceptions = xyes])
 dnl libtool removes a plain -lc from the libraries of a shared library, which
 dnl with -nostdlib leaves the library with no DT_NEEDED entry for libc and its
 dnl libc references unversioned. Pass -lc straight to the linker instead.
+dnl
+dnl -nostdlib also leaves out the compiler's runtime library, which provides
+dnl the helpers that the compiler may call, such as the AArch64 outline
+dnl atomics.  GCC's libgcc_s exports those, but other libgcc_s, such as
+dnl FreeBSD's, do not, and the runtime library's copies are hidden, so an
+dnl executable linked against libunwind cannot provide them either.  Link the
+dnl runtime library into libunwind after the other libraries, as the compiler
+dnl driver does, so that it provides only what they do not.
 AM_COND_IF([SUPPORT_CXX_EXCEPTIONS],
            [save_LDFLAGS="$LDFLAGS"
             LDFLAGS="${LDFLAGS} -nostdlib"
             AC_SEARCH_LIBS([_Unwind_Resume],
                            [gcc_s gcc],
                            [AS_IF([test "$ac_cv_search__Unwind_Resume" != "none required"],
-                                  [AC_SUBST([UNW_CRT_LIBADD],  ["-XCClinker -lc $ac_cv_search__Unwind_Resume"])
+                                  [unw_crt_libadd="-XCClinker -lc $ac_cv_search__Unwind_Resume"
+                                   AC_MSG_CHECKING([for the compiler runtime library])
+                                   dnl Clang reports compiler-rt's builtins
+                                   dnl even where the system provides
+                                   dnl libgcc.a instead, as on FreeBSD.
+                                   unw_rtlib=`$CC $CFLAGS -print-libgcc-file-name 2>/dev/null`
+                                   AS_IF([test -f "$unw_rtlib"], [],
+                                         [unw_rtlib=`$CC $CFLAGS -print-file-name=libgcc.a 2>/dev/null`])
+                                   AS_IF([test -f "$unw_rtlib"],
+                                         [AC_MSG_RESULT([$unw_rtlib])
+                                          unw_crt_libadd="$unw_crt_libadd -XCClinker $unw_rtlib"],
+                                         [AC_MSG_RESULT([not found])])
+                                   AC_SUBST([UNW_CRT_LIBADD],  ["$unw_crt_libadd"])
                                    AC_SUBST([UNW_CRT_LDFLAGS], ["-XCClinker -nostdlib"])])
                            ],,
                            [-lc])
