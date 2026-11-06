@@ -48,34 +48,34 @@ jobs:
           memory: 8G
 
       - name: Build and test on ${{ matrix.architecture }}-freebsd-${{ matrix.os_version }} using ${{ matrix.compiler }}
-          run: |
-            printf 'shell="%s"\n' $SHELL
-            if [ "${{ matrix.compiler }}" = "gcc" ]; then
-              BUILD_PKGS="autoconf automake libtool gcc"
-            else
-              BUILD_PKGS='autoconf automake libtool'
-            fi
-            sudo pkg install -y $BUILD_PKGS
-            
-            if [ "${{ matrix.compiler }}" = "gcc" ]; then
-              export CC=gcc
-              export CXX=g++
-            else
-              export CC=clang
-              export CXX=clang++
-            fi
-            export CFLAGS='-Wall -Wextra'
+        run: |
+          printf 'shell="%s"\n' $SHELL
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            BUILD_PKGS="autoconf automake libtool gcc"
+          else
+            BUILD_PKGS='autoconf automake libtool'
+          fi
+          sudo pkg install -y $BUILD_PKGS
 
-            printf '\n Configuration \n'
-            autoreconf -ifv
-            ./configure --enable-debug --enable-coredump --enable-cxx-exceptions
-            
-            printf '\n Build \n'
-            make -j$(nproc)
+          if [ "${{ matrix.compiler }}" = "gcc" ]; then
+            export CC=gcc
+            export CXX=g++
+          else
+            export CC=clang
+            export CXX=clang++
+          fi
+          export CFLAGS='-Wall -Wextra'
 
-            printf '\n Test \n'
-            export UNW_DEBUG_LEVEL=7
-            make check -j$(nproc)
+          printf '\n Configuration \n'
+          autoreconf -ifv
+          ./configure --enable-debug --enable-coredump --enable-cxx-exceptions
+
+          printf '\n Build \n'
+          make -j$(nproc)
+
+          printf '\n Test \n'
+          export UNW_DEBUG_LEVEL=7
+          make check -j$(nproc)
 
       - name: Upload Test Logs
         if: always()
