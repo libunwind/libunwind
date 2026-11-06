@@ -1062,6 +1062,10 @@ aarch64_step (unw_cursor_t *cursor)
 
       frame_state_t fs = get_frame_state(cursor);
 
+      /* The vector length is the same in the caller, whose CFI may need
+         it, e.g. to find SVE registers saved on the stack.  */
+      dwarf_loc_t vg_loc = c->dwarf.loc[UNW_AARCH64_VG];
+
       /* Without the start of the function, e.g. in a stripped library,
          it is not known whether it has created a frame record.  A frame
          that is suspended at a call, rather than interrupted by a signal,
@@ -1099,6 +1103,7 @@ aarch64_step (unw_cursor_t *cursor)
 
               for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
                 c->dwarf.loc[i] = DWARF_NULL_LOC;
+              c->dwarf.loc[UNW_AARCH64_VG] = vg_loc;
 
               /* Frame record holds X29 and X30 values.  */
               c->dwarf.loc[UNW_AARCH64_X29] = DWARF_MEM_LOC (c->dwarf, fp);
@@ -1113,6 +1118,7 @@ aarch64_step (unw_cursor_t *cursor)
 
               for (int i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
                 c->dwarf.loc[i] = DWARF_NULL_LOC;
+              c->dwarf.loc[UNW_AARCH64_VG] = vg_loc;
 
               c->frame_info.cfa_reg_offset = fs.offset;
               c->frame_info.cfa_reg_sp = 1;
