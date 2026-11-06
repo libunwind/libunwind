@@ -7,6 +7,13 @@ sh = find_program('/bin/sh', 'sh', native: true)
 # read the libraries.
 nm = find_program('nm', required: false)
 
+# check-namespace.sh tells C libraries apart by configure's target_os, e.g.
+# linux-gnu or linux-musl, while Meson reports only the kernel.
+_check_nms_os = target_machine.system()
+if _check_nms_os == 'linux' and cc.get_define('__GLIBC__', prefix: '#include <features.h>') != ''
+    _check_nms_os = 'linux-gnu'
+endif
+
 _check_nms = configure_file(
     output: 'check-namespace.sh',
     input: 'check-namespace.sh.in',
@@ -16,7 +23,7 @@ _check_nms = configure_file(
             host_machine.cpu_family(),
         ),
         'arch': archnames[target_machine.cpu_family()],
-        'target_os': target_machine.system(),
+        'target_os': _check_nms_os,
         'NM': nm.found() ? nm.full_path() : 'nm',
         'CONFIG_WEAK_BACKTRACE_TRUE': get_option('weak_backtrace') ? '' : '# ',
         'enable_cxx_exceptions': support_cxx_exceptions ? 'yes' : 'no',
@@ -641,7 +648,7 @@ if not unw_remote_only
             'ppc64-test-altivec.c',
             'ppc64-test-altivec-utils.c',
             c_args: ['-maltivec'],
-            link_with: libunwind_generic_lib,
+            link_with: [libunwind_generic_lib, libunwind_lib],
             include_directories: _inc,
             dependencies: [libc_deps],
             override_options: _opts,

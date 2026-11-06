@@ -85,8 +85,8 @@ _longjmp (jmp_buf env, int val)
 
       assert (UNW_NUM_EH_REGS >= 2);
 
-      if (unw_set_reg (&c, UNW_REG_EH + 0, wp[JB_RP]) < 0
-          || unw_set_reg (&c, UNW_REG_EH + 1, val) < 0
+      if (unw_set_reg (&c, JB_CONT_ARG (0), wp[JB_RP]) < 0
+          || unw_set_reg (&c, JB_CONT_ARG (1), val) < 0
           || unw_set_reg (&c, UNW_REG_IP,
                           (unw_word_t) (uintptr_t) &_UI_longjmp_cont))
         abort ();

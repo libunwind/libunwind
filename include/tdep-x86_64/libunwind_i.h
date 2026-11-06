@@ -125,7 +125,8 @@ dwarf_set_validate(const struct dwarf_cursor *cursor, const int validate)
 {
   assert(cursor->as == unw_local_addr_space);
   uintptr_t *packed_args = (uintptr_t *) &cursor->as_arg;
-  *packed_args |= (AS_ARG_VALIDATE_MASK & validate);
+  *packed_args = (*packed_args & ~AS_ARG_VALIDATE_MASK)
+                 | (AS_ARG_VALIDATE_MASK & validate);
 }
 
 static inline void *

@@ -39,6 +39,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #  define JB_RP           14
 # else /* assume MUSL */
 #  define JB_RP           11
+/* musl's sigsetjmp() keeps the jmp_buf pointer in a callee-saved register
+   while it calls setjmp(), and setjmp() stores that register in slot
+   JB_MUSL_SIGSETJMP_SLOT; siglongjmp() has _UI_siglongjmp_cont restore
+   it.  */
+#  define JB_MUSL_SIGSETJMP_SLOT  0       /* x19 */
 # endif
 #define JB_MASK_SAVED   15
 #define JB_MASK         16

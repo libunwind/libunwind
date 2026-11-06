@@ -431,7 +431,7 @@ Lia64_test_rbs_LDADD = $(LIBUNWIND_local)
 Lia64_test_readonly_LDADD = $(LIBUNWIND_local)
 ia64_test_dyn1_LDADD = $(LIBUNWIND)
 ia64_test_sig_LDADD = $(LIBUNWIND)
-ppc64_test_altivec_LDADD = $(LIBUNWIND)
+ppc64_test_altivec_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 ppc64_test_plt_LDADD = $(LIBUNWIND)
 
 Gx64_test_dwarf_expressions_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)

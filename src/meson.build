@@ -653,6 +653,7 @@ elif target_machine.cpu_family() in ['ppc', 'ppc64']
             _libunwind_srcs_local,
             _libunwind_srcs_ppc,
             files(
+                'ppc64/getcontext.S',
                 'ppc64/Lapply_reg_state.c',
                 'ppc64/Lcreate_addr_space.c',
                 'ppc64/Lglobal.c',
@@ -661,6 +662,7 @@ elif target_machine.cpu_family() in ['ppc', 'ppc64']
                 'ppc64/Lregs.c',
                 'ppc64/Lresume.c',
                 'ppc64/Lstep.c',
+                'ppc64/setcontext.S',
             ),
         ]
         _libunwind_generic_srcs = [
@@ -678,6 +680,11 @@ elif target_machine.cpu_family() in ['ppc', 'ppc64']
                 'ppc64/Gstep.c',
             ),
         ]
+        if not unw_remote_only
+            # setcontext() is internal to each library that resumes local
+            # cursors.
+            _libunwind_generic_srcs += files('ppc64/setcontext.S')
+        endif
         _libunwind_setjmp_srcs += files('ppc/longjmp.S', 'ppc/siglongjmp.S')
     endif
 elif target_machine.cpu_family() == 'or1k'

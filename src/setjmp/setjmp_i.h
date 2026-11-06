@@ -28,6 +28,13 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #include "libunwind_i.h"
 
+/* The registers that pass the arguments of _UI_longjmp_cont and
+   _UI_siglongjmp_cont: the target address, the return value and, for
+   musl's sigsetjmp(), a register value.  */
+#ifndef JB_CONT_ARG
+# define JB_CONT_ARG(n) (UNW_REG_EH + (n))
+#endif
+
 #if UNW_TARGET_IA64
 # include "tdep-ia64/rse.h"
 
@@ -120,9 +127,12 @@ resume_restores_sigmask (unw_cursor_t *c UNUSED, unw_word_t *wp  UNUSED)
 
 #endif /* !UNW_TARGET_IA64 */
 
-#if defined(UNW_TARGET_X86_64) && defined(__FreeBSD__)
+#if (defined(UNW_TARGET_X86_64) && (defined(__FreeBSD__) || defined(__linux__))) \
+    || (defined(UNW_TARGET_PPC64) && defined(__linux__))
 
+#ifdef __FreeBSD__
 #include <machine/sigframe.h>
+#endif
 #include <signal.h>
 #include <stddef.h>
 #include <string.h>
@@ -150,17 +160,27 @@ install_resume_sigmask (unw_cursor_t *c, sigset_t *mask)
       mask = &current_mask;
     }
 
+#ifdef __FreeBSD__
   uc = (ucontext_t *) (sc_addr + offsetof (struct sigframe, sf_uc));
   memcpy (&uc->uc_sigmask, mask, sizeof (uc->uc_sigmask));
+#else
+  /* On Linux, sigcontext_addr points directly at the kernel's ucontext,
+     whose sigset_t is only 8 bytes and is followed by the siginfo; the
+     C library's sigset_t is larger, so copy just the kernel's part.  */
+  uc = (ucontext_t *) sc_addr;
+  memcpy (&uc->uc_sigmask, mask, 8);
+#endif
 }
 
-#else /* !(UNW_TARGET_X86_64 && __FreeBSD__) */
+#else /* !(UNW_TARGET_X86_64 && (__FreeBSD__ || __linux__)
+          || UNW_TARGET_PPC64 && __linux__) */
 
 static inline void
 install_resume_sigmask (unw_cursor_t *c UNUSED, void *mask UNUSED)
 {
 }
 
-#endif /* !(UNW_TARGET_X86_64 && __FreeBSD__) */
+#endif /* !(UNW_TARGET_X86_64 && (__FreeBSD__ || __linux__)
+          || UNW_TARGET_PPC64 && __linux__) */
 
 #endif /* libunwind_setjmp_setjmp_i_h */

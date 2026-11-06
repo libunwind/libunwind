@@ -35,6 +35,12 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind_i.h>
 #include <ucontext.h>
 
+#if defined(__linux__) && !defined(__GLIBC__)
+/* Resume with libunwind's own setcontext(); see setcontext.S.  */
+#define setcontext                      UNW_ARCH_OBJ (setcontext)
+extern HIDDEN int setcontext (const ucontext_t *ucp);
+#endif
+
 #define ppc64_lock                      UNW_OBJ(lock)
 #define ppc64_local_resume              UNW_OBJ(local_resume)
 #define ppc64_local_addr_space_init     UNW_OBJ(local_addr_space_init)

@@ -93,7 +93,7 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   unw_addr_space_t as;
   unw_accessors_t *a;
   void *arg;
-  int ret;
+  int ret, validate = 0;
 
   as = c->dwarf.as;
   a = unw_get_accessors_int (as);
@@ -108,11 +108,25 @@ f4              0:      hlt
 eb fd                   jmp     0b
   */
 
+  /* The IP may be bad, e.g. after a jump through a bad function pointer,
+     so validate the reads for the local address space, which does not
+     validate by default.  */
   ip = c->dwarf.ip;
   c->sigcontext_format = X86_64_SCF_NONE;
-  if ((ret = (*a->access_mem) (as, ip, &w0, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg)) < 0
-      || (ret = (*a->access_mem) (as, ip + 16, &w2, 0, arg)) < 0)
+  if (as == unw_local_addr_space)
+    {
+      validate = dwarf_get_validate (&c->dwarf);
+      dwarf_set_validate (&c->dwarf, 1);
+      arg = c->dwarf.as_arg;
+    }
+  ret = (*a->access_mem) (as, ip, &w0, 0, arg);
+  if (ret >= 0)
+    ret = (*a->access_mem) (as, ip + 8, &w1, 0, arg);
+  if (ret >= 0)
+    ret = (*a->access_mem) (as, ip + 16, &w2, 0, arg);
+  if (as == unw_local_addr_space)
+    dwarf_set_validate (&c->dwarf, validate);
+  if (ret < 0)
     return 0;
   w2 &= 0xffffff;
   if (w0 == 0x48006a10247c8d48 &&
