@@ -120,6 +120,9 @@ filter_misc () {
             ignore __bss_end__
             ignore __end__
             ignore _bss_end__
+            # Mapping symbols, which FreeBSD's nm -g lists as debugging
+            # symbols.
+            ignore '\$[adtx].*'
             ;;
         mips*)
             ignore _fbss
