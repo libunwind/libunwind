@@ -276,6 +276,13 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
         {
         case SHT_SYMTAB:
         case SHT_DYNSYM:
+          /* The section header comes from the file; keep the symbol table
+             inside the image and make sure the walk below advances. */
+          if (shdr->sh_offset > ei->size
+              || shdr->sh_size > ei->size - shdr->sh_offset
+              || shdr->sh_entsize < sizeof (Elf_W (Sym)))
+            break;
+
           symtab = (Elf_W (Sym) *) ((char *) ei->image + shdr->sh_offset);
           symtab_end = (Elf_W (Sym) *) ((char *) symtab + shdr->sh_size);
           syment_size = shdr->sh_entsize;
@@ -288,7 +295,8 @@ elf_w (lookup_symbol_closeness) (unw_addr_space_t                    as UNUSED,
                  (long) shdr->sh_offset, shdr->sh_type);
 
           for (sym = symtab;
-               sym < symtab_end;
+               sym < symtab_end
+               && (size_t) ((char *) symtab_end - (char *) sym) >= sizeof (*sym);
                sym = (Elf_W (Sym) *) ((char *) sym + syment_size))
             {
               if (ELF_W (ST_TYPE) (sym->st_info) == STT_FUNC
