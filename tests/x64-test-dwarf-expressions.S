@@ -1,6 +1,8 @@
 .global DW_CFA_expression_testcase
+.global DW_CFA_register_testcase
 
 .extern recover_register
+.extern register_is_recoverable
 
 .text
 
@@ -83,6 +85,49 @@ DW_CFA_expression_inner:
   ret
   .cfi_endproc
 .size DW_CFA_expression_inner,.-DW_CFA_expression_inner
+
+########################################################
+# Test: DW_CFA_register naming a source register that  #
+# libunwind has no slot for.                           #
+########################################################
+
+# DW_CFA_register_inner claims the caller's r12 was saved in register 1 << 58.
+# libunwind used that number unchecked as an index into its register location
+# array in apply_reg_state(); an index this large reads far outside that array,
+# so an unpatched libunwind either faults while stepping out of this frame or
+# reports r12 from a bogus location. The register cannot be recovered, so
+# stepping must succeed and r12 must be reported as unavailable at height 2
+# (DW_CFA_register_testcase).
+
+.type DW_CFA_register_testcase STT_FUNC
+DW_CFA_register_testcase:
+  .cfi_startproc
+  _CET_ENDBR
+  push %r12
+  .cfi_adjust_cfa_offset 8
+  mov $111222333, %r12
+  .cfi_rel_offset %r12, 0
+  call DW_CFA_register_inner
+  pop %r12
+  .cfi_restore %r12
+  .cfi_adjust_cfa_offset -8
+  ret
+  .cfi_endproc
+.size DW_CFA_register_testcase,.-DW_CFA_register_testcase
+
+.type DW_CFA_register_inner STT_FUNC
+DW_CFA_register_inner:
+  .cfi_startproc
+  sub $8, %rsp
+  .cfi_adjust_cfa_offset 8
+  # DW_CFA_register(0x09), r12(0x0c), r(1 << 58) as ULEB128
+  .cfi_escape 0x09, 0x0c, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x80, 0x04
+  call register_is_recoverable
+  add $8, %rsp
+  .cfi_adjust_cfa_offset -8
+  ret
+  .cfi_endproc
+.size DW_CFA_register_inner,.-DW_CFA_register_inner
 
       /* We do not need executable stack.  */
       .section        .note.GNU-stack,"",@progbits

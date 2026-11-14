@@ -46,6 +46,31 @@ extern int64_t recover_register(int64_t regnum, int64_t height)
   return value;
 }
 
+// Assembly routine whose inner frame says a register was saved in a register
+// number libunwind has no slot for; the inner frame calls the function below.
+extern int64_t DW_CFA_register_testcase(int64_t regnum, int64_t height);
+
+// Like recover_register, but returns whether the register can be retrieved at
+// the given height instead of its value.
+extern int64_t register_is_recoverable(int64_t regnum, int64_t height)
+{
+  int rc, i;
+  unw_cursor_t cursor;
+  unw_context_t context;
+  unw_getcontext(&context);
+  unw_init_local(&cursor, &context);
+  for (i = 0; i < height; ++i)
+    {
+      rc = unw_step(&cursor);
+      if (rc < 0)
+        panic("%s: unw_step failed on step %d with return code %d", __FUNCTION__, i, rc);
+      else if (rc == 0)
+        panic("%s: unw_step failed to reach the end of the stack", __FUNCTION__);
+    }
+  unw_word_t value;
+  return unw_get_reg(&cursor, (unw_regnum_t) regnum, &value) == 0;
+}
+
 int
 main (int argc, char **argv UNUSED)
 {
@@ -56,6 +81,9 @@ main (int argc, char **argv UNUSED)
     panic("r12 should be clobbered at height 1 (DW_CFA_expression_inner)");
   if (DW_CFA_expression_testcase(12, 2) != 111222333)
     panic("r12 should be restored at height 2 (DW_CFA_expression_testcase)");
+
+  if (DW_CFA_register_testcase(12, 2) != 0)
+    panic("r12 should not be recoverable at height 2 (DW_CFA_register_testcase)");
 
   if (nerrors > 0)
     {
