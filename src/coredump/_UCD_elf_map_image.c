@@ -37,6 +37,12 @@ CD_elf_map_image(struct UCD_info *ui, coredump_phdr_t *phdr)
 
   if (phdr->p_backing_file_index == ucd_file_no_index)
     {
+      /* p_filesz and p_memsz come from the core file, and only p_memsz
+       * bytes are mapped below.  A segment with more file than memory bytes
+       * would leave ei->size past the end of the mapping, so reject it.
+       */
+      if (phdr->p_filesz > phdr->p_memsz)
+        return NULL;
       /* Note: coredump file contains only phdr->p_filesz bytes.
        * We want to map bigger area (phdr->p_memsz bytes) to make sure
        * these pages are allocated, but non-accessible.
