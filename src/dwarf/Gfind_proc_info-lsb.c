@@ -128,6 +128,13 @@ load_debug_frame (const char *file, char **buf, size_t *bufsize, int is_local)
 #if defined(SHF_COMPRESSED)
   if (shdr->sh_flags & SHF_COMPRESSED)
     {
+      if (shdr->sh_size < sizeof (Elf_W (Chdr)))
+        {
+          Debug (2, "compressed .debug_frame too small, skipping\n");
+          mi_munmap(ei.image, ei.size);
+          return 1;
+        }
+
       Elf_W (Chdr) *chdr = (shdr->sh_offset + ei.image);
 #ifdef HAVE_ZLIB
       unsigned long destSize;
