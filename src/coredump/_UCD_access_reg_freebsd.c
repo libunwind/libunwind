@@ -193,6 +193,32 @@ _UCD_access_reg (unw_addr_space_t as,
     }
   }
 
+#elif defined(UNW_TARGET_PPC64)
+  if (regnum >= UNW_PPC64_R0 && regnum <= UNW_PPC64_R31) {
+     *valp = ui->prstatus->pr_reg.fixreg[regnum - UNW_PPC64_R0];
+  } else {
+     switch (regnum) {
+     case UNW_PPC64_LR:
+       *valp = ui->prstatus->pr_reg.lr;
+       break;
+     case UNW_PPC64_CTR:
+       *valp = ui->prstatus->pr_reg.ctr;
+       break;
+     case UNW_PPC64_CR0:
+       *valp = ui->prstatus->pr_reg.cr;
+       break;
+     case UNW_PPC64_XER:
+       *valp = ui->prstatus->pr_reg.xer;
+       break;
+     case UNW_PPC64_NIP:
+       *valp = ui->prstatus->pr_reg.pc;
+       break;
+     default:
+       Debug(0, "bad regnum:%d\n", regnum);
+       return -UNW_EINVAL;
+     }
+  }
+
 #else
 #error Port me
 #endif
