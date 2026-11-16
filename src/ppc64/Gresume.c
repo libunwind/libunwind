@@ -32,6 +32,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 
 #ifndef UNW_REMOTE_ONLY
 
+#if defined(__linux__)
+#define UC_GREGS(uc)    ((uc)->uc_mcontext.gp_regs)
+#define UC_FPREGS(uc)   ((uc)->uc_mcontext.fp_regs)
+#elif defined(__FreeBSD__)
+#define UC_GREGS(uc)    ((uc)->uc_mcontext.mc_gpr)
+#define UC_FPREGS(uc)   ((uc)->uc_mcontext.mc_fpreg)
+#endif
+
 HIDDEN inline int
 ppc64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg UNUSED)
 {
@@ -67,18 +75,18 @@ ppc64_local_resume (unw_addr_space_t as UNUSED, unw_cursor_t *cursor, void *arg 
 
       /* Copy GPR0-GPR31 */
       for (i = 0; i < 32; i++)
-        sig_uc->uc_mcontext.gp_regs[i] = uc->uc_mcontext.gp_regs[i];
+        UC_GREGS (sig_uc)[i] = UC_GREGS (uc)[i];
 
       /* Copy NIP, skip MSR and ORIG_R3, copy CTR, LR, XER, CCR */
-      sig_uc->uc_mcontext.gp_regs[NIP_IDX] = uc->uc_mcontext.gp_regs[NIP_IDX];
-      sig_uc->uc_mcontext.gp_regs[CTR_IDX] = uc->uc_mcontext.gp_regs[CTR_IDX];
-      sig_uc->uc_mcontext.gp_regs[LINK_IDX] = uc->uc_mcontext.gp_regs[LINK_IDX];
-      sig_uc->uc_mcontext.gp_regs[XER_IDX] = uc->uc_mcontext.gp_regs[XER_IDX];
-      sig_uc->uc_mcontext.gp_regs[CCR_IDX] = uc->uc_mcontext.gp_regs[CCR_IDX];
+      UC_GREGS (sig_uc)[NIP_IDX] = UC_GREGS (uc)[NIP_IDX];
+      UC_GREGS (sig_uc)[CTR_IDX] = UC_GREGS (uc)[CTR_IDX];
+      UC_GREGS (sig_uc)[LINK_IDX] = UC_GREGS (uc)[LINK_IDX];
+      UC_GREGS (sig_uc)[XER_IDX] = UC_GREGS (uc)[XER_IDX];
+      UC_GREGS (sig_uc)[CCR_IDX] = UC_GREGS (uc)[CCR_IDX];
 
       /* Copy FPRs */
-      memcpy (&sig_uc->uc_mcontext.fp_regs, &uc->uc_mcontext.fp_regs,
-              sizeof (sig_uc->uc_mcontext.fp_regs));
+      memcpy (&UC_FPREGS (sig_uc), &UC_FPREGS (uc),
+              sizeof (UC_FPREGS (sig_uc)));
 
       setcontext (sig_uc);
     }
