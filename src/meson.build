@@ -108,7 +108,7 @@ elif target_machine.system() == 'freebsd'
     _libunwind_srcs_x86_64_os_local = files('x86_64/Los-freebsd.c')
     _libunwind_coredump_srcs += files(
         'coredump/_UCD_access_reg_freebsd.c',
-        'coredump/_UCD_get_mapinfo_generic.c',
+        'coredump/_UCD_get_mapinfo_freebsd.c',
         'coredump/_UCD_get_threadinfo_prstatus.c',
     )
 elif target_machine.system() == 'sunos'

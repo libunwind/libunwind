@@ -423,7 +423,7 @@ if OS_FREEBSD
  libunwind_la_SOURCES_x86_64_os_local  = x86_64/Los-freebsd.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_access_reg_freebsd.c
  libunwind_coredump_la_SOURCES += coredump/_UCD_get_threadinfo_prstatus.c
- libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_generic.c
+ libunwind_coredump_la_SOURCES += coredump/_UCD_get_mapinfo_freebsd.c
 endif
 
 if OS_SOLARIS
