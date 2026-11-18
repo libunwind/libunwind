@@ -307,6 +307,39 @@ locate_debug_info (unw_addr_space_t as, unw_word_t addr, const char *dlname,
   return load_debug_info (as, addr, dlname, start, end);
 }
 
+/* Return the offset just past the CIE or FDE that starts OFFSET bytes into
+   the .debug_frame buffer BUF, or 0 if the entry's length field or the body
+   it describes does not fit in the buffer.  */
+
+static size_t
+debug_frame_entry_end (const char *buf, size_t bufsize, uint64_t offset)
+{
+  uint32_t u32val;
+  uint64_t u64val;
+
+  if (offset > bufsize || bufsize - offset < sizeof (u32val))
+    return 0;
+  memcpy (&u32val, buf + offset, sizeof (u32val));
+  offset += sizeof (u32val);
+
+  if (u32val != 0xffffffff)
+    {
+      /* The body must at least hold the 32-bit CIE id or CIE pointer.  */
+      if (u32val < sizeof (uint32_t) || u32val > bufsize - offset)
+        return 0;
+      return offset + u32val;
+    }
+
+  if (bufsize - offset < sizeof (u64val))
+    return 0;
+  memcpy (&u64val, buf + offset, sizeof (u64val));
+  offset += sizeof (u64val);
+
+  if (u64val < sizeof (uint64_t) || u64val > bufsize - offset)
+    return 0;
+  return offset + u64val;
+}
+
 static size_t
 debug_frame_index_make (struct unw_debug_frame_list *fdesc)
 {
@@ -322,6 +355,11 @@ debug_frame_index_make (struct unw_debug_frame_list *fdesc)
       uint32_t u32val = 0;
       uint64_t cie_id = 0;
       uint64_t id_for_cie;
+
+      /* Stop at an entry that runs past the end of the section.  */
+      if (!debug_frame_entry_end (buf, bufsize,
+                                  item_start - (unw_word_t) (uintptr_t) buf))
+        break;
 
       dwarf_readu32 (unw_local_addr_space, a, &addr, &u32val, NULL);
 
@@ -356,7 +394,10 @@ debug_frame_index_make (struct unw_debug_frame_list *fdesc)
           ;
           /*Debug (1, "Found CIE at %.8x.\n", item_start);*/
         }
-      else
+      /* The CIE pointer of a .debug_frame FDE is a section offset, which
+         dwarf_extract_proc_info_from_fde() follows without a bound, so skip
+         an FDE whose CIE does not lie inside the section.  */
+      else if (debug_frame_entry_end (buf, bufsize, cie_id))
         {
           unw_word_t fde_addr = item_start;
           unw_proc_info_t this_pi;
