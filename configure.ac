@@ -27,9 +27,9 @@ AC_COPYRIGHT([
 
 define(pkg_major, 1)
 define(pkg_minor, 10)
-define(pkg_extra, -pre)
+define(pkg_extra, 0-rc1)
 define(pkg_maintainer, https://github.com/libunwind/libunwind)
-define(mkvers, $1.$2$3)
+define(mkvers, $1.$2.$3)
 AC_INIT([libunwind],[mkvers(pkg_major, pkg_minor, pkg_extra)],[pkg_maintainer])
 AC_CONFIG_SRCDIR(src/mi/backtrace.c)
 AC_CONFIG_AUX_DIR(config)
