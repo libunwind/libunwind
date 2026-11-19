@@ -54,14 +54,18 @@ if not unw_remote_only
     endif
 endif
 
-ver = meson.project_version().split('.')
+ver = meson.project_version().replace('-','.').split('.')
+ver_extra = ''
+foreach i : range(2, ver.length())
+  ver_extra += ver[i]
+endforeach
 _headers += configure_file(
     output: 'libunwind-common.h',
     input: 'libunwind-common.h.in',
     configuration: {
         'PKG_MAJOR': ver[0],
         'PKG_MINOR': ver[1],
-        'PKG_EXTRA': ver[2],
+        'PKG_EXTRA': ver_extra,
     },
     install: true,
     install_dir: get_option('includedir'),
