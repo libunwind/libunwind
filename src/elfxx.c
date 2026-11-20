@@ -873,7 +873,7 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
 
       notes = elf_w (get_program_segment) (ei, phdr, &notes_end);
 
-      while(notes < notes_end)
+      while((size_t) (notes_end - notes) >= sizeof(Elf_W(Nhdr)))
         {
           const char prefix[] = "/usr/lib/debug/.build-id/";
 
@@ -881,15 +881,23 @@ elf_w (find_build_id_path) (const struct elf_image *ei, char *path, unsigned pat
           const Elf_W(Nhdr) *nhdr = (const Elf_W(Nhdr) *) notes;
           const Elf_W(Word) namesz = nhdr->n_namesz;
           const Elf_W(Word) descsz = nhdr->n_descsz;
-          const Elf_W(Word) nameasz = UNW_ALIGN(namesz, 4); /* Aligned size */
+          const size_t nameasz = UNW_ALIGN(namesz, 4); /* Aligned size */
+          const size_t descasz = UNW_ALIGN(descsz, 4);
+          const size_t avail = (size_t) (notes_end - notes) - sizeof(*nhdr);
           const char *name = (const char *) (nhdr + 1);
           const uint8_t *desc = (const uint8_t *) name + nameasz;
           unsigned j;
 
-          notes += sizeof(*nhdr) + nameasz + UNW_ALIGN(descsz, 4);
+          /* The note sizes come from the file: keep name and desc inside the
+             segment, as _UCD_elf_visit_notes() does for core file notes. */
+          if (nameasz > avail || descasz > avail - nameasz)
+            break;
+
+          notes += sizeof(*nhdr) + nameasz + descasz;
 
           if ((namesz != sizeof(ELF_NOTE_GNU)) ||  /* Spec says must be "GNU" with a NULL */
               (nhdr->n_type != NT_GNU_BUILD_ID) || /* Spec says must be NT_GNU_BUILD_ID   */
+              (descsz == 0) ||                     /* Need at least one byte of build-id  */
               (strcmp(name, ELF_NOTE_GNU) != 0))   /* Must be "GNU" with NULL termination */
             continue;
 
