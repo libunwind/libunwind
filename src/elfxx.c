@@ -101,29 +101,30 @@ elf_w (section_table) (const struct elf_image *ei)
 }
 
 static char*
-elf_w (string_table) (const struct elf_image *ei, int section)
+elf_w (string_table) (const struct elf_image *ei, Elf_W (Word) section)
 {
   Elf_W (Ehdr) *ehdr = ei->image;
-  Elf_W (Off) soff, str_soff;
+  Elf_W (Shdr) *shdr = elf_w (section_table) (ei);
   Elf_W (Shdr) *str_shdr;
 
-  /* this offset is assumed to be OK */
-  soff = ehdr->e_shoff;
+  if (!shdr)
+    return NULL;
 
-  str_soff = soff + (section * ehdr->e_shentsize);
-  if (str_soff + ehdr->e_shentsize > ei->size)
+  if (section >= ehdr->e_shnum)
     {
-      Debug (1, "string shdr table outside of image? (%lu > %lu)\n",
-             (unsigned long) (str_soff + ehdr->e_shentsize),
-             (unsigned long) ei->size);
+      Debug (1, "string table index outside of section table? (%lu >= %lu)\n",
+             (unsigned long) section, (unsigned long) ehdr->e_shnum);
       return NULL;
     }
-  str_shdr = (Elf_W (Shdr) *) ((char *) ei->image + str_soff);
+  str_shdr = (Elf_W (Shdr) *) ((char *) shdr
+                               + (size_t) section * ehdr->e_shentsize);
 
-  if (str_shdr->sh_offset + str_shdr->sh_size > ei->size)
+  if (str_shdr->sh_offset > ei->size
+      || str_shdr->sh_size > ei->size - str_shdr->sh_offset)
     {
-      Debug (1, "string table outside of image? (%lu > %lu)\n",
-             (unsigned long) (str_shdr->sh_offset + str_shdr->sh_size),
+      Debug (1, "string table outside of image? (%lu + %lu > %lu)\n",
+             (unsigned long) str_shdr->sh_offset,
+             (unsigned long) str_shdr->sh_size,
              (unsigned long) ei->size);
       return NULL;
     }
@@ -802,11 +803,13 @@ elf_w (find_section) (const struct elf_image *ei, const char* secname)
     {
       if (strcmp (strtab + shdr->sh_name, secname) == 0)
         {
-          if (shdr->sh_offset + shdr->sh_size > ei->size)
+          if (shdr->sh_offset > ei->size
+              || shdr->sh_size > ei->size - shdr->sh_offset)
             {
-              Debug (1, "section \"%s\" outside image? (0x%lu > 0x%lu)\n",
+              Debug (1, "section \"%s\" outside image? (0x%lx + 0x%lx > 0x%lx)\n",
                      secname,
-                     (unsigned long) shdr->sh_offset + shdr->sh_size,
+                     (unsigned long) shdr->sh_offset,
+                     (unsigned long) shdr->sh_size,
                      (unsigned long) ei->size);
               return 0;
             }
@@ -1024,7 +1027,8 @@ elf_w (load_debuginfo) (const char* file, struct elf_image *ei, int is_local)
   shdr = elf_w (find_section) (ei, ".gnu_debuglink");
   if (shdr) {
     if (shdr->sh_size >= PATH_MAX ||
-	(shdr->sh_offset + shdr->sh_size > ei->size))
+	shdr->sh_offset > ei->size ||
+	shdr->sh_size > ei->size - shdr->sh_offset)
       return 0;
 
     {
