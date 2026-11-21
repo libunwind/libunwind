@@ -124,7 +124,8 @@ static inline const uint8_t* elf_w (get_program_segment) (const struct elf_image
   if (end)
     *end = NULL;
 
-  if (!ei || !ei->image || !phdr || phdr->p_filesz == 0 || phdr->p_offset > ei->size)
+  if (!ei || !ei->image || !phdr || phdr->p_filesz == 0 || phdr->p_offset > ei->size
+      || phdr->p_filesz > ei->size - phdr->p_offset)
     return NULL;
 
   result = ((const uint8_t*)ei->image) + phdr->p_offset;
