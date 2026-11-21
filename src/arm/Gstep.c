@@ -68,7 +68,7 @@ arm_exidx_step (struct cursor *c)
   if (c->dwarf.pi.format != UNW_INFO_FORMAT_ARM_EXIDX)
     return -UNW_ENOINFO;
 
-  ret = arm_exidx_extract (&c->dwarf, buf);
+  ret = arm_exidx_extract (&c->dwarf, buf, sizeof (buf));
   if (ret < 0)
     return ret;
 

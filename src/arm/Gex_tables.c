@@ -153,12 +153,16 @@ arm_exidx_apply_cmd (struct arm_exbuf_data *edata, struct dwarf_cursor *c)
 HIDDEN int
 arm_exidx_decode (const uint8_t *buf, int len, struct dwarf_cursor *c)
 {
-#define READ_OP() *buf++
+/* The operand bytes of an instruction are part of the entry, so an entry
+   whose last instruction is cut short must not be decoded from whatever
+   follows it.  Note the truncation and let the operand decode finish.  */
+#define READ_OP() (buf < end ? *buf++ : (truncated = 1, (uint8_t) 0))
   assert(buf != NULL);
   assert(len > 0);
 
   const uint8_t *end = buf + len;
   int ret;
+  int truncated = 0;
   struct arm_exbuf_data edata;
 
   while (buf < end)
@@ -228,7 +232,8 @@ arm_exidx_decode (const uint8_t *buf, int len, struct dwarf_cursor *c)
           do
             {
               byte = READ_OP ();
-              offset |= (byte & 0x7f) << shift;
+              if (shift < 32)
+                offset |= (uint32_t) (byte & 0x7f) << shift;
               shift += 7;
             }
           while (byte & 0x80);
@@ -275,6 +280,12 @@ arm_exidx_decode (const uint8_t *buf, int len, struct dwarf_cursor *c)
       else
         edata.cmd = ARM_EXIDX_CMD_RESERVED;
 
+      if (truncated)
+        {
+          Debug (1, "truncated unwind instruction\n");
+          return -UNW_EINVAL;
+        }
+
       ret = arm_exidx_apply_cmd (&edata, c);
       if (ret < 0)
         return ret;
@@ -284,13 +295,28 @@ arm_exidx_decode (const uint8_t *buf, int len, struct dwarf_cursor *c)
 
 /**
  * Reads the entry from the given cursor and extracts the unwind instructions
- * into buf.  Returns the number of the extracted unwind insns or 
- * -UNW_ESTOPUNWIND if the special bit pattern ARM_EXIDX_CANT_UNWIND (0x1) was
- * found.
+ * into buf, which holds buf_len bytes.  Returns the number of the extracted
+ * unwind insns, -UNW_ESTOPUNWIND if the special bit pattern
+ * ARM_EXIDX_CANT_UNWIND (0x1) was found, or -UNW_EINVAL if the entry carries
+ * more instructions than buf can hold.
  */
 HIDDEN int
-arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
+arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf, size_t buf_len)
 {
+/* The entry itself says how many words of unwind instructions follow, so
+   refuse one that claims more than BUF can hold.  */
+#define PUT_OP(byte)                                                    \
+  do                                                                    \
+    {                                                                   \
+      if ((size_t) nbuf >= buf_len)                                     \
+        {                                                               \
+          Debug (1, "unwind entry needs more than %zu instruction bytes\n", \
+                 buf_len);                                              \
+          return -UNW_EINVAL;                                           \
+        }                                                               \
+      buf[nbuf++] = (uint8_t) (byte);                                   \
+    }                                                                   \
+  while (0)
   int nbuf = 0;
   unw_word_t entry = (unw_word_t) c->pi.unwind_info;
   unw_word_t addr;
@@ -317,9 +343,9 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
     {
       Debug (2, "%p compact model %d [%8.8x]\n", (void *)addr,
              (data >> 24) & 0x7f, data);
-      buf[nbuf++] = (uint8_t) (data >> 16);
-      buf[nbuf++] = (uint8_t) (data >> 8);
-      buf[nbuf++] = (uint8_t) data;
+      PUT_OP (data >> 16);
+      PUT_OP (data >> 8);
+      PUT_OP (data);
     }
   else
     {
@@ -343,10 +369,10 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
             }
           else
             {
-              buf[nbuf++] = (uint8_t) (data >> 16);
+              PUT_OP (data >> 16);
             }
-          buf[nbuf++] = (uint8_t) (data >> 8);
-          buf[nbuf++] = (uint8_t) data;
+          PUT_OP (data >> 8);
+          PUT_OP (data);
         }
       else
         {
@@ -359,12 +385,11 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
                                        c->as_arg) < 0)
             return -UNW_EINVAL;
           n_table_words = data >> 24;
-          buf[nbuf++] = (uint8_t) (data >> 16);
-          buf[nbuf++] = (uint8_t) (data >> 8);
-          buf[nbuf++] = (uint8_t) data;
+          PUT_OP (data >> 16);
+          PUT_OP (data >> 8);
+          PUT_OP (data);
           extbl_data += 8;
         }
-      assert (n_table_words <= 5);
       unsigned j;
       for (j = 0; j < n_table_words; j++)
         {
@@ -372,18 +397,19 @@ arm_exidx_extract (struct dwarf_cursor *c, uint8_t *buf)
                                        c->as_arg) < 0)
             return -UNW_EINVAL;
           extbl_data += 4;
-          buf[nbuf++] = (uint8_t) (data >> 24);
-          buf[nbuf++] = (uint8_t) (data >> 16);
-          buf[nbuf++] = (uint8_t) (data >> 8);
-          buf[nbuf++] = (uint8_t) data;
+          PUT_OP (data >> 24);
+          PUT_OP (data >> 16);
+          PUT_OP (data >> 8);
+          PUT_OP (data);
         }
     }
 
   if (nbuf > 0 && buf[nbuf - 1] != ARM_EXTBL_OP_FINISH)
-    buf[nbuf++] = ARM_EXTBL_OP_FINISH;
+    PUT_OP (ARM_EXTBL_OP_FINISH);
 
   return nbuf;
 }
+#undef PUT_OP
 
 static int
 arm_search_unwind_table (unw_addr_space_t as, unw_word_t ip,
