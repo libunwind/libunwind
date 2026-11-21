@@ -118,7 +118,7 @@ elseif(UNW_CMAKE_TARGET_FREEBSD)
     SET(libunwind_la_SOURCES_arm_os_local       arm/Los-freebsd.c)
     list(APPEND libunwind_coredump_la_SOURCES   coredump/_UCD_access_reg_freebsd.c
                                                 coredump/_UCD_get_threadinfo_prstatus.c
-                                                coredump/_UCD_get_mapinfo_generic.c)
+                                                coredump/_UCD_get_mapinfo_freebsd.c)
 elseif(UNW_CMAKE_HOST_SUNOS)
     SET(libunwind_la_SOURCES_os                 ${libunwind_la_SOURCES_os_solaris})
     SET(libunwind_la_SOURCES_os_local           ${libunwind_la_SOURCES_os_solaris_local})

@@ -189,6 +189,9 @@ _UCD_create(const char *filename)
 		Debug(0, "failure retrieving file mapping from core file\n");
 		goto err;
 	}
+    /* _UCD_get_mapinfo() may have added program headers */
+    phdrs = ui->phdrs;
+    size = ui->phdrs_count;
 
 	coredump_phdr_t *cur = phdrs;
 	for (unsigned i = 0; i < size; ++i)
