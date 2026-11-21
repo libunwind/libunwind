@@ -106,7 +106,7 @@ found:
    An application-supplied iterate_phdr function is always honored, since
    it may know about objects the dynamic linker does not. */
 HIDDEN int
-unwi_iterate_phdr_for_ip (unw_addr_space_t as, unw_word_t ip,
+unwi_iterate_phdr_for_ip (unw_addr_space_t as, unw_word_t ip UNUSED,
                           unw_iterate_phdr_callback_t callback, void *data)
 {
   intrmask_t saved_mask;

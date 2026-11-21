@@ -279,6 +279,11 @@ typedef ucontext_t unw_tdep_context_t;
                            : "=m" ((uc)->uc_mcontext.gp_regs[2]));           \
      0;                                                                      \
    })
+#elif defined(__linux__)
+/* Other C libraries, such as musl, have no getcontext(), and the one
+   from libucontext saves the PC inside itself rather than the caller's
+   return address.  Use libunwind's own.  */
+#define unw_tdep_getcontext             UNW_ARCH_OBJ(getcontext)
 #else
 #define unw_tdep_getcontext(uc)         getcontext (uc)
 #endif
@@ -296,6 +301,10 @@ unw_tdep_proc_info_t;
 
 #define unw_tdep_is_fpreg               UNW_ARCH_OBJ(is_fpreg)
 extern int unw_tdep_is_fpreg (int);
+
+#if defined(__linux__) && !defined(__GLIBC__)
+extern int unw_tdep_getcontext (unw_tdep_context_t *);
+#endif
 
 #if defined(__cplusplus) || defined(c_plusplus)
 }

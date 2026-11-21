@@ -30,7 +30,20 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 	.global _UI_siglongjmp_cont
 	.type _UI_siglongjmp_cont, @function
 _UI_siglongjmp_cont:
-#if defined(__linux__) || defined(__QNX__)
+#if defined(__linux__) && !defined(__GLIBC__)
+	.cfi_startproc
+	/*
+	 * musl, see siglongjmp.c:
+	 * x0 - return address
+	 * x1 - return value
+	 * x2 - value for x19
+	 */
+	mov	x30, x0
+	mov	x19, x2
+	mov	x0,  x1
+	ret
+	.cfi_endproc
+#elif defined(__linux__) || defined(__QNX__)
 	ret
 #elif defined(__FreeBSD__)
 	.cfi_startproc

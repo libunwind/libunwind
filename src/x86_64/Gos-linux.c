@@ -81,27 +81,111 @@ tdep_reuse_frame (struct dwarf_cursor *dw, int frame)
          ? c->frame_info.cfa_reg_offset : 0));
 }
 
+/* Check whether the cursor's IP points at the rt_sigreturn trampoline:
+
+     48 c7 c0 0f 00 00 00    mov $0xf,%rax
+     0f 05                   syscall
+
+   glibc annotates its trampoline with DWARF CFI carrying the 'S'
+   augmentation, which is how tdep_fetch_frame() normally detects signal
+   frames.  Other C libraries, such as musl, provide no unwind info for
+   the trampoline, so fall back to matching its instructions.  The IP may
+   be bad, e.g. after a jump through a bad function pointer, so the reads
+   are validated for the local address space, which does not validate by
+   default.  */
+static int
+is_rt_sigreturn_trampoline (struct cursor *c)
+{
+  unw_accessors_t *a = unw_get_accessors_int (c->dwarf.as);
+  unw_word_t w0, w1;
+  int validate = 0, ret;
+
+  if (c->dwarf.as == unw_local_addr_space)
+    {
+      validate = dwarf_get_validate (&c->dwarf);
+      dwarf_set_validate (&c->dwarf, 1);
+    }
+
+  ret = (*a->access_mem) (c->dwarf.as, c->dwarf.ip, &w0, 0,
+                          c->dwarf.as_arg) >= 0
+        && (*a->access_mem) (c->dwarf.as, c->dwarf.ip + 8, &w1, 0,
+                             c->dwarf.as_arg) >= 0
+        && w0 == 0x0f0000000fc0c748 && (w1 & 0xff) == 0x05;
+
+  if (c->dwarf.as == unw_local_addr_space)
+    dwarf_set_validate (&c->dwarf, validate);
+
+  return ret;
+}
+
 int
 unw_is_signal_frame (unw_cursor_t *cursor)
 {
   struct cursor *c = (struct cursor *) cursor;
-  return c->sigcontext_format != X86_64_SCF_NONE;
+
+  return c->sigcontext_format != X86_64_SCF_NONE
+         || is_rt_sigreturn_trampoline (c);
 }
 
+/* Step through a signal trampoline that has no DWARF unwind info.  */
 HIDDEN int
-x86_64_handle_signal_frame (unw_cursor_t *cursor UNUSED)
+x86_64_handle_signal_frame (unw_cursor_t *cursor)
 {
-#if UNW_DEBUG /* To silence compiler warnings */
-  /* Should not get here because we now use kernel-provided dwarf
-     information for the signal trampoline and dwarf_step() works.
-     Hence unw_step() should never call this function. Maybe
-     restore old non-dwarf signal handling here, but then the
-     gating on unw_is_signal_frame() needs to be removed. */
   struct cursor *c = (struct cursor *) cursor;
-  Debug(1, "old format signal frame? format=%d addr=0x%lx cfa=0x%lx\n",
-        c->sigcontext_format, c->sigcontext_addr, c->dwarf.cfa);
-#endif
-  return -UNW_EBADFRAME;
+  unw_word_t uc;
+  int i, ret;
+
+  if (c->sigcontext_format == X86_64_SCF_NONE
+      && is_rt_sigreturn_trampoline (c))
+    {
+      c->sigcontext_format = X86_64_SCF_LINUX_RT_SIGFRAME;
+      /* On entry to the trampoline the return address has been popped,
+         so the stack pointer (the CFA of the frame above) points at the
+         ucontext_t of the rt_sigframe.  */
+      c->sigcontext_addr = c->dwarf.cfa;
+    }
+
+  if (c->sigcontext_format != X86_64_SCF_LINUX_RT_SIGFRAME)
+    return -UNW_EBADFRAME;
+
+  uc = c->sigcontext_addr;
+  Debug (1, "signal frame without unwind info, ucontext at 0x%lx\n",
+         (long) uc);
+
+  ret = dwarf_get (&c->dwarf, DWARF_LOC (uc + UC_MCONTEXT_GREGS_RSP, 0),
+                   &c->dwarf.cfa);
+  if (ret < 0)
+    {
+      Debug (2, "returning %d\n", ret);
+      return ret;
+    }
+
+  for (i = 0; i < DWARF_NUM_PRESERVED_REGS; ++i)
+    c->dwarf.loc[i] = DWARF_NULL_LOC;
+
+  c->dwarf.loc[RAX] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RAX, 0);
+  c->dwarf.loc[RDX] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RDX, 0);
+  c->dwarf.loc[RCX] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RCX, 0);
+  c->dwarf.loc[RBX] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RBX, 0);
+  c->dwarf.loc[RSI] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RSI, 0);
+  c->dwarf.loc[RDI] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RDI, 0);
+  c->dwarf.loc[RBP] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RBP, 0);
+  c->dwarf.loc[RSP] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RSP, 0);
+  c->dwarf.loc[ R8] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R8, 0);
+  c->dwarf.loc[ R9] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R9, 0);
+  c->dwarf.loc[R10] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R10, 0);
+  c->dwarf.loc[R11] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R11, 0);
+  c->dwarf.loc[R12] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R12, 0);
+  c->dwarf.loc[R13] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R13, 0);
+  c->dwarf.loc[R14] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R14, 0);
+  c->dwarf.loc[R15] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_R15, 0);
+  c->dwarf.loc[RIP] = DWARF_LOC (uc + UC_MCONTEXT_GREGS_RIP, 0);
+
+  /* Let unw_backtrace() cache this frame like a DWARF-described one.  */
+  c->frame_info.frame_type = UNW_X86_64_FRAME_SIGRETURN;
+  c->frame_info.cfa_reg_offset = 0;
+
+  return 0;
 }
 
 #ifndef UNW_REMOTE_ONLY

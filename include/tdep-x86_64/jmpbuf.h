@@ -32,6 +32,14 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define JB_RP           7
 #define JB_MASK_SAVED   8
 #define JB_MASK         9
+#if defined __linux__ && !defined __GLIBC__
+
+/* musl's sigsetjmp() keeps the jmp_buf pointer in a callee-saved register
+   while it calls setjmp(), and setjmp() stores that register in slot
+   JB_MUSL_SIGSETJMP_SLOT; siglongjmp() has _UI_siglongjmp_cont restore
+   it.  */
+#define JB_MUSL_SIGSETJMP_SLOT  0       /* %rbx */
+#endif
 
 #elif defined __FreeBSD__
 

@@ -30,6 +30,25 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #define JB_MASK_SAVED   0
 #define JB_MASK         27
 
+#elif defined __linux__ && !defined __GLIBC__
+
+/* musl: s0-s11, then sp and ra; src/setjmp/riscv{32,64}/setjmp.S  */
+#define JB_SP           12
+#define JB_RP           13
+#if __riscv_xlen == 64
+# define JB_MASK_SAVED  26      /* __fl */
+# define JB_MASK        27      /* __ss */
+#else
+# define JB_MASK_SAVED  38      /* __fl */
+# define JB_MASK        39      /* __ss */
+#endif
+
+/* musl's sigsetjmp() keeps the jmp_buf pointer in a callee-saved register
+   while it calls setjmp(), and setjmp() stores that register in slot
+   JB_MUSL_SIGSETJMP_SLOT; siglongjmp() has _UI_siglongjmp_cont restore
+   it.  */
+#define JB_MUSL_SIGSETJMP_SLOT  0       /* s0 */
+
 #else
 /* https://sourceware.org/git/?p=glibc.git;a=blob;f=sysdeps/riscv/setjmp.S;h=0b92016b311b11aa9eeb62b38c670a262f1924c9;hb=HEAD */
 #define JB_SP           13
