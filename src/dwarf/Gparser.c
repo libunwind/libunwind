@@ -291,6 +291,16 @@ run_cfi_program (struct dwarf_cursor *c, dwarf_state_record_t *sr,
           if (((ret = read_regnum (as, a, addr, &regnum, arg)) < 0)
               || ((ret = dwarf_read_uleb128 (as, a, addr, &val, arg)) < 0))
             break;
+          if (val >= DWARF_NUM_PRESERVED_REGS)
+            {
+              /* The value was saved in a register we have no slot for, so it
+                 cannot be recovered.  apply_reg_state() uses VAL to index the
+                 register locations, so it must not be recorded as-is.  */
+              set_savedreg (sr, regnum, DWARF_WHERE_UNDEF, 0);
+              Debug (15, "CFA_register r%lu to unrepresentable r%lu\n",
+                     (long) regnum, (long) val);
+              break;
+            }
           set_savedreg (sr, regnum, DWARF_WHERE_REG, val);
           Debug (15, "CFA_register r%lu to r%lu\n", (long) regnum, (long) val);
           break;
