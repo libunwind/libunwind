@@ -542,6 +542,26 @@ if test x$have__builtin_unreachable = xyes; then
 fi
 AC_MSG_RESULT([$have__builtin_unreachable])
 
+# Ltest-multi-exec-segment needs dl_iterate_phdr()/struct dl_phdr_info to
+# inspect the program headers, and a linker that accepts the GNU-compatible
+# --section-start option to create a second executable segment.  Targets such
+# as HP-UX provide neither, so only build the test where both are available.
+AC_CHECK_TYPES([struct dl_phdr_info], [], [], [#include <link.h>])
+AC_MSG_CHECKING([whether the linker supports --section-start])
+save_LDFLAGS="${LDFLAGS}"
+LDFLAGS="${LDFLAGS} -Wl,--section-start=.second_text=0x4000000"
+AC_LINK_IFELSE(
+  [AC_LANG_PROGRAM([[__attribute__((section(".second_text"))) int f (void) { return 0; }]],
+                   [[return f ();]])],
+  [have_linker_section_start=yes],
+  [have_linker_section_start=no])
+LDFLAGS="${save_LDFLAGS}"
+AC_MSG_RESULT([$have_linker_section_start])
+AM_CONDITIONAL([BUILD_MULTI_EXEC_SEGMENT_TEST],
+  [test x$ac_cv_func_dl_iterate_phdr = xyes \
+     && test x$ac_cv_type_struct_dl_phdr_info = xyes \
+     && test x$have_linker_section_start = xyes])
+
 CCASFLAGS="${CCASFLAGS} ${CPPFLAGS}"
 
 arch="$target_arch"

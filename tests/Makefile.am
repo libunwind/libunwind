@@ -99,6 +99,12 @@ endif
  noinst_PROGRAMS_cdep += forker Gperf-simple Lperf-simple \
 			Gperf-trace Lperf-trace
 
+# Needs dl_iterate_phdr() and a linker that supports --section-start, see
+# configure.ac.
+if BUILD_MULTI_EXEC_SEGMENT_TEST
+ check_PROGRAMS_cdep += Ltest-multi-exec-segment
+endif
+
 # unw_init_local2() is not implemented on ia64
 if !ARCH_IA64
  check_PROGRAMS_cdep += Ltest-init-local-signal
@@ -261,6 +267,7 @@ Gtest_bt_SOURCES = Gtest-bt.c ident.c
 Ltest_bt_SOURCES = Ltest-bt.c ident.c
 test_ptrace_misc_SOURCES = test-ptrace-misc.c ident.c
 Ltest_nomalloc_SOURCES = Ltest-nomalloc.c
+Ltest_multi_exec_segment_SOURCES = Ltest-multi-exec-segment.c
 Ltest_nocalloc_SOURCES = Ltest-nocalloc.c
 Gtest_trace_SOURCES = Gtest-trace.c ident.c
 Ltest_trace_SOURCES = Ltest-trace.c ident.c
@@ -315,6 +322,9 @@ Ltest_dyn1_LDADD = $(LIBUNWIND_local)
 Ltest_exc_LDADD = $(LIBUNWIND_local)
 Ltest_init_LDADD = $(LIBUNWIND_local)
 Ltest_nomalloc_LDADD = $(LIBUNWIND_local) $(DLLIB)
+Ltest_multi_exec_segment_LDADD = $(LIBUNWIND_local)
+# Place .second_text far away from .text so that it gets a PT_LOAD of its own.
+Ltest_multi_exec_segment_LDFLAGS = $(AM_LDFLAGS) -Wl,--section-start=.second_text=0x4000000
 Ltest_nocalloc_LDADD = $(LIBUNWIND_local) $(DLLIB) $(PTHREADS_LIB)
 Ltest_resume_sig_LDADD = $(LIBUNWIND_local)
 Ltest_resume_sig_rt_LDADD = $(LIBUNWIND_local)

@@ -406,8 +406,21 @@ elf_w (lookup_ip_range)(unw_addr_space_t as,
                                           &data);
 }
 
+/* Sentinel for callers that do not know the file offset of the mapping.  */
+#define ELF_NO_MAPOFF (~0UL)
+
+/* Compute the load offset (the difference between run-time addresses and the
+   addresses in the ELF image) of the object mapped at SEGBASE.
+
+   SEGBASE is the start address of the mapping that contains IP and MAPOFF is
+   the file offset of that mapping.  An object may have more than one
+   executable PT_LOAD segment (e.g. binaries post-processed by llvm-bolt, which
+   appends a second text segment), so SEGBASE must be paired with the program
+   header of the segment IP actually belongs to, not simply with the first
+   executable one.  */
 static Elf_W (Addr)
-elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase)
+elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase,
+                         unsigned long mapoff, unw_word_t ip)
 {
   Elf_W (Addr) offset = 0;
   Elf_W (Ehdr) *ehdr;
@@ -422,6 +435,26 @@ elf_w (get_load_offset) (struct elf_image *ei, unsigned long segbase)
   ehdr = ei->image;
   phdr = (Elf_W (Phdr) *) ((char *) ei->image + ehdr->e_phoff);
 
+  /* Prefer the executable segment whose file range contains the file offset of
+     IP.  Use the exact offset of IP rather than the page-aligned MAPOFF, since
+     two segments may share a file page while being mapped at different
+     addresses, but never share file bytes.  A mapping at file offset MAPOFF
+     of a segment is placed at load_offset + p_vaddr + (MAPOFF - p_offset),
+     which also holds when the mapping does not start at the beginning of the
+     segment.  */
+  if (mapoff != ELF_NO_MAPOFF && ip >= segbase)
+    {
+      unsigned long ip_file_off = mapoff + (ip - segbase);
+
+      for (i = 0; i < ehdr->e_phnum; ++i)
+        if (phdr[i].p_type == PT_LOAD && phdr[i].p_flags & PF_X
+            && ip_file_off >= phdr[i].p_offset
+            && ip_file_off - phdr[i].p_offset < phdr[i].p_filesz)
+          return segbase - mapoff - (phdr[i].p_vaddr - phdr[i].p_offset);
+    }
+
+  /* Otherwise assume the mapping is the start of the first executable
+     segment.  */
   for (i = 0; i < ehdr->e_phnum; ++i)
     if (phdr[i].p_type == PT_LOAD && phdr[i].p_flags & PF_X)
       {
@@ -588,17 +621,14 @@ elf_w (extract_minidebuginfo) (struct elf_image *ei UNUSED, struct elf_image *md
    sped up greatly, but until an application materializes that's
    sensitive to the performance of this routine, why bother...  */
 
-HIDDEN int
-elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
-                       unsigned long segbase,
-                       unw_word_t ip,
-                       char *buf, size_t buf_len, unw_word_t *offp)
+static int
+elf_w (lookup_proc_name) (unw_addr_space_t as, struct elf_image *ei,
+                          Elf_W (Addr) load_offset, unw_word_t ip,
+                          char *buf, size_t buf_len, unw_word_t *offp)
 {
-  Elf_W (Addr) load_offset;
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
-  load_offset = elf_w (get_load_offset) (ei, segbase);
   ret = elf_w (lookup_symbol) (as, ip, ei, load_offset, buf, buf_len, &min_dist);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
@@ -626,10 +656,22 @@ elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
 }
 
 HIDDEN int
+elf_w (get_proc_name_in_image) (unw_addr_space_t as, struct elf_image *ei,
+                       unsigned long segbase,
+                       unw_word_t ip,
+                       char *buf, size_t buf_len, unw_word_t *offp)
+{
+  Elf_W (Addr) load_offset = elf_w (get_load_offset) (ei, segbase, ELF_NO_MAPOFF, ip);
+
+  return elf_w (lookup_proc_name) (as, ei, load_offset, ip, buf, buf_len, offp);
+}
+
+HIDDEN int
 elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
                        char *buf, size_t buf_len, unw_word_t *offp)
 {
   unsigned long segbase, mapoff;
+  Elf_W (Addr) load_offset;
   struct elf_image ei;
   int ret;
   char file[PATH_MAX];
@@ -638,11 +680,16 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
+  /* Compute the load offset from the image that is actually mapped, before it
+     is possibly replaced by a separate debuginfo file whose program headers
+     need not have the same file offsets.  */
+  load_offset = elf_w (get_load_offset) (&ei, segbase, mapoff, ip);
+
   ret = elf_w (load_debuginfo) (file, &ei, 1);
   if (ret < 0)
     return ret;
 
-  ret = elf_w (get_proc_name_in_image) (as, &ei, segbase, ip, buf, buf_len, offp);
+  ret = elf_w (lookup_proc_name) (as, &ei, load_offset, ip, buf, buf_len, offp);
 
   mi_munmap (ei.image, ei.size);
   ei.image = NULL;
@@ -650,17 +697,14 @@ elf_w (get_proc_name) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   return ret;
 }
 
-HIDDEN int
-elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
-                       unsigned long segbase,
-                       unw_word_t ip,
-                       unw_word_t *start, unw_word_t *end)
+static int
+elf_w (lookup_proc_ip_range) (unw_addr_space_t as, struct elf_image *ei,
+                              Elf_W (Addr) load_offset, unw_word_t ip,
+                              unw_word_t *start, unw_word_t *end)
 {
-  Elf_W (Addr) load_offset;
   Elf_W (Addr) min_dist = ~(Elf_W (Addr))0;
   int ret;
 
-  load_offset = elf_w (get_load_offset) (ei, segbase);
   ret = elf_w (lookup_ip_range) (as, ip, ei, load_offset, start, end, &min_dist);
 
   /* If the ELF image has MiniDebugInfo embedded in it, look up the symbol in
@@ -686,10 +730,22 @@ elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
 }
 
 HIDDEN int
+elf_w (get_proc_ip_range_in_image) (unw_addr_space_t as, struct elf_image *ei,
+                       unsigned long segbase,
+                       unw_word_t ip,
+                       unw_word_t *start, unw_word_t *end)
+{
+  Elf_W (Addr) load_offset = elf_w (get_load_offset) (ei, segbase, ELF_NO_MAPOFF, ip);
+
+  return elf_w (lookup_proc_ip_range) (as, ei, load_offset, ip, start, end);
+}
+
+HIDDEN int
 elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
                            unw_word_t *start, unw_word_t *end)
 {
   unsigned long segbase, mapoff;
+  Elf_W (Addr) load_offset;
   struct elf_image ei;
   int ret;
   char file[PATH_MAX];
@@ -698,11 +754,14 @@ elf_w (get_proc_ip_range) (unw_addr_space_t as, pid_t pid, unw_word_t ip,
   if (ret < 0)
     return ret;
 
+  /* See elf_w (get_proc_name).  */
+  load_offset = elf_w (get_load_offset) (&ei, segbase, mapoff, ip);
+
   ret = elf_w (load_debuginfo) (file, &ei, 1);
   if (ret < 0)
     return ret;
 
-  ret = elf_w (get_proc_ip_range_in_image) (as, &ei, segbase, ip, start, end);
+  ret = elf_w (lookup_proc_ip_range) (as, &ei, load_offset, ip, start, end);
 
   mi_munmap (ei.image, ei.size);
   ei.image = NULL;
