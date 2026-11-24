@@ -100,6 +100,7 @@ if ARCH_AARCH64
                          aarch64-test-plt \
                          Laarch64-test-frame-record Gaarch64-test-frame-record \
                          Laarch64-test-frame-size Gaarch64-test-frame-size \
+                         Laarch64-test-signal-frame Gaarch64-test-signal-frame \
                          aarch64-test-lr-fallback
 endif
 
@@ -298,6 +299,8 @@ Laarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 Gaarch64_test_frame_record_SOURCES = aarch64-test-frame-record.c
 Laarch64_test_frame_size_SOURCES = aarch64-test-frame-size.c
 Gaarch64_test_frame_size_SOURCES = aarch64-test-frame-size.c
+Laarch64_test_signal_frame_SOURCES = aarch64-test-signal-frame.c
+Gaarch64_test_signal_frame_SOURCES = aarch64-test-signal-frame.c
 aarch64_test_lr_fallback_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
 aarch64_test_lr_fallback_SOURCES = aarch64-test-lr-fallback.c \
                                    aarch64-test-lr-fallback-asm.S
@@ -449,6 +452,9 @@ Gaarch64_test_frame_record_LDADD = $(LIBUNWIND_arch)
 Laarch64_test_frame_size_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
 Laarch64_test_frame_size_LDADD = $(LIBUNWIND_internal)
 Gaarch64_test_frame_size_LDADD = $(LIBUNWIND_arch)
+Laarch64_test_signal_frame_CFLAGS = $(AM_CFLAGS) -DUNW_LOCAL_ONLY
+Laarch64_test_signal_frame_LDADD = $(LIBUNWIND_local)
+Gaarch64_test_signal_frame_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 aarch64_test_lr_fallback_LDADD = $(LIBUNWIND_local) $(PTHREADS_LIB)
 
 # Copy scripts from source directory to build directory (for cross builds)
