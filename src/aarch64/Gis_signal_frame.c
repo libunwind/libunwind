@@ -87,7 +87,13 @@ unw_is_signal_frame (unw_cursor_t *cursor)
   if (ret < 0)
     return ret;
 
+#if defined(__linux__)
+  /* A masked compare also matches unrelated code that has every bit of
+     the stub set, like "movk x9, #0xffef, lsl #16; ldr d9, [x8, #368]".  */
+  if (w0 != SIGNAL_RETURN)
+#else
   if ((w0 & SIGNAL_RETURN) != SIGNAL_RETURN)
+#endif
   	return 0;
 #if defined(__FreeBSD__)
   ip += 8;
