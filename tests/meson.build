@@ -779,6 +779,29 @@ if not unw_remote_only
             override_options: _opts,
         )
         test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'Laarch64-test-signal-frame',
+            'aarch64-test-signal-frame.c',
+            c_args: ['-DUNW_LOCAL_ONLY'],
+            link_with: libunwind_internal_local_lib,
+            link_args: ['-Wl,--allow-multiple-definition'],
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'Gaarch64-test-signal-frame',
+            'aarch64-test-signal-frame.c',
+            link_with: [libunwind_internal_lib, libunwind_internal_local_lib],
+            link_args: ['-Wl,--allow-multiple-definition'],
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
     elif target_machine.cpu_family() == 'arm'
         _exe = executable(
             'Garm-test-debug-frame-bt',
