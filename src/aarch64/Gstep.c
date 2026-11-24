@@ -848,6 +848,12 @@ get_sve_vl_signal_loc (struct dwarf_cursor* dwarf, unw_word_t sc_addr)
             /* Don't care about any of the other sections */
             break;
         }
+
+      /* Every record the kernel writes is a non-zero multiple of 16 bytes.
+         Anything else is not a signal frame, and a size of 0 would loop
+         here forever.  */
+      if (size < 16 || (size % 16) != 0)
+        return -UNW_EUNSPEC;
    }
    return 1;
 }
