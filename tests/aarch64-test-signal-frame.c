@@ -33,7 +33,19 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
 #include <libunwind.h>
 #include <signal.h>
 #include <stdint.h>
+#include <string.h>
 #include <ucontext.h>
+#include <unistd.h>
+
+#define FPSIMD_MAGIC 0x46508001
+#define ESR_MAGIC    0x45535201
+
+/* Header of a record in the reserved area of the sigcontext.  */
+struct record
+  {
+    uint32_t magic;
+    uint32_t size;
+  };
 
 /* The sigreturn trampoline of the kernel.  */
 static const uint32_t restorer[] = {
@@ -97,12 +109,80 @@ test_is_signal_frame (void)
     }
 }
 
+/* Puts RECORDS one after the other in the signal frame, like the kernel
+   does, and steps from the trampoline through that frame.  */
+static int
+step_with_records (const struct record *records, size_t count,
+                   unw_word_t *ip)
+{
+  unsigned char *area = (unsigned char *) &frame.uc.uc_mcontext.__reserved;
+  unw_context_t uc;
+  unw_cursor_t cursor;
+  size_t i, off = 0;
+  int ret;
+
+  memset (&frame, 0, sizeof (frame));
+  frame.uc.uc_mcontext.pc = (uintptr_t) &test_is_signal_frame;
+  frame.uc.uc_mcontext.sp = (uintptr_t) &frame;
+  for (i = 0; i < count; ++i)
+    {
+      memcpy (area + off, &records[i], sizeof (records[i]));
+      off += records[i].size;
+    }
+
+  init_cursor (&cursor, &uc, restorer);
+  ret = unw_step (&cursor);
+  if (ret > 0)
+    unw_get_reg (&cursor, UNW_REG_IP, ip);
+  return ret;
+}
+
+static void
+on_alarm (int signum UNUSED)
+{
+  static const char msg[] = "unw_step() did not return\n";
+  ssize_t n = write (STDERR_FILENO, msg, sizeof (msg) - 1);
+
+  (void) n;
+  _exit (UNW_TEST_EXIT_FAIL);
+}
+
+static void
+test_records (void)
+{
+  static const struct record good[] = {
+    { FPSIMD_MAGIC, 528 }, { ESR_MAGIC, 16 }, { 0, 0 },
+  };
+  static const struct record bad[] = {
+    { 0x1b, 0 }, { ESR_MAGIC, 8 }, { FPSIMD_MAGIC, 520 },
+  };
+  unw_word_t ip = 0;
+  size_t i;
+  int ret;
+
+  ret = step_with_records (good, ARRAY_SIZE (good), &ip);
+  UNW_TEST_ASSERT (ret > 0, "valid records: unw_step() returned %d\n", ret);
+  UNW_TEST_ASSERT (ip == (uintptr_t) &test_is_signal_frame,
+                   "valid records: IP is %#lx\n", (unsigned long) ip);
+
+  signal (SIGALRM, on_alarm);
+  alarm (10);
+  for (i = 0; i < ARRAY_SIZE (bad); ++i)
+    {
+      ret = step_with_records (&bad[i], 1, &ip);
+      UNW_TEST_ASSERT (ret < 0, "record of size %u: unw_step() returned %d\n",
+                       bad[i].size, ret);
+    }
+  alarm (0);
+}
+
 int
 main (int argc, char **argv UNUSED)
 {
   verbose = argc > 1;
 
   test_is_signal_frame ();
+  test_records ();
 
   if (verbose)
     printf ("SUCCESS\n");
