@@ -612,6 +612,16 @@ if not unw_remote_only
             override_options: _opts,
         )
         test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'test-elf32-find-section',
+            'test-elf32-find-section.c',
+            link_with: libunwind_internal_lib,
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
     elif target_machine.cpu_family() in [
         'aarch64',
         'alpha',
@@ -624,6 +634,16 @@ if not unw_remote_only
         _exe = executable(
             'test-elf64-gnu-hash',
             'test-elf64-gnu-hash.c',
+            link_with: libunwind_internal_lib,
+            include_directories: _inc,
+            dependencies: [libc_deps],
+            override_options: _opts,
+        )
+        test(_exe.name(), _exe, env: _env)
+
+        _exe = executable(
+            'test-elf64-find-section',
+            'test-elf64-find-section.c',
             link_with: libunwind_internal_lib,
             include_directories: _inc,
             dependencies: [libc_deps],

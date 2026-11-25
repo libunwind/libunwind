@@ -151,11 +151,11 @@ if BUILD_SETJMP
 endif
 
 if USE_ELF32
- check_PROGRAMS_cdep += test-elf32-gnu-hash
+ check_PROGRAMS_cdep += test-elf32-gnu-hash test-elf32-find-section
 endif
 
 if USE_ELF64
- check_PROGRAMS_cdep += test-elf64-gnu-hash
+ check_PROGRAMS_cdep += test-elf64-gnu-hash test-elf64-find-section
 endif
 
 # run-debuglink needs objcopy and strip to build a separate debug file; it
@@ -335,6 +335,8 @@ Ltest_mem_validate_SOURCES = Ltest-mem-validate.c
 Gtest_get_proc_name_SOURCES = Gtest-get_proc_name.c
 test_elf32_gnu_hash_SOURCES = test-elf32-gnu-hash.c
 test_elf64_gnu_hash_SOURCES = test-elf64-gnu-hash.c
+test_elf32_find_section_SOURCES = test-elf32-find-section.c
+test_elf64_find_section_SOURCES = test-elf64-find-section.c
 test_debuglink_SOURCES = test-debuglink.c
 
 LIBUNWIND = $(top_builddir)/src/libunwind-$(arch).la
@@ -385,6 +387,8 @@ Gtest_exc_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_get_proc_name_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 test_elf32_gnu_hash_LDADD = $(LIBUNWIND_internal)
 test_elf64_gnu_hash_LDADD = $(LIBUNWIND_internal)
+test_elf32_find_section_LDADD = $(LIBUNWIND_internal)
+test_elf64_find_section_LDADD = $(LIBUNWIND_internal)
 Gtest_init_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
 Gtest_resume_sig_rt_LDADD = $(LIBUNWIND) $(LIBUNWIND_local)
