@@ -32,6 +32,11 @@ WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.  */
    reasonable so we use the same value here.  */
 #define MAX_EXPR_STACK_SIZE     64
 
+/* DW_OP_skip and DW_OP_bra may branch backwards, so an expression can loop.
+   Compilers emit straight-line CFI expressions, so this only has to be high
+   enough that nothing a producer emits ever reaches it.  */
+#define MAX_EXPR_BACKWARD_BRANCHES      1024
+
 #define NUM_OPERANDS(signature) (((signature) >> 6) & 0x3)
 #define OPND1_TYPE(signature)   (((signature) >> 3) & 0x7)
 #define OPND2_TYPE(signature)   (((signature) >> 0) & 0x7)
@@ -236,11 +241,40 @@ dwarf_stack_aligned(struct dwarf_cursor *c, unw_word_t cfa_addr,
   return 1;
 }
 
+/* Take the branch of a DW_OP_skip or DW_OP_bra.  The target is relative to
+   the byte after the operand and has to land inside the expression itself,
+   END_ADDR included, since branching there just ends the program early.  */
+static inline int
+branch_to (unw_word_t start_addr, unw_word_t end_addr, unw_word_t *addr,
+           int16_t offset, unsigned int *backward_branches)
+{
+  unw_word_t target = *addr + (unw_word_t) (unw_sword_t) offset;
+
+  if (target < start_addr || target > end_addr)
+    {
+      Debug (1, "Branch target 0x%lx outside expression [0x%lx,0x%lx]\n",
+             (unsigned long) target, (unsigned long) start_addr,
+             (unsigned long) end_addr);
+      return -UNW_EINVAL;
+    }
+
+  if (target < *addr && ++*backward_branches > MAX_EXPR_BACKWARD_BRANCHES)
+    {
+      Debug (1, "Expression took more than %d backward branches\n",
+             MAX_EXPR_BACKWARD_BRANCHES);
+      return -UNW_EINVAL;
+    }
+
+  *addr = target;
+  return 0;
+}
+
 HIDDEN int
 dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,
                  unw_word_t len, unw_word_t *valp, int *is_register)
 {
-  unw_word_t operand1 = 0, operand2 = 0, tmp1, tmp2 = 0, tmp3, end_addr;
+  unw_word_t operand1 = 0, operand2 = 0, tmp1, tmp2 = 0, tmp3;
+  unw_word_t start_addr, end_addr;
   uint8_t opcode, operands_signature, u8;
   unw_addr_space_t as;
   unw_accessors_t *a;
@@ -252,6 +286,7 @@ dwarf_eval_expr (struct dwarf_cursor *c, unw_word_t stack_val, unw_word_t *addr,
   uint64_t u64;
   int ret;
   unw_word_t stackerror = 0;
+  unsigned int backward_branches = 0;
 
 // pop() is either followed by a semicolon or
 // used in a push() macro
@@ -293,6 +328,7 @@ if (stackerror)                                 \
   as = c->as;
   arg = c->as_arg;
   a = unw_get_accessors_int (as);
+  start_addr = *addr;
   end_addr = *addr + len;
   *is_register = 0;
 
@@ -679,14 +715,19 @@ if (stackerror)                                 \
 
         case DW_OP_skip:
           Debug (15, "OP_skip(%d)\n", (int16_t) operand1);
-          *addr += (int16_t) operand1;
+          if ((ret = branch_to (start_addr, end_addr, addr,
+                                (int16_t) operand1, &backward_branches)) < 0)
+            return ret;
           break;
 
         case DW_OP_bra:
-          Debug (15, "OP_skip(%d)\n", (int16_t) operand1);
+          Debug (15, "OP_bra(%d)\n", (int16_t) operand1);
           tmp1 = pop ();
-          if (tmp1)
-            *addr += (int16_t) operand1;
+          if (tmp1
+              && (ret = branch_to (start_addr, end_addr, addr,
+                                   (int16_t) operand1,
+                                   &backward_branches)) < 0)
+            return ret;
           break;
 
         case DW_OP_nop:
